@@ -1,4 +1,10 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
 export interface Database {
   public: {
@@ -142,3 +148,6 @@ export interface Database {
     };
   };
 }
+
+// Convenience alias for the exercise catalog row, used by the browser.
+export type Exercise = Database["public"]["Tables"]["exercises"]["Row"];

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Slug } from "react-muscle-highlighter";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { loadExercises } from "@services/seedExercises";
 import type { Exercise } from "../types/supabase";
@@ -21,6 +22,7 @@ import {
   applyBaseFilters,
   explainEmpty,
   filterByMuscles,
+  MUSCLE_PARAM,
   muscleCounts,
   parseMuscleParam,
   serializeMuscleParam,
@@ -38,9 +40,6 @@ import {
 } from "../lib/i18n";
 
 const BODY_PARTS = BODY_PART_FILTER_VALUES;
-
-/** URL key holding the anatomy selection, so it survives close/reopen. */
-const MUSCLE_PARAM = "musculos";
 
 /** Where the currently displayed catalog came from. */
 type Source = "supabase" | "fallback";
@@ -62,13 +61,20 @@ export function ExerciseBrowser({
   const [source, setSource] = useState<Source>("supabase");
   const [onlyMyGym, setOnlyMyGym] = useState(false);
 
+  // The URL is the single owner of the anatomy selection, read and written
+  // through the router rather than `window.history`. Two components write this
+  // param (this one, and the ranks view that hands a muscle to the catalog), and
+  // two writers that bypass the router is how the two copies of the URL drift
+  // apart -- the symptom being a filter that applies once and then silently
+  // stops.
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // Multi-selection of muscles. Seeded from the URL so returning to the browser
   // keeps the anatomy filter, which is the whole point of a filter the user set
   // deliberately.
-  const [muscles, setMuscles] = useState<Slug[]>(() => {
-    if (typeof window === "undefined") return [];
-    return parseMuscleParam(new URLSearchParams(window.location.search).get(MUSCLE_PARAM));
-  });
+  const [muscles, setMuscles] = useState<Slug[]>(() =>
+    parseMuscleParam(searchParams.get(MUSCLE_PARAM)),
+  );
   const [showAnatomy, setShowAnatomy] = useState(() => muscles.length > 0);
 
   useEffect(() => {
@@ -160,18 +166,17 @@ export function ExerciseBrowser({
   // Mirror the selection into the URL without adding history entries, so a
   // reload or a link share keeps the filter but Back still leaves the modal.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const serialized = serializeMuscleParam(muscles);
-    if (serialized) params.set(MUSCLE_PARAM, serialized);
-    else params.delete(MUSCLE_PARAM);
-    const queryString = params.toString();
-    window.history.replaceState(
-      null,
-      "",
-      `${window.location.pathname}${queryString ? `?${queryString}` : ""}`,
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        const serialized = serializeMuscleParam(muscles);
+        if (serialized) next.set(MUSCLE_PARAM, serialized);
+        else next.delete(MUSCLE_PARAM);
+        return next;
+      },
+      { replace: true },
     );
-  }, [muscles]);
+  }, [muscles, setSearchParams]);
 
   const emptyCause = useMemo(
     () =>

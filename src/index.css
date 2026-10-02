@@ -76,4 +76,177 @@
   ::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.28);
   }
+
+  /*
+   * Loading placeholder.
+   *
+   * Defined here rather than with Tailwind's `animate-pulse` so the colour and
+   * the timing live in one place, and so `prefers-reduced-motion` can switch the
+   * animation off at the keyframe level instead of only neutralising it.
+   */
+  @keyframes cronos-pulse {
+    0%,
+    100% {
+      opacity: 0.45;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+
+  /*
+   * Button interaction states.
+   *
+   * A `filter` rather than a per-variant colour, because the four variants share
+   * these rules and naming a different hover colour for each one in JavaScript
+   * would put eight more hex values to keep in step with `tokens.ts`. Brightness
+   * moves every fill the right direction without knowing what the fill is.
+   *
+   * `prefers-reduced-motion` keeps the feedback and drops the movement: removing
+   * the states entirely would leave a control that gives no response at all,
+   * which is worse for everyone than a filter that does not animate.
+   */
+  .gbtn:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+
+  .gbtn:active:not(:disabled) {
+    filter: brightness(0.92);
+  }
+
+  .gbtn:focus-visible {
+    outline: 2px solid var(--cronos-accent-text, #f7b955);
+    outline-offset: 2px;
+  }
+
+  .gbtn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gbtn {
+      transition: none !important;
+    }
+  }
+
+  /*
+   * Shell layout.
+   *
+   * The paddings live here rather than in a style prop because part of them is
+   * responsive and inline styles cannot express a media query. The nav height and
+   * the rail width arrive as custom properties from `AppShell`, which is the only
+   * place either number is decided.
+   *
+   * Bottom padding is *extra space below the content*, not an inset, so the last
+   * item scrolls under the navigation instead of stopping short of it.
+   */
+  .cronos-shell {
+    min-height: 100vh;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: calc(
+      var(--cronos-nav-height, 56px) + env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  .cronos-bottom-nav,
+  .cronos-side-rail {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .cronos-shell {
+      padding-bottom: 0;
+      padding-left: calc(
+        var(--cronos-rail-width, 232px) + env(safe-area-inset-left, 0px)
+      );
+    }
+
+    /* Five targets along the bottom edge are unusable on a pointer. */
+    .cronos-bottom-nav {
+      display: none;
+    }
+
+    .cronos-side-rail {
+      display: block;
+    }
+  }
+
+  /*
+   * The rail and the bottom bar both transition on colour and transform.
+   *
+   * Under `prefers-reduced-motion` the movement goes and the colour does not: a
+   * nav item turning from grey to amber is feedback, not motion, and removing it
+   * would leave the active destination with no indication at all beyond a
+   * 2px bar.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .cronos-rail-item {
+      transition: none;
+    }
+  }
+
+  /*
+   * Route entry.
+   *
+   * Deliberately not a transform on the scroll container: `transform` on an
+   * element establishes a containing block, which is what makes a fade nudge the
+   * layout. Translating by 4px and settling is enough to read as "new screen"
+   * without shifting anything the user has to re-find.
+   */
+  @keyframes cronos-route-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .cronos-route--animate {
+    animation: cronos-route-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /*
+     * Opacity only. The movement is the part that has to go; a fade is not
+     * motion the vestibular system reacts to at this size and duration.
+     */
+    .cronos-route--animate {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  /*
+   * Undo window drain.
+   *
+   * The banner for a deleted set closes after five seconds, and this is what
+   * shows how much of that is left. A width animation rather than a React
+   * countdown: re-rendering the whole set logger once a second, mid-session, to
+   * move a two-pixel line is a price nobody pays. The component still owns the
+   * timer that unmounts the banner -- this is decoration on top of a real
+   * deadline, not the deadline itself.
+   *
+   * Under `prefers-reduced-motion` the bar is simply held full. A draining strip
+   * is a progress indicator, not an animation, so dropping it would remove
+   * information; what goes is the movement.
+   */
+  @keyframes cronos-undo-drain {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cronos-undo--drain {
+      animation: none !important;
+      transform: scaleX(1);
+    }
+  }
 }

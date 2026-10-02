@@ -104,6 +104,17 @@ export function toggleMuscle(selection: Slug[], slug: Slug): Slug[] {
     : [...selection, slug];
 }
 
+/**
+ * URL key holding the anatomy selection, so it survives close/reopen and can be
+ * handed between screens by a link.
+ *
+ * Lives here rather than in `ExerciseBrowser` because there are now two writers:
+ * the browser mirrors its own selection, and the ranks view sends the user to the
+ * catalog with a muscle already chosen. A key that only one of them knows about
+ * is a filter that works from one screen and not the other.
+ */
+export const MUSCLE_PARAM = "musculos";
+
 /** Parses the URL fragment used to persist the selection across navigation. */
 export function parseMuscleParam(raw: string | null): Slug[] {
   if (!raw) return [];

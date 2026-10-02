@@ -25,11 +25,15 @@ export default {
           900: "#0f0f11",
           950: "#000000",
         },
-        // Accent: a single warm tone used sparingly (Apple-style)
+        // Accent: a single warm tone used sparingly (Apple-style).
+        // Must stay equal to `ACCENT.base` in src/design/tokens.ts, which is the
+        // source of truth. `tokens.test.ts` asserts the two agree, because a
+        // token that is amber in one file and orange in the other is the exact
+        // drift this duplication invites.
         accent: {
-          DEFAULT: "#ff9f0a",
+          DEFAULT: "#f5a524",
           soft: "#ffb14d",
-          muted: "rgba(255, 159, 10, 0.12)",
+          muted: "rgba(245, 165, 36, 0.14)",
         },
         // Brighter gold, used for the logo gradient and highlight text only.
         gold: {

@@ -16,7 +16,8 @@
  */
 
 import type { Exercise } from "@/types/supabase";
-import type { SetEntry } from "../components/SetLoggerRow";
+import type { SetEntry } from "./workout/types";
+import { normalizeSetEntry } from "./workout/setKind";
 
 const DB_NAME = "cronos-offline";
 const DB_VERSION = 1;
@@ -151,9 +152,28 @@ export async function saveDraft(draft: SessionDraft): Promise<void> {
   await tx(DRAFT_STORE, "readwrite", (store) => store.put(draft));
 }
 
+/**
+ * Repairs a draft written by an older build.
+ *
+ * Drafts are durable: a session opened before the set-kind chips shipped still
+ * sits in IndexedDB with `is_warmup: boolean` and no `kind`, and it will be
+ * offered back for recovery the next time the app opens. `normalizeSetEntry`
+ * maps that shape onto the current one, including the legacy warm-up flag.
+ */
+function normalizeDraft(draft: SessionDraft): SessionDraft {
+  return {
+    ...draft,
+    items: (draft.items ?? []).map((item) => ({
+      ...item,
+      sets: (item.sets ?? []).map((set, index) => normalizeSetEntry(set, index)),
+    })),
+  };
+}
+
 /** Loads a specific draft by session id. */
 export async function loadDraft(logId: string): Promise<SessionDraft | null> {
-  return tx<SessionDraft>(DRAFT_STORE, "readonly", (store) => store.get(logId));
+  const draft = await tx<SessionDraft>(DRAFT_STORE, "readonly", (store) => store.get(logId));
+  return draft ? normalizeDraft(draft) : null;
 }
 
 /**
@@ -172,7 +192,7 @@ export async function loadRecoverableDraft(userId: string): Promise<SessionDraft
         const candidate = rows
           .filter((d) => d.userId === userId && !d.finalized && d.items.length > 0)
           .sort((a, b) => b.updatedAt - a.updatedAt)[0];
-        resolve(candidate ?? null);
+        resolve(candidate ? normalizeDraft(candidate) : null);
       };
       request.onerror = () => resolve(null);
     } catch {

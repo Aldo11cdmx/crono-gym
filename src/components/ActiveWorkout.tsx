@@ -9,8 +9,10 @@ import {
   X,
 } from "lucide-react";
 import { NotionJournal } from "./NotionJournal";
+import { GymSettingsTrigger } from "./workout/GymSettingsTrigger";
 import { RestTimer } from "./RestTimer";
-import { SetLoggerRow, type SetEntry } from "./SetLoggerRow";
+import { SetLoggerRow } from "./SetLoggerRow";
+import type { SetEntry } from "../lib/workout/types";
 import { ExerciseBrowser } from "./ExerciseBrowser";
 import { ExerciseCarousel, type CarouselItem } from "./ExerciseCarousel";
 import { ExercisePanel } from "./ExercisePanel";
@@ -30,18 +32,38 @@ import {
   type SessionDraft,
 } from "../lib/offlineStore";
 import { queueAndSync } from "../lib/sessionSync";
+import { useActiveSession } from "../context/ActiveSessionContext";
+import { useGymSettings } from "../context/GymSettingsContext";
+import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
+import { toWarmupColumn } from "../lib/workout/setKind";
+import { kgToLb } from "../lib/profile";
 import {
-  formatPrevious,
   formatRepRange,
   suggestNextTarget,
   type OverloadTarget,
 } from "../lib/overload";
+import {
+  ACCENT,
+  DANGER,
+  GLASS,
+  MOTION,
+  RADIUS,
+  SOLID,
+  SPACE,
+  STATUS,
+  TEXT,
+  TYPE,
+  Z_INDEX,
+} from "@/design/tokens";
 import type { Exercise } from "@/types/supabase";
 import type { PlannedExercise } from "../hooks/useGymData";
 
 const DEFAULT_REST = 90;
 /** Debounce for persisting the draft, so typing in the journal is not chatty. */
 const PERSIST_DEBOUNCE_MS = 400;
+/** How long a deleted set can be brought back. Long enough to notice, short
+ *  enough that a mis-tap does not leave a ghost row waiting hours later. */
+export const UNDO_WINDOW_MS = 5000;
 
 interface ActiveWorkoutProps {
   userId: string;
@@ -61,7 +83,12 @@ export function ActiveWorkout({
   // Client-generated so the session exists offline and the queued write uses
   // the same id. Never re-generated: it is the identity of this session.
   const [logId] = useState(() => newSessionId());
-  const [startedAt] = useState(() => new Date().toISOString());
+  // Read from the context rather than captured here, so the elapsed time the
+  // bottom-nav pill shows and the `started_at` written to the log are the same
+  // instant. Captured locally it would restart from zero every time this
+  // component remounts, and every remount is a session the user believes is one.
+  const { session, end } = useActiveSession();
+  const startedAt = session?.startedAt ?? new Date().toISOString();
 
   const [items, setItems] = useState<DraftExercise[]>(() =>
     planned.map((p) => ({
@@ -80,6 +107,15 @@ export function ActiveWorkout({
   const [panelOpen, setPanelOpen] = useState(true);
   const [notice, setNotice] = useState<string | null>(null);
   const [recovered, setRecovered] = useState<SessionDraft | null>(null);
+  // The single recoverable deletion, or null. See `removeSet`.
+  const [pendingRemoval, setPendingRemoval] = useState<{
+    itemKey: string;
+    index: number;
+    entry: SetEntry;
+  } | null>(null);
+  // Needed by the gym rack for the "last time" chip, so the weight shown there
+  // is in the same unit the stepper is offering.
+  const gym = useGymSettings();
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const sync = useOfflineSync();
@@ -180,6 +216,28 @@ export function ActiveWorkout({
 
   const closeRest = useCallback(() => setRest(null), []);
 
+  /**
+   * Closes the undo window on its own.
+   *
+   * A timer rather than a countdown render: the window is short and a per-second
+   * re-render of the whole logger to animate a strip in the corner is a price
+   * nobody pays. The strip itself is a CSS animation, so it still drains.
+   */
+  useEffect(() => {
+    if (!pendingRemoval) return;
+    const timer = window.setTimeout(() => setPendingRemoval(null), UNDO_WINDOW_MS);
+    return () => window.clearTimeout(timer);
+  }, [pendingRemoval]);
+
+  /** kg in the unit this user reads, so the chip matches the stepper. */
+  const displayKg = useCallback(
+    (kg: number): string => {
+      const shown = gym.weightUnit === "lb" ? kgToLb(kg) : Math.round(kg * 10) / 10;
+      return Number.isInteger(shown) ? String(shown) : shown.toFixed(1);
+    },
+    [gym.weightUnit],
+  );
+
   function patchEntry(
     itemKey: string,
     setIndex: number,
@@ -201,14 +259,6 @@ export function ActiveWorkout({
     startRest(restSeconds);
   }
 
-  function applySuggestion(itemKey: string, setIndex: number, target: OverloadTarget) {
-    patchEntry(itemKey, setIndex, (entry) => ({
-      ...entry,
-      weight: target.weight !== null ? String(target.weight) : entry.weight,
-      reps: String(target.reps),
-    }));
-  }
-
   function addSet(itemKey: string) {
     setItems((prev) =>
       prev.map((item) =>
@@ -219,13 +269,66 @@ export function ActiveWorkout({
     );
   }
 
+  /**
+   * Deletes a set but keeps it recoverable.
+   *
+   * The row is removed immediately -- a lifter who taps "eliminar" wants the row
+   * gone *now*, not after a confirmation -- and the undo banner is the safety
+   * net. `pending` holds exactly one entry, so a second deletion supersedes the
+   * first rather than queueing behind it; the alternative is a stack of banners
+   * competing for the same corner of a phone screen mid-set.
+   */
   function removeSet(itemKey: string, setIndex: number) {
+    const target = itemsRef.current.find((i) => i.key === itemKey)?.sets[setIndex];
+    if (!target) return;
+
     setItems((prev) =>
       prev.map((item) =>
         item.key !== itemKey
           ? item
           : { ...item, sets: item.sets.filter((_, i) => i !== setIndex) },
       ),
+    );
+    setPendingRemoval({ itemKey, index: setIndex, entry: target });
+  }
+
+  function undoRemoveSet() {
+    const pending = pendingRemoval;
+    if (!pending) return;
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.key !== pending.itemKey) return item;
+        // Clamped because the set list may have shrunk while the banner was up.
+        const at = Math.min(pending.index, item.sets.length);
+        const sets = [...item.sets];
+        sets.splice(at, 0, pending.entry);
+        return { ...item, sets };
+      }),
+    );
+    setPendingRemoval(null);
+  }
+
+  /**
+   * Copies weight, reps, RPE and kind into a new row directly below.
+   *
+   * Completion is deliberately *not* copied. The point of duplicating is to have
+   * another set to do, and a copy that arrives already ticked off is a set the
+   * lifter silently skips -- worse than not having the shortcut at all.
+   */
+  function duplicateSet(itemKey: string, setIndex: number) {
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.key !== itemKey) return item;
+        const source = item.sets[setIndex];
+        if (!source) return item;
+        const sets = [...item.sets];
+        sets.splice(setIndex + 1, 0, {
+          ...source,
+          completed: false,
+          set_number: source.set_number + 1,
+        });
+        return { ...item, sets };
+      }),
     );
   }
 
@@ -296,7 +399,9 @@ export function ActiveWorkout({
             weight: toNumber(set.weight),
             reps: toNumber(set.reps),
             rpe: toNumber(set.rpe),
-            is_warmup: set.is_warmup,
+            // The richer `kind` stops here: the column has been a boolean since
+            // before drop and failure sets existed.
+            is_warmup: toWarmupColumn(set.kind),
           })),
       ),
     };
@@ -318,6 +423,10 @@ export function ActiveWorkout({
     //    Failure here is not the user's problem to solve mid-workout.
     void queueAndSync(payload);
 
+    // Ends the session in the context, which is what dismisses the bottom-nav
+    // pill. `onFinished` is still called so a host that owns its own copy of the
+    // session (a test, a future embedding) stays in sync too.
+    end();
     onFinished();
   }
 
@@ -345,6 +454,13 @@ export function ActiveWorkout({
             pending={sync.pending}
             onClick={() => void sync.syncNow()}
           />
+          {/*
+            The gear sits in the header rather than beside the stepper because the
+            stepper is per-set: the answer it needs is the same for the whole
+            session, and a control that repeats on every row invites the user to
+            think it is per-exercise.
+          */}
+          <GymSettingsTrigger className="border-white/10 text-neutral-300 hover:bg-white/5" />
           <button
             type="button"
             onClick={() => {
@@ -420,6 +536,14 @@ export function ActiveWorkout({
         </div>
       )}
 
+      {pendingRemoval && (
+        <UndoBanner
+          setNumber={pendingRemoval.index + 1}
+          onUndo={undoRemoveSet}
+          onDismiss={() => setPendingRemoval(null)}
+        />
+      )}
+
       {sync.error && !sync.online && (
         <p className="text-[11px] text-neutral-500">
           Sin conexión: tu sesión está segura en este dispositivo y se sincronizará
@@ -482,10 +606,40 @@ export function ActiveWorkout({
                         {target?.repRange && ` · Objetivo ${formatRepRange(target.repRange)}`}
                       </p>
                     </button>
+                    {previous?.bestSet?.weight != null && (
+                      <span
+                        className="shrink-0 text-[11px] font-semibold"
+                        style={{ color: STATUS.comeback.text }}
+                        aria-label={SET_LOGGER_LABELS.lastSessionAriaLabel(
+                          displayKg(previous.bestSet.weight),
+                          gym.weightUnit,
+                          String(previous.bestSet.reps ?? "—"),
+                        )}
+                      >
+                        {SET_LOGGER_LABELS.lastSession(
+                          displayKg(previous.bestSet.weight),
+                          gym.weightUnit,
+                          String(previous.bestSet.reps ?? "—"),
+                        )}
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => removeExercise(item.key)}
-                      className="shrink-0 text-[11px] text-neutral-600 transition hover:text-red-400"
+                      className="shrink-0 text-[11px] transition"
+                      style={{ color: TEXT.tertiary }}
+                      onMouseEnter={(event) => {
+                        event.currentTarget.style.color = DANGER.text;
+                      }}
+                      onMouseLeave={(event) => {
+                        event.currentTarget.style.color = TEXT.tertiary;
+                      }}
+                      onFocus={(event) => {
+                        event.currentTarget.style.color = DANGER.text;
+                      }}
+                      onBlur={(event) => {
+                        event.currentTarget.style.color = TEXT.tertiary;
+                      }}
                     >
                       Quitar
                     </button>
@@ -509,17 +663,14 @@ export function ActiveWorkout({
                           index={index}
                           onChange={(next) => updateSet(item.key, index, next)}
                           onRemove={() => removeSet(item.key, index)}
-                          previousLabel={
-                            isFirst && previous?.bestSet
-                              ? formatPrevious(previous.bestSet)
-                              : undefined
+                          onDuplicate={() => duplicateSet(item.key, index)}
+                          previousKg={
+                            isFirst ? (previous?.bestSet?.weight ?? undefined) : undefined
+                          }
+                          previousReps={
+                            isFirst ? (previous?.bestSet?.reps ?? undefined) : undefined
                           }
                           suggestion={showSuggestion && target ? target : null}
-                          onApplySuggestion={
-                            showSuggestion && target
-                              ? () => applySuggestion(item.key, index, target)
-                              : undefined
-                          }
                         />
                       );
                     })}
@@ -568,6 +719,103 @@ export function ActiveWorkout({
 }
 
 /**
+ * Undo window for a deleted set.
+ *
+ * The strip is a CSS animation rather than a React countdown on purpose: a
+ * per-second re-render of the whole logger, mid-session, to move a 2px line is a
+ * price nobody pays. `ActiveWorkout` owns the timer that unmounts this; the bar
+ * only has to show how much of the window is left.
+ */
+function UndoBanner({
+  setNumber,
+  onUndo,
+  onDismiss,
+}: {
+  setNumber: number;
+  onUndo: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        position: "sticky",
+        top: SPACE.md,
+        zIndex: Z_INDEX.sticky,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: SPACE.sm,
+        overflow: "hidden",
+        padding: "10px 14px",
+        borderRadius: RADIUS.control,
+        border: `1px solid ${GLASS.borderStrong}`,
+        background: SOLID.popover,
+        boxShadow: GLASS.shadow,
+      }}
+    >
+      <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>
+        {UNDO_LABELS.removed(setNumber)}
+      </span>
+      <span style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
+        <button
+          type="button"
+          onClick={onUndo}
+          aria-label={UNDO_LABELS.undoAriaLabel(setNumber)}
+          style={{
+            minHeight: MOTION.minTouchTarget,
+            padding: "0 14px",
+            borderRadius: RADIUS.control,
+            border: `1px solid ${ACCENT.border}`,
+            background: ACCENT.muted,
+            color: ACCENT.text,
+            fontSize: TYPE.body.size,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          {UNDO_LABELS.undo}
+        </button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label={UNDO_LABELS.dismissAriaLabel}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: MOTION.minTouchTarget,
+            minHeight: MOTION.minTouchTarget,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${GLASS.border}`,
+            background: "transparent",
+            color: TEXT.tertiary,
+            cursor: "pointer",
+          }}
+        >
+          <X size={16} aria-hidden="true" />
+        </button>
+      </span>
+      <span
+        aria-hidden="true"
+        className="cronos-undo--drain"
+        style={{
+          position: "absolute",
+          left: 0,
+          bottom: 0,
+          height: "2px",
+          width: "100%",
+          transformOrigin: "left center",
+          background: ACCENT.base,
+          animation: `cronos-undo-drain ${UNDO_WINDOW_MS}ms linear forwards`,
+        }}
+      />
+    </div>
+  );
+}
+
+/**
  * Sync state indicator.
  *
  * Offline is deliberately reassuring rather than alarming: the session is
@@ -583,23 +831,43 @@ function SyncBadge({
   onClick: () => void;
 }) {
   const map = {
-    idle: { text: "Guardado", className: "text-neutral-500", icon: CheckCircle2 },
-    syncing: { text: "Sincronizando…", className: "text-sky-300", icon: CloudUpload },
-    offline: { text: "Sin conexión", className: "text-amber-400", icon: CloudOff },
-    pending: { text: `${pending} pendiente${pending === 1 ? "" : "s"}`, className: "text-amber-300", icon: CloudUpload },
-    error: { text: "Error al sincronizar", className: "text-red-400", icon: RefreshCw },
+    idle: { text: "Guardado", color: TEXT.tertiary, icon: CheckCircle2 },
+    syncing: { text: "Sincronizando…", color: STATUS.comeback.text, icon: CloudUpload },
+    offline: { text: "Sin conexión", color: STATUS.warning.text, icon: CloudOff },
+    pending: {
+      text: `${pending} pendiente${pending === 1 ? "" : "s"}`,
+      color: STATUS.warning.text,
+      icon: CloudUpload,
+    },
+    error: { text: "Error al sincronizar", color: DANGER.text, icon: RefreshCw },
   } as const;
 
-  const { text, className, icon: Icon } = map[status];
+  const { text, color, icon: Icon } = map[status];
 
   return (
     <button
       type="button"
       onClick={onClick}
       title="Toca para reintentar la sincronización"
-      className={`flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-2 text-[11px] transition hover:bg-white/5 ${className}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        minHeight: "28px",
+        padding: "0 10px",
+        borderRadius: RADIUS.control,
+        border: `1px solid ${GLASS.border}`,
+        background: "transparent",
+        fontSize: TYPE.label.size,
+        color,
+        cursor: "pointer",
+      }}
     >
-      <Icon className={`h-3.5 w-3.5 ${status === "syncing" ? "animate-pulse" : ""}`} />
+      <Icon
+        size={14}
+        aria-hidden="true"
+        className={status === "syncing" ? "animate-pulse" : undefined}
+      />
       {text}
     </button>
   );
@@ -631,7 +899,7 @@ function emptySet(index: number): SetEntry {
     weight: "",
     reps: "",
     rpe: "",
-    is_warmup: false,
+    kind: "normal",
     completed: false,
   };
 }

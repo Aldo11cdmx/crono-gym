@@ -166,6 +166,78 @@ describe("AnatomicalRanksView", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("opens the detail panel from the summary cards", async () => {
+    // The strongest/weakest cards carry a chevron that promises a click opens
+    // something. Checking that the buttons exist is not enough: the handler has to
+    // actually reach the modal, which is what a user does first on this screen.
+    await renderView();
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    const strongest = screen.getAllByRole("button", { name: /Pecho/ }).find((el) =>
+      el.querySelector("svg"),
+    );
+    expect(strongest).toBeTruthy();
+    fireEvent.click(strongest!);
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByRole("heading", { name: /Pecho/ })).toBeTruthy();
+  });
+
+  it("opens the detail panel from the focus card too", async () => {
+    state.map = buildRankMap({
+      sets: [...sessions("press", 90, 12), ...sessions("squat", 60, 9)],
+      exercises: EXERCISES,
+      context: CONTEXT,
+    });
+    await renderView();
+
+    const focus = screen.getByText("Enfoque");
+    const card = focus.closest("div")?.parentElement;
+    const buttons = within(card as HTMLElement).getAllByRole("button");
+    expect(buttons.length).toBe(1);
+    fireEvent.click(buttons[0]);
+
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
+  it("switches the body map between front and back", async () => {
+    await renderView();
+
+    // The library names the figure per side, so the rendered label is the
+    // observable proof that the `side` state reached the SVG.
+    const front = document.querySelector("svg[aria-label='male-body-front']");
+    expect(front).toBeTruthy();
+    expect(document.querySelector("svg[aria-label='male-body-back']")).toBeNull();
+
+    const group = screen.getByRole("radiogroup");
+    fireEvent.click(within(group).getByRole("radio", { name: /Posterior/ }));
+
+    expect(document.querySelector("svg[aria-label='male-body-back']")).toBeTruthy();
+    expect(document.querySelector("svg[aria-label='male-body-front']")).toBeNull();
+
+    // And back again, so the toggle is not one-way.
+    fireEvent.click(within(group).getByRole("radio", { name: /Frontal/ }));
+    expect(document.querySelector("svg[aria-label='male-body-front']")).toBeTruthy();
+  });
+
+  it("marks the active side so the toggle reports where it is", async () => {
+    await renderView();
+    const group = screen.getByRole("radiogroup");
+
+    expect(within(group).getByRole("radio", { name: /Frontal/ }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+
+    fireEvent.click(within(group).getByRole("radio", { name: /Posterior/ }));
+
+    expect(within(group).getByRole("radio", { name: /Posterior/ }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    expect(within(group).getByRole("radio", { name: /Frontal/ }).getAttribute("aria-checked")).toBe(
+      "false",
+    );
+  });
+
   it("tells a new user how many sessions are missing instead of an empty map", async () => {
     state.map = buildRankMap({ sets: [], exercises: EXERCISES, context: CONTEXT });
     state.empty = true;

@@ -19,6 +19,15 @@
 /** WCAG AA for normal text, the floor every rank clears. */
 export const AA_CONTRAST = 4.5;
 
+/**
+ * WCAG 1.4.11 non-text floor, for strokes rather than text.
+ *
+ * Declared here rather than imported from `design/color` so this module keeps no
+ * dependency on the design system: the rank colours are consumed by the map
+ * whether or not a design token file happens to exist.
+ */
+export const AA_LARGE_CONTRAST = 3;
+
 import { RANKS, type RankDefinition, type RankId } from "./rankConfig";
 
 /** Relative luminance per WCAG 2.1. */

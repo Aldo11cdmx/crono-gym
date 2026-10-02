@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { CalendarDays, Dumbbell, Lock, LogOut, Play, TrendingUp, type LucideIcon } from "lucide-react";
+import { NavLink, Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
 import { AuthModal } from "./components/AuthModal";
@@ -8,6 +9,9 @@ import { Onboarding } from "./components/Onboarding";
 import { ProgressDashboard } from "./components/ProgressDashboard";
 import { AnatomicalRanksView } from "./components/AnatomicalRanksView";
 import { RoutineBuilder } from "./components/RoutineBuilder";
+import { useActiveSession } from "./context/ActiveSessionContext";
+import { TRAIN_PATH } from "./components/shell/navItems";
+import { MUSCLE_PARAM } from "./lib/muscleFilter";
 import {
   useProgress,
   useRoutines,
@@ -18,22 +22,39 @@ import { useOfflineSync } from "./hooks/useOfflineSync";
 import { clearRankData } from "./lib/ranks/rankHistory";
 import { computeEnergyTargets } from "./lib/profile";
 
-type View = "hoy" | "rutinas" | "progreso";
-
-const TABS: { id: View; label: string; icon: LucideIcon }[] = [
-  { id: "hoy", label: "Diario de Hoy", icon: CalendarDays },
-  { id: "rutinas", label: "Rutinas", icon: Dumbbell },
-  { id: "progreso", label: "Progreso", icon: TrendingUp },
+/**
+ * The header tabs, which are the routes this app shipped before it had a router.
+ *
+ * `/biblioteca` carries the routine builder and `/progreso` the progress view;
+ * both are reachable from the bottom navigation too. Kept here rather than in
+ * `router.tsx` so the router declares routes and this module owns their labels.
+ */
+export const APP_TABS: ReadonlyArray<{ path: string; label: string; icon: LucideIcon }> = [
+  { path: "/", label: "Diario de Hoy", icon: CalendarDays },
+  { path: "/biblioteca", label: "Rutinas", icon: Dumbbell },
+  { path: "/progreso", label: "Progreso", icon: TrendingUp },
 ];
 
-interface ActiveSession {
-  routineId: string | null;
-  title: string;
+/**
+ * Exact-path comparison, so `/` does not claim to be active on every route.
+ *
+ * The header routes are literals with no parameters, so a prefix match would be
+ * more machinery than the problem deserves.
+ */
+export function isTabActive(path: string, pathname: string): boolean {
+  return pathname === path;
 }
 
-export function App() {
-  const [view, setView] = useState<View>("hoy");
-  const [session, setSession] = useState<ActiveSession | null>(null);
+/**
+ * The authenticated workspace.
+ *
+ * A layout route element rather than a component: it renders the chrome and the
+ * gate, and the router decides which view lands in its `<Outlet />`. This is what
+ * replaced the `useState<View>` switch, and it is why the session state below
+ * survives navigating between views -- a layout is not unmounted by its children
+ * changing.
+ */
+export function AuthGate() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { ready, userId, email } = useAuthSession();
   const {
@@ -42,6 +63,8 @@ export function App() {
     loading: profileLoading,
     update: updateProfile,
   } = useProfile(userId);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Mounted app-wide, not just inside a workout: a session finished offline has
   // to reach the server on reconnect even if the user never starts another one.
@@ -51,19 +74,6 @@ export function App() {
   // wizard; every other view stays unreachable until then.
   const needsOnboarding =
     Boolean(userId) && profile !== null && profile.onboarding_completed_at === null;
-
-  const startSession = useCallback((routine: RoutineWithExercises | null) => {
-    setSession(
-      routine
-        ? { routineId: routine.id, title: routine.title }
-        : { routineId: null, title: "Sesión libre" },
-    );
-    setView("hoy");
-  }, []);
-
-  const endSession = useCallback(() => {
-    setSession(null);
-  }, []);
 
   /**
    * Signs out and drops the cached rank data.
@@ -82,15 +92,14 @@ export function App() {
 
   const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
 
-  // Tabs other than the welcome view need a session. Selecting one while logged
-  // out still moves the view (so the prompt can name it) and pops the modal.
-  const requestView = useCallback(
-    (next: View) => {
-      setView(next);
-      if (!ready || userId || next === "hoy") return;
-      setIsAuthModalOpen(true);
-    },
-    [ready, userId],
+  // Navigation itself belongs to NavLink. What the gate adds is the prompt: a
+  // locked tab still has to be reachable so the modal can name it, exactly as
+  // selecting a locked tab used to move the view before the modal appeared.
+  const isLocked = (path: string): boolean =>
+    (ready && !userId && path !== "/") || needsOnboarding;
+
+  const requestedTab = APP_TABS.find(
+    (tab) => tab.path !== "/" && isTabActive(tab.path, location.pathname),
   );
 
   return (
@@ -104,15 +113,12 @@ export function App() {
             </span>
           </h1>
           <nav className="flex items-center gap-1 text-sm text-neutral-400">
-            {TABS.map((tab) => (
+            {APP_TABS.map((tab) => (
               <TabButton
-                key={tab.id}
+                key={tab.path}
                 tab={tab}
-                active={view === tab.id}
-                locked={
-                  (ready && !userId && tab.id !== "hoy") || needsOnboarding
-                }
-                onSelect={requestView}
+                locked={isLocked(tab.path)}
+                onLockedSelect={() => setIsAuthModalOpen(true)}
               />
             ))}
           </nav>
@@ -139,7 +145,10 @@ export function App() {
         {!ready ? (
           <p className="text-neutral-500">Cargando…</p>
         ) : !userId ? (
-          <Welcome view={view} onOpenAuth={() => setIsAuthModalOpen(true)} />
+          <Welcome
+            requestedLabel={requestedTab?.label ?? null}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
+          />
         ) : needsOnboarding ? (
           profileLoading || profile === null ? (
             <p className="text-neutral-500">Cargando tu perfil…</p>
@@ -147,7 +156,9 @@ export function App() {
             <Onboarding
               profile={profile}
               onSave={updateProfile}
-              onFinish={() => setView("hoy")}
+              // Finishing the wizard drops the user on the daily log, which is
+              // the one view that is never locked.
+              onFinish={() => navigate("/")}
             />
           )
         ) : (
@@ -157,18 +168,9 @@ export function App() {
               energy={energy}
               onSignOut={() => void signOut()}
             />
-            {view === "hoy" && (
-              <TodayView
-                userId={userId}
-                session={session}
-                onStartSession={startSession}
-                onEndSession={endSession}
-              />
-            )}
-            {view === "rutinas" && (
-              <RoutinesView userId={userId} onStartSession={startSession} />
-            )}
-            {view === "progreso" && <ProgressView userId={userId} />}
+            {/* Only the user id travels through outlet context now: the session lives in
+                `ActiveSessionContext` because `AppShell` has to read it too. */}
+            <Outlet context={{ userId }} />
           </>
         )}
       </main>
@@ -181,6 +183,21 @@ export function App() {
       />
     </div>
   );
+}
+
+/**
+ * The slice of workspace state the routed views need.
+ *
+ * Read through `useOutletContext` rather than a global, so a view that does not
+ * train has no way to reach the session and no test has to mock a module.
+ *
+ * `userId` is here rather than passed to each route element because the router
+ * cannot know it: it comes from the Supabase session, which `AuthGate` resolves.
+ * Passing it down as a prop would mean the route table had to be built per user,
+ * and the table is created once at module scope.
+ */
+export interface WorkspaceOutletContext {
+  userId: string;
 }
 
 /** Tracks the Supabase session; onAuthStateChange keeps the UI in sync after login. */
@@ -213,29 +230,32 @@ function useAuthSession() {
 
 function TabButton({
   tab,
-  active,
   locked,
-  onSelect,
+  onLockedSelect,
 }: {
-  tab: { id: View; label: string; icon: LucideIcon };
-  active: boolean;
+  tab: { path: string; label: string; icon: LucideIcon };
   locked: boolean;
-  onSelect: (view: View) => void;
+  onLockedSelect: () => void;
 }) {
   const Icon = tab.icon;
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(tab.id)}
-      aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition ${
-        active ? "bg-accent/15 text-accent" : "hover:bg-white/5 hover:text-neutral-100"
-      }`}
+    <NavLink
+      to={tab.path}
+      // NavLink owns `aria-current="page"`; adding it here would just be a second
+      // source of truth for the same fact.
+      onClick={() => {
+        if (locked) onLockedSelect();
+      }}
+      className={({ isActive }) =>
+        `flex items-center gap-1.5 rounded-md px-3 py-1.5 transition ${
+          isActive ? "bg-accent/15 text-accent" : "hover:bg-white/5 hover:text-neutral-100"
+        }`
+      }
     >
       <Icon className="h-4 w-4" />
       <span className="hidden sm:inline">{tab.label}</span>
       {locked && <Lock className="h-3 w-3 text-neutral-600" aria-hidden="true" />}
-    </button>
+    </NavLink>
   );
 }
 
@@ -278,19 +298,22 @@ function WorkspaceHeader({
   );
 }
 
-function Welcome({ view, onOpenAuth }: { view: View; onOpenAuth: () => void }) {
-  // When a locked tab was selected, name the section so the prompt is specific.
-  const requested = TABS.find((t) => t.id === view && t.id !== "hoy");
-
+function Welcome({
+  requestedLabel,
+  onOpenAuth,
+}: {
+  requestedLabel: string | null;
+  onOpenAuth: () => void;
+}) {
   return (
-<div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900/60 p-8 text-center shadow-glass">
-          <div className="mb-5 flex justify-center">
-            <CronosLogo size={64} showWordmark />
-          </div>
-          {requested ? (
+    <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900/60 p-8 text-center shadow-glass">
+      <div className="mb-5 flex justify-center">
+        <CronosLogo size={64} showWordmark />
+      </div>
+      {requestedLabel ? (
         <>
           <Lock className="mx-auto mb-3 h-7 w-7 text-accent" aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-neutral-50">Inicia sesión para ver {requested.label}</h2>
+          <h2 className="text-xl font-semibold text-neutral-50">Inicia sesión para ver {requestedLabel}</h2>
           <p className="mt-2 text-sm text-neutral-400">
             Esta sección necesita una cuenta para guardar tus datos y mostrar tu progreso.
           </p>
@@ -318,33 +341,55 @@ function Welcome({ view, onOpenAuth }: { view: View; onOpenAuth: () => void }) {
   );
 }
 
-function TodayView({
-  userId,
-  session,
-  onStartSession,
-  onEndSession,
-}: {
-  userId: string;
-  session: ActiveSession | null;
-  onStartSession: (routine: RoutineWithExercises | null) => void;
-  onEndSession: () => void;
-}) {
+/**
+ * The home screen: pick something to train.
+ *
+ * Always the picker, never the workout itself. Training lives at `/entrenar` so
+ * that the session has one address: the pill, the deep link and the routine
+ * builder all arrive at the same screen, and reloading mid-session returns to the
+ * workout rather than to a menu with a session silently running behind it.
+ */
+export function HomeView() {
+  const { userId } = useOutletContext<WorkspaceOutletContext>();
+  const { start } = useActiveSession();
+  const { routines } = useRoutines(userId);
+  const navigate = useNavigate();
+
+  return (
+    <StartPicker
+      routines={routines}
+      onStartSession={(routine) => {
+        start(routine);
+        navigate(TRAIN_PATH);
+      }}
+    />
+  );
+}
+
+/**
+ * The workout itself.
+ *
+ * Falls back to the picker when no session is running, so a deep link, a
+ * bookmark or the pill arriving after the session already ended all land on
+ * something usable instead of an empty route.
+ */
+export function TrainView() {
+  const { userId } = useOutletContext<WorkspaceOutletContext>();
+  const { session, end } = useActiveSession();
   const { routines } = useRoutines(userId);
 
-  if (session) {
-    const source = routines.find((r) => r.id === session.routineId);
-    return (
-      <ActiveWorkout
-        userId={userId}
-        routineId={session.routineId}
-        routineTitle={session.title}
-        planned={source?.exercises ?? []}
-        onFinished={onEndSession}
-      />
-    );
-  }
+  if (!session) return <HomeView />;
 
-  return <StartPicker routines={routines} onStartSession={onStartSession} />;
+  const source = routines.find((r) => r.id === session.routineId);
+  return (
+    <ActiveWorkout
+      userId={userId}
+      routineId={session.routineId}
+      routineTitle={session.title}
+      planned={source?.exercises ?? []}
+      onFinished={end}
+    />
+  );
 }
 
 function StartPicker({
@@ -393,13 +438,10 @@ function StartPicker({
   );
 }
 
-function RoutinesView({
-  userId,
-  onStartSession,
-}: {
-  userId: string;
-  onStartSession: (routine: RoutineWithExercises) => void;
-}) {
+export function RoutinesView() {
+  const { userId } = useOutletContext<WorkspaceOutletContext>();
+  const { start } = useActiveSession();
+  const navigate = useNavigate();
   const { routines, loading, refresh } = useRoutines(userId);
   return (
     <RoutineBuilder
@@ -407,88 +449,82 @@ function RoutinesView({
       routines={routines}
       loading={loading}
       onChanged={() => void refresh()}
-      onStart={onStartSession}
+      // Starting from the library has to reach the same screen as starting from
+      // home, or the session runs behind a route the user never navigated to.
+      onStart={(routine) => {
+        start(routine);
+        navigate(TRAIN_PATH);
+      }}
     />
   );
 }
 
-function ProgressView({ userId }: { userId: string }) {
+export function ProgressView() {
+  const { userId } = useOutletContext<WorkspaceOutletContext>();
   const { stats, loading, error } = useProgress(userId);
 
-  /**
-   * Segment inside the progress tab.
-   *
-   * A tab, not a route: the app has no router and the two views answer the same
-   * question ("how am I doing") from different angles. The ranks are the deeper
-   * answer, so the sessions summary stays first.
-   */
-  const [section, setSection] = useState<ProgressSection>("resumen");
-  const [pendingFilter, setPendingFilter] = useState<string | null>(null);
-
-  const browseMuscle = useCallback((slug: string) => {
-    // There is no catalog route in this app: `ExerciseBrowser` lives inside the
-    // routine builder and the active workout, and it reads its muscle filter from
-    // the query string. So the handoff writes that param and explains where the
-    // filter took effect, rather than pretending to navigate somewhere.
-    const params = new URLSearchParams(window.location.search);
-    params.set("musculos", slug);
-    window.history.replaceState(null, "", `?${params.toString()}`);
-    setPendingFilter(slug);
-  }, []);
-
   return (
-    <div className="space-y-4">
-      <div
-        role="tablist"
-        aria-label="Secciones de progreso"
-        className="flex rounded-lg border border-white/10 bg-neutral-900/60 p-0.5"
-      >
-        {(
-          [
-            ["resumen", "Resumen"],
-            ["rangos", "Rangos"],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            role="tab"
-            type="button"
-            aria-selected={section === id}
-            onClick={() => setSection(id)}
-            className={`flex-1 rounded-md px-3 py-1.5 text-xs transition ${
-              section === id ? "bg-accent/15 text-accent" : "text-neutral-400 hover:text-white/5"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {section === "resumen" ? (
-        <>
-          {error && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {error}
-            </div>
-          )}
-          <ProgressDashboard stats={stats} loading={loading} />
-        </>
-      ) : (
-        <>
-          {pendingFilter && (
-            <p
-              role="status"
-              className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-2.5 text-xs text-accent"
-            >
-              Filtro aplicado. Abre el catálogo desde Rutinas para ver los
-              ejercicios de este músculo.
-            </p>
-          )}
-          <AnatomicalRanksView userId={userId} onBrowseMuscle={browseMuscle} />
-        </>
+    <>
+      {error && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
       )}
-    </div>
+      <ProgressDashboard stats={stats} loading={loading} />
+    </>
   );
 }
 
-type ProgressSection = "resumen" | "rangos";
+/**
+ * The anatomical ranks, on their own route.
+ *
+ * Split out of `ProgressView` rather than kept as a tab inside it. A tab was fine
+ * while the tab was the only way in; now that the bottom navigation has its own
+ * Rangos destination, the ranks view needs an address, so that a deep link, the
+ * pill and the navigation item all land on the same screen.
+ */
+export function RangosView() {
+  const { userId } = useOutletContext<WorkspaceOutletContext>();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  /**
+   * Hands the muscle filter to the exercise catalog.
+   *
+   * Written through the router rather than `window.history.replaceState`, because
+   * `ExerciseBrowser` -- the thing that reads it -- also writes it. Two writers
+   * that bypass each other leave the router's copy of the URL disagreeing with
+   * `window.location`, and the symptom is a filter that silently stops applying
+   * on the next navigation.
+   *
+   * `replace` rather than `push`: applying a filter is not a place the user wants
+   * a Back button to undo.
+   */
+  const browseMuscle = useCallback(
+    (slug: string) => {
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          next.set(MUSCLE_PARAM, slug);
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  return (
+    <>
+      {searchParams.get(MUSCLE_PARAM) && (
+        <p
+          role="status"
+          className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-2.5 text-xs text-accent"
+        >
+          Filtro aplicado. Abre el catálogo desde Rutinas para ver los
+          ejercicios de este músculo.
+        </p>
+      )}
+      <AnatomicalRanksView userId={userId} onBrowseMuscle={browseMuscle} />
+    </>
+  );
+}

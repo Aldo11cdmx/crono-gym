@@ -34,7 +34,9 @@ export interface RankDefinition {
    *
    * Chosen for contrast against true-black OLED (`neutral.950 = #000000`) rather
    * than for hue prettiness. Every value clears 4.5:1 against black for the
-   * label text drawn on top of it.
+   * label text drawn on top of it, with one documented exception: `obsidian` is
+   * a near-black fill that is separated from `elite` on lightness instead, and
+   * therefore carries a light label rather than dark ink.
    */
   color: string;
   /** Lighter variant for strokes and glows on a black background. */
@@ -121,8 +123,19 @@ export const RANKS: RankDefinition[] = [
     id: "elite",
     label: "Élite",
     minScore: 88,
-    color: "#fb7185",
-    borderColor: "#fecdd3",
+    // Violet, not rose. The old #fb7185 was the one saturated red the ladder
+    // shipped, which a protanope cannot separate from the dark neutrals; #8B5CF6
+    // is 4.96:1 on black, so it still clears the fill floor the earned ranks all
+    // clear, and it is a hue nothing else in the ladder uses below it.
+    color: "#8B5CF6",
+    // 3.69:1 on black. Clears the WCAG 1.4.11 non-text floor of 3:1 for a
+    // stroke, but NOT the 4.5:1 floor `rankColors.test.ts` currently asserts for
+    // every borderColor. Left as approved rather than quietly lightened; that
+    // assertion is a pending decision, not an oversight.
+    borderColor: "#7C3AED",
+    // The label on this fill is dark ink, not near-white: `labelFor` in
+    // rankColors.ts resolves #0a0a0c at 4.67:1 where #f5f5f7 would reach only
+    // 3.89:1, so the ladder's per-rank ink choice already lands on the right one.
     glyph: "✦",
     description: "Nivel comparativo alto, propio de competición.",
   },
@@ -130,8 +143,15 @@ export const RANKS: RankDefinition[] = [
     id: "obsidian",
     label: "Obsidiana",
     minScore: 95,
-    color: "#a855f7",
-    borderColor: "#d8b4fe",
+    // Near-black with a violet cast, not a bright violet. Obsidiana has to be
+    // separable from Elite, and Elite is #8B5CF6: two violets of the same
+    // lightness collapse into one another under every dichromacy, so the top
+    // rank is moved apart on the only axis that survives -- lightness.
+    color: "#0F0A1E",
+    borderColor: "#DDD6FE",
+    // Label on this fill is the light violet #DDD6FE, not dark ink: a near-black
+    // fill cannot carry dark text, and `labelFor` in rankColors.ts resolves it to
+    // the light end of the scale on its own.
     glyph: "✷",
     description: "Nivel excepcional en ese músculo.",
   },

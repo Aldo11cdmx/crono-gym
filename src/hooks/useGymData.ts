@@ -151,7 +151,7 @@ export function useProgress(userId: string | null) {
     if (ids.size > 0) {
       const { data: setData } = await supabase
         .from("completed_sets")
-        .select("log_id,weight,reps")
+        .select("log_id,weight,reps,is_warmup")
         .in(
           "log_id",
           [...ids],
@@ -160,7 +160,12 @@ export function useProgress(userId: string | null) {
         log_id: string;
         weight: number | null;
         reps: number | null;
+        is_warmup: boolean | null;
       }[]) {
+        // Warm-up sets are logged for reference but must never count toward
+        // set totals, tonnage, or best weight -- they would otherwise inflate
+        // every progress metric.
+        if (row.is_warmup) continue;
         const bucket = byLog.get(row.log_id) ?? { sets: 0, volume: 0, best: null };
         bucket.sets += 1;
         bucket.volume += (row.weight ?? 0) * (row.reps ?? 0);

@@ -12,7 +12,29 @@
   }
 
   body {
+    /* True black base for OLED, with clean near-white body copy. */
     @apply bg-neutral-950 text-neutral-100 antialiased;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * A single restrained amber glow anchored to the top of the viewport. It
+   * keeps the pure-black surface from reading as flat grey while staying
+   * subtle enough that body text contrast is unaffected.
+   */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 320px;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(
+      60% 100% at 50% 0%,
+      rgba(255, 159, 10, 0.07),
+      transparent 70%
+    );
   }
 
   /* Accent selection highlight matches the single warm brand tone. */

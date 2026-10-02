@@ -3,13 +3,20 @@ import { CalendarDays, Dumbbell, Lock, LogOut, Play, TrendingUp, type LucideIcon
 import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
 import { AuthModal } from "./components/AuthModal";
+import { CronosLogo } from "./components/CronosLogo";
+import { Onboarding } from "./components/Onboarding";
 import { ProgressDashboard } from "./components/ProgressDashboard";
+import { AnatomicalRanksView } from "./components/AnatomicalRanksView";
 import { RoutineBuilder } from "./components/RoutineBuilder";
 import {
   useProgress,
   useRoutines,
   type RoutineWithExercises,
 } from "./hooks/useGymData";
+import { useProfile } from "./hooks/useProfile";
+import { useOfflineSync } from "./hooks/useOfflineSync";
+import { clearRankData } from "./lib/ranks/rankHistory";
+import { computeEnergyTargets } from "./lib/profile";
 
 type View = "hoy" | "rutinas" | "progreso";
 
@@ -29,6 +36,21 @@ export function App() {
   const [session, setSession] = useState<ActiveSession | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { ready, userId, email } = useAuthSession();
+  const {
+    profile,
+    energy,
+    loading: profileLoading,
+    update: updateProfile,
+  } = useProfile(userId);
+
+  // Mounted app-wide, not just inside a workout: a session finished offline has
+  // to reach the server on reconnect even if the user never starts another one.
+  const sync = useOfflineSync(Boolean(userId));
+
+  // A signed-in user without a completed onboarding goes straight into the
+  // wizard; every other view stays unreachable until then.
+  const needsOnboarding =
+    Boolean(userId) && profile !== null && profile.onboarding_completed_at === null;
 
   const startSession = useCallback((routine: RoutineWithExercises | null) => {
     setSession(
@@ -41,6 +63,21 @@ export function App() {
 
   const endSession = useCallback(() => {
     setSession(null);
+  }, []);
+
+  /**
+   * Signs out and drops the cached rank data.
+   *
+   * IndexedDB is device-wide, not user-scoped. Without this the next account to
+   * sign in on this device would inherit the previous user's timeline, and -- more
+   * damagingly -- their `lastRanks`, which is the hysteresis input: they would
+   * start holding a rank they never earned and the demotion buffer would defend
+   * it. Cleared before the sign-out resolves so a failed sign-out does not leave
+   * signed-in state with no cached ranks.
+   */
+  const signOut = useCallback(async () => {
+    await clearRankData();
+    await supabase.auth.signOut();
   }, []);
 
   const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
@@ -60,14 +97,21 @@ export function App() {
     <div className="min-h-screen bg-neutral-950 text-neutral-100">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <h1 className="text-lg font-semibold tracking-tight">Cronos</h1>
+          <h1 className="flex items-center gap-2.5">
+            <CronosLogo size={30} />
+            <span className="hidden text-lg font-semibold tracking-[0.18em] text-neutral-50 sm:inline">
+              CRONOS
+            </span>
+          </h1>
           <nav className="flex items-center gap-1 text-sm text-neutral-400">
             {TABS.map((tab) => (
               <TabButton
                 key={tab.id}
                 tab={tab}
                 active={view === tab.id}
-                locked={ready && !userId && tab.id !== "hoy"}
+                locked={
+                  (ready && !userId && tab.id !== "hoy") || needsOnboarding
+                }
                 onSelect={requestView}
               />
             ))}
@@ -76,15 +120,42 @@ export function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
+        {sync.pending > 0 && !sync.online && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5">
+            <p className="text-xs text-amber-200">
+              Sin conexión: {sync.pending === 1 ? "1 sesión" : `${sync.pending} sesiones`}{" "}
+              esperando sincronizar. Están guardadas en este dispositivo y se
+              enviarán solas al recuperar la red.
+            </p>
+            <button
+              type="button"
+              onClick={() => void sync.syncNow()}
+              className="rounded-lg border border-amber-500/40 px-3 py-1 text-[11px] text-amber-200 transition hover:bg-amber-500/10"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
         {!ready ? (
           <p className="text-neutral-500">Cargando…</p>
         ) : !userId ? (
           <Welcome view={view} onOpenAuth={() => setIsAuthModalOpen(true)} />
+        ) : needsOnboarding ? (
+          profileLoading || profile === null ? (
+            <p className="text-neutral-500">Cargando tu perfil…</p>
+          ) : (
+            <Onboarding
+              profile={profile}
+              onSave={updateProfile}
+              onFinish={() => setView("hoy")}
+            />
+          )
         ) : (
           <>
             <WorkspaceHeader
               email={email}
-              onSignOut={() => void supabase.auth.signOut()}
+              energy={energy}
+              onSignOut={() => void signOut()}
             />
             {view === "hoy" && (
               <TodayView
@@ -168,10 +239,34 @@ function TabButton({
   );
 }
 
-function WorkspaceHeader({ email, onSignOut }: { email: string; onSignOut: () => void }) {
+function WorkspaceHeader({
+  email,
+  energy,
+  onSignOut,
+}: {
+  email: string;
+  energy: ReturnType<typeof computeEnergyTargets> | null;
+  onSignOut: () => void;
+}) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-xs text-neutral-500">Sesión de {email || "invitado"}</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-xs text-neutral-500">Sesión de {email || "invitado"}</p>
+        {energy && energy.maintenance > 0 && (
+          <span
+            className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-neutral-400"
+            title="Objetivo diario de energía (Mifflin-St Jeor)"
+          >
+            Objetivo:{" "}
+            <span className="font-semibold text-accent">{energy.target} kcal</span>
+            {energy.clampedByFloor && (
+              <span className="ml-1 text-amber-400/80">
+                (mínimo legal {energy.floor})
+              </span>
+            )}
+          </span>
+        )}
+      </div>
       <button
         type="button"
         onClick={onSignOut}
@@ -188,18 +283,21 @@ function Welcome({ view, onOpenAuth }: { view: View; onOpenAuth: () => void }) {
   const requested = TABS.find((t) => t.id === view && t.id !== "hoy");
 
   return (
-    <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900/60 p-8 text-center shadow-glass">
-      {requested ? (
+<div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900/60 p-8 text-center shadow-glass">
+          <div className="mb-5 flex justify-center">
+            <CronosLogo size={64} showWordmark />
+          </div>
+          {requested ? (
         <>
           <Lock className="mx-auto mb-3 h-7 w-7 text-accent" aria-hidden="true" />
-          <h2 className="text-xl font-semibold">Inicia sesión para ver {requested.label}</h2>
+          <h2 className="text-xl font-semibold text-neutral-50">Inicia sesión para ver {requested.label}</h2>
           <p className="mt-2 text-sm text-neutral-400">
             Esta sección necesita una cuenta para guardar tus datos y mostrar tu progreso.
           </p>
         </>
       ) : (
         <>
-          <h2 className="text-xl font-semibold">Bienvenido a Cronos</h2>
+          <h2 className="text-xl font-semibold text-neutral-50">Bienvenido a Cronos</h2>
           <p className="mt-2 text-sm text-neutral-400">
             Gestiona tus rutinas y registra cada serie para ver tu progreso.
           </p>
@@ -316,14 +414,81 @@ function RoutinesView({
 
 function ProgressView({ userId }: { userId: string }) {
   const { stats, loading, error } = useProgress(userId);
+
+  /**
+   * Segment inside the progress tab.
+   *
+   * A tab, not a route: the app has no router and the two views answer the same
+   * question ("how am I doing") from different angles. The ranks are the deeper
+   * answer, so the sessions summary stays first.
+   */
+  const [section, setSection] = useState<ProgressSection>("resumen");
+  const [pendingFilter, setPendingFilter] = useState<string | null>(null);
+
+  const browseMuscle = useCallback((slug: string) => {
+    // There is no catalog route in this app: `ExerciseBrowser` lives inside the
+    // routine builder and the active workout, and it reads its muscle filter from
+    // the query string. So the handoff writes that param and explains where the
+    // filter took effect, rather than pretending to navigate somewhere.
+    const params = new URLSearchParams(window.location.search);
+    params.set("musculos", slug);
+    window.history.replaceState(null, "", `?${params.toString()}`);
+    setPendingFilter(slug);
+  }, []);
+
   return (
     <div className="space-y-4">
-      {error && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          {error}
-        </div>
+      <div
+        role="tablist"
+        aria-label="Secciones de progreso"
+        className="flex rounded-lg border border-white/10 bg-neutral-900/60 p-0.5"
+      >
+        {(
+          [
+            ["resumen", "Resumen"],
+            ["rangos", "Rangos"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            role="tab"
+            type="button"
+            aria-selected={section === id}
+            onClick={() => setSection(id)}
+            className={`flex-1 rounded-md px-3 py-1.5 text-xs transition ${
+              section === id ? "bg-accent/15 text-accent" : "text-neutral-400 hover:text-white/5"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {section === "resumen" ? (
+        <>
+          {error && (
+            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+          <ProgressDashboard stats={stats} loading={loading} />
+        </>
+      ) : (
+        <>
+          {pendingFilter && (
+            <p
+              role="status"
+              className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-2.5 text-xs text-accent"
+            >
+              Filtro aplicado. Abre el catálogo desde Rutinas para ver los
+              ejercicios de este músculo.
+            </p>
+          )}
+          <AnatomicalRanksView userId={userId} onBrowseMuscle={browseMuscle} />
+        </>
       )}
-      <ProgressDashboard stats={stats} loading={loading} />
     </div>
   );
 }
+
+type ProgressSection = "resumen" | "rangos";

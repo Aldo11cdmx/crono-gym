@@ -1,8 +1,9 @@
 /**
  * usePreviousPerformance.ts — feeds "El Cerebro" (progressive overload).
  *
- * For each exercise in the current workout, resolves what the user actually
- * lifted last time so `suggestNextTarget()` can propose the next target.
+ * For each exercise in the current workout, resolves how the user actually
+ * performed across their recent sessions so `suggestNextTarget()` can propose
+ * the next target and `detectStall()` can spot stagnation.
  *
  * Two queries rather than an embedded select: the generated `Database` type
  * declares empty `Relationships`, so PostgREST embedding cannot infer the
@@ -11,7 +12,13 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@lib/supabase";
-import { bestWorkingSet, type LoggedSet, type PreviousPerformance } from "../lib/overload";
+import {
+  bestWorkingSet,
+  topWorkingRpe,
+  type LoggedSet,
+  type PreviousPerformance,
+  type SessionSummary,
+} from "../lib/overload";
 import type { WorkoutLog } from "@/types/supabase";
 
 /** How many past sessions to scan when resolving "last time". */
@@ -22,6 +29,7 @@ export const EMPTY_PERFORMANCE: PreviousPerformance = {
   allTimeBest: null,
   lastSetCount: 0,
   lastPerformedAt: null,
+  history: [],
 };
 
 interface CompletedSetRow {
@@ -109,20 +117,16 @@ export function usePreviousPerformance(userId: string | null, exerciseIds: strin
 }
 
 /**
- * Picks the most recent session that contained each exercise and summarises its
- * working sets. Logs arrive newest-first, so the lowest rank is "last time".
+ * Builds per-exercise history from the completed sets.
+ *
+ * `logs` arrives newest-first, so summaries[0] is "last time". Each exercise
+ * gets its own session summaries in that same order, which is what
+ * `detectStall()` walks when looking for stagnation.
  */
 function groupPerformance(
   rows: CompletedSetRow[],
   logs: Pick<WorkoutLog, "id" | "started_at">[],
 ): Record<string, PreviousPerformance> {
-  const rank = new Map<string, number>();
-  const startedAt = new Map<string, string>();
-  logs.forEach((log, index) => {
-    rank.set(log.id, index);
-    startedAt.set(log.id, log.started_at);
-  });
-
   const toSet = (row: CompletedSetRow): LoggedSet => ({
     weight: row.weight,
     reps: row.reps,
@@ -136,22 +140,28 @@ function groupPerformance(
     const mine = rows.filter((r) => r.exercise_id === exerciseId && !r.is_warmup);
     if (mine.length === 0) continue;
 
-    let latestLog = mine[0].log_id;
-    let latestRank = rank.get(latestLog) ?? Number.MAX_SAFE_INTEGER;
-    for (const row of mine) {
-      const candidate = rank.get(row.log_id) ?? Number.MAX_SAFE_INTEGER;
-      if (candidate < latestRank) {
-        latestRank = candidate;
-        latestLog = row.log_id;
-      }
+    const summaries: SessionSummary[] = [];
+    // `logs` arrives newest-first, so appending in iteration order keeps
+    // history[0] as "last time", which is what detectStall() expects.
+    for (const log of logs) {
+      const sessionRows = mine.filter((r) => r.log_id === log.id);
+      if (sessionRows.length === 0) continue;
+      const sets = sessionRows.map(toSet);
+      summaries.push({
+        performedAt: log.started_at,
+        bestSet: bestWorkingSet(sets),
+        topRpe: topWorkingRpe(sets),
+        setCount: sessionRows.length,
+      });
     }
 
-    const lastSession = mine.filter((r) => r.log_id === latestLog).map(toSet);
+    const latest = summaries[0];
     out[exerciseId] = {
-      bestSet: bestWorkingSet(lastSession),
+      bestSet: latest?.bestSet ?? null,
       allTimeBest: bestWorkingSet(mine.map(toSet)),
-      lastSetCount: lastSession.length,
-      lastPerformedAt: startedAt.get(latestLog) ?? null,
+      lastSetCount: latest?.setCount ?? 0,
+      lastPerformedAt: latest?.performedAt ?? null,
+      history: summaries,
     };
   }
   return out;

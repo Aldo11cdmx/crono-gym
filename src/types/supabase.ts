@@ -160,6 +160,174 @@ export interface Database {
         };
         Relationships: ForeignKey[];
       };
+      profiles: {
+        Row: {
+          user_id: string;
+          display_name: string | null;
+          birth_date: string | null;
+          sex: string | null;
+          height_cm: number | null;
+          weight_kg: number | null;
+          unit_system: string;
+          experience_level: string;
+          activity_level: string;
+          goal: string;
+          guardian_consent_at: string | null;
+          onboarding_completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          display_name?: string | null;
+          birth_date?: string | null;
+          sex?: string | null;
+          height_cm?: number | null;
+          weight_kg?: number | null;
+          unit_system?: string;
+          experience_level?: string;
+          activity_level?: string;
+          goal?: string;
+          guardian_consent_at?: string | null;
+          onboarding_completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          display_name?: string | null;
+          birth_date?: string | null;
+          sex?: string | null;
+          height_cm?: number | null;
+          weight_kg?: number | null;
+          unit_system?: string;
+          experience_level?: string;
+          activity_level?: string;
+          goal?: string;
+          guardian_consent_at?: string | null;
+          onboarding_completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+      bodyweight_entries: {
+        Row: {
+          id: string;
+          user_id: string;
+          measured_on: string;
+          weight_kg: number;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          measured_on?: string;
+          weight_kg: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          measured_on?: string;
+          weight_kg?: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+      body_measurements: {
+        Row: {
+          id: string;
+          user_id: string;
+          measured_on: string;
+          chest_cm: number | null;
+          waist_cm: number | null;
+          hips_cm: number | null;
+          arm_cm: number | null;
+          thigh_cm: number | null;
+          calf_cm: number | null;
+          shoulder_cm: number | null;
+          body_fat_pct: number | null;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          measured_on?: string;
+          chest_cm?: number | null;
+          waist_cm?: number | null;
+          hips_cm?: number | null;
+          arm_cm?: number | null;
+          thigh_cm?: number | null;
+          calf_cm?: number | null;
+          shoulder_cm?: number | null;
+          body_fat_pct?: number | null;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          measured_on?: string;
+          chest_cm?: number | null;
+          waist_cm?: number | null;
+          hips_cm?: number | null;
+          arm_cm?: number | null;
+          thigh_cm?: number | null;
+          calf_cm?: number | null;
+          shoulder_cm?: number | null;
+          body_fat_pct?: number | null;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+      session_checkins: {
+        Row: {
+          id: string;
+          user_id: string;
+          workout_log_id: string | null;
+          checked_on: string;
+          energy: number | null;
+          motivation: number | null;
+          soreness: number | null;
+          stress: number | null;
+          sleep_hours: number | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          workout_log_id?: string | null;
+          checked_on?: string;
+          energy?: number | null;
+          motivation?: number | null;
+          soreness?: number | null;
+          stress?: number | null;
+          sleep_hours?: number | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          workout_log_id?: string | null;
+          checked_on?: string;
+          energy?: number | null;
+          motivation?: number | null;
+          soreness?: number | null;
+          stress?: number | null;
+          sleep_hours?: number | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
     };
   };
 }
@@ -170,3 +338,7 @@ export type Routine = Database["public"]["Tables"]["routines"]["Row"];
 export type RoutineExercise = Database["public"]["Tables"]["routine_exercises"]["Row"];
 export type WorkoutLog = Database["public"]["Tables"]["workout_logs"]["Row"];
 export type CompletedSet = Database["public"]["Tables"]["completed_sets"]["Row"];
+export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+export type BodyweightEntry = Database["public"]["Tables"]["bodyweight_entries"]["Row"];
+export type BodyMeasurement = Database["public"]["Tables"]["body_measurements"]["Row"];
+export type SessionCheckin = Database["public"]["Tables"]["session_checkins"]["Row"];

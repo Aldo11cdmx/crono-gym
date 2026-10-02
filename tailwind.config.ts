@@ -9,7 +9,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Apple-inspired neutral scale for dark mode
+        // Apple-inspired neutral scale for dark mode.
+        // 950 is true black so OLED panels switch those pixels off entirely,
+        // and so the amber accents read with maximum contrast against it.
         neutral: {
           50: "#f5f5f7",
           100: "#e8e8ed",
@@ -21,12 +23,18 @@ export default {
           700: "#2c2c2e",
           800: "#1c1c1e",
           900: "#0f0f11",
+          950: "#000000",
         },
         // Accent: a single warm tone used sparingly (Apple-style)
         accent: {
           DEFAULT: "#ff9f0a",
           soft: "#ffb14d",
           muted: "rgba(255, 159, 10, 0.12)",
+        },
+        // Brighter gold, used for the logo gradient and highlight text only.
+        gold: {
+          light: "#ffd27a",
+          DEFAULT: "#e07407",
         },
       },
       fontFamily: {
@@ -38,6 +46,8 @@ export default {
       boxShadow: {
         glass: "0 8px 32px rgba(0, 0, 0, 0.35)",
         glow: "0 0 24px -4px rgba(255, 159, 10, 0.35)",
+        // Soft amber halo used behind the logo and hero surfaces.
+        gold: "0 0 32px -8px rgba(255, 210, 122, 0.45)",
       },
       keyframes: {
         "fade-in": {

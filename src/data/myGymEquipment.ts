@@ -17,6 +17,13 @@ export interface GymMachine {
   tags: string[];
 }
 
+/**
+ * Free weights implied by the squat rack (plates + bar) plus the free-weight
+ * area. This is a judgement call, so it is a single explicit switch:
+ * set to false to make the "Mi Gym" filter drop all dumbbell/kettlebell work.
+ */
+export const FREE_WEIGHTS_AVAILABLE = true;
+
 export const MY_GYM_MACHINES: GymMachine[] = [
   // --- Pierna / Glúteo (13) ---
   { name: "Extensión de cuádriceps", group: "Pierna / Glúteo", tags: ["leverage machine"] },
@@ -62,9 +69,11 @@ export const MY_GYM_MACHINES: GymMachine[] = [
 ];
 
 /** Every catalog equipment tag this gym can perform. */
-export const MY_GYM_EQUIPMENT_TAGS: ReadonlySet<string> = new Set(
-  MY_GYM_MACHINES.flatMap((m) => m.tags),
-);
+export const MY_GYM_EQUIPMENT_TAGS: ReadonlySet<string> = new Set([
+  ...MY_GYM_MACHINES.flatMap((m) => m.tags),
+  // Free-weight area / plates implied by the rack.
+  ...(FREE_WEIGHTS_AVAILABLE ? ["dumbbell", "kettlebell", "weighted"] : []),
+]);
 
 /** Catalog tags present in the dataset but absent from this gym. */
 export const UNAVAILABLE_EQUIPMENT: ReadonlySet<string> = new Set([

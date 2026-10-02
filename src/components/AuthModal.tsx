@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@lib/supabase";
 import { X, Mail, Lock, User, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
 
@@ -18,6 +18,25 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+
+  // Runs when the modal opens: Escape closes, the email field takes focus, and
+  // any feedback from a previous attempt is cleared. Deliberately keyed on
+  // `open` only -- depending on `loading` would wipe errors as they appear.
+  useEffect(() => {
+    if (!open) return;
+    setError(null);
+    setMessage(null);
+    const raf = requestAnimationFrame(() => emailRef.current?.focus());
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -32,9 +51,15 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
         if (authError) throw authError;
         onAuthenticated();
       } else {
-        const { error: authError } = await supabase.auth.signUp({ email, password });
+        const { error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: displayName.trim()
+            ? { data: { display_name: displayName.trim() } }
+            : undefined,
+        });
         if (authError) throw authError;
-        setMessage("Cuenta creada. Inicia sesion.");
+        setMessage("Cuenta creada. Inicia sesión.");
         setMode("login");
       }
     } catch (err) {
@@ -55,28 +80,31 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
+      aria-label={mode === "login" ? "Iniciar sesión" : "Creación de cuenta"}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="relative w-full max-w-md">
-        <button type="button" onClick={onClose} aria-label="Close" className="absolute right-3 top-3 rounded-lg p-1.5 text-neutral-400 transition hover:bg-white/5 hover:text-neutral-100">
+        {/* z-10: the panel's backdrop-filter creates a stacking context that
+            otherwise paints over this absolutely positioned button. */}
+        <button type="button" onClick={onClose} aria-label="Cerrar" className="absolute right-3 top-3 z-10 rounded-lg p-1.5 text-neutral-400 transition hover:bg-white/5 hover:text-neutral-100">
           <X className="h-5 w-5" />
         </button>
         <div className="rounded-2xl border border-white/10 bg-neutral-900/70 p-6 shadow-glass backdrop-blur-md">
-          <h2 className="mb-1 text-xl font-semibold">{mode === "login" ? "Iniciar Sesion" : "Creacion de Cuenta"}</h2>
-          <p className="mb-5 text-sm text-neutral-400">{mode === "login" ? "Bienvenido de nuevo. Accede a tus rutinas y progreso." : "Crea tu cuenta para guardar entrenamientos y rutas."}</p>
+          <h2 className="mb-1 text-xl font-semibold">{mode === "login" ? "Iniciar Sesión" : "Creación de Cuenta"}</h2>
+          <p className="mb-5 text-sm text-neutral-400">{mode === "login" ? "Bienvenido de nuevo. Accede a tus rutinas y progreso." : "Crea tu cuenta para guardar entrenamientos y rutinas."}</p>
           <div className="mb-4 flex rounded-lg border border-white/10 bg-neutral-950/40 p-1">
-            <button type="button" onClick={() => setMode("login")} className={`flex-1 rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-accent text-neutral-950" : "text-neutral-400 hover:text-neutral-100"}`}>Iniciar Sesion</button>
-            <button type="button" onClick={() => setMode("signup")} className={`flex-1 rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-accent text-neutral-950" : "text-neutral-400 hover:text-neutral-100"}`}>Creacion de Cuenta</button>
+            <button type="button" onClick={() => setMode("login")} className={`flex-1 rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-accent text-neutral-950" : "text-neutral-400 hover:text-neutral-100"}`}>Iniciar Sesión</button>
+            <button type="button" onClick={() => setMode("signup")} className={`flex-1 rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-accent text-neutral-950" : "text-neutral-400 hover:text-neutral-100"}`}>Creación de Cuenta</button>
           </div>
           <form className="space-y-3" onSubmit={handleSubmit}>
             {mode === "signup" && (
               <label className="block"><span className="mb-1 text-xs text-neutral-400">Nombre</span><div className="flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2"><User className="h-4 w-4 text-neutral-500" /><input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Tu nombre" className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-600" /></div></label>
             )}
-            <label className="block"><span className="mb-1 text-xs text-neutral-400">Correo electronico</span><div className="flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2"><Mail className="h-4 w-4 text-neutral-500" /><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.com" className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-600" /></div></label>
-            <label className="block"><span className="mb-1 text-xs text-neutral-400">Contrasena</span><div className="flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2"><Lock className="h-4 w-4 text-neutral-500" /><input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="........" className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-600" /></div></label>
+            <label className="block"><span className="mb-1 text-xs text-neutral-400">Correo electrónico</span><div className="flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2"><Mail className="h-4 w-4 text-neutral-500" /><input ref={emailRef} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.com" className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-600" /></div></label>
+            <label className="block"><span className="mb-1 text-xs text-neutral-400">Contraseña</span><div className="flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2"><Lock className="h-4 w-4 text-neutral-500" /><input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="........" className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-600" /></div></label>
             {error && (<div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /><span>{error}</span></div>)}
             {message && (<div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /><span>{message}</span></div>)}
-            <button type="submit" disabled={loading} className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:brightness-110 disabled:opacity-50">{loading ? "Cargando..." : mode === "login" ? "Iniciar Sesion" : "Creacion de Cuenta"}</button>
+            <button type="submit" disabled={loading} className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:brightness-110 disabled:opacity-50">{loading ? "Cargando..." : mode === "login" ? "Iniciar Sesión" : "Creación de Cuenta"}</button>
           </form>
           <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4"><span className="text-xs text-neutral-500">Sesión actual</span><button type="button" onClick={handleLogout} className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-neutral-300 transition hover:bg-white/5"><LogOut className="h-3.5 w-3.5" /> Cerrar sesión</button></div>
         </div>

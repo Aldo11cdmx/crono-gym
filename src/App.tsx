@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDays, Dumbbell, LogOut, Play, TrendingUp, type LucideIcon } from "lucide-react";
+import { CalendarDays, Dumbbell, Lock, LogOut, Play, TrendingUp, type LucideIcon } from "lucide-react";
 import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
 import { AuthModal } from "./components/AuthModal";
@@ -27,6 +27,8 @@ interface ActiveSession {
 export function App() {
   const [view, setView] = useState<View>("hoy");
   const [session, setSession] = useState<ActiveSession | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { ready, userId, email } = useAuthSession();
 
   const startSession = useCallback((routine: RoutineWithExercises | null) => {
     setSession(
@@ -41,6 +43,19 @@ export function App() {
     setSession(null);
   }, []);
 
+  const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
+
+  // Tabs other than the welcome view need a session. Selecting one while logged
+  // out still moves the view (so the prompt can name it) and pops the modal.
+  const requestView = useCallback(
+    (next: View) => {
+      setView(next);
+      if (!ready || userId || next === "hoy") return;
+      setIsAuthModalOpen(true);
+    },
+    [ready, userId],
+  );
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md">
@@ -48,64 +63,60 @@ export function App() {
           <h1 className="text-lg font-semibold tracking-tight">Cronos</h1>
           <nav className="flex items-center gap-1 text-sm text-neutral-400">
             {TABS.map((tab) => (
-              <TabButton key={tab.id} tab={tab} active={view === tab.id} onSelect={setView} />
+              <TabButton
+                key={tab.id}
+                tab={tab}
+                active={view === tab.id}
+                locked={ready && !userId && tab.id !== "hoy"}
+                onSelect={requestView}
+              />
             ))}
           </nav>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
-        <SessionGate
-          view={view}
-          session={session}
-          onStartSession={startSession}
-          onEndSession={endSession}
-        />
+        {!ready ? (
+          <p className="text-neutral-500">Cargando…</p>
+        ) : !userId ? (
+          <Welcome view={view} onOpenAuth={() => setIsAuthModalOpen(true)} />
+        ) : (
+          <>
+            <WorkspaceHeader
+              email={email}
+              onSignOut={() => void supabase.auth.signOut()}
+            />
+            {view === "hoy" && (
+              <TodayView
+                userId={userId}
+                session={session}
+                onStartSession={startSession}
+                onEndSession={endSession}
+              />
+            )}
+            {view === "rutinas" && (
+              <RoutinesView userId={userId} onStartSession={startSession} />
+            )}
+            {view === "progreso" && <ProgressView userId={userId} />}
+          </>
+        )}
       </main>
+
+      {/* Rendered outside the gate so it stays reachable in both auth states. */}
+      <AuthModal
+        open={isAuthModalOpen}
+        onClose={closeAuthModal}
+        onAuthenticated={closeAuthModal}
+      />
     </div>
   );
 }
 
-function TabButton({
-  tab,
-  active,
-  onSelect,
-}: {
-  tab: { id: View; label: string; icon: LucideIcon };
-  active: boolean;
-  onSelect: (view: View) => void;
-}) {
-  const Icon = tab.icon;
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(tab.id)}
-      aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition ${
-        active ? "bg-accent/15 text-accent" : "hover:bg-white/5 hover:text-neutral-100"
-      }`}
-    >
-      <Icon className="h-4 w-4" />
-      <span className="hidden sm:inline">{tab.label}</span>
-    </button>
-  );
-}
-
-function SessionGate({
-  view,
-  session,
-  onStartSession,
-  onEndSession,
-}: {
-  view: View;
-  session: ActiveSession | null;
-  onStartSession: (routine: RoutineWithExercises | null) => void;
-  onEndSession: () => void;
-}) {
+/** Tracks the Supabase session; onAuthStateChange keeps the UI in sync after login. */
+function useAuthSession() {
   const [ready, setReady] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState("");
-  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -126,29 +137,34 @@ function SessionGate({
     };
   }, []);
 
-  if (!ready) return <p className="text-neutral-500">Cargando…</p>;
-  if (!userId) return <Welcome onOpenAuth={() => setAuthOpen(true)} />;
+  return { ready, userId, email };
+}
 
+function TabButton({
+  tab,
+  active,
+  locked,
+  onSelect,
+}: {
+  tab: { id: View; label: string; icon: LucideIcon };
+  active: boolean;
+  locked: boolean;
+  onSelect: (view: View) => void;
+}) {
+  const Icon = tab.icon;
   return (
-    <>
-      <WorkspaceHeader email={email} onSignOut={() => supabase.auth.signOut()} />
-      {view === "hoy" && (
-        <TodayView
-          userId={userId}
-          session={session}
-          onStartSession={onStartSession}
-          onEndSession={onEndSession}
-        />
-      )}
-      {view === "rutinas" && <RoutinesView userId={userId} onStartSession={onStartSession} />}
-      {view === "progreso" && <ProgressView userId={userId} />}
-
-      <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        onAuthenticated={() => setAuthOpen(false)}
-      />
-    </>
+    <button
+      type="button"
+      onClick={() => onSelect(tab.id)}
+      aria-current={active ? "page" : undefined}
+      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition ${
+        active ? "bg-accent/15 text-accent" : "hover:bg-white/5 hover:text-neutral-100"
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+      <span className="hidden sm:inline">{tab.label}</span>
+      {locked && <Lock className="h-3 w-3 text-neutral-600" aria-hidden="true" />}
+    </button>
   );
 }
 
@@ -167,13 +183,28 @@ function WorkspaceHeader({ email, onSignOut }: { email: string; onSignOut: () =>
   );
 }
 
-function Welcome({ onOpenAuth }: { onOpenAuth: () => void }) {
+function Welcome({ view, onOpenAuth }: { view: View; onOpenAuth: () => void }) {
+  // When a locked tab was selected, name the section so the prompt is specific.
+  const requested = TABS.find((t) => t.id === view && t.id !== "hoy");
+
   return (
     <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900/60 p-8 text-center shadow-glass">
-      <h2 className="text-xl font-semibold">Bienvenido a Cronos</h2>
-      <p className="mt-2 text-sm text-neutral-400">
-        Gestiona tus rutinas y registra cada serie para ver tu progreso.
-      </p>
+      {requested ? (
+        <>
+          <Lock className="mx-auto mb-3 h-7 w-7 text-accent" aria-hidden="true" />
+          <h2 className="text-xl font-semibold">Inicia sesión para ver {requested.label}</h2>
+          <p className="mt-2 text-sm text-neutral-400">
+            Esta sección necesita una cuenta para guardar tus datos y mostrar tu progreso.
+          </p>
+        </>
+      ) : (
+        <>
+          <h2 className="text-xl font-semibold">Bienvenido a Cronos</h2>
+          <p className="mt-2 text-sm text-neutral-400">
+            Gestiona tus rutinas y registra cada serie para ver tu progreso.
+          </p>
+        </>
+      )}
       <button
         type="button"
         onClick={onOpenAuth}
@@ -181,6 +212,10 @@ function Welcome({ onOpenAuth }: { onOpenAuth: () => void }) {
       >
         Iniciar sesión
       </button>
+      <p className="mt-3 text-xs text-neutral-500">
+        También puedes explorar <span className="text-neutral-400">Diario de Hoy</span> sin
+        conectar, aunque las sesiones no se guardarán.
+      </p>
     </div>
   );
 }

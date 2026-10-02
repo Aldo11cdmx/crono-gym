@@ -14,7 +14,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { SideRail } from "./SideRail";
 import { NAV_DESTINATIONS, SIDE_RAIL_WIDTH, TRAIN_PATH } from "../shell/navItems";
-import { SHELL_LABELS } from "@/lib/i18n";
+import { SHELL_LABELS, BRAND_LABELS } from "@/lib/i18n";
 import { ACCENT } from "@/design/tokens";
 
 afterEach(cleanup);
@@ -147,6 +147,35 @@ describe("SideRail responsiveness and motion", () => {
     const rail = container.querySelector(".cronos-side-rail") as HTMLElement;
     // The navigation must remain reachable while an overlay is open.
     expect(rail.style.zIndex).toBe("60");
+  });
+});
+
+describe("SideRail brand", () => {
+  it("carries the mark above the destinations", () => {
+    // The rail is the left edge of a desktop app, and before this there was no
+    // brand anywhere in it at all. It has to sit *above* the list: a logo under
+    // five nav items reads as the fifth item's icon.
+    renderRail();
+    const rail = screen.getByRole("navigation", { name: SHELL_LABELS.sidebarAriaLabel });
+    const mark = within(rail).getByAltText(BRAND_LABELS.logoAlt);
+    const list = rail.querySelector("ul") as HTMLElement;
+    // `compareDocumentPosition` rather than a child selector, because the brand
+    // is a sibling of the list, not inside it.
+    expect(mark.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("shows the wordmark, so the rail identifies the app and not just a gym", () => {
+    renderRail();
+    const rail = screen.getByRole("navigation", { name: SHELL_LABELS.sidebarAriaLabel });
+    expect(within(rail).getByText("CRONOS")).toBeTruthy();
+  });
+
+  it("adds no link, so the brand cannot become a sixth destination", () => {
+    // A logo wrapped in a `NavLink` would be a link to `/` that the destination
+    // tests above would silently start counting.
+    renderRail();
+    const rail = screen.getByRole("navigation", { name: SHELL_LABELS.sidebarAriaLabel });
+    expect(rail.querySelectorAll("a")).toHaveLength(NAV_DESTINATIONS.length);
   });
 });
 

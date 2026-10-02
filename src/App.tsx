@@ -5,6 +5,7 @@ import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
 import { AuthModal } from "./components/AuthModal";
 import { CronosLogo } from "./components/CronosLogo";
+import { BrandLockup } from "./components/shell/BrandLockup";
 import { Onboarding } from "./components/Onboarding";
 import { ProgressDashboard } from "./components/ProgressDashboard";
 import { AnatomicalRanksView } from "./components/AnatomicalRanksView";
@@ -107,10 +108,17 @@ export function AuthGate() {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <h1 className="flex items-center gap-2.5">
-            <CronosLogo size={30} />
-            <span className="hidden text-lg font-semibold tracking-[0.18em] text-neutral-50 sm:inline">
-              CRONOS
-            </span>
+            {/*
+              Mobile only, because `SideRail` renders the mark from 768px up.
+
+              `hidden` before `max-md:flex` is load-bearing, not decoration:
+              Tailwind emits `display` utilities with `hidden` last, so `hidden`
+              wins over the component's own `flex` at desktop width regardless of
+              the order they appear in the class attribute. CSS decides which one
+              is on screen, not a media query hook -- a hook would re-render on
+              every rotation and flash the wrong brand on a cold load.
+            */}
+            <BrandLockup className="hidden max-md:flex" size={30} />
           </h1>
           <nav className="flex items-center gap-1 text-sm text-neutral-400">
             {APP_TABS.map((tab) => (

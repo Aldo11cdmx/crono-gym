@@ -17,12 +17,17 @@
  * The rail has no open/closed state. Below 768px `BottomNav` is the navigation
  * and `.cronos-side-rail` is `display: none`, so the two are never visible
  * together and there is nothing to collapse.
+ *
+ * It is also where the brand lives on a desktop, for the same reason: the rail
+ * and the bottom bar swap at one breakpoint, and so do the two places the mark
+ * is rendered, so a screen never shows the logo twice.
  */
 
 import type { CSSProperties } from "react";
 import { NavLink } from "react-router-dom";
 import { ACCENT, GLASS, MOTION, RADIUS, SPACE, SURFACE, TEXT, TYPE } from "@/design/tokens";
 import { SHELL_LABELS } from "@/lib/i18n";
+import { BrandLockup } from "../shell/BrandLockup";
 import { NAV_DESTINATIONS, SIDE_RAIL_WIDTH, type NavDestination } from "../shell/navItems";
 
 export interface SideRailProps {
@@ -52,13 +57,33 @@ export function SideRail({ onNavigate }: SideRailProps = {}) {
         overflowY: "auto",
       }}
     >
+      {/*
+        The brand sits in the rail's own top slot rather than in a separate
+        header, because on a desktop the rail *is* the left edge of the app: a
+        full-width header would either float over the content column or push it
+        down, and neither buys anything the rail's padding does not.
+
+        Hidden below 768px, where the rail is `display: none` and `App.tsx`'s
+        header carries the mark instead. Same rule as the navigation itself --
+        exactly one of the two is ever on screen.
+      */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: `${SPACE.lg} ${SPACE.md} ${SPACE.md}`,
+        }}
+      >
+        <BrandLockup size={32} />
+      </div>
+
       <ul
         style={{
           display: "flex",
           flexDirection: "column",
           gap: SPACE.xs,
           margin: 0,
-          padding: `${SPACE.lg} ${SPACE.sm}`,
+          padding: `0 ${SPACE.sm}`,
           listStyle: "none",
         }}
       >

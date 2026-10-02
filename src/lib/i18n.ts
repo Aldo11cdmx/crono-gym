@@ -367,6 +367,26 @@ export const GYM_LABELS = {
   defaultTriggerContext: "durante el entrenamiento",
 } as const;
 
+/**
+ * Copy for the brand itself.
+ *
+ * The logo image already contains the mark, and the wordmark beside it says the
+ * name, so the only string here is the accessible one. Kept separate from
+ * `SHELL_LABELS` because it describes the brand rather than the chrome: it does
+ * not change with the navigation or the session.
+ */
+export const BRAND_LABELS = {
+  /**
+   * The wordmark, not "logo de Cronos Gym".
+   *
+   * The lockup renders "CRONOS" next to the image, so a descriptive alt is read
+   * aloud immediately after the name that is already on screen.
+   */
+  logoAlt: "Cronos",
+  /** Names the brand block in the rail and the header. */
+  regionAriaLabel: "Cronos",
+} as const;
+
 export const UNDO_LABELS = {
   removed: (n: number): string => `Serie ${n} eliminada`,
   undo: "Deshacer",

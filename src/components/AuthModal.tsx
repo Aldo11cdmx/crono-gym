@@ -78,7 +78,7 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
             {message && (<div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /><span>{message}</span></div>)}
             <button type="submit" disabled={loading} className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:brightness-110 disabled:opacity-50">{loading ? "Cargando..." : mode === "login" ? "Iniciar Sesion" : "Creacion de Cuenta"}</button>
           </form>
-          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4"><span className="text-xs text-neutral-500">Sesi\u00f3n actual</span><button type="button" onClick={handleLogout} className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-neutral-300 transition hover:bg-white/5"><LogOut className="h-3.5 w-3.5" /> Cerrar Sesi\u00f3n</button></div>
+          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4"><span className="text-xs text-neutral-500">Sesión actual</span><button type="button" onClick={handleLogout} className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-neutral-300 transition hover:bg-white/5"><LogOut className="h-3.5 w-3.5" /> Cerrar sesión</button></div>
         </div>
       </div>
     </div>

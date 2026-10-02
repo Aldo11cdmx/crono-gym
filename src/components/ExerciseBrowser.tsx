@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@lib/supabase";
-import type { Exercise } from "@types/supabase";
+import type { Exercise } from "../types/supabase";
 import { Search, Dumbbell, Target, Activity, X } from "lucide-react";
 
 const BODY_PARTS = ["all","chest","back","upper arms","lower arms","shoulders","upper legs","lower legs","waist","cardio","neck"];

@@ -6,8 +6,18 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+interface ForeignKey {
+  foreignKeyName: string;
+  columns: string[];
+  isOneToOne?: boolean;
+  referencedRelation: string;
+  referencedColumns: string[];
+}
+
 export interface Database {
   public: {
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
     Tables: {
       exercises: {
         Row: {
@@ -37,6 +47,7 @@ export interface Database {
           gif_url?: string;
           instructions?: string[];
         };
+        Relationships: ForeignKey[];
       };
       routines: {
         Row: {
@@ -60,6 +71,7 @@ export interface Database {
           description?: string | null;
           created_at?: string;
         };
+        Relationships: ForeignKey[];
       };
       routine_exercises: {
         Row: {
@@ -86,6 +98,7 @@ export interface Database {
           rest_seconds?: number;
           order_index?: number;
         };
+        Relationships: ForeignKey[];
       };
       workout_logs: {
         Row: {
@@ -112,6 +125,7 @@ export interface Database {
           completed_at?: string | null;
           journal_notes?: string | null;
         };
+        Relationships: ForeignKey[];
       };
       completed_sets: {
         Row: {
@@ -144,10 +158,15 @@ export interface Database {
           rpe?: number | null;
           is_warmup?: boolean;
         };
+        Relationships: ForeignKey[];
       };
     };
   };
 }
 
-// Convenience alias for the exercise catalog row, used by the browser.
+// Convenience aliases for the catalog and training rows used across views.
 export type Exercise = Database["public"]["Tables"]["exercises"]["Row"];
+export type Routine = Database["public"]["Tables"]["routines"]["Row"];
+export type RoutineExercise = Database["public"]["Tables"]["routine_exercises"]["Row"];
+export type WorkoutLog = Database["public"]["Tables"]["workout_logs"]["Row"];
+export type CompletedSet = Database["public"]["Tables"]["completed_sets"]["Row"];

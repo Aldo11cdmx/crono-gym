@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 export interface SetEntry {
   set_number: number;
   weight: string;

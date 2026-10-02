@@ -45,7 +45,6 @@ const toolbar: { type: BlockType; label: string; icon: React.ReactNode }[] = [
 
 export function NotionJournal({ value, onChange, placeholder }: NotionJournalProps) {
   const [blocks, setBlocks] = useState<Block[]>(() => parseBlocks(value));
-  const inputRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
 
   // Keep blocks in sync if the parent passes a new value (e.g. after save).
   useEffect(() => {
@@ -66,7 +65,7 @@ export function NotionJournal({ value, onChange, placeholder }: NotionJournalPro
   }
 
   function addBlock() {
-    const next = [...blocks, { id: cryptoId(), type: "paragraph", text: "" }];
+    const next: Block[] = [...blocks, { id: cryptoId(), type: "paragraph", text: "" }];
     setBlocks(next);
     onChange(serialize(next));
   }

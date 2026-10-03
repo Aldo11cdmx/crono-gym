@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDays, Dumbbell, Lock, LogOut, Play, TrendingUp, type LucideIcon } from "lucide-react";
+import { CalendarDays, Dumbbell, Lock, LogOut, Play, Sparkles, TrendingUp, type LucideIcon } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
@@ -9,6 +9,7 @@ import { BrandLockup } from "./components/shell/BrandLockup";
 import { Onboarding } from "./components/Onboarding";
 import { ProgressDashboard } from "./components/ProgressDashboard";
 import { AnatomicalRanksView } from "./components/AnatomicalRanksView";
+import { CoachHub } from "./components/coach/CoachHub";
 import { RoutineBuilder } from "./components/RoutineBuilder";
 import { useActiveSession } from "./context/ActiveSessionContext";
 import { TRAIN_PATH } from "./components/shell/navItems";
@@ -29,11 +30,19 @@ import { computeEnergyTargets } from "./lib/profile";
  * `/biblioteca` carries the routine builder and `/progreso` the progress view;
  * both are reachable from the bottom navigation too. Kept here rather than in
  * `router.tsx` so the router declares routes and this module owns their labels.
+ *
+ * Not every destination belongs here, and the two lists answer different questions.
+ * `NAV_DESTINATIONS` is the thumb zone: what you reach for mid-set with one hand,
+ * which is why it stays at five and why the raised centre item has to stay the
+ * middle one. These are the surfaces you visit on purpose -- progress, and now the
+ * coach -- so they get a header tab and a real address without spending a slot in
+ * the bar. The labels are `hidden sm:inline`, so on a phone this row is icons.
  */
 export const APP_TABS: ReadonlyArray<{ path: string; label: string; icon: LucideIcon }> = [
   { path: "/", label: "Diario de Hoy", icon: CalendarDays },
   { path: "/biblioteca", label: "Rutinas", icon: Dumbbell },
   { path: "/progreso", label: "Progreso", icon: TrendingUp },
+  { path: "/coach", label: "Coach", icon: Sparkles },
 ];
 
 /**
@@ -542,4 +551,17 @@ export function RangosView() {
       <AnatomicalRanksView userId={userId} onBrowseMuscle={browseMuscle} />
     </>
   );
+}
+
+/**
+ * The coach hub, on its own route.
+ *
+ * Thin on purpose, exactly like `RangosView`: the route's whole job is to read the
+ * user id out of the auth gate and hand it to the screen. Anything the coach knows
+ * is derived inside the hub, so there is no state for a route wrapper to own and
+ * nothing here that a refresh could lose.
+ */
+export function CoachView() {
+  const { userId } = useOutletContext<WorkspaceOutletContext>();
+  return <CoachHub userId={userId} />;
 }

@@ -22,6 +22,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/components/shell/AppShell";
 import {
   AuthGate,
+  CoachView,
   HomeView,
   ProgressView,
   RangosView,
@@ -58,6 +59,10 @@ export const router = createBrowserRouter([
           { path: "/entrenar", element: <TrainView /> },
           { path: "/rangos", element: <RangosView /> },
           { path: "/perfil", element: <ProfileView /> },
+          // A header-tab destination rather than a `NAV_DESTINATIONS` one: the
+          // coach is visited on purpose, not reached for mid-set, so it does not
+          // need a slot in the thumb zone.
+          { path: "/coach", element: <CoachView /> },
           ...devRoutes,
         ],
       },

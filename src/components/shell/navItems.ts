@@ -69,6 +69,17 @@ export const NAV_DESTINATIONS: readonly NavDestination[] = [
 export const TRAIN_PATH = "/entrenar";
 
 /**
+ * The ranks route, as a constant.
+ *
+ * Exported for the same reason `TRAIN_PATH` is: `/coach` links to the ranks screen,
+ * and a path written out again at the call site is a path that can drift from the
+ * router without anything noticing. The ranks view itself reads `MUSCLE_PARAM` off
+ * this route, so a mismatch would not even 404 -- it would apply a muscle filter to
+ * nothing.
+ */
+export const RANGES_PATH = "/rangos";
+
+/**
  * Width of the desktop side rail, in px.
  *
  * Lives here rather than in `AppShell` because the shell pads the content by

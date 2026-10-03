@@ -748,6 +748,88 @@ export const UNDO_LABELS = {
 /** Shown by a route whose screen has not been built yet. */
 export const COMING_SOON_LABEL = "Próximamente";
 
+export const COACH_LABELS = {
+  title: "Coach",
+  subtitle: "Tu contexto de entrenamiento, tus notas y lo que conviene ajustar.",
+
+  // ---- training context ------------------------------------------------
+  contextTitle: "Contexto de entrenamiento",
+  contextSubtitle: "Lo que sabemos de tu entrenamiento ahora mismo.",
+  loading: "Reuniendo tu contexto…",
+  goal: "Objetivo",
+  experience: "Experiencia",
+  bodyweight: "Peso corporal",
+  bodyweightChange: (delta: number): string =>
+    `${delta > 0 ? "+" : ""}${delta} kg en 30 días`,
+  noBodyweight: "Sin peso registrado",
+  volumeTitle: "Volumen y frecuencia",
+  workouts: (count: number): string => `${count} entrenamientos`,
+  thisMonth: (count: number): string => `${count} este mes`,
+  monthlyVolume: (kg: number): string => `${Math.round(kg).toLocaleString("es")} kg al mes`,
+  noWorkouts: "Todavía no has registrado entrenamientos.",
+  nutritionTitle: "Nutrición",
+  calories: (kcal: number): string => `${Math.round(kcal)} kcal`,
+  protein: (grams: number): string => `${Math.round(grams)} g de proteína`,
+
+  // ---- ranks -----------------------------------------------------------
+  ranksTitle: "Tus rangos",
+  ranksSubtitle: "El detalle por músculo está en Rangos.",
+  openRanks: "Ver todos los rangos",
+  noClassifiedMuscles: "Ningún músculo clasificado todavía.",
+  unrankedMuscles: (count: number): string =>
+    `${count} ${count === 1 ? "músculo sin" : "músculos sin"} rango`,
+
+  // ---- data gaps -------------------------------------------------------
+  /**
+   * A missing input, named with the thing to do about it.
+   *
+   * Each one states the consequence and the fix, because "faltan datos" leaves the
+   * reader with nothing to act on and reads as a bug rather than a step.
+   */
+  gapsTitle: "Lo que todavía no sabemos",
+  gaps: {
+    no_profile: "No hay perfil: no sabemos tu objetivo ni tu nivel.",
+    no_bodyweight:
+      "Sin peso corporal no podemos comparar tu fuerza con los estándares. Añádelo en tu perfil.",
+    no_profile_energy:
+      "Sin peso, altura y fecha de nacimiento no podemos calcular calorías ni proteína.",
+    no_workouts: "Sin entrenamientos registrados no hay volumen ni frecuencia que analizar.",
+    no_classified_muscles:
+      "Ningún músculo tiene todavía las 3 sesiones necesarias para recibir un rango.",
+    no_readiness_checkins:
+      "No registramos cómo te sientes (sueño, dolor, energía). Es la información que más necesita un coach, y todavía no hay forma de introducirla.",
+  } as Record<string, string>,
+
+  // ---- notes -----------------------------------------------------------
+  notesTitle: "Notas del Coach",
+  notesSubtitle: "Tu registro. Lo escribes tú; el Coach todavía no.",
+  notesEmpty: "Sin notas todavía. Apunta lo que quieras recordar de tu entrenamiento.",
+  notesPlaceholder: "Escribe una nota…",
+  notesSave: "Guardar nota",
+  notesSaved: "Nota guardada",
+  notesAuthorUser: "Tu nota",
+  notesAuthorCoach: "Nota del Coach",
+  notesDelete: (createdAt: string): string => `Eliminar nota del ${createdAt}`,
+  notesCount: (count: number): string => `${count} ${count === 1 ? "nota" : "notas"}`,
+
+  // ---- recommendations -------------------------------------------------
+  recommendationsTitle: "Recomendaciones",
+  recommendationsSubtitle: "Ajustes que se desprenden de tus datos, no de la semana que acabas de entrenar.",
+  recommendationsEmpty:
+    "Sin recomendaciones todavía. Aparecerán cuando el Coach tenga suficientes datos.",
+  recommendationDismiss: "Descartar",
+  recommendationAreas: {
+    volume: "Volumen",
+    frequency: "Frecuencia",
+    deload: "Descarga",
+    technique: "Técnica",
+  } as Record<string, string>,
+
+  // ---- error -----------------------------------------------------------
+  errorTitle: "No se pudo reunir tu contexto",
+  retry: "Reintentar",
+} as const;
+
 /** Labels for why a muscle is unranked, keyed by the scorer's reason code. */
 export const UNRANKED_REASONS: Record<string, string> = {
   no_data: "Sin datos todavía",

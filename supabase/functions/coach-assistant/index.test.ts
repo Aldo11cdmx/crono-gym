@@ -68,8 +68,10 @@ function sseBody(fragments: string[], tokensUsed: number | null): ReadableStream
 }
 
 interface StubOptions {
-  /** Tokens counted in the current window; raised by each upsert. */
+  /** Requests already counted in the current window. */
   requestCount?: number;
+  /** The window that count belongs to. Defaults to the current hour. */
+  windowStart?: Date;
   /** What OpenRouter answers. */
   upstream?: () => Promise<Response> | Response;
   /** When false, `getUser` reports an invalid token. */
@@ -82,6 +84,8 @@ interface Stub {
   upstreamCalls: () => number;
   /** Usage rows written. */
   usageRows: () => unknown[];
+  /** Rate-limit rows the handler tried to write. */
+  writtenWindows: () => unknown[];
   /** The bearer tokens OpenRouter was called with. */
   authorization: () => string[];
 }
@@ -96,10 +100,36 @@ interface Stub {
  */
 let upstreamBodies: string[] = [];
 
+/** Truncated to the hour, matching the function's own `hourStart`. */
+function currentHour(): Date {
+  const copy = new Date();
+  copy.setUTCMinutes(0, 0, 0);
+  return copy;
+}
+
+/**
+ * `timestamptz` the way PostgREST serialises it.
+ *
+ * `2026-10-03T03:00:00+00:00`, not `2026-10-03T03:00:00.000Z`. Both parse to the same
+ * instant, which is the whole point: the function does date arithmetic on a value it
+ * received as text, and a stub that handed back the friendlier JS format would not
+ * have told us whether it handles the format the server actually sends.
+ */
+function postgresTimestamp(date: Date): string {
+  return date.toISOString().replace(/\.\d{3}Z$/, "+00:00");
+}
+
 /** Replaces `globalThis.fetch` with a router over the two external hosts. */
 function stubNetwork(options: StubOptions = {}): Stub {
   const original = globalThis.fetch;
-  const state = { count: options.requestCount ?? 0, upstreamCalls: 0, usage: [] as unknown[], auth: [] as string[] };
+  const state = {
+    count: options.requestCount ?? 0,
+    windowStart: options.windowStart ?? currentHour(),
+    upstreamCalls: 0,
+    usage: [] as unknown[],
+    windows: [] as unknown[],
+    auth: [] as string[],
+  };
   upstreamBodies = [];
   const tokenValid = options.tokenValid ?? true;
 
@@ -125,16 +155,23 @@ function stubNetwork(options: StubOptions = {}): Stub {
       const method = init?.method ?? "GET";
       if (method === "DELETE") return Promise.resolve(new Response(null, { status: 204 }));
       if (method === "POST") {
-        // A row for the current window.
+        // A row for the window the handler is writing.
         const row = JSON.parse(String(init?.body ?? "{}"));
+        state.windows.push(row);
         state.count = Math.max(state.count, Number(row.request_count ?? 0));
         return Promise.resolve(jsonResponse(null, 201));
       }
       // The handler reads the most recent window to learn the current count. An
       // empty array is what PostgREST returns when no row exists yet.
+      //
+      // The timestamp is shaped the way PostgREST actually returns a `timestamptz`:
+      // an offset and no milliseconds. Returning a JS `toISOString()` here instead
+      // would have hidden a real bug, because the handler compares this against its
+      // own `hourStart()` output and the two formats differ as strings while being
+      // the same instant.
       const rows = state.count === 0
         ? []
-        : [{ window_start: new Date().toISOString(), request_count: state.count }];
+        : [{ window_start: postgresTimestamp(state.windowStart), request_count: state.count }];
       return Promise.resolve(jsonResponse(rows));
     }
 
@@ -154,6 +191,7 @@ function stubNetwork(options: StubOptions = {}): Stub {
     },
     upstreamCalls: () => state.upstreamCalls,
     usageRows: () => state.usage,
+    writtenWindows: () => state.windows,
     authorization: () => state.auth,
   };
 }
@@ -207,25 +245,32 @@ function makeRequest(overrides: {
   body?: unknown;
   rawBody?: string;
 } = {}): Request {
+  const method = overrides.method ?? "POST";
   const headers = new Headers({ "Content-Type": "application/json" });
   const origin = overrides.origin === undefined ? ALLOWED_ORIGIN : overrides.origin;
   if (origin !== null) headers.set("Origin", origin);
   const token = overrides.token === undefined ? "valid" : overrides.token;
   if (token !== null) headers.set("Authorization", `Bearer ${token}`);
 
-  return new Request("https://function.test/functions/v1/coach-assistant", {
-    method: overrides.method ?? "POST",
-    headers,
-    body:
-      overrides.rawBody ??
-      JSON.stringify(
-        overrides.body ?? {
-          userMessage: "¿Debería subir peso?",
-          context: { currentGoal: "volume", experienceLevel: "intermediate" },
-          conversationHistory: [],
-        },
-      ),
-  });
+  const payload =
+    overrides.rawBody ??
+    JSON.stringify(
+      overrides.body ?? {
+        userMessage: "¿Debería subir peso?",
+        context: { currentGoal: "volume", experienceLevel: "intermediate" },
+        conversationHistory: [],
+      },
+    );
+
+  /*
+   * A GET or HEAD carries no body. Deno's fetch enforces that and throws
+   * "Request with GET/HEAD method cannot have body", which Node's does not -- so the
+   * method-not-allowed test only ran correctly by accident on a looser runtime.
+   */
+  const init: RequestInit = { method, headers };
+  if (method !== "GET" && method !== "HEAD") init.body = payload;
+
+  return new Request("https://function.test/functions/v1/coach-assistant", init);
 }
 
 // -------------------------------------------------------------------- tests
@@ -371,6 +416,59 @@ Deno.test("rejects a malformed body rather than throwing", async () => {
   }
 });
 
+Deno.test("counts a request when the user has no window yet", async () => {
+  setEnv();
+  const stub = stubNetwork({ requestCount: 0 });
+  try {
+    // The regression this pins: the first request of any hour is the path with no
+    // stored row, and it called `.getTime()` on the ISO *string* that `hourStart`
+    // returns. Every request threw here before it ever reached OpenRouter.
+    const response = await handler(makeRequest());
+    assertEquals(response.status, 200);
+    await response.text();
+    assertEquals(stub.upstreamCalls(), 1);
+  } finally {
+    stub.restore();
+    clearEnv();
+  }
+});
+
+Deno.test("treats a window from a previous hour as a fresh one", async () => {
+  setEnv();
+  // A count that belongs to last hour must not block this hour. Getting this wrong in
+  // the other direction -- comparing the strings instead of the instants -- would lock
+  // an athlete out for an hour they had already used.
+  const stub = stubNetwork({
+    requestCount: 3,
+    windowStart: new Date(currentHour().getTime() - 3_600_000),
+  });
+  try {
+    const response = await handler(makeRequest());
+    assertEquals(response.status, 200);
+    assertEquals(stub.upstreamCalls(), 1);
+  } finally {
+    stub.restore();
+    clearEnv();
+  }
+});
+
+Deno.test("writes a window the database can compare back", async () => {
+  setEnv();
+  const stub = stubNetwork();
+  try {
+    await handler(makeRequest());
+    const written = stub.writtenWindows()[0] as { window_start: string };
+    assertStringIncludes(written.window_start, ":00:00");
+    // Truncated to the hour, which is what makes one row per user per window the
+    // entire counting scheme.
+    assertEquals(new Date(written.window_start).getMinutes(), 0);
+    assertEquals(new Date(written.window_start).getSeconds(), 0);
+  } finally {
+    stub.restore();
+    clearEnv();
+  }
+});
+
 Deno.test("answers 429 with a usable Retry-After once the window is full", async () => {
   setEnv();
   const stub = stubNetwork({ requestCount: 20 });
@@ -482,7 +580,9 @@ Deno.test("puts the athlete's context behind the prompt, never as the instructio
     );
     await response.text();
 
-    const sent = JSON.parse(captured) as { messages: { role: string; content: string }[] };
+    const sent = JSON.parse(upstreamBodies.at(-1) ?? "{}") as {
+      messages: { role: string; content: string }[];
+    };
     assertEquals(sent.messages[0].role, "system");
     assertStringIncludes(sent.messages[0].content, "PROMPT_MARKER");
     // Labelled as data: the athlete's own numbers must not be readable as orders.

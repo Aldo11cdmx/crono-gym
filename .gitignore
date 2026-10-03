@@ -15,3 +15,9 @@
 /.kilo
 .DS_Store
 Thumbs.db
+# Supabase CLI scratch: project ref, cached settings.
+/supabase/.temp/
+
+# Deno's lockfile is committed on purpose, so a function deploy resolves the same
+# versions the tests did. `supabase/functions/deno.json` and this file are what let
+# `deno check` run at all here.

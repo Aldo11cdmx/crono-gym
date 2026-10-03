@@ -25,7 +25,61 @@
  * holding a token.
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+/**
+ * The two tables this function touches, described.
+ *
+ * Without a generic, `createClient` infers a schema of `never`, so every row comes back
+ * as `never` and every column name is unchecked -- a typo in `window_start` would be a
+ * runtime error against a real column that does not exist, discovered in production.
+ * The app's `src/types/supabase.ts` cannot be imported here (a Deno runtime cannot
+ * resolve a relative path out of the function directory, and duplicating the whole app
+ * schema would drift), so these two are declared where they are used.
+ */
+interface CoachDatabase {
+  public: {
+    Tables: {
+      coach_rate_limits: {
+        Row: { user_id: string; window_start: string; request_count: number };
+        Insert: { user_id: string; window_start: string; request_count?: number };
+        Update: { user_id?: string; window_start?: string; request_count?: number };
+        Relationships: [];
+      };
+      coach_usage: {
+        Row: {
+          id: string;
+          user_id: string;
+          tokens_used: number | null;
+          model: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          tokens_used?: number | null;
+          model?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          tokens_used?: number | null;
+          model?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+    };
+    Views: Record<never, never>;
+    Functions: Record<never, never>;
+    Enums: Record<never, never>;
+    CompositeTypes: Record<never, never>;
+  };
+}
+
+/** The service-role client, with the two tables above described. */
+type AdminClient = SupabaseClient<CoachDatabase>;
 
 /** Model id. A pinned id, not the `openrouter/free` alias, which can be repointed. */
 const MODEL = "meta-llama/llama-3.1-8b-instruct:free";
@@ -149,7 +203,7 @@ export async function handler(request: Request): Promise<Response> {
   // Service role: the function writes the rate counter and the usage row, which RLS
   // deliberately denies to the athlete. It is never sent to the browser -- it lives
   // only in this process's memory, read from the platform's own environment.
-  const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? anonKey, {
+  const admin = createClient<CoachDatabase>(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
@@ -260,7 +314,7 @@ function jsonResponse(
  * unbounded otherwise, and nobody has scheduled a job.
  */
 async function consumeRateLimit(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   userId: string,
 ): Promise<{ retryAfterSeconds: number } | null> {
   const { data: windowRow } = await admin
@@ -272,14 +326,28 @@ async function consumeRateLimit(
     .maybeSingle();
 
   const now = new Date();
+  /*
+   * `hourStart` returns an ISO *string*, because that is what PostgREST wants in the
+   * upsert and in the `.lt` filter below. Arithmetic needs epoch milliseconds, so the
+   * string is parsed once here rather than reaching `.getTime()` on it.
+   *
+   * This line previously read `currentWindow.getTime()` and threw
+   * "currentWindow.getTime is not a function" on every single request -- which is to
+   * say, the rate limiter had never run once in production.
+   */
   const currentWindow = hourStart(now);
-  const windowStart = windowRow?.window_start
+  const currentWindowMs = new Date(currentWindow).getTime();
+
+  // `window_start` is a `timestamptz`, so PostgREST returns it as a string too. Both
+  // sides are truncated to the hour, so they parse to the same instant and compare
+  // exactly.
+  const windowStartMs = windowRow?.window_start
     ? new Date(windowRow.window_start).getTime()
     : 0;
-  const count = windowStart === currentWindow.getTime() ? (windowRow?.request_count ?? 0) : 0;
+  const count = windowStartMs === currentWindowMs ? (windowRow?.request_count ?? 0) : 0;
 
   if (count >= RATE_LIMIT) {
-    const elapsed = now.getTime() - currentWindow.getTime();
+    const elapsed = now.getTime() - currentWindowMs;
     const remainingMs = 3_600_000 - elapsed;
     return { retryAfterSeconds: Math.max(1, Math.ceil(remainingMs / 1000)) };
   }
@@ -306,16 +374,28 @@ function hourStart(date: Date): string {
   return copy.toISOString();
 }
 
-/** Token accounting, no message content. */
+/**
+ * Token accounting, no message content.
+ *
+ * `tokensUsed` is a **promise**, not a number, and is awaited here rather than at the
+ * call site. Awaiting it at the call site would mean awaiting the stream tee's
+ * completion before the response is returned, which buffers the whole answer and
+ * defeats streaming -- so the call site can only fire and forget.
+ *
+ * The parameter used to be typed `number | null` while the caller passed the promise.
+ * Nothing caught it: `tsconfig.json` includes only `src`, so the function is never
+ * typechecked, and `JSON.stringify` turns an unresolved promise into `{}` without
+ * complaining. Every `coach_usage` row recorded a token count of `{}`.
+ */
 async function recordUsage(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   userId: string,
-  tokensUsed: number | null,
+  tokensUsed: Promise<number | null>,
 ): Promise<void> {
   try {
     await admin.from("coach_usage").insert({
       user_id: userId,
-      tokens_used: tokensUsed,
+      tokens_used: await tokensUsed,
       model: MODEL,
     });
   } catch {
@@ -512,7 +592,18 @@ function teeForUsage(response: Response): {
 } {
   const body = response.body;
   if (!body) {
-    return { stream: new Uint8ArrayStream([]), usage: UNKNOWN_USAGE };
+    /*
+     * A 200 with no body at all. `Uint8ArrayStream` was the obvious spelling here and
+     * does not exist -- it is a proposal, not a Deno global -- so the empty stream is
+     * built the long way. Typechecking the functions is what caught it; see
+     * `supabase/functions/deno.json`.
+     */
+    const empty = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.close();
+      },
+    });
+    return { stream: empty, usage: UNKNOWN_USAGE };
   }
 
   const [client, monitor] = body.tee();

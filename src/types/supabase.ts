@@ -56,6 +56,7 @@ export interface Database {
           title: string;
           description: string | null;
           created_at: string;
+          is_favorite: boolean;
         };
         Insert: {
           id?: string;
@@ -63,6 +64,12 @@ export interface Database {
           title: string;
           description?: string | null;
           created_at?: string;
+          /**
+           * Optional on insert: the column is `not null default false`, so leaving
+           * it off is a deliberate "not a favorite" rather than an omission the
+           * database would reject.
+           */
+          is_favorite?: boolean;
         };
         Update: {
           id?: string;
@@ -70,6 +77,7 @@ export interface Database {
           title?: string;
           description?: string | null;
           created_at?: string;
+          is_favorite?: boolean;
         };
         Relationships: ForeignKey[];
       };

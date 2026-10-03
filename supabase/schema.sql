@@ -30,10 +30,18 @@ create table public.routines (
   user_id     uuid not null references auth.users (id) on delete cascade,
   title       text not null,
   description text,
-  created_at  timestamptz not null default now()
+  created_at  timestamptz not null default now(),
+  -- Fase 7: the home dashboard's favourites card. See
+  -- `supabase/migrations/20261003000000_routine_favorites.sql`.
+  is_favorite boolean not null default false
 );
 
 create index idx_routines_user_id on public.routines (user_id);
+
+-- Partial: the only query this serves is "my favorites", so the non-favorite rows
+-- of every athlete belong in the table but not in this index.
+create index idx_routines_user_favorites on public.routines (user_id)
+  where is_favorite;
 
 -- ---------------------------------------------------------------------------
 -- routine_exercises: exercises within a routine, with target sets / rest.

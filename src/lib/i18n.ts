@@ -882,6 +882,441 @@ export const COACH_LABELS = {
   retry: "Reintentar",
 } as const;
 
+/**
+ * Copy for the two-tier coach: the free AI assistant and the paid human coach.
+ *
+ * Separate from {@link COACH_LABELS} on purpose. That object describes the existing hub,
+ * which knows about neither tier; mixing the two would make it impossible to tell which
+ * strings a free athlete can ever see. Everything here that a free athlete can reach is
+ * about the assistant, and everything about tiers is behind a gate.
+ *
+ * Every refusal names what to do next. "Necesitas Premium" alone leaves the reader with
+ * nothing to act on and reads as a bug rather than a step, which is the same rule the
+ * data-gap messages in `COACH_LABELS` already follow.
+ */
+export const COACH_ACCESS_LABELS = {
+  // ---- the free assistant (Vía A) ---------------------------------------
+  /**
+   * The assistant's name.
+   *
+   * A name rather than "Coach", because "Coach" is also the paid tier's word and the two
+   * appear on the same screen. Naming the free one separately is what lets a screen say
+   * "this is free" without a disclaimer paragraph.
+   */
+  assistantName: "Symmetry",
+  assistantOpen: "Abrir Symmetry",
+  assistantAriaLabel: "Abrir el asistente de entrenamiento Symmetry",
+
+  // ---- shifts -----------------------------------------------------------
+  /**
+   * Shift names, keyed by the English `CoachShiftId`.
+   *
+   * The keys are the wire format -- they come out of `COACH_SHIFTS` and travel in the
+   * status -- so a rename here cannot break the schedule, and a new shift forces a key
+   * that does not exist yet.
+   */
+  shifts: {
+    morning: "Turno de mañana",
+    evening: "Turno de tarde",
+  } as Record<"morning" | "evening", string>,
+
+  /** "06:00 - 14:00", the hours a shift is worked. */
+  shiftHours: (start: number, end: number): string =>
+    `${pad2(start)}:00 – ${pad2(end)}:00`,
+
+  // ---- gates ------------------------------------------------------------
+  /**
+   * Shown when the athlete is not premium.
+   *
+   * Says what the tier is and what it unlocks, rather than only what is missing: the
+   * reader has to be able to tell whether it is worth anything to them, and a bare
+   * refusal is indistinguishable from a bug.
+   */
+  premiumRequiredTitle: "Coach humano",
+  premiumRequiredBody:
+    "El coach en persona es la parte premium. Symmetry, el asistente de IA, es gratis y sigue disponible para ti ahora mismo.",
+
+  /**
+   * Shown between shifts.
+   *
+   * Leads with the time rather than the refusal: the athlete is not being turned away, and
+   * the useful fact is when to come back.
+   */
+  offShiftTitle: "Ahora no hay turno",
+  offShiftBody: (opensAt: string): string =>
+    `El próximo turno abre a las ${opensAt}. Tu conversación sigue aquí cuando vuelvas.`,
+  offShiftNoTime:
+    "El próximo turno todavía no está anunciado. Tus mensajes se guardan mientras tanto.",
+
+  // ---- the PIN form -----------------------------------------------------
+  pinTitle: "Desbloquear el panel del coach",
+  pinSubtitle: "Este paso es solo para el coach. Si eres atleta, no necesitas nada de esto.",
+  pinLabel: "PIN",
+  pinInputAriaLabel: "PIN del coach",
+  pinSubmit: "Desbloquear",
+  pinSubmitting: "Comprobando…",
+  /** Announced after the idle timeout closes the session. */
+  pinLockedNotice:
+    "Tu sesión se cerró por inactividad. Vuelve a introducir el PIN para continuar.",
+
+  // ---- changing a provisional PIN ---------------------------------------
+  pinChangeTitle: "Cambia tu PIN",
+  pinChangeSubtitle:
+    "Este PIN fue asignado por el equipo y tiene que cambiarse antes de usar el panel.",
+  pinCurrentLabel: "PIN actual",
+  pinCurrentAriaLabel: "PIN actual del coach",
+  pinNewLabel: "PIN nuevo",
+  pinNewAriaLabel: "PIN nuevo del coach",
+  pinChangeSubmit: "Cambiar PIN y continuar",
+  pinChangeSubmitting: "Cambiando…",
+
+  /**
+   * Requirements for the new PIN, shown under the field.
+   *
+   * Length and "not the one you are replacing" rather than a character-class rule. A PIN
+   * is typed from memory and often read aloud, so symbols and case-sensitivity turn a
+   * numeric pad into a coin flip; the only rule that measurably helps against guessing is
+   * length.
+   */
+  pinRequirements: "Mínimo 4 dígitos. No puede ser el PIN que estás reemplazando.",
+
+  // ---- errors -----------------------------------------------------------
+  /**
+   * One line per `CoachAuthErrorCode`.
+   *
+   * Keyed by the code rather than carrying a message on the error object, so no server
+   * response can put text in front of a coach. `INVALID_PIN` is deliberately identical to
+   * what an unknown coach would be told -- the function does not distinguish them either,
+   * and a client that did would leak which accounts exist.
+   */
+  pinErrors: {
+    INVALID_PIN: "Ese PIN no es correcto.",
+    TOO_MANY_ATTEMPTS: "Demasiados intentos. Espera un momento antes de volver a probar.",
+    PIN_CHANGE_REJECTED: "No se pudo cambiar el PIN. Revisa ambos campos.",
+    NETWORK_ERROR: "No se pudo conectar. Revisa tu conexión.",
+    SERVICE_UNAVAILABLE: "El servicio no está disponible ahora mismo.",
+  } as Record<string, string>,
+
+  /**
+   * The lockout countdown, given the instant the server said it lifts.
+   *
+   * Falls back to a statement without a time when the instant is missing or unreadable:
+   * "vuelve en NaN minutos" is worse than not saying when, and the coach still needs to
+   * know they are locked out.
+   */
+  lockedUntil: (iso: string | null): string => {
+    if (!iso) return "Espera unos minutos antes de volver a probar.";
+    const at = new Date(iso);
+    if (Number.isNaN(at.getTime())) return "Espera unos minutos antes de volver a probar.";
+    return `Puedes volver a intentarlo a las ${pad2(at.getHours())}:${pad2(at.getMinutes())}.`;
+  },
+
+  // ---- the portal -------------------------------------------------------
+  portalTitle: "Panel del coach",
+  portalUnlockCta: "Abrir panel",
+  portalLock: "Bloquear",
+
+  /** Where a routine came from. Keyed by `RoutineAuthor`, which is nullable in the column. */
+  routineSources: {
+    user: "Tu rutina",
+    human_coach: "Rutina del coach",
+    ai: "Rutina generada por IA",
+  } as Record<string, string>,
+
+  // ---- the hub's five states ---------------------------------------------
+  /**
+   * The upgrade screen. `benefits` is a list rather than one blob of prose so the markup
+   * can mark each item up as a list item, which is what makes a screen of three claims
+   * scannable instead of a paragraph.
+   */
+  upgradeTitle: "Coach en persona",
+  upgradeBody:
+    "Symmetry, el asistente de IA, ya es tuyo gratis. El coach en persona es el siguiente paso.",
+  upgradeBenefits: [
+    "Revisa tu técnica con vídeo y ajusta tus Loads.",
+    "Te escribe una rutina para tus fechas y tu nivel.",
+    "Responde tus preguntas entre sesiones, no solo en consulta.",
+  ] as const,
+  upgradeCta: "Ver planes",
+
+  /** Between shifts, premium. Leads with the time, because the athlete is not refused. */
+  backAtTitle: "Ahora no hay turno",
+  backAt: (hour: number, minute: number): string =>
+    `Tu coach vuelve a las ${pad2(hour)}:${pad2(minute)}. Mientras tanto, Symmetry está disponible.`,
+  backAtUnknown:
+    "Tu coach todavía no tiene turno anunciado. Symmetry está disponible mientras tanto.",
+
+  requestTitle: "Coach disponible",
+  requestBody: "Tu coach está en turno ahora mismo.",
+  requestCta: "Solicitar sesión",
+  requestNotesLabel: "¿Qué quieres trabajar?",
+  requestNotesPlaceholder: "Opcional. Cuéntale el objetivo de esta sesión.",
+  requestSubmit: "Enviar solicitud",
+  requestSending: "Enviando…",
+
+  requestPendingTitle: "Tu solicitud está en revisión",
+  requestPendingBody:
+    "Tu coach la verá al empezar su turno y te escribirá por aquí.",
+
+  /** Placeholder until the portal ships. Says so, rather than showing a dead chat. */
+  activeSessionTitle: "Sesión activa",
+  activeSessionBody:
+    "Tu coach te está escribiendo. El chat en vivo llega en la próxima actualización.",
+} as const;
+
+/**
+ * Copy for the Symmetry sheet and the routine wizard.
+ *
+ * Separate from {@link COACH_ACCESS_LABELS} because that object is about *tiers* -- who
+ * may use what -- and every string in it is a gate. This one is about the interface a
+ * free athlete uses every day, and mixing them would make the gate copy impossible to
+ * find again.
+ */
+export const SYMMETRY_LABELS = {
+  fabAriaLabel: "Abrir Symmetry",
+  sheetAriaLabel: "Symmetry, asistente de entrenamiento",
+  sheetTitle: "Symmetry",
+  close: "Cerrar",
+  closeAriaLabel: "Cerrar Symmetry",
+  tabChat: "Chat",
+  tabGenerate: "Generar rutina",
+
+  /**
+   * The standing disclaimer under the assistant.
+   *
+   * Says what it is for, not what it is not, and names both real limits: a model cannot
+   * see a bar and cannot diagnose. "Es una IA" alone is the version nobody reads.
+   */
+  disclaimer:
+    "Symmetry es una IA de apoyo. No ve tu técnica ni sustituye a un médico o un entrenador.",
+
+  // ---- wizard ------------------------------------------------------------
+  goalLabel: "Objetivo",
+  /** Keyed by the wire values in `RoutineGoal`. */
+  goals: {
+    volume: "Volumen",
+    definition: "Definición",
+    maintenance: "Mantenimiento",
+  } as Record<string, string>,
+
+  daysLabel: "Días por semana",
+  daysValue: (n: number): string => `${n} ${n === 1 ? "día" : "días"}`,
+  daysDecrease: "Quitar un día de entrenamiento",
+  daysIncrease: "Añadir un día de entrenamiento",
+
+  durationLabel: "Duración de sesión",
+  durationMinutes: (n: number): string => `${n} min`,
+
+  next: "Siguiente",
+  back: "← Editar parámetros",
+
+  generating: "Symmetry está diseñando tu rutina…",
+  cancel: "Cancelar",
+
+  /** Shown inline when generation fails. Paired with `retry`. */
+  generateError: "No se pudo generar la rutina.",
+  retry: "Reintentar",
+
+  nameLabel: "Nombre de la rutina",
+  namePlaceholder: "Mi rutina de 4 días",
+  dayHeading: (n: number): string => `Día ${n}`,
+  dayExerciseCount: (n: number): string => `${n} ${n === 1 ? "ejercicio" : "ejercicios"}`,
+  prescription: (sets: number, repsMin: number, repsMax: number): string => {
+    const reps = repsMin === repsMax ? `${repsMin}` : `${repsMin}–${repsMax}`;
+    return `${sets}×${reps}`;
+  },
+  emptyDay: "Sin ejercicios.",
+  unknownExercise: "Ejercicio no disponible",
+
+  /**
+   * The substitution notice. Split into two strings rather than one with a count because
+   * "1 ejercicios se sustituyeron" is a visible bug in a sentence whose whole job is to
+   * build trust.
+   */
+  substitutedOne: "1 ejercicio se sustituyó por uno disponible.",
+  substitutedMany: (n: number): string =>
+    `${n} ejercicios se sustituyeron por movimientos disponibles.`,
+
+  save: "Guardar rutina",
+  saving: "Guardando…",
+  saveError: "No se pudo guardar la rutina.",
+  saved: "Rutina guardada.",
+  regenerate: "Regenerar",
+} as const;
+
+/**
+ * Copy for the coach portal -- the screen a signed-in coach sees at `/coach/portal`.
+ *
+ * A fourth block, and separate from all three above on purpose. `COACH_ACCESS_LABELS` is
+ * about *tiers*: what an athlete is allowed. `SYMMETRY_LABELS` is the free assistant. This
+ * one is a work surface, used by a coach and not by an athlete, and it is the only one of
+ * the four whose audience is a member of staff.
+ *
+ * That difference drives two choices in here. Error copy is explicit about what went wrong
+ * and never blames the coach for a server problem -- the same rule `useCoachAuth` follows
+ * when it refuses to report a dropped connection as a wrong PIN. And the wording is
+ * imperative and short, because it is read at a glance during a session rather than
+ * composed into a sentence.
+ */
+export const COACH_PORTAL_LABELS = {
+  // ---- header ------------------------------------------------------------
+  title: "Portal del entrenador",
+  /**
+   * The one action that throws the session away.
+   *
+   * Named "sign out of the portal" rather than "sign out", because signing out of the app
+   * would end the athlete-facing session too and this does not. A coach closing a laptop
+   * for lunch and a coach who has finished for the day are doing the same thing here, and
+   * neither of them means to lock themselves out of their account.
+   */
+  closeSession: "Cerrar sesión del portal",
+  closeSessionConfirm: "¿Cerrar la sesión del portal? Tendrás que escribir el PIN otra vez.",
+
+  // ---- shift panel -------------------------------------------------------
+  availabilityTitle: "Mi turno",
+  availabilityOn: "Estoy disponible",
+  availabilityOff: "No disponible",
+  availabilityHint:
+    "Aparece como disponible para que los atletas premium puedan pedirte sesión.",
+
+  /**
+   * The shift being worked right now, from `CoachShift`.
+   *
+   * Takes both hours because the closing hour belongs to the *next* shift: printing the
+   * end as a constant here would make the morning say 06:00 and the evening say 06:00
+   * too, which is a fact about the schedule hardcoded into a string that does not know
+   * about the schedule.
+   */
+  shiftHours: (startHour: number, endHour: number): string =>
+    `Turno de ${pad2(startHour)}:${pad2(0)} a ${pad2(endHour)}:${pad2(0)}`,
+
+  /** When no shift covers the current local time, as an ISO instant from `startsAt`. */
+  nextShiftAt: (when: string): string => `Tu turno abre ${when}`,
+
+  /**
+   * Shown when the local clock is outside both shifts *and* `startsAt` is unavailable.
+   *
+   * Its own string rather than the "next shift" one with an empty argument, because
+   * "Tu turno abre " with nothing after it is exactly the kind of half-sentence this file
+   * exists to prevent.
+   */
+  noShift: "Ahora mismo no hay turno.",
+
+  // ---- request queue -----------------------------------------------------
+  queueTitle: "Solicitudes",
+  queueEmptyTitle: "No hay solicitudes",
+  queueEmptyBody: "Cuando un atleta premium te escriba, aparecerá aquí.",
+
+  /** The three states a request can be in, keyed by the wire value. */
+  requestStatus: {
+    pending: "Por responder",
+    active: "Sesión activa",
+    declined: "Rechazada",
+    closed: "Cerrada",
+  } as Record<string, string>,
+
+  requestNotesLabel: "Nota del atleta",
+  requestNotesEmpty: "No dejó ninguna nota.",
+  requestSentAt: (when: string): string => `Enviada ${when}`,
+
+  accept: "Aceptar",
+  accepting: "Aceptando…",
+  decline: "Rechazar",
+  declining: "Rechazando…",
+  openConversation: "Ver conversación",
+
+  queueError: "No se pudo actualizar la solicitud.",
+  queueLoadError: "No se pudieron cargar las solicitudes.",
+
+  /**
+   * Shown when an athlete sends their *second* request while one is already active.
+   *
+   * Says what the button will do rather than only that it is unavailable. A disabled
+   * control with no explanation is the thing this file keeps trying to avoid.
+   */
+  alreadyActive: "Este atleta ya tiene una sesión activa contigo.",
+
+  // ---- chat --------------------------------------------------------------
+  chatTitle: "Conversación",
+  chatPlaceholder: "Escribe un mensaje…",
+  chatSend: "Enviar",
+  chatEmpty: "Todavía no hay mensajes. Escribe el primero.",
+  chatError: "No se pudo enviar el mensaje.",
+  chatLoadError: "No se pudieron cargar los mensajes.",
+
+  // ---- athlete CRM -------------------------------------------------------
+  crmTitle: "Ficha del atleta",
+  crmSelectPrompt: "Elige una solicitud para ver la ficha del atleta.",
+  crmLoading: "Cargando la ficha…",
+  crmLoadError: "No se pudo cargar la ficha.",
+
+  /** Section headings inside the CRM, in the order they are rendered. */
+  crmRanksSection: "Rangos por músculo",
+  crmVolumeSection: "Volumen semanal",
+  crmPrsSection: "Records personales",
+  crmHistorySection: "Rutinas anteriores",
+  crmCheckinsSection: "Molestias y readiness",
+
+  prsNone: "Todavía no hay registros de fuerza.",
+  prsAchievedOn: (when: string): string => `Logrado ${when}`,
+  prsRecentOnly: "Sin datos de peso registrados",
+
+  historyEmpty: "No tiene rutinas guardadas.",
+  historyAuthoredByCoach: "Tu rutina",
+  historyAuthoredByAthlete: "Rutina del atleta",
+  historyAuthoredByAi: "Rutina generada con Symmetry",
+
+  /** The check-in section has no table behind it yet; see the Block 5 TODO. */
+  checkinsPending:
+    "Sin registro de molestias. La sección se activa cuando el atleta empiece a anotar check-ins.",
+
+  // ---- VIP routine builder ----------------------------------------------
+  builderTitle: "Rutina para el atleta",
+  builderEmpty: "Sin días todavía.",
+  builderAddDay: "Añadir día",
+  builderRemoveDay: (n: number): string => `Quitar el día ${n}`,
+  builderDayNameLabel: "Nombre del día",
+  builderDayNamePlaceholder: "Pecho y espalda",
+  builderAddExercise: "Añadir ejercicio",
+  builderExerciseSearchLabel: "Buscar ejercicio",
+  builderExerciseSearchPlaceholder: "Press de banca",
+  builderNoExercisesFound: "Ningún ejercicio coincide.",
+  builderExerciseSets: "Series",
+  builderExerciseRepsMin: "Reps mínimo",
+  builderExerciseRepsMax: "Reps máximo",
+  builderExerciseRest: "Descanso (s)",
+  builderRemoveExercise: "Quitar ejercicio",
+  builderSave: "Guardar rutina",
+  builderSaving: "Guardando…",
+  builderSaveError: "No se pudo guardar la rutina.",
+  builderSaved: (title: string): string => `«${title}» guardada en la biblioteca del atleta.`,
+  builderNeedsDay: "Añade al menos un día con un ejercicio antes de guardar.",
+  builderNeedsCoach: "Tu sesión de entrenador no tiene id. Recarga la página.",
+
+  // ---- shared ------------------------------------------------------------
+  close: "Cerrar",
+  loading: "Cargando…",
+  /** Announced by the queue and the chat when their polling finds nothing new. */
+  nothingNew: "Nada nuevo",
+
+  /**
+   * Minutes remaining in a PIN lockout, for the live countdown in `CoachAccessGate`.
+   *
+   * Takes a rounded-up count so "1" shows for the whole final minute rather than flipping
+   * to "0" at 59 seconds -- a lockout that says zero minutes while still active tells the
+   * coach to try again immediately and spend another attempt.
+   */
+  lockedUntilMinutes: (minutes: number): string => {
+    const n = Math.max(1, Math.ceil(minutes));
+    return n === 1 ? "1 minuto" : `${n} minutos`;
+  },
+} as const;
+
+/** Zero-padded so a single-digit hour reads as `06:00` and not `6:00`. */
+function pad2(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
 /** Labels for why a muscle is unranked, keyed by the scorer's reason code. */
 export const UNRANKED_REASONS: Record<string, string> = {
   no_data: "Sin datos todavía",

@@ -322,6 +322,82 @@ export const CVD_KINDS: readonly CvdKind[] = [
   "tritanopia",
 ];
 
+// ------------------------------------------------------- perceptual distance
+
+/**
+ * The ~2.3 ΔE at which an observer on a calibrated screen notices a difference at
+ * all. A property of CIE Lab rather than of this implementation, which is why it
+ * is declared once here instead of tuned per call site.
+ */
+export const JUST_NOTICEABLE_DELTA_E = 2.3;
+
+/**
+ * Perceptual separation of two colours, CIE76 in Lab (D65).
+ *
+ * CIE76 rather than ΔE2000 on purpose: one formula anyone can check by hand, and
+ * the ranking it gives is what matters here, not a fraction of a JND of extra
+ * accuracy.
+ *
+ * Returns 0 for unparseable input. Zero means "no separation", so a typo'd colour
+ * reads as "indistinguishable" and fails a test, rather than silently passing as
+ * maximally different.
+ */
+export function deltaE(a: string, b: string): number {
+  const labA = toLab(a);
+  const labB = toLab(b);
+  if (!labA || !labB) return 0;
+  return Math.sqrt(
+    (labA[0] - labB[0]) ** 2 + (labA[1] - labB[1]) ** 2 + (labA[2] - labB[2]) ** 2,
+  );
+}
+
+/** Separation between two colours as a dichromat sees them. */
+export function cvdDeltaE(a: string, b: string, kind: CvdKind): number {
+  return deltaE(simulateCvd(a, kind), simulateCvd(b, kind));
+}
+
+/**
+ * Worst-case separation across the three dichromacies.
+ *
+ * Minimum rather than mean on purpose. A palette that works for two deficiencies
+ * and not the third is not colour-blind safe; it is colour-blind safe on average,
+ * which is not a guarantee anybody who *cannot* see the difference can rely on.
+ */
+export function worstCaseCvdDeltaE(a: string, b: string): number {
+  return CVD_KINDS.reduce((worst, kind) => Math.min(worst, cvdDeltaE(a, b, kind)), Infinity);
+}
+
+/**
+ * Floor for "a viewer can tell these apart", in multiples of the just-noticeable
+ * difference.
+ *
+ * 3 JNDs, not 1. Map regions are large and glanced at rather than held side by
+ * side, and a floor of one JND describes a difference a person has to be looking
+ * for. The number is a judgement call; what it is not is a threshold loose enough
+ * to accept a pair that is genuinely the same colour.
+ */
+export const CVD_DISTINGUISHABLE_DELTA_E = 3 * JUST_NOTICEABLE_DELTA_E;
+
+/** CIE Lab from any colour the parser understands. Returns null if unparseable. */
+function toLab(color: string): [number, number, number] | null {
+  const rgb = parseColor(color);
+  if (!rgb) return null;
+
+  const [r, g, b] = [rgb.r, rgb.g, rgb.b].map(toLinear);
+
+  // Linear sRGB -> CIE XYZ (D65).
+  const x = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b;
+  const y = 0.2126729 * r + 0.7151522 * g + 0.072175 * b;
+  const z = 0.0193339 * r + 0.119192 * g + 0.9503041 * b;
+
+  const f = (t: number): number => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const fx = f(x / 0.95047);
+  const fy = f(y);
+  const fz = f(z / 1.08883);
+
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+
 // -------------------------------------------------------------- compositing
 
 /**

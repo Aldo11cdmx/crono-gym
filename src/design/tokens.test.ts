@@ -14,9 +14,11 @@ import { describe, expect, it } from "vitest";
 import {
   AA_CONTRAST,
   AA_LARGE_CONTRAST,
+  CVD_DISTINGUISHABLE_DELTA_E,
   CVD_KINDS,
   contrastRatio,
   contrastRatioUnderCvd,
+  cvdDeltaE,
   flatten,
   isSaturatedRed,
   parseColor,
@@ -296,17 +298,22 @@ describe("the rank ladder is readable without colour", () => {
     //
     // Non-adjacent ranks are carried by glyph and by the Spanish label instead,
     // which is why both exist.
+    //
+    // Measured in Lab rather than by WCAG contrast: contrast is a luminance
+    // metric, so it cannot see hue at all and calls Gold and Platinum the same
+    // colour at 1.09:1. `ranksEngine.test.ts` covers every pair, which is possible
+    // there because it also asserts the glyphs are distinct.
     for (const kind of CVD_KINDS) {
       for (let i = 1; i < EARNABLE_RANKS.length; i += 1) {
-        const ratio = contrastRatioUnderCvd(
+        const distance = cvdDeltaE(
           EARNABLE_RANKS[i - 1].color,
           EARNABLE_RANKS[i].color,
           kind,
         );
         expect(
-          ratio,
-          `${kind}: ${EARNABLE_RANKS[i - 1].id} vs ${EARNABLE_RANKS[i].id}: ${ratio.toFixed(2)}:1`,
-        ).toBeGreaterThan(1.15);
+          distance,
+          `${kind}: ${EARNABLE_RANKS[i - 1].id} vs ${EARNABLE_RANKS[i].id}: ΔE ${distance.toFixed(1)}`,
+        ).toBeGreaterThanOrEqual(CVD_DISTINGUISHABLE_DELTA_E);
       }
     }
   });

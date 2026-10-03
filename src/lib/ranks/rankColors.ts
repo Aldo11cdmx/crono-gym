@@ -1,5 +1,5 @@
-/**
- * rankColors.ts — colour maths for the rank map.
+﻿/**
+ * rankColors.ts â€” colour maths for the rank map.
  *
  * Pure functions so the contrast rules are actually verified by a test rather than
  * asserted in a comment. `rankConfig` holds the hex values; this file decides what
@@ -29,6 +29,28 @@ export const AA_CONTRAST = 4.5;
 export const AA_LARGE_CONTRAST = 3;
 
 import { RANKS, type RankDefinition, type RankId } from "./rankConfig";
+
+/**
+ * Perceptual separation, re-exported from the design system's colour module.
+ *
+ * The rank ladder is judged on how far apart two fills look *after* a viewer's own
+ * vision is applied, and `contrastRatio` cannot answer that: it is a luminance
+ * metric, so it reports `#f2b84b` (Gold) and `#9fd3d6` (Platinum) as the same
+ * colour at 1.09:1 -- amber against pale cyan, which no viewer confuses. In Lab
+ * under the worst dichromacy they are 43.9 apart.
+ *
+ * Re-exported rather than reimplemented so there is one simulator in the codebase.
+ * Two CVD matrix sets drift, and the one nobody notices is the one nobody audits.
+ */
+export {
+  CVD_DISTINGUISHABLE_DELTA_E as CVD_DISTINGUISHABLE,
+  CVD_KINDS,
+  cvdDeltaE,
+  deltaE,
+  simulateCvd,
+  worstCaseCvdDeltaE,
+  type CvdKind,
+} from "@/design/color";
 
 /** Relative luminance per WCAG 2.1. */
 export function relativeLuminance(hex: string): number {

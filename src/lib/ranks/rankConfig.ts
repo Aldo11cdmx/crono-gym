@@ -78,7 +78,10 @@ export const RANKS: RankDefinition[] = [
     id: "bronze",
     label: "Bronce",
     minScore: 12,
-    color: "#c2660a",
+    // 5.74:1 on black. A muted copper rather than the saturated orange this used
+    // to be: the ladder now runs through desaturated metallics, and a fully
+    // saturated orange next to `#9ca3af` silver read as a different family.
+    color: "#b07a4f",
     borderColor: "#d97706",
     glyph: "●",
     description: "Primeros meses de trabajo constante.",
@@ -96,7 +99,8 @@ export const RANKS: RankDefinition[] = [
     id: "gold",
     label: "Oro",
     minScore: 46,
-    color: "#e8b923",
+    // 11.73:1 on black. Warmer and lighter than the old #e8b923.
+    color: "#f2b84b",
     borderColor: "#ffd27a",
     glyph: "★",
     description: "Fuerza notable y volumen bien programado.",
@@ -105,7 +109,16 @@ export const RANKS: RankDefinition[] = [
     id: "platinum",
     label: "Platino",
     minScore: 64,
-    color: "#0ea5e9",
+    // 12.76:1 on black, the lightest fill in the ladder.
+    //
+    // Sits close to Gold in *luminance*, and a luminance-only comparison calls the
+    // two the same colour. They are not: measured in Lab, the worst-case
+    // separation across the three dichromacies is ΔE 43.9, because amber and pale
+    // cyan sit far apart in hue and it is hue that survives every form of colour
+    // vision deficiency. `worstCaseCvdDeltaE` in rankColors.ts is what asserts
+    // that, rather than a contrast ratio, which is a text-legibility metric and
+    // answers the wrong question here.
+    color: "#9fd3d6",
     borderColor: "#7dd3fc",
     glyph: "⬟",
     description: "Rendimiento alto y muy constante.",
@@ -114,7 +127,9 @@ export const RANKS: RankDefinition[] = [
     id: "diamond",
     label: "Diamante",
     minScore: 80,
-    color: "#a5b4fc",
+    // 10.09:1 on black. A saturated azure, moved away from the violet family the
+    // ladder reserves for Elite and Obsidiana.
+    color: "#7db7ff",
     borderColor: "#c7d2fe",
     glyph: "⬢",
     description: "Fuerza avanzada, cerca de Elite.",

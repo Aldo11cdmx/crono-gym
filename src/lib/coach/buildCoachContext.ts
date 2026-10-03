@@ -70,6 +70,11 @@ function toMuscleFact(entry: MuscleRank): CoachMuscleFact {
     // is a fact about the data, and rendering it is the UI's job.
     unrankedReason: entry.classified ? null : entry.unrankedReason,
     confidence: entry.confidence,
+    // Sets and weeks, so a per-muscle weekly volume can be derived downstream. The
+    // window-wide volume block cannot answer that: it counts sessions, not which
+    // muscle got trained.
+    effectiveSets: entry.detail.volume.effectiveSets,
+    activeWeeks: entry.detail.volume.activeWeeks,
     // Sorted, because the strongest driver is the one worth naming. `contributions`
     // is already ordered by contribution weight, which is not the same thing once
     // estimated 1RMs disagree.
@@ -77,7 +82,11 @@ function toMuscleFact(entry: MuscleRank): CoachMuscleFact {
       .filter((c) => c.estimatedOneRepMax > 0)
       .sort((a, b) => b.estimatedOneRepMax - a.estimatedOneRepMax)
       .slice(0, TOP_EXERCISES)
-      .map((c) => ({ name: c.name, estimatedOneRepMax: c.estimatedOneRepMax })),
+      .map((c) => ({
+        name: c.name,
+        estimatedOneRepMax: c.estimatedOneRepMax,
+        bestSet: c.bestSet,
+      })),
   };
 }
 

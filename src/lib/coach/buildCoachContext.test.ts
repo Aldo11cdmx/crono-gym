@@ -256,9 +256,12 @@ describe("toCoachPromptPayload", () => {
         score: i,
         unrankedReason: i % 2 === 0 ? null : "no_data",
         confidence: "medium",
+        effectiveSets: 20,
+        activeWeeks: 6,
         topExercises: Array.from({ length: 3 }, (_unused, j) => ({
           name: `Ejercicio con nombre deliberadamente largo ${i}-${j}`,
           estimatedOneRepMax: 100 + j,
+          bestSet: { weight: 80 + j, reps: 5 },
         })),
       })),
     };

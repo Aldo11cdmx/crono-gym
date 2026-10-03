@@ -91,6 +91,15 @@ export interface CoachEnergyFact {
 export interface CoachExerciseFact {
   name: string;
   estimatedOneRepMax: number;
+  /**
+   * The set that produced the estimate.
+   *
+   * Carried rather than recomputed: the assistant's "your best set" is a claim about
+   * a real logged set, and an estimate derived from a different one would be a
+   * different number wearing the same label. Null when no set carried enough load to
+   * support an estimate.
+   */
+  bestSet: { weight: number; reps: number } | null;
 }
 
 /** One muscle, flattened from the rank map into what a coach would talk about. */
@@ -112,6 +121,17 @@ export interface CoachMuscleFact {
   confidence: "low" | "medium" | "high";
   /** Exercises that drove the score, strongest first. */
   topExercises: CoachExerciseFact[];
+  /**
+   * Working sets inside the scorer's lookback window.
+   *
+   * Exposed so weekly volume per muscle can be derived as
+   * `effectiveSets / activeWeeks`. The window-wide `volume` block only knows
+   * whole-body session counts, which say nothing about which muscle is being trained
+   * how much — and that per-muscle number is the one a program change turns on.
+   */
+  effectiveSets: number;
+  /** Distinct recent sessions touching this muscle. */
+  activeWeeks: number;
 }
 
 /**

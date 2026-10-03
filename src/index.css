@@ -249,4 +249,33 @@
       transform: scaleX(1);
     }
   }
+
+  /**
+   * The streaming caret on an in-progress assistant message.
+   *
+   * Two steps rather than a fade: a fade on a 6px bar reads as a flicker, which is
+   * the exact thing a blinking caret must not look like when text is arriving beside
+   * it.
+   *
+   * Under `prefers-reduced-motion` the caret is held visible and simply stops. It is
+   * the only signal that the answer is still coming, so removing it would remove
+   * information -- what goes is the movement, same rule as the undo drain above.
+   */
+  @keyframes cronos-caret {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    50.01%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cronos-chat--caret {
+      animation: none !important;
+      opacity: 1;
+    }
+  }
 }

@@ -825,6 +825,47 @@ export const COACH_LABELS = {
     technique: "Técnica",
   } as Record<string, string>,
 
+  // ---- chat ------------------------------------------------------------
+  /**
+   * The assistant's transcript.
+   *
+   * "Hoy" rather than a date, because the store is keyed by day and there is exactly
+   * one conversation per day. Naming the day would imply a history the screen does
+   * not have.
+   */
+  chatTitle: "Habla con tu Coach",
+  chatSubtitle:
+    "Pregunta sobre tu entrenamiento. Solo verá los datos que ya tienes registrados aquí.",
+  chatEmpty: "Haz una pregunta para empezar.",
+  chatPlaceholder: "¿Cómo debería entrenar esta semana?",
+  chatSend: "Enviar",
+  chatSending: "Pensando…",
+  chatDisclaimer:
+    "El Coach es una herramienta de orientación, no un profesional médico. Si algo duele, habla con un profesional.",
+  chatNewDay: "Empieza una conversación nueva",
+  chatClear: "Borrar la conversación de hoy",
+  chatClearConfirm: "¿Borrar la conversación de hoy? No se puede deshacer.",
+  chatStop: "Detener",
+  chatRetry: "Reintentar",
+  chatNotSaved: "Esta conversación no se está guardando en este dispositivo.",
+
+  /** One classified failure, per `CoachError` code. */
+  chatErrors: {
+    RATE_LIMITED: "Has preguntado demasiado rápido. Espera un momento.",
+    NETWORK_ERROR: "No se pudo conectar. Revisa tu conexión.",
+    AUTH_ERROR: "Tu sesión ha caducado. Vuelve a entrar.",
+    INPUT_TOO_LONG: "Tu pregunta es demasiado larga.",
+    SERVICE_UNAVAILABLE: "El Coach no está disponible ahora mismo.",
+  } as Record<string, string>,
+
+  /** A structured recommendation, by `CoachAction["type"]`. */
+  chatActions: {
+    exercise_swap: "Cambio de ejercicio",
+    training_adjustment: "Ajuste de entrenamiento",
+    calorie_adjustment: "Ajuste calórico",
+    deload_suggestion: "Descarga",
+  } as Record<string, string>,
+
   // ---- error -----------------------------------------------------------
   errorTitle: "No se pudo reunir tu contexto",
   retry: "Reintentar",

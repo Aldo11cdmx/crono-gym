@@ -91,10 +91,36 @@ type AdminClient = SupabaseClient<CoachDatabase>;
  */
 const MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
 
-/** Concise answers: the coach is a coach, not a lecturer. */
-const MAX_TOKENS = 400;
+/**
+ * Output budget for the visible answer.
+ *
+ * Was 400, which truncated the coach mid-sentence. The cause was not that the coach
+ * is verbose -- it is that this pin is a reasoning model (`supported_parameters`
+ * carries `reasoning`), and reasoning tokens are billed against `max_tokens`. 400 left
+ * so little for the answer that a normal reply stopped mid-word.
+ *
+ * {@link REASONING} is what actually keeps answers short. This is the ceiling, not the
+ * target: the prompt still asks for 3-4 sentences, and the app renders whatever
+ * arrives. 1500 leaves room for a model that reasons a little before answering.
+ */
+const MAX_TOKENS = 1500;
 const TEMPERATURE = 0.4;
 const TOP_P = 0.9;
+
+/**
+ * Reasoning off for this endpoint.
+ *
+ * The coach is a chat product, not an analysis tool: an athlete asking "¿subo peso?"
+ * wants the answer, not the deliberation, and the deliberation was arriving as English
+ * prose in front of it. Asking the model in the prompt not to think is much weaker than
+ * not paying for the thinking, so this is a request parameter and not a prompt line.
+ *
+ * `effort: "none"` rather than `enabled: false`. Both mean "do not reason", but a
+ * provider that requires reasoning rejects an explicit off with a 400 -- the failure
+ * mode of the second spelling is a coach that returns no answer at all, against the
+ * first one's merely chatty one.
+ */
+const REASONING = { effort: "none" } as const;
 
 /** Upstream budget. Past this the user is better served by a clear "busy". */
 const TIMEOUT_MS = 15_000;
@@ -504,6 +530,9 @@ async function callOpenRouter(
           max_tokens: MAX_TOKENS,
           temperature: TEMPERATURE,
           top_p: TOP_P,
+          // See {@link REASONING}. Omitting the key is not the same thing: the model
+          // then reasons at its own default and the answer arrives late and truncated.
+          reasoning: { ...REASONING },
           // A usage frame costs a little on every call and yields only a cost
           // monitoring number, but it is the only way to attribute spend to a user.
           stream_options: { include_usage: true },
@@ -638,6 +667,9 @@ async function loadSystemPrompt(): Promise<string> {
 
   return [
     "Eres el coach de Cronos, un asistente de entrenamiento experto y directo.",
+    "Responde SIEMPRE y ÚNICAMENTE en español de México, aunque el usuario escriba en inglés.",
+    "NUNCA muestres razonamiento interno ni análisis: la respuesta empieza hablando directo con el usuario.",
+    "Habla directo y con tono de coach real, no de manual.",
     "Conciso: máximo 3-4 oraciones por respuesta.",
     "Honesto: si los datos son insuficientes, dilo sin rodeos.",
     "NUNCA dar consejos médicos ni de rehabilitación: deriva a un profesional.",

@@ -37,6 +37,16 @@ describe("COACH_SYSTEM_PROMPT", () => {
     expect(COACH_SYSTEM_PROMPT).toMatch(/NUNCA sugerir suplementos/);
   });
 
+  it("pins the output language and forbids visible reasoning", () => {
+    // Both were live failures: the coach answered in English and led with its own
+    // deliberation, because the pin is a reasoning model whose thinking surfaced as
+    // prose. The request-side `reasoning.effort` is the primary fix; these lines are
+    // what hold when a future model answers in English anyway.
+    expect(COACH_SYSTEM_PROMPT).toMatch(/español de México/);
+    expect(COACH_SYSTEM_PROMPT).toMatch(/NUNCA muestres razonamiento interno/);
+    expect(COACH_SYSTEM_PROMPT).toMatch(/Hablas directo al usuario/);
+  });
+
   it("tells the model not to do the plate arithmetic itself", () => {
     // The division of labour with `nearestLoadable`. If this sentence is deleted, the
     // model starts producing confident plate combinations that do not load, and there

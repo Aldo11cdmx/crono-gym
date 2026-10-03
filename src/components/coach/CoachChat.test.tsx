@@ -20,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CoachChat } from "./CoachChat";
 import { COACH_LABELS as T } from "@/lib/i18n";
+import { AuthModalProvider } from "@/context/AuthModalContext";
 import { DEFAULT_GYM_SETTINGS, type GymSettings } from "@/context/GymSettingsContext";
 import { CoachRequestError, type CoachError, type ChatMessage } from "@/lib/ai/types";
 import type { CoachContext } from "@/lib/coach/types";
@@ -109,6 +110,22 @@ afterEach(() => {
 
 function renderChat(overrides: Partial<GymSettings> = {}) {
   return render(<CoachChat context={CONTEXT} gymSettings={{ ...GYM, ...overrides }} />);
+}
+
+/**
+ * The chat inside a modal provider, so "sign in again" has something to open.
+ *
+ * The app has no `/login` route -- sign-in is `AuthModal` -- so the button has to
+ * reach up through context to open it, and that is what these tests cover.
+ */
+function renderChatWithAuth(overrides: Partial<GymSettings> = {}) {
+  const open = vi.fn();
+  render(
+    <AuthModalProvider open={open}>
+      <CoachChat context={CONTEXT} gymSettings={{ ...GYM, ...overrides }} />
+    </AuthModalProvider>,
+  );
+  return { open };
 }
 
 /** Types into the box and submits. */
@@ -347,7 +364,9 @@ describe("failures", () => {
       renderChat();
       await screen.findByText(T.chatEmpty);
       await ask("hola");
-      expect((await screen.findByRole("alert")).textContent).toBe(T.chatErrors[code.code]);
+      // Containment, not equality: an `AUTH_ERROR` bubble also carries a sign-in
+      // button, and this test is about the wording differing per kind.
+      expect((await screen.findByRole("alert")).textContent).toContain(T.chatErrors[code.code]);
       cleanup();
     }
   });
@@ -384,6 +403,69 @@ describe("failures", () => {
     expect((screen.getByRole("button", { name: T.chatSend }) as HTMLButtonElement).disabled)
       .toBe(true);
     expect(askCoach).not.toHaveBeenCalled();
+  });
+});
+
+describe("an expired session", () => {
+  it("refreshes and retries without the athlete seeing anything", async () => {
+    // `askCoach` owns the refresh, so the transcript shows no auth message at all.
+    // A bubble appearing and disappearing would be worse than silence.
+    askCoach.mockResolvedValue({ message: "Ya estás." });
+    renderChat();
+    await screen.findByText(T.chatEmpty);
+    await ask("¿cómo entreno?");
+
+    expect(await screen.findByText("Ya estás.")).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByText(T.chatErrors.AUTH_ERROR)).toBeNull();
+  });
+
+  it("offers a way back in when the refresh does not save it", async () => {
+    askCoach.mockRejectedValue(new CoachRequestError({ code: "AUTH_ERROR" }));
+    const { open } = renderChatWithAuth();
+    await screen.findByText(T.chatEmpty);
+    await ask("¿cómo entreno?");
+
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      T.chatErrors.AUTH_ERROR,
+    );
+    fireEvent.click(screen.getByRole("button", { name: T.chatSignInAgain }));
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers no button for a failure signing in cannot fix", async () => {
+    // A rate limit has no remedy, and "sign in again" there is a button that cannot
+    // help -- worse than no button, because it invites the wrong action.
+    askCoach.mockRejectedValue(new CoachRequestError({ code: "RATE_LIMITED", retryAfterMs: 1000 }));
+    renderChatWithAuth();
+    await screen.findByText(T.chatEmpty);
+    await ask("¿cómo entreno?");
+
+    await screen.findByRole("alert");
+    expect(screen.queryByRole("button", { name: T.chatSignInAgain })).toBeNull();
+  });
+
+  it("keeps the question next to the sign-in prompt", async () => {
+    // The athlete typed it once and is not typing it again.
+    askCoach.mockRejectedValue(new CoachRequestError({ code: "AUTH_ERROR" }));
+    renderChatWithAuth();
+    await screen.findByText(T.chatEmpty);
+    await ask("¿subo peso en sentadilla?");
+
+    expect(await screen.findByText("¿subo peso en sentadilla?")).toBeTruthy();
+  });
+
+  it("still renders without a modal provider", async () => {
+    // Mounted in the dev catalog and in tests, where no provider exists. The hook
+    // no-ops rather than throwing: unlike a missing session context, this cannot
+    // impersonate a wrong state.
+    askCoach.mockRejectedValue(new CoachRequestError({ code: "AUTH_ERROR" }));
+    renderChat();
+    await screen.findByText(T.chatEmpty);
+    await ask("hola");
+
+    await screen.findByRole("alert");
+    expect(screen.getByRole("button", { name: T.chatSignInAgain })).toBeTruthy();
   });
 });
 

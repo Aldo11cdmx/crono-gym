@@ -23,6 +23,7 @@ import { useProfile } from "./hooks/useProfile";
 import { useOfflineSync } from "./hooks/useOfflineSync";
 import { clearRankData } from "./lib/ranks/rankHistory";
 import { clearAllChats } from "./lib/ai/chatStorage";
+import { AuthModalProvider } from "./context/AuthModalContext";
 import { computeEnergyTargets } from "./lib/profile";
 
 /**
@@ -107,6 +108,8 @@ export function AuthGate() {
   }, []);
 
   const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
+  // Stable identity, so the provider's memoised value does not change every render.
+  const openAuthModal = useCallback(() => setIsAuthModalOpen(true), []);
 
   // Navigation itself belongs to NavLink. What the gate adds is the prompt: a
   // locked tab still has to be reachable so the modal can name it, exactly as
@@ -119,7 +122,8 @@ export function AuthGate() {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <AuthModalProvider open={openAuthModal}>
+      <div className="min-h-screen bg-neutral-950 text-neutral-100">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <h1 className="flex items-center gap-2.5">
@@ -205,7 +209,8 @@ export function AuthGate() {
         onClose={closeAuthModal}
         onAuthenticated={closeAuthModal}
       />
-    </div>
+      </div>
+    </AuthModalProvider>
   );
 }
 

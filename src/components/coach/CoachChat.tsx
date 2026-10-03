@@ -35,6 +35,7 @@ import { AlertTriangle, Send, Square, Trash2 } from "lucide-react";
 import { ACCENT, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_LABELS as T } from "@/lib/i18n";
+import { useAuthModal } from "@/context/AuthModalContext";
 import type { GymSettings } from "@/context/GymSettingsContext";
 import type { CoachContext } from "@/lib/coach/types";
 import {
@@ -191,6 +192,9 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
                 role: "error" as const,
                 content: T.chatErrors[error.code] ?? T.chatErrors.SERVICE_UNAVAILABLE,
                 timestamp: Date.now(),
+                // Carried so the bubble can offer re-authentication only when that is
+                // the thing that would fix it.
+                errorCode: error.code,
               },
             ];
             persist(next);
@@ -388,7 +392,12 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
 // --------------------------------------------------------------- bubble
 
 function Bubble({ message }: { message: ChatMessage }) {
+  const authModal = useAuthModal();
+
   if (message.role === "error") {
+    // Only an expired session gets a way out. A rate limit has nothing the athlete
+    // can do, and offering "sign in again" there would be a button that cannot help.
+    const recoverable = message.errorCode === "AUTH_ERROR";
     return (
       <div
         role="alert"
@@ -402,7 +411,14 @@ function Bubble({ message }: { message: ChatMessage }) {
           color: TEXT.primary,
         }}
       >
-        {message.content}
+        <p style={{ margin: 0 }}>{message.content}</p>
+        {recoverable && (
+          <div style={{ marginTop: 8 }}>
+            <GlassButton type="button" variant="primary" onClick={authModal.open}>
+              {T.chatSignInAgain}
+            </GlassButton>
+          </div>
+        )}
       </div>
     );
   }

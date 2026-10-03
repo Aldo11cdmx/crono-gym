@@ -11,13 +11,28 @@
  * a parser that would break in production.
  */
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   MAX_USER_MESSAGE_CHARS,
   askCoach,
   parseCoachAction,
 } from "./coachAssistant";
 import { CoachRequestError, type AssistantContext, type CoachRequest } from "./types";
+
+/*
+ * The Supabase client is behind a dynamic import inside `coachAssistant`, so this is
+ * the seam that intercepts it. Mocked for the whole file rather than per test because
+ * `vi.mock` is hoisted and a file cannot mix mocked and unmocked imports of the same
+ * module.
+ */
+const { authMock } = vi.hoisted(() => ({
+  authMock: {
+    getSession: vi.fn(),
+    refreshSession: vi.fn(),
+  },
+}));
+
+vi.mock("@/lib/supabase", () => ({ supabase: { auth: authMock } }));
 
 const CONTEXT: AssistantContext = {
   currentGoal: "volume",
@@ -55,6 +70,21 @@ const frame = (content: string) =>
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+beforeEach(() => {
+  /*
+   * Defaults for every test in the file, because the client now reads the session
+   * before it calls. `restoreMocks` in `vitest.config.ts` wipes implementations
+   * between tests, so these are re-established each time rather than set once.
+   */
+  authMock.getSession.mockReset().mockResolvedValue({
+    data: { session: { access_token: "session-token" } },
+  });
+  authMock.refreshSession.mockReset().mockResolvedValue({
+    data: { session: { access_token: "refreshed-token" } },
+    error: null,
+  });
 });
 
 // ------------------------------------------------------------- parseAction
@@ -311,8 +341,186 @@ describe("askCoach streaming", () => {
   });
 });
 
+describe("an expired access token", () => {
+  it("refreshes and retries, and the athlete never sees it", async () => {
+    // The reported bug. A 401 from an expired token is not an account problem, and
+    // answering it with "your session expired" strands someone whose session is fine.
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 401 }))
+      .mockResolvedValueOnce(sseResponse([frame("Ya estás.")]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const chunks: string[] = [];
+    const response = await askCoach(request(), (chunk) => chunks.push(chunk));
+
+    // Resolved, not thrown: nothing in the transcript says anything about auth.
+    expect(response.message).toBe("Ya estás.");
+    expect(chunks).toEqual(["Ya estás."]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(authMock.refreshSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries with the refreshed token, not the one that just expired", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 401 }))
+      .mockResolvedValueOnce(sseResponse([frame("ok")]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await askCoach(request(), () => undefined);
+
+    const bearerOf = (call: number): string | null =>
+      (fetchMock.mock.calls[call][1].headers as Record<string, string>).Authorization;
+
+    expect(bearerOf(0)).toBe("Bearer session-token");
+    expect(bearerOf(1)).toBe("Bearer refreshed-token");
+  });
+
+  it("resends the original question rather than asking for it again", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 401 }))
+      .mockResolvedValueOnce(sseResponse([frame("ok")]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await askCoach(request({ userMessage: "¿subo peso?" }), () => undefined);
+
+    // The retry replays the same body; the athlete typed it once.
+    const bodyOf = (call: number): { userMessage: string } =>
+      JSON.parse(fetchMock.mock.calls[call][1].body as string);
+    expect(bodyOf(1).userMessage).toBe("¿subo peso?");
+  });
+
+  it("sends the session access token rather than the anon key", async () => {
+    // The root cause underneath the reported bug. The anon key is a valid JWT the
+    // gateway accepts and that `auth.getUser` then rejects, so sending it made every
+    // single call 401 -- which made the app look like it was expiring constantly.
+    // Parameters declared explicitly: a zero-arg mock infers a `[]` tuple, so
+    // `mock.calls[0][1]` would not typecheck and asserting on a cast would hide the
+    // shape being checked.
+    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) =>
+      sseResponse([frame("ok")]),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await askCoach(request(), () => undefined);
+
+    const headers = fetchMock.mock.calls[0][1].headers as Record<string, string>;
+    expect(headers.Authorization).toBe("Bearer session-token");
+  });
+
+  it("falls back to the anon key when there is no session at all", async () => {
+    // Not to make the call succeed -- it will not -- but so the request carries a
+    // credential the gateway will verify. That way the 401 comes from the function's
+    // own auth check and classifies as AUTH_ERROR, instead of failing earlier and
+    // reading as a network problem.
+    authMock.getSession.mockResolvedValue({ data: { session: null } });
+    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) =>
+      new Response("", { status: 401 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(askCoach(request(), () => undefined)).rejects.toMatchObject({
+      detail: { code: "AUTH_ERROR" },
+    });
+    const headers = fetchMock.mock.calls[0][1].headers as Record<string, string>;
+    expect(headers.Authorization).toBe(`Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY ?? ""}`);
+  });
+
+  it("gives up with AUTH_ERROR when the retry is refused too", async () => {
+    const fetchMock = vi.fn(async () => new Response("", { status: 401 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(askCoach(request(), () => undefined)).rejects.toMatchObject({
+      detail: { code: "AUTH_ERROR" },
+    });
+    // One retry, not a loop. A second 401 means the refresh produced a token the
+    // function does not accept, which is a real failure rather than an expiry.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry when the refresh itself fails", async () => {
+    authMock.refreshSession.mockResolvedValue({ data: { session: null }, error: {} });
+    const fetchMock = vi.fn(async () => new Response("", { status: 401 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(askCoach(request(), () => undefined)).rejects.toMatchObject({
+      detail: { code: "AUTH_ERROR" },
+    });
+    // There is no new token to send, so a second call could only fail identically.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("refreshes once for two requests that expire together", async () => {
+    // Supabase refresh tokens can be single-use. Two concurrent 401s each refreshing
+    // would let the second arrive after the first consumed the token and invalidate
+    // the very session it just produced.
+    let release: (value: unknown) => void = () => undefined;
+    authMock.refreshSession.mockImplementation(
+      () => new Promise((resolve) => {
+        release = resolve;
+      }),
+    );
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 401 }))
+      .mockResolvedValueOnce(new Response("", { status: 401 }))
+      // A fresh stream per call, not one shared Response: a body can be read once, so
+      // handing both retries the same object would fail with "ReadableStream is locked"
+      // and tell us nothing about the single-flight behaviour under test.
+      .mockImplementation(async () => sseResponse([frame("ok")]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const both = Promise.allSettled([
+      askCoach(request(), () => undefined),
+      askCoach(request(), () => undefined),
+    ]);
+
+    // Let both 401s land before the refresh resolves, so they genuinely overlap.
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    release({
+      data: { session: { access_token: "refreshed-token" } },
+      error: null,
+    });
+
+    const results = await both;
+    expect(results.every((r) => r.status === "fulfilled")).toBe(true);
+    expect(authMock.refreshSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not retry once the athlete has aborted", async () => {
+    // The abort is their own doing; spending a refresh on it would trade a real
+    // session for nothing.
+    const controller = new AbortController();
+    const fetchMock = vi.fn(async () => {
+      controller.abort();
+      return new Response("", { status: 401 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(askCoach(request(), () => undefined, controller.signal)).rejects.toBeDefined();
+    expect(authMock.refreshSession).not.toHaveBeenCalled();
+  });
+
+  it("leaves a non-401 failure alone", async () => {
+    // A 503 must not burn a refresh token: the session was fine and the provider was
+    // not, and rotating the credential would turn a transient outage into a re-login.
+    const fetchMock = vi.fn(async () => new Response("", { status: 503 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(askCoach(request(), () => undefined)).rejects.toMatchObject({
+      detail: { code: "SERVICE_UNAVAILABLE" },
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(authMock.refreshSession).not.toHaveBeenCalled();
+  });
+});
+
 describe("askCoach failure classification", () => {
-  it("maps 401 to an auth error", async () => {
+  it("maps 401 to an auth error when the refresh cannot help", async () => {
+    authMock.refreshSession.mockResolvedValue({ data: { session: null }, error: {} });
     vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 401 })));
     await expect(askCoach(request(), () => undefined)).rejects.toMatchObject({
       detail: { code: "AUTH_ERROR" },

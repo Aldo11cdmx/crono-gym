@@ -139,19 +139,17 @@ export async function askCoach(
   if (shouldUseDevMock()) return mockAnswer(message, onChunk, signal);
 
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/coach-assistant`;
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-  };
   // Lets the function answer a CORS preflight from the app's own origin only.
   const origin = typeof window === "undefined" ? undefined : window.location.origin;
-  if (origin) headers["Origin"] = origin;
 
-  let response: Response;
-  try {
-    response = await fetch(url, {
+  const attempt = (token: string) =>
+    fetch(url, {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...(origin ? { Origin: origin } : {}),
+      },
       body: JSON.stringify({
         userMessage: message,
         context: request.context,
@@ -161,6 +159,25 @@ export async function askCoach(
       }),
       signal,
     });
+
+  let response: Response;
+  try {
+    response = await attempt(await accessToken());
+
+    /*
+     * A 401 here is almost always an expired access token rather than a revoked
+     * account: Supabase access tokens are short-lived, and the library refreshes them
+     * on a timer that a suspended laptop or a backgrounded tab will have missed. The
+     * refresh happens here so the athlete never sees it, and the retry reuses the
+     * original question rather than asking them to send it again.
+     *
+     * Exactly one retry. A second 401 means the refresh itself did not produce a token
+     * the function accepts, which is a real auth failure and is reported as one.
+     */
+    if (response.status === 401 && !signal?.aborted) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) response = await attempt(refreshed);
+    }
   } catch (cause) {
     // An abort is the user's own doing, not a failure, and must not surface as a
     // network error in the transcript.
@@ -174,6 +191,95 @@ export async function askCoach(
   if (!response.ok) throw await classifyHttpError(response);
 
   return readStream(response, onChunk);
+}
+
+// ------------------------------------------------------------------- auth
+
+/**
+ * The Supabase client, or null when it cannot be built.
+ *
+ * Imported lazily because `@/lib/supabase` throws at module scope when the env vars
+ * are absent, and {@link shouldUseDevMock} is precisely the case where they are. A
+ * static import would take the whole module down and kill the development mock along
+ * with it.
+ */
+async function supabaseClient(): Promise<SupabaseAuth | null> {
+  try {
+    const { supabase } = await import("@/lib/supabase");
+    return supabase.auth as SupabaseAuth;
+  } catch {
+    return null;
+  }
+}
+
+/** The slice of the auth client this module uses. */
+interface SupabaseAuth {
+  getSession(): Promise<{ data: { session: { access_token: string } | null } }>;
+  refreshSession(): Promise<{
+    data: { session: { access_token: string } | null };
+    error: unknown;
+  }>;
+}
+
+/**
+ * The bearer token for the request.
+ *
+ * The **session access token**, not the anon key. The function resolves the caller
+ * with `auth.getUser(token)`, which only accepts a user token -- the anon key is a
+ * valid JWT that the gateway's signature check accepts and that `getUser` then
+ * rejects, so sending it produced a 401 on every single call.
+ *
+ * Falls back to the anon key when there is no session at all, because the function's
+ * 401 is what classifies the failure correctly; the alternative is a request with no
+ * usable credential, which would fail at the gateway instead and read as a network
+ * problem.
+ */
+async function accessToken(): Promise<string> {
+  try {
+    const auth = await supabaseClient();
+    const { data } = (await auth?.getSession()) ?? { data: { session: null } };
+    const token = data.session?.access_token;
+    if (token) return token;
+  } catch {
+    // Falls through to the anon key.
+  }
+  return import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
+}
+
+/**
+ * A refresh in progress, shared by every caller that hits a 401 at the same time.
+ *
+ * Not a micro-optimisation. Two requests 401ing together -- the assistant's question
+ * and a sync, say -- would each call `refreshSession()`, and Supabase may reuse the
+ * same refresh token for both, so the second could arrive after the first consumed
+ * it and invalidate the session it just obtained. One in-flight promise, one refresh.
+ */
+let refreshInFlight: Promise<string | null> | null = null;
+
+function refreshAccessToken(): Promise<string | null> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    try {
+      const auth = await supabaseClient();
+      if (!auth) return null;
+      const { data, error } = await auth.refreshSession();
+      if (error) return null;
+      return data.session?.access_token ?? null;
+    } catch {
+      // A failed refresh is not an error here: the caller reports AUTH_ERROR either
+      // way, and a thrown refresh would mask the real status with a network error.
+      return null;
+    }
+  })();
+
+  // Cleared on settle so the next expiry can refresh again. Held on a local reference
+  // because assigning here would race the concurrent callers still awaiting it.
+  void refreshInFlight.finally(() => {
+    refreshInFlight = null;
+  });
+
+  return refreshInFlight;
 }
 
 function isAbort(cause: unknown, signal?: AbortSignal): boolean {

@@ -848,6 +848,13 @@ export const COACH_LABELS = {
   chatStop: "Detener",
   chatRetry: "Reintentar",
   chatNotSaved: "Esta conversación no se está guardando en este dispositivo.",
+  /**
+   * Opens the app's sign-in modal.
+   *
+   * Not a link to `/login`: this app has no such route. Sign-in happens in `AuthModal`
+   * (email and password), so this label opens that.
+   */
+  chatSignInAgain: "Volver a entrar",
 
   /** One classified failure, per `CoachError` code. */
   chatErrors: {

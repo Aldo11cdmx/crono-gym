@@ -75,6 +75,15 @@ export interface ChatMessage {
   timestamp: number;
   /** True while tokens are still arriving for this message. */
   isStreaming?: boolean;
+  /**
+   * The failure behind an error bubble, when there is a code for it.
+   *
+   * Carried so the bubble can offer the *right* way out. An expired session has a
+   * button that reopens sign-in; a rate limit has none, because there is nothing for
+   * the athlete to do about it. Re-deriving this from the message text would make the
+   * UI depend on Spanish copy staying in sync with the classifier.
+   */
+  errorCode?: CoachError["code"];
 }
 
 // ---------------------------------------------------------------- requests

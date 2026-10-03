@@ -14,9 +14,12 @@
  * surface. The behaviour of IndexedDB itself is not this code's to test.
  */
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+// Imported as source text rather than read off disk with `node:fs`: the project has
+// no `@types/node` and adding one for a single guard is not worth it, and Vite's
+// `?raw` needs no extra dependency or config.
+import offlineStoreSource from "./offlineStore.ts?raw";
+import rankHistorySource from "./ranks/rankHistory.ts?raw";
 import {
   COACH_CHATS_STORE,
   DRAFT_STORE,
@@ -130,13 +133,12 @@ describe("single ownership of the database", () => {
    * which is exactly the situation that makes it slip through review.
    */
   const dependents = [
-    ["offlineStore.ts", "./offlineStore.ts"],
-    ["rankHistory.ts", "./ranks/rankHistory.ts"],
+    ["offlineStore.ts", offlineStoreSource],
+    ["rankHistory.ts", rankHistorySource],
   ] as const;
 
-  for (const [name, relative] of dependents) {
+  for (const [name, source] of dependents) {
     it(`leaves the schema to idb.ts — ${name}`, () => {
-      const source = readFileSync(fileURLToPath(new URL(relative, import.meta.url)), "utf8");
       const code = codeOnly(source);
 
       // No local version constant: that is the thing that drifted.
@@ -152,10 +154,6 @@ describe("single ownership of the database", () => {
     // The explanation is the reason the guard exists. A future refactor that deletes
     // the docblock has removed the context a reviewer needs to judge the check, so
     // its presence is itself worth asserting.
-    const source = readFileSync(
-      fileURLToPath(new URL("./ranks/rankHistory.ts", import.meta.url)),
-      "utf8",
-    );
-    expect(source).toMatch(/VersionError/);
+    expect(rankHistorySource).toMatch(/VersionError/);
   });
 });

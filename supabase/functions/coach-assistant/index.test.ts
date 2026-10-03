@@ -76,6 +76,8 @@ interface StubOptions {
   upstream?: () => Promise<Response> | Response;
   /** When false, `getUser` reports an invalid token. */
   tokenValid?: boolean;
+  /** When true, the rate-limit prune rejects instead of resolving. */
+  failDelete?: boolean;
 }
 
 interface Stub {
@@ -129,6 +131,7 @@ function stubNetwork(options: StubOptions = {}): Stub {
     usage: [] as unknown[],
     windows: [] as unknown[],
     auth: [] as string[],
+    failDelete: options.failDelete ?? false,
   };
   upstreamBodies = [];
   const tokenValid = options.tokenValid ?? true;
@@ -153,7 +156,17 @@ function stubNetwork(options: StubOptions = {}): Stub {
 
     if (url.includes("/rest/v1/coach_rate_limits")) {
       const method = init?.method ?? "GET";
-      if (method === "DELETE") return Promise.resolve(new Response(null, { status: 204 }));
+      if (method === "DELETE") {
+        /*
+         * Models a prune that fails. Housekeeping runs on every admitted request, so
+         * if its rejection is not handled it takes the whole isolate down with it --
+         * which is exactly what a browser sees as a 503 carrying no CORS headers.
+         */
+        if (state.failDelete) {
+          return Promise.reject(new TypeError("Failed to fetch"));
+        }
+        return Promise.resolve(new Response(null, { status: 204 }));
+      }
       if (method === "POST") {
         // A row for the window the handler is writing.
         const row = JSON.parse(String(init?.body ?? "{}"));
@@ -411,6 +424,109 @@ Deno.test("rejects a malformed body rather than throwing", async () => {
     assertEquals(response.status, 400);
     assertEquals(stub.upstreamCalls(), 0);
   } finally {
+    stub.restore();
+    clearEnv();
+  }
+});
+
+Deno.test("survives a failing rate-limit prune", async () => {
+  setEnv();
+  // The prune is fire-and-forget housekeeping that runs on every admitted request. An
+  // unhandled rejection does not just fail the prune -- in Deno it takes the isolate
+  // down, so the browser gets a connection that dies mid-response and reports a 503
+  // with no CORS headers at all.
+  const stub = stubNetwork({ failDelete: true });
+  try {
+    const response = await handler(makeRequest());
+    // The answer still arrives: the request was already admitted and the athlete
+    // should not lose it because housekeeping failed.
+    assertEquals(response.status, 200);
+    await response.text();
+    assertEquals(stub.upstreamCalls(), 1);
+
+    // Give the fire-and-forget a turn to reject. An unhandled rejection here would
+    // surface as a test-level error rather than a failed assertion.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  } finally {
+    stub.restore();
+    clearEnv();
+  }
+});
+
+Deno.test("always answers with CORS headers, even on failure", async () => {
+  setEnv();
+  const cases: { name: string; build: () => Request; allowOrigin: boolean }[] = [
+    { name: "unauthorised", build: () => makeRequest({ token: null }), allowOrigin: true },
+    { name: "malformed body", build: () => makeRequest({ rawBody: "{ not json" }), allowOrigin: true },
+    { name: "rate limited", build: () => makeRequest(), allowOrigin: true },
+    { name: "wrong method", build: () => makeRequest({ method: "GET" }), allowOrigin: true },
+    // The one case that must NOT be echoed: granting an allow-origin to a rejected
+    // origin would hand a hostile page a readable response and undo the check itself.
+    {
+      name: "foreign origin",
+      build: () => makeRequest({ origin: "https://evil.example" }),
+      allowOrigin: false,
+    },
+  ];
+
+  for (const testCase of cases) {
+    const stub = stubNetwork({ requestCount: testCase.name === "rate limited" ? 20 : 0 });
+    try {
+      const response = await handler(testCase.build());
+      assertEquals(
+        response.headers.get("Access-Control-Allow-Origin") === ALLOWED_ORIGIN,
+        testCase.allowOrigin,
+        `${testCase.name}: unexpected allow-origin`,
+      );
+    } finally {
+      stub.restore();
+    }
+  }
+});
+
+Deno.test("answers with CORS headers when the handler throws", async () => {
+  setEnv();
+  const stub = stubNetwork({
+    upstream: () => {
+      // A 200 whose `body` getter throws. This is the shape of a real unguarded throw:
+      // `callOpenRouter` wraps the fetch itself but reads `response.body` outside that
+      // try, so the failure escapes the handler entirely. A stubbed fetch rejection is
+      // not enough to prove the point -- supabase-js and OpenRouter errors are all
+      // absorbed long before this boundary.
+      const response = sse(["hola"], 5);
+      Object.defineProperty(response, "body", {
+        get() {
+          throw new Error("stream already consumed");
+        },
+      });
+      return response;
+    },
+  });
+  const logged: unknown[][] = [];
+  const originalError = console.error;
+  console.error = (...args: unknown[]) => {
+    logged.push(args);
+  };
+
+  try {
+    const response = await handler(makeRequest());
+
+    // Without this header the browser reports a CORS error instead of the status, which
+    // is the symptom that hides the real cause.
+    assertEquals(response.headers.get("Access-Control-Allow-Origin"), ALLOWED_ORIGIN);
+    assertEquals(response.status, 500);
+
+    // Generic on the wire, detailed in the log: a body naming the internal failure is
+    // reconnaissance for anyone holding a token.
+    const body = (await response.json()) as Record<string, unknown>;
+    assertEquals(body.message, undefined);
+    assertEquals(body.error, "internal_error");
+
+    // The real cause goes to the dashboard, where it is readable.
+    assertEquals(logged.length > 0, true);
+    assertEquals(String(logged[0]?.[0]).includes("Unhandled"), true);
+  } finally {
+    console.error = originalError;
     stub.restore();
     clearEnv();
   }

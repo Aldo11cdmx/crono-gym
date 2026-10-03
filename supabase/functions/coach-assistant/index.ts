@@ -157,15 +157,55 @@ function originAllowed(request: Request): boolean {
 // ------------------------------------------------------------------ handler
 
 /**
- * The request handler.
+ * The request handler, with a floor under it.
  *
- * Exported, and `Deno.serve` is behind `import.meta.main`, so the test file can drive
- * this directly with real `Request` objects. A module-scope `Deno.serve` would bind a
- * port merely by being imported, which is what makes an HTTP handler awkward to test.
+ * Everything above is the real logic; this wrapper exists because a rejection that
+ * escapes it loses more than the request. `Deno.serve` answers a thrown handler with a
+ * bare 500 that carries no CORS headers, and a browser reports that as "no
+ * Access-Control-Allow-Origin header is present" -- a CORS error, which points the
+ * investigation at the wrong layer entirely. The status code and the real cause both
+ * become invisible.
+ *
+ * So the catch exists for two reasons, and the second is the one that matters:
+ *
+ *  1. The athlete gets a readable, classified failure instead of an opaque one.
+ *  2. `console.error` puts the stack in the dashboard, where it can actually be found.
+ *
+ * The body stays generic. Returning `String(err)` would put an internal message into a
+ * 500 the caller can read, which is the same reconnaissance risk every other error path
+ * in this function is written to avoid -- and it would be the only one that leaks.
  */
 export async function handler(request: Request): Promise<Response> {
+  // Computed outside the try because the catch needs it. It only reads two headers and
+  // one env var, and it is the same call the inner function makes first thing.
   const cors = corsHeaders(request);
 
+  try {
+    return await handleRequest(request, cors);
+  } catch (cause) {
+    console.error(
+      "Unhandled error in coach-assistant:",
+      cause instanceof Error ? (cause.stack ?? cause.message) : String(cause),
+    );
+    return new Response(JSON.stringify({ error: "internal_error" }), {
+      // 500 rather than 503: the service is not unavailable, it is broken. Both map to
+      // SERVICE_UNAVAILABLE client-side, so nothing downstream distinguishes them.
+      status: 500,
+      headers: { "Content-Type": "application/json", ...cors },
+    });
+  }
+}
+
+/**
+ * The actual request logic.
+ *
+ * Kept separate from {@link handler} so the CORS floor can wrap it without every
+ * `return` inside having to remember the headers.
+ */
+async function handleRequest(
+  request: Request,
+  cors: Record<string, string>,
+): Promise<Response> {
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: cors });
   }

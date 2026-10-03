@@ -81,8 +81,15 @@ interface CoachDatabase {
 /** The service-role client, with the two tables above described. */
 type AdminClient = SupabaseClient<CoachDatabase>;
 
-/** Model id. A pinned id, not the `openrouter/free` alias, which can be repointed. */
-const MODEL = "meta-llama/llama-3.1-8b-instruct:free";
+/**
+ * Model id. A pinned id, not the `openrouter/free` alias, which can be repointed.
+ *
+ * OpenRouter retires free slugs without notice, so this is the one constant to re-pin
+ * when the next one disappears: the previous pin, `meta-llama/llama-3.1-8b-instruct:free`,
+ * started answering 404. Pinned still beats the router alias, which trades that 404 for
+ * a silent change of model under the same config.
+ */
+const MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
 
 /** Concise answers: the coach is a coach, not a lecturer. */
 const MAX_TOKENS = 400;
@@ -232,6 +239,10 @@ async function handleRequest(
     return jsonResponse(500, { error: "service_unavailable" }, cors);
   }
   if (!openrouterKey) {
+    // A 503 with nothing logged is what a missing secret looks like, and it would be
+    // indistinguishable from the provider being down. Presence only, never the value:
+    // this lands in a dashboard other people can read.
+    console.error("refusing: OPENROUTER_API_KEY is not visible to this process");
     // Generic, and identical to the "upstream is down" answer. A distinct status here
     // would tell anyone probing the function that the deployment is misconfigured.
     return jsonResponse(503, { error: "service_unavailable" }, cors);
@@ -499,7 +510,15 @@ async function callOpenRouter(
         }),
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
-    } catch {
+    } catch (cause) {
+      // This catch swallows the failure entirely, so without a line here a network
+      // error or a timeout is indistinguishable from a missing key: both answer 503
+      // and neither says anything.
+      console.error("openrouter fetch failed", {
+        attempt,
+        name: cause instanceof Error ? cause.name : typeof cause,
+        message: cause instanceof Error ? cause.message : String(cause),
+      });
       // AbortSignal.timeout lands here as an AbortError, same as a network failure.
       // Both mean the same thing to the user.
       return { ok: false, status: 503, body: null, usage: UNKNOWN_USAGE };
@@ -509,6 +528,19 @@ async function callOpenRouter(
       const { stream, usage } = teeForUsage(response);
       return { ok: true, status: 200, body: stream, usage };
     }
+
+    // The status alone does not say *why*: OpenRouter answers 402 for a spent credit
+    // balance, 401 for a revoked key and 404 for a retired model slug, and the first
+    // two mean "this deployment will never work" while the third means "re-pin MODEL".
+    // None of that is visible from the status code alone.
+    //
+    // Read before the cancel below: a consumed body cannot be cancelled meaningfully,
+    // and cancelling first would make this log unreadable.
+    console.error("openrouter rejected the request", {
+      status: response.status,
+      attempt,
+      body: await response.text().catch(() => "<unreadable>"),
+    });
 
     // Drain the body so the connection is not left half-read.
     await response.body?.cancel().catch(() => undefined);

@@ -51,14 +51,33 @@ interface AnatomicalRanksViewProps {
    * exercises" become two ends of one trip.
    */
   initialDetail?: string | null;
+  /**
+   * Compute this person's ranks without touching the shared hysteresis store.
+   *
+   * For the coach portal, which shows the map for an athlete who is not the signed-in
+   * user. The ranks, the distribution and the promotion banner are all still computed and
+   * still shown -- what stops is the persistence, because that store is keyed by muscle
+   * alone and shared by every account on the origin.
+   *
+   * Named the same as the hook's option and forwarded to it verbatim. Not re-derived here:
+   * this component does not know whether `userId` is the signed-in user, and a guess would
+   * be wrong in exactly the case that matters.
+   *
+   * Distinct from the `readOnly` passed to `MuscleSelector` below, which means something
+   * narrower -- the selector cannot be used to change the selection. Two props of the same
+   * name at different depths for different reasons is a little unfortunate; renaming the
+   * hook's option to match would have meant touching every existing caller to avoid it.
+   */
+  readOnly?: boolean;
 }
 
 export function AnatomicalRanksView({
   userId,
   onBrowseMuscle,
   initialDetail = null,
+  readOnly = false,
 }: AnatomicalRanksViewProps) {
-  const ranks = useMuscleRanks(userId);
+  const ranks = useMuscleRanks(userId, { readOnly });
   const reducedMotion = useReducedMotion();
   const [detailSlug, setDetailSlug] = useState<string | null>(initialDetail);
   const [seenPromotions, setSeenPromotions] = useState<string[]>([]);

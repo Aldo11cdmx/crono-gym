@@ -114,22 +114,27 @@ function installSupabaseMock(fixture: Fixture) {
 /** Spies on the history store, which stands in for IndexedDB under jsdom. */
 const saveLastRanks = vi.fn(async () => {});
 const appendRankHistory = vi.fn(async () => {});
+const loadLastRanks = vi.fn(async (): Promise<Record<string, string>> => ({}));
+const loadRankHistory = vi.fn(async (): Promise<unknown[]> => []);
 
 vi.mock("@/lib/ranks/rankHistory", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/ranks/rankHistory")>();
   return {
     ...actual,
-    loadLastRanks: vi.fn(async () => ({})),
-    loadRankHistory: vi.fn(async () => []),
+    // Read as well as written through the spies: the read-only mode has to skip both, and
+    // a test that can only see the writes would pass with the reads still happening --
+    // which is the half that silently puts the coach's own ranks into the athlete's map.
+    loadLastRanks: (...args: unknown[]) => loadLastRanks(...(args as [])),
+    loadRankHistory: (...args: unknown[]) => loadRankHistory(...(args as [])),
     saveLastRanks: (...args: unknown[]) => saveLastRanks(...(args as [])),
     appendRankHistory: (...args: unknown[]) => appendRankHistory(...(args as [])),
   };
 });
 
 /** Mounts the hook and waits for the first completed load. */
-async function loadRanks() {
+async function loadRanks(options?: { readOnly?: boolean }) {
   const { useMuscleRanks } = await import("@/hooks/useMuscleRanks");
-  const { result } = renderHook(() => useMuscleRanks(USER));
+  const { result } = renderHook(() => useMuscleRanks(USER, options ?? {}));
   await waitFor(() => expect(result.current.initialLoading).toBe(false));
   await waitFor(() => expect(result.current.map).not.toBeNull());
   return result;
@@ -312,5 +317,98 @@ describe("useMuscleRanks persistence settles", () => {
     // One session and one exercise is below the eligibility floor, so the map
     // exists but is empty; what matters is that it is settled and rendered.
     expect(result.current.map).not.toBeNull();
+  });
+});
+
+/**
+ * Read-only mode, which is how the coach portal reads somebody else's ranks.
+ *
+ * The store this guards is one IndexedDB database for the whole origin, keyed by muscle
+ * slug and nothing else -- `clearRankData` exists on sign-out precisely because that is a
+ * known hazard. A coach inspecting an athlete is not signed out, so without this mode the
+ * coach's own ranks become `previous` for the athlete's `buildRankMap`, and the coach's
+ * `/rangos` shifts as a side effect of looking at somebody else.
+ *
+ * Every assertion here is about *not touching the store*, in both directions. Gating only
+ * the writes would pass a write-only test and still hand one person's map to another's
+ * calculation.
+ */
+describe("useMuscleRanks readOnly", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    saveLastRanks.mockClear();
+    appendRankHistory.mockClear();
+    loadLastRanks.mockClear();
+    loadRankHistory.mockClear();
+  });
+
+  afterEach(() => {
+    vi.doUnmock("@/lib/supabase");
+  });
+
+  it("reads nothing from the hysteresis store", async () => {
+    installSupabaseMock({ sets: makeSets(200), exercises: [EXERCISE] });
+    await loadRanks({ readOnly: true });
+
+    expect(loadLastRanks).not.toHaveBeenCalled();
+    expect(loadRankHistory).not.toHaveBeenCalled();
+  });
+
+  it("writes nothing to the hysteresis store", async () => {
+    installSupabaseMock({ sets: makeSets(200), exercises: [EXERCISE] });
+    await loadRanks({ readOnly: true });
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    expect(saveLastRanks).not.toHaveBeenCalled();
+    expect(appendRankHistory).not.toHaveBeenCalled();
+  });
+
+  it("still returns a computed map", async () => {
+    // The point of the mode is to stop persistence, not to stop the CRM from working.
+    installSupabaseMock({ sets: makeSets(200), exercises: [EXERCISE] });
+    const result = await loadRanks({ readOnly: true });
+
+    await waitFor(() => expect(result.current.map).not.toBeNull());
+    expect(result.current.error).toBeNull();
+    expect(result.current.bodyweightKg).toBe(70);
+  });
+
+  it("exposes an empty timeline rather than the coach's own", async () => {
+    // `historyFor` is rendered next to the map in the muscle detail panel, so a store
+    // read here would put one person's promotions on screen beside another's ranks.
+    loadRankHistory.mockResolvedValueOnce([
+      { slug: "chest", rank: "gold", score: 900, recordedAt: "2026-01-01T00:00:00.000Z" },
+    ]);
+
+    installSupabaseMock({ sets: makeSets(200), exercises: [EXERCISE] });
+    const result = await loadRanks({ readOnly: true });
+
+    await waitFor(() => expect(result.current.map).not.toBeNull());
+    expect(result.current.history).toEqual([]);
+    expect(result.current.historyFor("chest")).toEqual([]);
+  });
+
+  it("settles instead of recomputing in a loop", async () => {
+    // The persist effect also advances `previous`, which feeds the map memo. Left in place
+    // for a read-only mount it would keep invalidating a memo it never advances.
+    installSupabaseMock({ sets: makeSets(200), exercises: [EXERCISE] });
+    const result = await loadRanks({ readOnly: true });
+
+    await waitFor(() => expect(result.current.map).not.toBeNull());
+    const atSettle = result.current.map;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(result.current.map).toBe(atSettle);
+  });
+
+  it("leaves the default path untouched", async () => {
+    // The guard is a switch, not a replacement: an athlete's own view must still
+    // persist, or their ranks would reset on every reload.
+    installSupabaseMock({ sets: makeSets(200), exercises: [EXERCISE] });
+    await loadRanks();
+
+    await waitFor(() => expect(loadLastRanks).toHaveBeenCalled());
+    await waitFor(() => expect(saveLastRanks).toHaveBeenCalledTimes(1));
   });
 });

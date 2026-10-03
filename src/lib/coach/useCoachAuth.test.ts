@@ -736,8 +736,77 @@ describe("useCoachAuth · the session is shared, not per-component", () => {
     const second = renderHook(() => useCoachAuth());
 
     expect(second.result.current.isLoading).toBe(false);
-    // And the session survives the remount, which is the whole point of module scope:
+// And the session survives the remount, which is the whole point of module scope:
     // navigating away from the portal must not lock a coach out of it.
     expect(second.result.current.isUnlocked).toBe(true);
+  });
+});
+
+/**
+ * `getCoachId()` -- the `coaches.id` of the held session.
+ *
+ * Exists because `routines.authored_by_coach` has to be written by the coach's own id,
+ * and that column is not decoration: the DELETE policy on `routines` matches it against
+ * the calling coach's row and nothing else, so a routine written with a null author is a
+ * routine its own author cannot retract -- the exact leak of an empty routine into an
+ * athlete's library that `VipRoutineBuilder`'s compensating delete exists to close.
+ *
+ * The empty-string case is the one worth a test. The function stores `coachId` as `""`
+ * when the payload omits it, and `""` is not null: written straight into a uuid column it
+ * is a value the database refuses, and quietly defaulted it would produce a row that
+ * looks authored and is not.
+ */
+describe("useCoachAuth · getCoachId", () => {
+  it("reports no id before anything is unlocked", async () => {
+    const { getCoachId } = await load();
+
+    expect(getCoachId()).toBeNull();
+  });
+
+  it("returns the id the function issued", async () => {
+    installFetch(OK);
+    const { useCoachAuth, getCoachId } = await load();
+
+    const { result } = renderHook(() => useCoachAuth());
+    await act(async () => {
+      await result.current.unlock(PIN);
+    });
+
+    expect(getCoachId()).toBe("coach-1");
+  });
+
+  it("returns null once the session is dropped", async () => {
+    installFetch(OK);
+    const { useCoachAuth, getCoachId } = await load();
+
+    const { result } = renderHook(() => useCoachAuth());
+    await act(async () => {
+      await result.current.unlock(PIN);
+    });
+    expect(getCoachId()).toBe("coach-1");
+
+    act(() => {
+      result.current.lock();
+    });
+
+    expect(getCoachId()).toBeNull();
+  });
+
+  it("reports null, not an empty string, when the function omits the id", async () => {
+    installFetch({
+      status: 200,
+      body: { token: COACH_TOKEN, expiresAt: null },
+    });
+    const { useCoachAuth, getCoachId } = await load();
+
+    const { result } = renderHook(() => useCoachAuth());
+    await act(async () => {
+      await result.current.unlock(PIN);
+    });
+
+    // The token issued, so this is a usable session -- but there is no id to write into
+    // `authored_by_coach`, and the caller has to be able to tell that apart from a
+    // session that has neither.
+    expect(getCoachId()).toBeNull();
   });
 });

@@ -63,6 +63,39 @@ const HISTORY_DAYS = 730;
  */
 const SESSION_PAGE = 1000;
 
+/**
+ * Optional behaviour switches.
+ *
+ * `readOnly` exists for one caller: the coach portal, which computes the rank map for an
+ * athlete who is not the signed-in user.
+ *
+ * It is a switch on every touch of the hysteresis store, and it is not a small one.
+ * `rankHistory` keeps `lastRanks` and the rank timeline in IndexedDB keyed by muscle slug
+ * and nothing else -- one store for the whole origin, shared by every account that has
+ * ever used this browser. `clearRankData` exists precisely because that is a known hazard,
+ * and it runs on sign-out.
+ *
+ * A coach looking at an athlete is not signed out. So without this, opening an athlete in
+ * the CRM would read the *coach's own* ranks as `previous`, hand them to `buildRankMap`,
+ * and apply hysteresis against them: the athlete would be scored against a comparison the
+ * coach earned, and the coach's own `/rangos` would shift as a side effect of looking at
+ * somebody else. That is the failure this switch exists to make impossible, and it is why
+ * both the reads and the writes are gated -- skipping only the writes would still let one
+ * user's map reach another's calculation.
+ */
+export interface UseMuscleRanksOptions {
+  /**
+   * Compute without reading or writing the shared hysteresis store.
+   *
+   * `previous` stays `{}`, so `buildRankMap` promotes freely and nothing is retained: the
+   * athlete's own ranks get their genuine first evaluation rather than one filtered
+   * through the coach's history. A rank may therefore look "new" to the athlete and
+   * already-achieved to the coach, and for a one-off consultation that is the honest
+   * answer -- there is no shared timeline to be consistent with.
+   */
+  readOnly?: boolean;
+}
+
 export interface MuscleRanksState {
   map: RankMap | null;
   /** Rank timeline, oldest first, across all muscles. */
@@ -217,7 +250,17 @@ interface HistoryRows {
 /** Nothing to show yet, so the UI can render a skeleton instead of `null`. */
 const EMPTY_DISTRIBUTION = {} as Record<RankId, number>;
 
-export function useMuscleRanks(userId: string | null): MuscleRanksState {
+/**
+ * Compute an athlete's rank map, by default persisting the hysteresis state.
+ *
+ * See {@link UseMuscleRanksOptions} for why the coach portal passes `readOnly`.
+ */
+export function useMuscleRanks(
+  userId: string | null,
+  options: UseMuscleRanksOptions = {},
+): MuscleRanksState {
+  const { readOnly = false } = options;
+
   const [rows, setRows] = useState<HistoryRows>({ logs: [], sets: [], exercises: [] });
   const [previous, setPrevious] = useState<PreviousRanks>({});
   const [history, setHistory] = useState<RankHistoryRecord[]>([]);
@@ -329,6 +372,15 @@ export function useMuscleRanks(userId: string | null): MuscleRanksState {
   useEffect(() => {
     let alive = true;
     void (async () => {
+      if (readOnly) {
+        // Skipped rather than merely unused: these two reads are how the coach's own
+        // ranks and timeline would enter an athlete's calculation, and the timeline is
+        // also *rendered* next to the athlete's map by `historyFor`. Reading them and
+        // ignoring them would still put one person's history on screen beside another's.
+        await load();
+        return;
+      }
+
       const stored = await loadLastRanks();
       if (!alive) return;
       setPrevious(stored as PreviousRanks);
@@ -338,7 +390,7 @@ export function useMuscleRanks(userId: string | null): MuscleRanksState {
     return () => {
       alive = false;
     };
-  }, [load]);
+  }, [load, readOnly]);
 
   // Recompute whenever written training data lands, without a reload.
   useEffect(() => {
@@ -360,6 +412,10 @@ export function useMuscleRanks(userId: string | null): MuscleRanksState {
 
   // Persist the ranks and the timeline once per distinct map.
   useEffect(() => {
+    // Whole effect skipped, not just the writes inside it. `setPrevious` at the end is
+    // what feeds the memo, so leaving it in place would keep a `readOnly` map in a
+    // hysteresis loop against an empty previous map that it never advances.
+    if (readOnly) return;
     if (!map || persisting.current) return;
     persisting.current = true;
     void (async () => {
@@ -404,7 +460,7 @@ export function useMuscleRanks(userId: string | null): MuscleRanksState {
       setPrevious((current) => (sameRanks(current, snapshot) ? current : snapshot));
       persisting.current = false;
     })();
-  }, [map, previous]);
+  }, [map, previous, readOnly]);
 
   const promotions = useMemo(() => (map ? promotionsIn(map) : []), [map]);
   const distribution = useMemo(

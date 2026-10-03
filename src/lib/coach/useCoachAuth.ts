@@ -188,6 +188,28 @@ export function getCoachToken(): string | null {
   return session?.token ?? null;
 }
 
+/**
+ * The `coaches.id` of the held session, or null when locked.
+ *
+ * The portal writes `routines.authored_by_coach` with this, and that column is what makes
+ * the row deletable by its own author: the DELETE policy on `routines` matches
+ * `authored_by_coach` against the calling coach's row and nothing else. So a null here is
+ * not a formatting inconvenience -- writing a routine with a null author produces a row
+ * the coach cannot retract, which is exactly the shape of the compensating-delete problem
+ * `20261003030000_coach_portal.sql` set out to solve.
+ *
+ * `|| null` rather than `?? null` because the session stores `coachId` as `""` when the
+ * function omits it (see `callFunction`), and `""` is a value a caller could otherwise
+ * write into a uuid column. An absent id and an empty one mean the same thing here.
+ *
+ * Deliberately not derived from the signed-in user by querying `coaches`: that would be a
+ * round trip on every render of every panel, and it would answer a different question. The
+ * session's id is the one the PIN released.
+ */
+export function getCoachId(): string | null {
+  return session?.coachId || null;
+}
+
 // ----------------------------------------------------------------- requests
 
 /** The slice of the auth client this module uses. */

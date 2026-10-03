@@ -22,6 +22,7 @@ import {
 import { useProfile } from "./hooks/useProfile";
 import { useOfflineSync } from "./hooks/useOfflineSync";
 import { clearRankData } from "./lib/ranks/rankHistory";
+import { clearAllChats } from "./lib/ai/chatStorage";
 import { computeEnergyTargets } from "./lib/profile";
 
 /**
@@ -94,9 +95,14 @@ export function AuthGate() {
    * start holding a rank they never earned and the demotion buffer would defend
    * it. Cleared before the sign-out resolves so a failed sign-out does not leave
    * signed-in state with no cached ranks.
+   *
+   * `clearAllChats` for the same reason: the assistant's transcript is the most
+   * revealing thing this app stores on the device. It is not on the server, so a
+   * sign-out that left it behind would be the one way it outlived the account.
    */
   const signOut = useCallback(async () => {
     await clearRankData();
+    await clearAllChats();
     await supabase.auth.signOut();
   }, []);
 

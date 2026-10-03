@@ -18,11 +18,7 @@
 import type { Exercise } from "@/types/supabase";
 import type { SetEntry } from "./workout/types";
 import { normalizeSetEntry } from "./workout/setKind";
-
-const DB_NAME = "cronos-offline";
-const DB_VERSION = 1;
-const DRAFT_STORE = "drafts";
-const QUEUE_STORE = "queue";
+import { DRAFT_STORE, QUEUE_STORE, openDb, tx } from "./idb";
 
 export interface DraftExercise {
   key: string;
@@ -82,69 +78,14 @@ export interface QueueOp {
 }
 
 // ---------------------------------------------------------------- IndexedDB
-
-let dbPromise: Promise<IDBDatabase | null> | null = null;
-
-function openDb(): Promise<IDBDatabase | null> {
-  if (dbPromise) return dbPromise;
-
-  dbPromise = new Promise((resolve) => {
-    // Absent in SSR and in some hardened browsers.
-    if (typeof indexedDB === "undefined") {
-      resolve(null);
-      return;
-    }
-    try {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(DRAFT_STORE)) {
-          // Keyed by logId so a single active session per device is enough.
-          db.createObjectStore(DRAFT_STORE, { keyPath: "logId" });
-        }
-        if (!db.objectStoreNames.contains(QUEUE_STORE)) {
-          const store = db.createObjectStore(QUEUE_STORE, { keyPath: "id" });
-          store.createIndex("createdAt", "createdAt");
-        }
-      };
-
-      request.onsuccess = () => resolve(request.result);
-      // Private browsing and blocked storage land here; never throw at the user.
-      request.onerror = () => resolve(null);
-      request.onblocked = () => resolve(null);
-    } catch {
-      resolve(null);
-    }
-  });
-
-  return dbPromise;
-}
-
-function tx<T>(
-  store: string,
-  mode: IDBTransactionMode,
-  run: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T | null> {
-  return openDb().then(
-    (db) =>
-      new Promise<T | null>((resolve) => {
-        if (!db) {
-          resolve(null);
-          return;
-        }
-        try {
-          const transaction = db.transaction(store, mode);
-          const request = run(transaction.objectStore(store));
-          request.onsuccess = () => resolve(request.result ?? null);
-          request.onerror = () => resolve(null);
-          transaction.onerror = () => resolve(null);
-        } catch {
-          resolve(null);
-        }
-      }),
-  );
-}
+/*
+ * The database name, version and upgrade handler live in `./idb`. This module used
+ * to declare its own `DB_VERSION = 1` while `rankHistory` opened the same database
+ * at v2, so whichever opened second got a `VersionError`, swallowed it, and
+ * silently stopped queueing workouts. Owning the schema in one place is what
+ * removes that class of bug; the degrade-to-`null` contract is unchanged and is now
+ * `idb.ts`'s.
+ */
 
 // ---------------------------------------------------------------- drafts
 

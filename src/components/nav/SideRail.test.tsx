@@ -13,18 +13,33 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { SideRail } from "./SideRail";
-import { NAV_DESTINATIONS, SIDE_RAIL_WIDTH, TRAIN_PATH } from "../shell/navItems";
+import {
+  COACHES_PATH,
+  HOME_PATH,
+  NAV_DESTINATIONS,
+  PROFILE_PATH,
+  ROUTINES_PATH,
+  SIDE_RAIL_WIDTH,
+  TRAIN_PATH,
+} from "../shell/navItems";
 import { SHELL_LABELS, BRAND_LABELS } from "@/lib/i18n";
 import { ACCENT } from "@/design/tokens";
 
 afterEach(cleanup);
 
-function renderRail(path = "/", onNavigate?: () => void) {
+function renderRail(path = HOME_PATH, onNavigate?: () => void) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <SideRail onNavigate={onNavigate} />
     </MemoryRouter>,
   );
+}
+
+/** The rail item for a path, looked up rather than hardcoded, so a relabel cannot silently skip it. */
+function itemFor(path: string): HTMLElement {
+  const destination = NAV_DESTINATIONS.find((d) => d.path === path);
+  if (!destination) throw new Error(`no destination declares ${path}`);
+  return screen.getByLabelText(destination.ariaLabel);
 }
 
 describe("SideRail destinations", () => {
@@ -74,36 +89,36 @@ describe("SideRail destinations", () => {
 
 describe("SideRail active state", () => {
   it("marks the current destination as the page", () => {
-    renderRail("/rangos");
-    expect(screen.getByLabelText("Ir a tus rangos").getAttribute("aria-current")).toBe("page");
+    renderRail(COACHES_PATH);
+    expect(itemFor(COACHES_PATH).getAttribute("aria-current")).toBe("page");
   });
 
   it("marks only one destination at a time", () => {
-    const { container } = renderRail("/biblioteca");
+    const { container } = renderRail(ROUTINES_PATH);
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
   });
 
-  it("does not mark the home entry on a nested path", () => {
-    // Without `end`, "/" would also match everything and two items would light up.
-    renderRail("/biblioteca");
-    expect(screen.getByLabelText("Ir a la biblioteca").getAttribute("aria-current")).toBe("page");
-    expect(screen.getByLabelText("Ir al inicio").getAttribute("aria-current")).toBeNull();
+  it("does not mark the home entry on another destination", () => {
+    // Without `end`, "/" would match every path and two items would light up.
+    renderRail(ROUTINES_PATH);
+    expect(itemFor(ROUTINES_PATH).getAttribute("aria-current")).toBe("page");
+    expect(itemFor(HOME_PATH).getAttribute("aria-current")).toBeNull();
   });
 
   it("gives the active item the accent, and only the active item", () => {
-    renderRail("/rangos");
-    const active = screen.getByLabelText("Ir a tus rangos");
+    renderRail(COACHES_PATH);
+    const active = itemFor(COACHES_PATH);
     expect(active.style.boxShadow).toContain(ACCENT.base);
     expect(active.style.backgroundColor).toBe(ACCENT.muted);
 
-    const inactive = screen.getByLabelText("Ir al inicio");
+    const inactive = itemFor(HOME_PATH);
     expect(inactive.style.boxShadow).toBe("none");
     expect(inactive.style.backgroundColor).toBe("transparent");
   });
 
   it("keeps the accent fill on the primary destination", () => {
     renderRail();
-    const train = screen.getByLabelText("Ir a entrenar");
+    const train = itemFor(TRAIN_PATH);
     // The accent means "this is the action" on every screen; dropping it here
     // because the layout is vertical would spend the brand on decoration.
     // jsdom normalises a hex fill to `rgb()`, so the channels are compared.
@@ -136,7 +151,7 @@ describe("SideRail responsiveness and motion", () => {
 
   it("transitions on colour, which survives reduced motion", () => {
     renderRail();
-    const item = screen.getByLabelText("Ir al inicio");
+    const item = itemFor(HOME_PATH);
     // Colour feedback is not motion. Removing it under `prefers-reduced-motion`
     // would leave the active destination with nothing but a 2px bar.
     expect(item.style.transition).toContain("color");
@@ -182,14 +197,14 @@ describe("SideRail brand", () => {
 describe("SideRail navigation", () => {
   it("reports a chosen destination so a host drawer can close itself", () => {
     const onNavigate = vi.fn();
-    renderRail("/", onNavigate);
-    within(screen.getByRole("navigation")).getByLabelText("Ir a la biblioteca").click();
+    renderRail(HOME_PATH, onNavigate);
+    itemFor(PROFILE_PATH).click();
     expect(onNavigate).toHaveBeenCalledOnce();
   });
 
   it("works without a handler", () => {
     // The rail is not always inside a drawer, and an optional callback must not
     // become a required one.
-    expect(() => renderRail("/", undefined)).not.toThrow();
+    expect(() => renderRail(HOME_PATH, undefined)).not.toThrow();
   });
 });

@@ -254,9 +254,13 @@ export const SHELL_LABELS = {
   /** Names a destination, both as a visible label and as an accessible name. */
   destinations: {
     home: { label: "Inicio", aria: "Ir al inicio" },
-    library: { label: "Biblioteca", aria: "Ir a la biblioteca" },
+    // "Rutinas", not "Biblioteca". The library is where routines are built and
+    // started; the noun an athlete uses for it is the routine, and the two labels
+    // the header and the bar used to disagree about is exactly the drift this
+    // unification exists to end.
+    library: { label: "Rutinas", aria: "Ir a tus rutinas" },
     train: { label: "Entrenar", aria: "Ir a entrenar" },
-    ranks: { label: "Rangos", aria: "Ir a tus rangos" },
+    coaches: { label: "Coaches", aria: "Ir a los coaches" },
     profile: { label: "Perfil", aria: "Ir a tu perfil" },
   },
   /**

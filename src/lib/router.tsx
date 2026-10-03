@@ -18,7 +18,7 @@
  * changes) without a module a test has to mock.
  */
 
-import { createBrowserRouter } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/components/shell/AppShell";
 import {
   AuthGate,
@@ -31,6 +31,7 @@ import {
 } from "@/App";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
+import { HOME_PATH } from "@/components/shell/navItems";
 
 /**
  * The dev-only component catalog.
@@ -44,6 +45,19 @@ const devRoutes = import.meta.env.DEV
   ? [{ path: "/dev/ui", element: <UiCatalogPage /> }]
   : [];
 
+/**
+ * `/` as a redirect, not a duplicate route.
+ *
+ * `<Navigate replace>` rather than rendering `HomeView` here as well: two paths
+ * serving one screen means two URLs for the same page, and the second one is the
+ * one that ends up in a bookmark and then drifts. `replace` so the dashboard
+ * becomes the address rather than sitting behind the one the athlete clicked.
+ *
+ * Inside `AuthGate` on purpose. As a sibling of the layout it would also redirect
+ * signed-out visitors, bypassing the gate that decides what they may see.
+ */
+const legacyHomeRoute = { path: "/", element: <Navigate to={HOME_PATH} replace /> };
+
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
@@ -51,7 +65,8 @@ export const router = createBrowserRouter([
       {
         element: <AuthGate />,
         children: [
-          { path: "/", element: <HomeView /> },
+          { path: HOME_PATH, element: <HomeView /> },
+          legacyHomeRoute,
           { path: "/biblioteca", element: <RoutinesView /> },
           { path: "/progreso", element: <ProgressView /> },
           // The workout has its own address so a running session survives a
@@ -59,9 +74,8 @@ export const router = createBrowserRouter([
           { path: "/entrenar", element: <TrainView /> },
           { path: "/rangos", element: <RangosView /> },
           { path: "/perfil", element: <ProfileView /> },
-          // A header-tab destination rather than a `NAV_DESTINATIONS` one: the
-          // coach is visited on purpose, not reached for mid-set, so it does not
-          // need a slot in the thumb zone.
+          // A thumb-zone destination since Fase 7. It used to be reachable only
+          // from the header tab row, which no longer exists.
           { path: "/coach", element: <CoachView /> },
           ...devRoutes,
         ],

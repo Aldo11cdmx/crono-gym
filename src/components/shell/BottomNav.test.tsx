@@ -17,7 +17,13 @@ import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
-import { NAV_DESTINATIONS } from "./navItems";
+import {
+  COACHES_PATH,
+  HOME_PATH,
+  PROGRESS_PATH,
+  ROUTINES_PATH,
+  THUMB_DESTINATIONS,
+} from "./navItems";
 
 afterEach(cleanup);
 
@@ -38,24 +44,24 @@ function renderAt(path: string) {
 
 describe("BottomNav", () => {
   it("renders one destination per entry in navItems, named in Spanish", () => {
-    renderAt("/");
+    renderAt(HOME_PATH);
 
     expect(screen.getByRole("navigation").getAttribute("aria-label")).toBe(
       "Navegación principal",
     );
 
-    for (const destination of NAV_DESTINATIONS) {
+    for (const destination of THUMB_DESTINATIONS) {
       expect(screen.getByLabelText(destination.ariaLabel)).toBeDefined();
     }
-    expect(screen.getAllByRole("link")).toHaveLength(NAV_DESTINATIONS.length);
+    expect(screen.getAllByRole("link")).toHaveLength(THUMB_DESTINATIONS.length);
   });
 
   it("marks the active route with aria-current and leaves the rest unmarked", () => {
-    renderAt("/biblioteca");
+    renderAt(ROUTINES_PATH);
 
-    for (const destination of NAV_DESTINATIONS) {
+    for (const destination of THUMB_DESTINATIONS) {
       const link = screen.getByLabelText(destination.ariaLabel);
-      if (destination.path === "/biblioteca") {
+      if (destination.path === ROUTINES_PATH) {
         expect(link.getAttribute("aria-current"), destination.path).toBe("page");
       } else {
         expect(link.hasAttribute("aria-current"), destination.path).toBe(false);
@@ -64,11 +70,22 @@ describe("BottomNav", () => {
   });
 
   it("marks exactly one destination as current", () => {
-    renderAt("/rangos");
+    renderAt(COACHES_PATH);
     const current = screen
       .getAllByRole("link")
       .filter((link) => link.getAttribute("aria-current") === "page");
     expect(current).toHaveLength(1);
+  });
+
+  it("does not mark home as current on the old root path", () => {
+    // `/` redirects to `/inicio` before the bar ever sees it, but the bar must not
+    // depend on that: `end` on every link is what stops a prefix match lighting up
+    // the home row from an unrelated address.
+    renderAt("/progreso");
+    const home = screen.getByLabelText(
+      THUMB_DESTINATIONS.find((d) => d.path === HOME_PATH)!.ariaLabel,
+    );
+    expect(home.hasAttribute("aria-current")).toBe(false);
   });
 
   it("navigates to the path each destination declares", () => {
@@ -76,9 +93,9 @@ describe("BottomNav", () => {
     // item for the route you are already on is a no-op by design -- the router
     // does not treat it as a navigation -- so the assertion has to start
     // somewhere every destination is a real move.
-    renderAt("/progreso");
+    renderAt(PROGRESS_PATH);
 
-    for (const destination of NAV_DESTINATIONS) {
+    for (const destination of THUMB_DESTINATIONS) {
       fireEvent.click(screen.getByLabelText(destination.ariaLabel));
       expect(screen.getByTestId("location").textContent, destination.path).toBe(
         destination.path,
@@ -89,9 +106,9 @@ describe("BottomNav", () => {
   it("gives every destination a tap target of at least 44px", () => {
     // WCAG 2.5.5 / the brief's minimum. Asserted on the rendered element rather
     // than on the constant, because the constant is not what the user touches.
-    renderAt("/");
+    renderAt(HOME_PATH);
 
-    for (const destination of NAV_DESTINATIONS) {
+    for (const destination of THUMB_DESTINATIONS) {
       const style = screen.getByLabelText(destination.ariaLabel).style;
       expect(Number.parseFloat(style.minHeight), destination.path).toBeGreaterThanOrEqual(44);
       expect(Number.parseFloat(style.minWidth), destination.path).toBeGreaterThanOrEqual(44);
@@ -109,7 +126,7 @@ describe("BottomNav", () => {
 
     const labelFor = (path: string): HTMLElement => {
       const link = screen.getByLabelText(
-        NAV_DESTINATIONS.find((d) => d.path === path)!.ariaLabel,
+        THUMB_DESTINATIONS.find((d) => d.path === path)!.ariaLabel,
       );
       const spans = [...link.querySelectorAll("span")];
       // The icon wrapper is the first span; the label is the last.
@@ -119,7 +136,7 @@ describe("BottomNav", () => {
     expect(labelFor("/perfil").style.opacity).toBe("1");
     expect(labelFor("/perfil").style.height).not.toBe("0px");
 
-    for (const path of ["/", "/biblioteca", "/rangos"]) {
+    for (const path of [HOME_PATH, ROUTINES_PATH, COACHES_PATH]) {
       expect(labelFor(path).style.opacity, path).toBe("0");
       expect(labelFor(path).style.height, path).toBe("0px");
     }
@@ -128,21 +145,21 @@ describe("BottomNav", () => {
   it("gives the training action no visible label, and names it for the reader", () => {
     // The raised fill already says "this one", and a fifth word would break the
     // row the other four sit in. The name lives on `aria-label` instead.
-    renderAt("/");
-    const train = NAV_DESTINATIONS.find((d) => d.primary)!;
+    renderAt(HOME_PATH);
+    const train = THUMB_DESTINATIONS.find((d) => d.primary)!;
 
     expect(screen.getByLabelText(train.ariaLabel)).toBeDefined();
     expect(screen.queryByText(train.label)).toBeNull();
   });
 
   it("slides the indicator to the active destination's slot", () => {
-    const { container } = renderAt("/rangos");
+    const { container } = renderAt(COACHES_PATH);
     const indicator = container.querySelector(
       "[data-testid='bottom-nav-indicator']",
     ) as HTMLElement;
 
-    // Three slots of five, as a percentage of the bar's width.
-    expect(indicator.style.left).toBe(`${(3 * 100) / NAV_DESTINATIONS.length}%`);
-    expect(indicator.style.width).toBe(`${100 / NAV_DESTINATIONS.length}%`);
+    // The coaches slot, as a percentage of the bar's width.
+    expect(indicator.style.left).toBe(`${(3 * 100) / THUMB_DESTINATIONS.length}%`);
+    expect(indicator.style.width).toBe(`${100 / THUMB_DESTINATIONS.length}%`);
   });
 });

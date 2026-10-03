@@ -108,8 +108,11 @@ function RailItem({
     <li>
       <NavLink
         to={destination.path}
-        // NavLink owns `aria-current="page"`.
-        end={destination.path === "/"}
+        // NavLink owns `aria-current="page"`. `end` unconditionally: every
+        // destination is a literal with no children, so prefix matching can only
+        // ever light up the wrong row -- and with the home route no longer `/`
+        // there is no path for which a prefix match was ever the right answer.
+        end
         aria-label={destination.ariaLabel}
         onClick={onNavigate}
         className="cronos-rail-item"

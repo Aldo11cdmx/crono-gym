@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDays, Dumbbell, Lock, LogOut, Play, Sparkles, TrendingUp, type LucideIcon } from "lucide-react";
-import { NavLink, Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
+import { Lock, LogOut, Play } from "lucide-react";
+import { Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
 import { AuthModal } from "./components/AuthModal";
@@ -12,7 +12,7 @@ import { AnatomicalRanksView } from "./components/AnatomicalRanksView";
 import { CoachHub } from "./components/coach/CoachHub";
 import { RoutineBuilder } from "./components/RoutineBuilder";
 import { useActiveSession } from "./context/ActiveSessionContext";
-import { TRAIN_PATH } from "./components/shell/navItems";
+import { HOME_PATH, NAV_DESTINATIONS, TRAIN_PATH } from "./components/shell/navItems";
 import { MUSCLE_PARAM } from "./lib/muscleFilter";
 import {
   useProgress,
@@ -25,27 +25,6 @@ import { clearRankData } from "./lib/ranks/rankHistory";
 import { clearAllChats } from "./lib/ai/chatStorage";
 import { AuthModalProvider } from "./context/AuthModalContext";
 import { computeEnergyTargets } from "./lib/profile";
-
-/**
- * The header tabs, which are the routes this app shipped before it had a router.
- *
- * `/biblioteca` carries the routine builder and `/progreso` the progress view;
- * both are reachable from the bottom navigation too. Kept here rather than in
- * `router.tsx` so the router declares routes and this module owns their labels.
- *
- * Not every destination belongs here, and the two lists answer different questions.
- * `NAV_DESTINATIONS` is the thumb zone: what you reach for mid-set with one hand,
- * which is why it stays at five and why the raised centre item has to stay the
- * middle one. These are the surfaces you visit on purpose -- progress, and now the
- * coach -- so they get a header tab and a real address without spending a slot in
- * the bar. The labels are `hidden sm:inline`, so on a phone this row is icons.
- */
-export const APP_TABS: ReadonlyArray<{ path: string; label: string; icon: LucideIcon }> = [
-  { path: "/", label: "Diario de Hoy", icon: CalendarDays },
-  { path: "/biblioteca", label: "Rutinas", icon: Dumbbell },
-  { path: "/progreso", label: "Progreso", icon: TrendingUp },
-  { path: "/coach", label: "Coach", icon: Sparkles },
-];
 
 /**
  * Exact-path comparison, so `/` does not claim to be active on every route.
@@ -65,6 +44,12 @@ export function isTabActive(path: string, pathname: string): boolean {
  * replaced the `useState<View>` switch, and it is why the session state below
  * survives navigating between views -- a layout is not unmounted by its children
  * changing.
+ *
+ * Fase 7 removed the header tab row that used to live here (`APP_TABS`,
+ * `isTabActive` and `TabButton`, all gone). It advertised four routes *on top of*
+ * the navigation bar, so two of them appeared twice under two different names and
+ * two existed nowhere else. What is left of the header is the mobile brand, which
+ * `SideRail` renders from 768px up -- one bar, five destinations, one name each.
  */
 export function AuthGate() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -111,46 +96,46 @@ export function AuthGate() {
   // Stable identity, so the provider's memoised value does not change every render.
   const openAuthModal = useCallback(() => setIsAuthModalOpen(true), []);
 
-  // Navigation itself belongs to NavLink. What the gate adds is the prompt: a
-  // locked tab still has to be reachable so the modal can name it, exactly as
-  // selecting a locked tab used to move the view before the modal appeared.
-  const isLocked = (path: string): boolean =>
-    (ready && !userId && path !== "/") || needsOnboarding;
-
-  const requestedTab = APP_TABS.find(
-    (tab) => tab.path !== "/" && isTabActive(tab.path, location.pathname),
+  /*
+   * Which destination the athlete was refused, so `Welcome` can name it: "inicia
+   * sesión para ver Rutinas" beats "inicia sesión", which is what a signed-out user
+   * tapping the navigation used to get.
+   *
+   * Read from `NAV_DESTINATIONS` rather than the list this file used to own, so the
+   * name can never again be one the navigation does not show. `HOME_PATH` is
+   * excluded because the dashboard is the one destination a signed-out visitor may
+   * see, and saying "inicia sesión para ver Inicio" while showing them Inicio would
+   * be nonsense.
+   */
+  const requestedDestination = NAV_DESTINATIONS.find(
+    (destination) => destination.path !== HOME_PATH && destination.path === location.pathname,
   );
 
   return (
     <AuthModalProvider open={openAuthModal}>
       <div className="min-h-screen bg-neutral-950 text-neutral-100">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <h1 className="flex items-center gap-2.5">
-            {/*
-              Mobile only, because `SideRail` renders the mark from 768px up.
+        {/*
+          Brand-only since Fase 7 removed the header tab row. The destinations live
+          in `BottomNav` and `SideRail`, so this bar exists to put the mark on screen
+          below 768px -- where the rail is `display: none` -- and nothing else.
+        */}
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            <h1 className="flex items-center gap-2.5">
+              {/*
+                Mobile only, because `SideRail` renders the mark from 768px up.
 
-              `hidden` before `max-md:flex` is load-bearing, not decoration:
-              Tailwind emits `display` utilities with `hidden` last, so `hidden`
-              wins over the component's own `flex` at desktop width regardless of
-              the order they appear in the class attribute. CSS decides which one
-              is on screen, not a media query hook -- a hook would re-render on
-              every rotation and flash the wrong brand on a cold load.
-            */}
-            <BrandLockup className="hidden max-md:flex" size={30} />
-          </h1>
-          <nav className="flex items-center gap-1 text-sm text-neutral-400">
-            {APP_TABS.map((tab) => (
-              <TabButton
-                key={tab.path}
-                tab={tab}
-                locked={isLocked(tab.path)}
-                onLockedSelect={() => setIsAuthModalOpen(true)}
-              />
-            ))}
-          </nav>
-        </div>
-      </header>
+                `hidden` before `max-md:flex` is load-bearing, not decoration:
+                Tailwind emits `display` utilities with `hidden` last, so `hidden`
+                wins over the component's own `flex` at desktop width regardless of
+                the order they appear in the class attribute. CSS decides which one
+                is on screen, not a media query hook -- a hook would re-render on
+                every rotation and flash the wrong brand on a cold load.
+              */}
+              <BrandLockup className="hidden max-md:flex" size={30} />
+            </h1>
+          </div>
+        </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
         {sync.pending > 0 && !sync.online && (
@@ -173,7 +158,7 @@ export function AuthGate() {
           <p className="text-neutral-500">Cargando…</p>
         ) : !userId ? (
           <Welcome
-            requestedLabel={requestedTab?.label ?? null}
+            requestedLabel={requestedDestination?.label ?? null}
             onOpenAuth={() => setIsAuthModalOpen(true)}
           />
         ) : needsOnboarding ? (
@@ -261,37 +246,6 @@ function useAuthSession() {
   }, []);
 
   return { ready, userId, email };
-}
-
-function TabButton({
-  tab,
-  locked,
-  onLockedSelect,
-}: {
-  tab: { path: string; label: string; icon: LucideIcon };
-  locked: boolean;
-  onLockedSelect: () => void;
-}) {
-  const Icon = tab.icon;
-  return (
-    <NavLink
-      to={tab.path}
-      // NavLink owns `aria-current="page"`; adding it here would just be a second
-      // source of truth for the same fact.
-      onClick={() => {
-        if (locked) onLockedSelect();
-      }}
-      className={({ isActive }) =>
-        `flex items-center gap-1.5 rounded-md px-3 py-1.5 transition ${
-          isActive ? "bg-accent/15 text-accent" : "hover:bg-white/5 hover:text-neutral-100"
-        }`
-      }
-    >
-      <Icon className="h-4 w-4" />
-      <span className="hidden sm:inline">{tab.label}</span>
-      {locked && <Lock className="h-3 w-3 text-neutral-600" aria-hidden="true" />}
-    </NavLink>
-  );
 }
 
 function WorkspaceHeader({

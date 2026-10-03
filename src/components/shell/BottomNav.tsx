@@ -14,7 +14,7 @@ import type { CSSProperties } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ACCENT, GLASS, MOTION, TEXT, TYPE } from "@/design/tokens";
 import { SHELL_LABELS } from "@/lib/i18n";
-import { NAV_DESTINATIONS, type NavDestination } from "./navItems";
+import { THUMB_DESTINATIONS, type NavDestination } from "./navItems";
 import { NAV_CONTENT_HEIGHT } from "./AppShell";
 
 export function BottomNav() {
@@ -23,7 +23,7 @@ export function BottomNav() {
   // Drives the sliding indicator. Position rather than opacity, because the
   // indicator's job is to say *where* in the bar you are, and it cannot say that
   // by being visible alone.
-  const match = NAV_DESTINATIONS.findIndex(
+  const match = THUMB_DESTINATIONS.findIndex(
     (destination) => pathname === destination.path,
   );
   const activeIndex = match === -1 ? 0 : match;
@@ -54,8 +54,8 @@ export function BottomNav() {
         style={{
           position: "absolute",
           top: 0,
-          left: `${(activeIndex * 100) / NAV_DESTINATIONS.length}%`,
-          width: `${100 / NAV_DESTINATIONS.length}%`,
+          left: `${(activeIndex * 100) / THUMB_DESTINATIONS.length}%`,
+          width: `${100 / THUMB_DESTINATIONS.length}%`,
           height: 2,
           backgroundColor: ACCENT.base,
           borderRadius: "0 0 2px 2px",
@@ -65,14 +65,14 @@ export function BottomNav() {
       <ul
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${NAV_DESTINATIONS.length}, 1fr)`,
+          gridTemplateColumns: `repeat(${THUMB_DESTINATIONS.length}, 1fr)`,
           height: NAV_CONTENT_HEIGHT,
           margin: 0,
           padding: 0,
           listStyle: "none",
         }}
       >
-        {NAV_DESTINATIONS.map((destination) => (
+        {THUMB_DESTINATIONS.map((destination) => (
           <NavItem key={destination.path} destination={destination} />
         ))}
       </ul>
@@ -88,8 +88,10 @@ function NavItem({ destination }: { destination: NavDestination }) {
       <NavLink
         to={destination.path}
         // NavLink owns `aria-current="page"`; setting it here too would be a
-        // second source of truth for the same fact.
-        end={destination.path === "/"}
+        // second source of truth for the same fact. `end` unconditionally: every
+        // destination is a literal with no children, so prefix matching can only
+        // ever light up the wrong row.
+        end
         aria-label={destination.ariaLabel}
         className="cronos-nav-item"
         style={

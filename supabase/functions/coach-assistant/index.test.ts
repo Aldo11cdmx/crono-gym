@@ -359,6 +359,15 @@ Deno.test("streams the answer and records the token count", async () => {
     const response = await handler(makeRequest());
     assertEquals(response.status, 200);
     assertStringIncludes(response.headers.get("Content-Type") ?? "", "text/event-stream");
+    /*
+     * The encoding, declared rather than assumed. `application/json` is UTF-8 by
+     * specification, so this is belt-and-braces -- except that `nosniff` is set on every
+     * response here, and `nosniff` forbids a browser from second-guessing a declared type.
+     * That turns an undeclared charset from a technicality into the only statement about
+     * how the body is encoded, and there being no statement is what makes an ambiguous
+     * body ambiguous.
+     */
+    assertStringIncludes(response.headers.get("Content-Type") ?? "", "charset=utf-8");
     // A buffered answer could not be read while it was still arriving.
     assertEquals(response.body instanceof ReadableStream, true);
 
@@ -750,6 +759,53 @@ Deno.test("records a usage row with the model and the token count", async () => 
     assertEquals(row.tokens_used, 77);
     // A pinned id, not the `openrouter/free` alias that can be repointed at any model.
     assertNotEquals(row.model, "openrouter/free");
+  } finally {
+    stub.restore();
+    clearEnv();
+  }
+});
+
+Deno.test("declares the encoding on every response, not only the successful one", async () => {
+  /*
+   * Every response this function can produce, asserted for one property: the body says how
+   * it is encoded. The success path was already correct, and that is the trap -- a charset
+   * checked only on the 200 looks like a finished fix while the 401, the 403 and the 405
+   * still go out undeclared, and an error body is exactly the one a client has to read to
+   * know what happened.
+   *
+   * Enumerated by status rather than by assertion per branch, because a branch added later
+   * is then covered by construction rather than by remembering to come back here.
+   */
+  setEnv();
+  const stub = stubNetwork();
+  try {
+    const responses: Response[] = [
+      await handler(makeRequest()), // 200, streamed
+      await handler(makeRequest({ token: null })), // 401
+      await handler(makeRequest({ origin: "https://evil.example" })), // 403
+      await handler(makeRequest({ method: "GET" })), // 405
+      await handler(makeRequest({ body: { userMessage: "", context: {} } })), // 400
+      await handler(makeRequest({ body: { userMessage: "hola" } })), // 400, no context
+    ];
+
+    const seen = new Set<number>();
+    for (const response of responses) {
+      seen.add(response.status);
+      assertEquals(
+        response.headers.get("Content-Type")?.includes("charset=utf-8"),
+        true,
+        `status ${response.status} did not declare its encoding`,
+      );
+      // A charset on a body nobody can read would be pointless.
+      assertNotEquals(response.headers.get("Access-Control-Allow-Origin"), undefined);
+    }
+
+    // Guards the enumeration itself: a case that silently stopped returning the status it
+   // was written for would otherwise turn the loop above into a check of one response.
+    assertEquals(
+      [...seen].sort((a, b) => a - b),
+      [200, 400, 401, 403, 405],
+    );
   } finally {
     stub.restore();
     clearEnv();

@@ -1,10 +1,10 @@
-﻿/**
- * ImportWizard.tsx â€” four steps from a CSV on disk to a committed batch.
+/**
+ * ImportWizard.tsx — four steps from a CSV on disk to a committed batch.
  *
- *   1. Fuente       â€” which app, which file, and what unit its weights are in
- *   2. Vista previa â€” what was read, and everything that was not
- *   3. Mapeo        â€” confirm the columns, then assign a muscle per exercise
- *   4. ConfirmaciÃ³n â€” the counts, then write; undo for as long as it is offered
+ *   1. Fuente       — which app, which file, and what unit its weights are in
+ *   2. Vista previa — what was read, and everything that was not
+ *   3. Mapeo        — confirm the columns, then assign a muscle per exercise
+ *   4. Confirmación — the counts, then write; undo for as long as it is offered
  *
  * Three decisions carry the design:
  *
@@ -158,7 +158,7 @@ export function ImportWizard({ userId, onClose, onImported }: ImportWizardProps)
   // Hoisted out of the step-2 branch on purpose. Called inline in the JSX they
   // would be conditional hooks, and stepping 0 -> 2 -> 1 is an ordinary thing for
   // this wizard to do -- React would throw "rendered fewer hooks than expected"
-  // the first time a user pressed AtrÃ¡s.
+  // the first time a user pressed Atrás.
   const resolved = useResolvedCount(analysis, catalog.find, muscles);
   const unresolved = useUnresolvedNames(analysis, catalog.find, muscles);
 

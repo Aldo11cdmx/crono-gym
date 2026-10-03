@@ -109,7 +109,7 @@ function installSupabaseMock(options: {
         }
         /*
          * Reads honour the equality filters the way PostgREST does. Without this the
-         * mock hands back every row regardless of `.eq("user_id", â€¦)`, and a test
+         * mock hands back every row regardless of `.eq("user_id", €€¦)`, and a test
          * asserting "this routine is not the caller's" would pass for the wrong
          * reason -- or fail against a hook that is behaving correctly.
          */

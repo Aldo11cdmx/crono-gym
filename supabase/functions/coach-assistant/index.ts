@@ -27,6 +27,15 @@
 
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import {
+  bearerToken,
+  corsHeaders,
+  JSON_CONTENT_TYPE,
+  jsonResponse,
+  originAllowed,
+  withCorsFloor,
+} from "../_shared/http.ts";
+
 /**
  * The two tables this function touches, described.
  *
@@ -141,98 +150,26 @@ const RETRY_DELAY_MS = 1000;
 const RATE_LIMIT_RETENTION_HOURS = 24;
 
 // ------------------------------------------------------------------- CORS
-
-/**
- * The single origin this function answers for.
- *
- * Read from the environment rather than set to `*`. With a bearer-token API, a
- * wildcard origin lets any page on the internet make the signed-in user's browser
- * spend their quota, and the response would be readable there too. The value is the
- * app's deployed origin, so a preview deploy must add its own.
- */
-function allowedOrigin(): string | null {
-  return Deno.env.get("ALLOWED_ORIGIN") ?? null;
-}
-
-function corsHeaders(request: Request): Record<string, string> {
-  const origin = allowedOrigin();
-  // Echoing the configured origin rather than `*`: this API is token-authenticated,
-  // so a wildcard would let any site drive a signed-in user's quota.
-  const allow = origin && origin !== "*" ? origin : "";
-  const requestOrigin = request.headers.get("Origin") ?? "";
-
-  return {
-    ...(allow && requestOrigin === allow ? { "Access-Control-Allow-Origin": allow } : {}),
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Max-Age": "86400",
-    // Deny caching of an answer that was paid for and is user-specific.
-    "Cache-Control": "no-store",
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-  };
-}
-
-/**
- * Whether the browser origin is allowed.
- *
- * Absent `Origin` is a server-to-server call, not a browser one, and is allowed:
- * the JWT is still required, and refusing non-browser callers would break the
- * function's own test suite and any future CLI.
- */
-function originAllowed(request: Request): boolean {
-  const origin = request.headers.get("Origin");
-  if (!origin) return true;
-  const allow = allowedOrigin();
-  return allow !== null && origin === allow;
-}
+//
+// `allowedOrigin`, `corsHeaders`, `originAllowed`, `bearerToken`, `jsonResponse` and the
+// handler floor live in `_shared/http.ts`, which `coach-auth` imports as well.
+//
+// They were here first and moved for a reason worth recording. An error that escaped this
+// handler reached the browser as a bare 500 with no CORS headers, which the browser
+// reports as "no Access-Control-Allow-Origin header is present" -- a CORS error. That
+// points the investigation at the wrong layer and hides both the status code and the
+// real cause, and it cost a debugging session to find. The floor is now a property of
+// the shared wrapper rather than a try/catch every function has to remember to copy, so
+// it cannot be reintroduced by omission.
+//
+// The rationale for each piece travels with it.
 
 // ------------------------------------------------------------------ handler
 
 /**
- * The request handler, with a floor under it.
+ * The request logic.
  *
- * Everything above is the real logic; this wrapper exists because a rejection that
- * escapes it loses more than the request. `Deno.serve` answers a thrown handler with a
- * bare 500 that carries no CORS headers, and a browser reports that as "no
- * Access-Control-Allow-Origin header is present" -- a CORS error, which points the
- * investigation at the wrong layer entirely. The status code and the real cause both
- * become invisible.
- *
- * So the catch exists for two reasons, and the second is the one that matters:
- *
- *  1. The athlete gets a readable, classified failure instead of an opaque one.
- *  2. `console.error` puts the stack in the dashboard, where it can actually be found.
- *
- * The body stays generic. Returning `String(err)` would put an internal message into a
- * 500 the caller can read, which is the same reconnaissance risk every other error path
- * in this function is written to avoid -- and it would be the only one that leaks.
- */
-export async function handler(request: Request): Promise<Response> {
-  // Computed outside the try because the catch needs it. It only reads two headers and
-  // one env var, and it is the same call the inner function makes first thing.
-  const cors = corsHeaders(request);
-
-  try {
-    return await handleRequest(request, cors);
-  } catch (cause) {
-    console.error(
-      "Unhandled error in coach-assistant:",
-      cause instanceof Error ? (cause.stack ?? cause.message) : String(cause),
-    );
-    return new Response(JSON.stringify({ error: "internal_error" }), {
-      // 500 rather than 503: the service is not unavailable, it is broken. Both map to
-      // SERVICE_UNAVAILABLE client-side, so nothing downstream distinguishes them.
-      status: 500,
-      headers: { "Content-Type": "application/json", ...cors },
-    });
-  }
-}
-
-/**
- * The actual request logic.
- *
- * Kept separate from {@link handler} so the CORS floor can wrap it without every
+ * Kept separate from the exported `handler` so the CORS floor can wrap it without every
  * `return` inside having to remember the headers.
  */
 async function handleRequest(
@@ -245,7 +182,7 @@ async function handleRequest(
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "method_not_allowed" }), {
       status: 405,
-      headers: { "Content-Type": "application/json", ...cors },
+      headers: { "Content-Type": JSON_CONTENT_TYPE, ...cors },
     });
   }
   // Rejected before the JWT is read, so a hostile origin learns nothing about
@@ -253,7 +190,7 @@ async function handleRequest(
   if (!originAllowed(request)) {
     return new Response(JSON.stringify({ error: "origin_not_allowed" }), {
       status: 403,
-      headers: { "Content-Type": "application/json", ...cors },
+      headers: { "Content-Type": JSON_CONTENT_TYPE, ...cors },
     });
   }
 
@@ -330,6 +267,11 @@ async function handleRequest(
     status: 200,
     headers: {
       ...cors,
+      // The charset is declared here, and was here already when the mojibake in the chat
+      // was chased: the bytes arriving here have always been UTF-8 and the client has
+      // always decoded them as UTF-8. Worth recording so the next person to find
+      // double-encoded Spanish in a bubble does not re-add this header. The answer is
+      // upstream -- see the note on `COACH_SYSTEM_PROMPT` in `loadSystemPrompt`.
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-store",
       Connection: "keep-alive",
@@ -337,6 +279,13 @@ async function handleRequest(
     },
   });
 }
+
+/*
+ * The exported entry point. Tests drive this directly; the floor comes from
+ * `_shared/http.ts`, so an unexpected rejection inside `handleRequest` still answers with
+ * CORS headers and a classified 500.
+ */
+export const handler = withCorsFloor("coach-assistant", handleRequest);
 
 /*
  * Only when run as the entry point. `supabase functions serve` and `deploy` both
@@ -357,23 +306,6 @@ interface CoachRequestBody {
 interface ConversationMessage {
   role: "system" | "user" | "assistant";
   content: string;
-}
-
-function bearerToken(request: Request): string | null {
-  const header = request.headers.get("Authorization") ?? "";
-  const match = /^Bearer\s+(.+)$/i.exec(header.trim());
-  return match?.[1] ?? null;
-}
-
-function jsonResponse(
-  status: number,
-  body: unknown,
-  headers: Record<string, string>,
-): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json", ...headers },
-  });
 }
 
 // ------------------------------------------------------------- rate limit
@@ -635,6 +567,14 @@ async function buildMessages(
  *     time. It is a manual copy and therefore a drift risk, which is why
  *     `supabase/functions/coach-assistant/index.test.ts` pins the deployed copy
  *     against the app's constant.
+ *
+ *     The copy has to be made in UTF-8. A prompt pasted through anything that reads
+ *     UTF-8 as Latin-1 arrives as mojibake, and a model asked to imitate a system
+ *     prompt that spells its Spanish that way replies in the same spelling, with no
+ *     transport anywhere near the damage. A response header cannot fix it: the one on
+ *     this endpoint was correct before the mojibake was reported. So the check belongs
+ *     here, at release time, on the secret itself -- which is what the test that pins
+ *     the deployed copy against the app's constant is for.
  *
  *  2. `COACH_PROMPT_URL` -- fetched per request. Slower, and no better: it still has
  *     to be published somewhere first. Kept only because it lets a served copy be

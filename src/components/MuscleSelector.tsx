@@ -1,5 +1,5 @@
-﻿/**
- * MuscleSelector.tsx â€” interactive anatomy map.
+/**
+ * MuscleSelector.tsx €€” interactive anatomy map.
  *
  * Built on `react-muscle-highlighter` (MIT), which supplies the body geometry.
  * This component owns the product behaviour: the Spanish legend, the OLED/amber
@@ -245,11 +245,11 @@ const hoverRules = hoverTargets
                 {hiddenSelection && (
                   <span
                     aria-hidden="true"
-                    title="Hay mÃºsculos seleccionados en la otra vista"
+                    title="Hay más músculos seleccionados en la otra vista"
                     className="h-1.5 w-1.5 rounded-full bg-accent"
                   />
                 )}
-                {hiddenSelection && <span className="sr-only">(selecciÃ³n en la otra vista)</span>}
+                {hiddenSelection && <span className="sr-only">(selección en la otra vista)</span>}
               </button>
             );
           })}
@@ -319,7 +319,7 @@ const hoverRules = hoverTargets
                 {renderBadge?.(slug)}
                 {active && onOtherSide && (
                   <span aria-hidden="true" className="text-[9px] text-accent/70">
-                    {side === "front" ? "Â· espalda" : "Â· frente"}
+                    {side === "front" ? "· espalda" : "· frente"}
                   </span>
                 )}
               </button>

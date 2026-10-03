@@ -1,5 +1,5 @@
-﻿/**
- * rankColors.ts â€” colour maths for the rank map.
+/**
+ * rankColors.ts €€” colour maths for the rank map.
  *
  * Pure functions so the contrast rules are actually verified by a test rather than
  * asserted in a comment. `rankConfig` holds the hex values; this file decides what

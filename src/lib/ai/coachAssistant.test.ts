@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   MAX_USER_MESSAGE_CHARS,
   askCoach,
+  createActionBlockFilter,
   parseCoachAction,
 } from "./coachAssistant";
 import { CoachRequestError, type AssistantContext, type CoachRequest } from "./types";
@@ -193,6 +194,76 @@ describe("parseCoachAction", () => {
   });
 });
 
+// --------------------------------------------------- createActionBlockFilter
+
+describe("createActionBlockFilter", () => {
+  const ACTION_BLOCK =
+    '```action\n{"type":"training_adjustment","field":"weight","delta":2.5}\n```';
+
+  /** Feeds `pieces` one at a time, exactly as a stream would, and joins what came out. */
+  const run = (pieces: string[]): string => {
+    const filter = createActionBlockFilter();
+    return [...pieces.map((piece) => filter.push(piece)), filter.flush()].join("");
+  };
+
+  /** Every split of `text` into `count` pieces, so no boundary goes untested. */
+  function everySplit(text: string, count: number): string[][] {
+    if (count === 1) return [[text]];
+    const out: string[][] = [];
+    for (let i = 1; i < text.length; i += 1) {
+      for (const rest of everySplit(text.slice(i), count - 1)) {
+        out.push([text.slice(0, i), ...rest]);
+      }
+    }
+    return out;
+  }
+
+  it("never emits an action block, whatever the fragment boundaries", () => {
+    const raw = `Sube 2.5 kg.\n${ACTION_BLOCK}\nListo.`;
+    const splits = everySplit(raw, 2).concat(everySplit(raw, 3));
+
+    for (const pieces of splits) {
+      const shown = run(pieces);
+      expect(shown, pieces.join("|")).not.toContain("```");
+      expect(shown, pieces.join("|")).not.toContain("training_adjustment");
+      // And the prose around it is neither lost nor duplicated.
+      expect(shown, pieces.join("|")).toBe(parseCoachAction(raw).message);
+    }
+  });
+
+  it("keeps a fence the athlete is meant to read", () => {
+    const raw = "Corre esto:\n```bash\nnpm run dev\n```\nY ya.";
+    // A code block is not an action block; hiding every fence would hide the answer.
+    expect(run([raw])).toBe(raw);
+  });
+
+  it("holds back a fence whose third backtick arrives in the next fragment", () => {
+    // The failure this guards is subtle: emitting the first two backticks would let the
+    // scan miss the fence they belong to, and the block would stream through unfiltered.
+    expect(run(["Antes ``", "`action\n{\"type\":\"deload_suggestion\"}\n```"])).toBe(
+      "Antes ",
+    );
+  });
+
+  it("shows an unterminated fence rather than swallowing the tail", async () => {
+    // `max_tokens` cuts a reply mid-block. `parseCoachAction` leaves an unclosed fence in
+    // the message, so the filter must emit it too or the two disagree.
+    const raw = "Sube 2.5 kg.\n```action\n{\"type\":\"deload";
+    expect(run([raw])).toBe(raw);
+    expect(run([raw])).toBe(parseCoachAction(raw).message);
+  });
+
+  it("drops a malformed action block too, since the athlete cannot act on it", () => {
+    const raw = "Descansa.\n```action\n{oops\n```\nListo.";
+    expect(run([raw])).toBe("Descansa.\n\nListo.");
+  });
+
+  it("emits nothing for an empty stream", () => {
+    expect(run([])).toBe("");
+    expect(createActionBlockFilter().push("")).toBe("");
+  });
+});
+
 // ------------------------------------------------------------ askCoach
 
 describe("askCoach validation", () => {
@@ -302,6 +373,35 @@ describe("askCoach streaming", () => {
     const response = await askCoach(request(), () => undefined);
     expect(response.action).toMatchObject({ type: "training_adjustment", delta: 2.5 });
     expect(response.message).toBe("Sube 2.5 kg.");
+  });
+
+  it("never shows the action block to the athlete while it streams", async () => {
+    /*
+     * The regression this pins. `parseCoachAction` only runs on the finished reply, so
+     * before the filter existed the raw JSON was handed to `onChunk` fragment by fragment
+     * and the athlete watched it type itself into the bubble, only for it to be replaced
+     * when the answer came back. Checking only `response.message` cannot see that: the
+     * block was already on screen. So this asserts on the chunks, which is what the
+     * bubble is actually made of.
+     */
+    const text =
+      'Sube 2.5 kg.\n```action\n{"type":"training_adjustment","field":"weight","delta":2.5}\n```\nListo.';
+    // One frame per character: the worst case for a filter that only looks within a
+    // fragment, since the opening and closing fences are each split across three frames.
+    const characters = [...text].map((character) => frame(character));
+    vi.stubGlobal("fetch", vi.fn(async () => sseResponse(characters)));
+
+    const chunks: string[] = [];
+    const response = await askCoach(request(), (chunk) => chunks.push(chunk));
+    const streamed = chunks.join("");
+
+    expect(streamed).not.toContain("```");
+    expect(streamed).not.toContain("training_adjustment");
+    expect(response.action).toMatchObject({ type: "training_adjustment", delta: 2.5 });
+    // The streamed text and the returned message are the same string, so re-rendering from
+    // the return value after streaming cannot change what is on screen.
+    expect(streamed.trim()).toBe(response.message);
+    expect(response.message).toBe("Sube 2.5 kg.\n\nListo.");
   });
 
   it("falls back to the whole body when the response has no stream", async () => {

@@ -99,6 +99,118 @@ export function parseCoachAction(rawText: string): { message: string; action?: C
   return { message: message.trim(), ...(action ? { action } : {}) };
 }
 
+/**
+ * Holds back a fenced block until it is known to be complete.
+ *
+ * The reason this exists is that a stream cannot be un-sent. `parseCoachAction` runs on
+ * the finished reply, so the action block was removed from the returned `message` but had
+ * already been handed to `onChunk` fragment by fragment: the athlete watched the raw JSON
+ * type itself into the bubble, and the block then vanished when the answer was replaced.
+ * Stripping after the fact cannot fix that, so the block is not emitted in the first place.
+ *
+ * The cost is that a block delays its own text until its closing fence arrives. A block is
+ * a few hundred characters, so the delay is a few hundred characters -- paid only while one
+ * is open, and only for the block itself. Prose around it keeps streaming.
+ *
+ * The strip decision is `parseCoachAction`'s, applied to the block in isolation, so a caller
+ * that concatenates everything `push` returned ends up with exactly the string
+ * `parseCoachAction` would have returned for the whole reply. Two code paths that disagree
+ * about what to hide would be a bug that only shows up on the frames where they differ.
+ */
+export function createActionBlockFilter(): {
+  /** Text to show now, given a fragment. May be empty while a block is open. */
+  push(fragment: string): string;
+  /** Whatever is still held back. Call once, at end of stream. */
+  flush(): string;
+} {
+  /** Everything received. Fences are found in here rather than per fragment. */
+  let text = "";
+  /** How much of `text` the caller has already been given. */
+  let emittedUpTo = 0;
+  /** Index of a fence whose closing fence has not arrived yet, or -1. */
+  let holding = -1;
+
+  const drain = (final: boolean): string => {
+    let out = "";
+
+    for (;;) {
+      if (holding !== -1) {
+        const close = text.indexOf(FENCE_TOKEN, holding + FENCE_TOKEN.length);
+        if (close === -1) {
+          if (!final) return out;
+          /*
+           * End of stream with a fence still open. `parseCoachAction` needs a closed block
+           * to match, so it leaves this text in the message; emitting it keeps the streamed
+           * text and the returned message identical instead of losing the tail.
+           */
+          out += text.slice(holding);
+          emittedUpTo = text.length;
+          return out;
+        }
+
+        const end = close + FENCE_TOKEN.length;
+        const block = text.slice(holding, end);
+        emittedUpTo = end;
+        holding = -1;
+
+        // A block this build does not read as an action block is the athlete's to see.
+        if (parseCoachAction(block).message !== "") out += block;
+        continue;
+      }
+
+      const open = text.indexOf(FENCE_TOKEN, emittedUpTo);
+      if (open === -1) {
+        /*
+         * No fence here -- but the last one or two backticks may be the start of one whose
+         * third backtick arrives in the next fragment. Emitting them would hide the opening
+         * fence from this scan while the athlete could still see it, and the block would
+         * stream through unfiltered. Two backticks is the most that can be held: three is a
+         * fence, and any fence found here is handled by the branch above.
+         *
+         * Counted over the text *from* `emittedUpTo`, never over the whole of it. A
+         * consumed block's own closing fence is still the tail of `text` while its
+         * trailing prose has not arrived, and counting it there rewinds `emittedUpTo` to
+         * before the fence just stripped -- at which point the closing fence is found again
+         * as a new opening one and two stray backticks reach the athlete.
+         *
+         * `emittedUpTo` advances only over what was emitted, stopping short of the held
+         * backticks: the next `push` re-scans them as part of the pending text, which is
+         * how a fence split across two fragments is still seen as one fence.
+         */
+        const pending = text.slice(emittedUpTo);
+        const trailing = TRAILING_BACKTICKS.exec(pending)?.[0].length ?? 0;
+        const hold = Math.min(trailing, FENCE_TOKEN.length - 1);
+        const safeEnd = text.length - hold;
+        out += text.slice(emittedUpTo, safeEnd);
+        emittedUpTo = safeEnd;
+        return out;
+      }
+
+      // Text before the fence is prose, and streams as it arrives.
+      out += text.slice(emittedUpTo, open);
+      emittedUpTo = open;
+      holding = open;
+    }
+  };
+
+  return {
+    push(fragment: string): string {
+      if (fragment === "") return "";
+      text += fragment;
+      return drain(false);
+    },
+    flush(): string {
+      return drain(true);
+    },
+  };
+}
+
+/** The fence delimiter. Same three characters the matching fence pattern uses. */
+const FENCE_TOKEN = "```";
+
+/** A run of backticks at the very end of the text received so far. */
+const TRAILING_BACKTICKS = /`+$/;
+
 // ------------------------------------------------------------------- request
 
 /**
@@ -340,10 +452,26 @@ async function readStream(
   // text instead of leaving the athlete with an empty bubble.
   let raw = "";
 
+  // The action block is held back by the filter rather than stripped afterwards: a stream
+  // that has already shown the JSON cannot un-show it. `full` keeps every fragment,
+  // filtered or not, because that is what the final `parseCoachAction` reads.
+  const filter = createActionBlockFilter();
+  /**
+   * What the athlete has actually been shown, as distinct from `full`.
+   *
+   * The returned `message` is this string rather than a second pass of `parseCoachAction`
+   * over `full`. Two passes would be two independent opinions about which fenced block is
+   * the action one, and a reply carrying more than one fence -- where they can disagree --
+   * would leave the bubble showing something different from the message that replaces it.
+   */
+  let shown = "";
   const emit = (fragment: string) => {
     if (!fragment) return;
     full += fragment;
-    onChunk(fragment);
+    const safe = filter.push(fragment);
+    if (!safe) return;
+    shown += safe;
+    onChunk(safe);
   };
 
   for (;;) {
@@ -384,8 +512,17 @@ async function readStream(
     emit(raw.trim());
   }
 
-  const { message, action } = parseCoachAction(full);
-  return { message, ...(action ? { action } : {}) };
+  // Anything the filter was still holding -- a block whose closing fence never arrived.
+  // Emitted here rather than dropped, so the streamed text is not quietly shorter than the
+  // message this function returns.
+  const held = filter.flush();
+  if (held !== "") {
+    shown += held;
+    onChunk(held);
+  }
+
+  const { action } = parseCoachAction(full);
+  return { message: shown.trim(), ...(action ? { action } : {}) };
 }
 
 /** Pulls `choices[0].delta.content` out of one frame, or `""` if it is not there. */

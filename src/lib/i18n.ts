@@ -1228,6 +1228,16 @@ export const COACH_PORTAL_LABELS = {
   requestNotesEmpty: "No dejó ninguna nota.",
   requestSentAt: (when: string): string => `Enviada ${when}`,
 
+  /**
+   * Shown when `profiles.display_name` is null.
+   *
+   * `display_name` is nullable and an athlete is never asked to fill it, so this is a
+   * state the queue will genuinely meet. A raw uuid would be worse than nothing: it is
+   * something the coach cannot act on, and it is something they would have to read aloud
+   * to find the right account.
+   */
+  athleteUnnamed: "Atleta sin nombre",
+
   accept: "Aceptar",
   accepting: "Aceptando…",
   decline: "Rechazar",

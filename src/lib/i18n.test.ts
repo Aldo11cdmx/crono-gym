@@ -48,11 +48,13 @@ describe("COACH_PORTAL_LABELS.shiftHours", () => {
 
 describe("COACH_PORTAL_LABELS.requestStatus", () => {
   it("names every status the database can hold", () => {
-    // A status with no label renders as the raw wire value, so an unhandled one is a
-    // missing translation rather than a crash. Asserted on the set so adding a status to
-    // the enum without a label fails here.
+    // A status with no label does not throw -- it renders the raw wire value, which is how
+    // a coach ends up reading "cancelled" in the middle of a Spanish screen. Written by
+    // hand from `coach_session_requests_status_check`, so a migration that widens the
+    // constraint fails here instead of failing in front of a user.
     expect(Object.keys(COACH_PORTAL_LABELS.requestStatus).sort()).toEqual([
       "active",
+      "cancelled",
       "closed",
       "declined",
       "pending",

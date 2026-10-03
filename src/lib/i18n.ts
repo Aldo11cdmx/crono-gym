@@ -1207,12 +1207,21 @@ export const COACH_PORTAL_LABELS = {
   queueEmptyTitle: "No hay solicitudes",
   queueEmptyBody: "Cuando un atleta premium te escriba, aparecerá aquí.",
 
-  /** The three states a request can be in, keyed by the wire value. */
+  /**
+   * The five states a request can be in, keyed by the wire value.
+   *
+   * Complete against `coach_session_requests_status_check`, which is
+   * `('pending','active','declined','closed','cancelled')`. An incomplete map does not
+   * throw -- it renders the raw enum value, which is how a coach ends up reading
+   * "cancelled" in the middle of a Spanish screen. Asserted in `i18n.test.ts` so a
+   * migration that widens the constraint fails a test rather than a demo.
+   */
   requestStatus: {
     pending: "Por responder",
     active: "Sesión activa",
     declined: "Rechazada",
     closed: "Cerrada",
+    cancelled: "Cancelada",
   } as Record<string, string>,
 
   requestNotesLabel: "Nota del atleta",

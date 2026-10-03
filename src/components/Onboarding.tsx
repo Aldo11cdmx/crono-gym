@@ -27,6 +27,7 @@ import {
   type Profile,
   type UnitSystem,
 } from "../lib/profile";
+import { ACTIVITY_LABELS, EXPERIENCE_LABELS, GOAL_LABELS } from "../lib/i18n";
 
 /**
  * Local onboarding draft. Kept separate from `Profile` so the imperial input
@@ -65,25 +66,25 @@ const STEPS = [
 ] as const;
 
 const EXPERIENCE: { value: Profile["experience_level"]; label: string; hint: string }[] = [
-  { value: "beginner", label: "Principiante", hint: "Menos de 1 año entrenando" },
-  { value: "intermediate", label: "Intermedio", hint: "1 a 3 años" },
-  { value: "advanced", label: "Avanzado", hint: "Más de 3 años" },
+  { value: "beginner", label: EXPERIENCE_LABELS.beginner, hint: "Menos de 1 año entrenando" },
+  { value: "intermediate", label: EXPERIENCE_LABELS.intermediate, hint: "1 a 3 años" },
+  { value: "advanced", label: EXPERIENCE_LABELS.advanced, hint: "Más de 3 años" },
 ];
 
 const GOALS: { value: Profile["goal"]; label: string }[] = [
-  { value: "lose_weight", label: "Perder peso" },
-  { value: "gain_muscle", label: "Ganar músculo" },
-  { value: "strength", label: "Ganar fuerza" },
-  { value: "maintain", label: "Mantener" },
-  { value: "endurance", label: "Resistencia" },
+  { value: "lose_weight", label: GOAL_LABELS.lose_weight },
+  { value: "gain_muscle", label: GOAL_LABELS.gain_muscle },
+  { value: "strength", label: GOAL_LABELS.strength },
+  { value: "maintain", label: GOAL_LABELS.maintain },
+  { value: "endurance", label: GOAL_LABELS.endurance },
 ];
 
 const ACTIVITY: { value: Profile["activity_level"]; label: string }[] = [
-  { value: "sedentary", label: "Sedentario", },
-  { value: "light", label: "Ligera", },
-  { value: "moderate", label: "Moderada", },
-  { value: "active", label: "Alta", },
-  { value: "athlete", label: "Atleta", },
+{ value: "sedentary", label: ACTIVITY_LABELS.sedentary },
+  { value: "light", label: ACTIVITY_LABELS.light },
+  { value: "moderate", label: ACTIVITY_LABELS.moderate },
+  { value: "active", label: ACTIVITY_LABELS.active },
+  { value: "athlete", label: ACTIVITY_LABELS.athlete },
 ];
 
 export function Onboarding({ profile, onSave, onFinish }: OnboardingProps) {

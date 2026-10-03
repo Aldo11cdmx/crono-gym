@@ -11,6 +11,8 @@
  * addition degrades to English rather than breaking the UI.
  */
 
+import type { CanonicalField, ImportSource } from "./import/types";
+
 export const BODY_PART_LABELS: Record<string, string> = {
   chest: "Pecho",
   back: "Espalda",
@@ -334,6 +336,16 @@ export const GYM_LABELS = {
     sizes.length === 0
       ? `Barra de ${barKg} kg sin discos.`
       : `Barra de ${barKg} kg con ${sizes.join(", ")} kg por lado.`,
+  /**
+   * One sentence naming the rack, for surfaces that show it without the panel.
+   *
+   * Shares `previewSummary`'s wording so the profile page and the settings panel
+   * cannot describe the same rack differently.
+   */
+  platesSummary: (sizes: readonly number[]): string =>
+    sizes.length === 0
+      ? "Sin discos configurados."
+      : `Discos por lado: ${sizes.join(", ")} kg.`,
   done: "Listo",
   /**
    * Header for the counter column.
@@ -365,6 +377,8 @@ export const GYM_LABELS = {
    */
   triggerAriaLabel: (context: string): string => `Ajustes del gimnasio: ${context}`,
   defaultTriggerContext: "durante el entrenamiento",
+  /** The profile screen's gear, which names a different context on purpose. */
+  profileTriggerContext: "en tu perfil",
 } as const;
 
 /**
@@ -385,6 +399,264 @@ export const BRAND_LABELS = {
   logoAlt: "Cronos",
   /** Names the brand block in the rail and the header. */
   regionAriaLabel: "Cronos",
+} as const;
+
+/**
+ * Copy for the profile view.
+ *
+ * The experience-level and goal labels live here rather than in `Onboarding`
+ * because both screens offer the same enum values, and a Spanish speaker
+ * comparing the two should not find the same option spelled two ways.
+ */
+export const PROFILE_LABELS = {
+  title: "Tu perfil",
+  loading: "Cargando tu perfil…",
+  notLoaded: "No hemos podido cargar tu perfil.",
+  retry: "Reintentar",
+  signOut: "Cerrar sesión",
+
+  identityLabel: "Tus datos",
+  nameLabel: "Nombre",
+  namePlaceholder: "Cómo te llamamos",
+  emailLabel: "Correo",
+  notSet: "Sin definir",
+  memberSince: "En Cronos desde",
+  onSince: (iso: string): string => `En Cronos desde ${iso}`,
+
+  bodyLabel: "Cuerpo",
+  birthDateLabel: "Fecha de nacimiento",
+  ageLabel: "Edad",
+  ageYears: (n: number): string => `${n} años`,
+  ageMinor: (n: number): string => `${n} años (menor de edad)`,
+  sexLabel: "Sexo biológico",
+  heightLabel: "Altura",
+  weightLabel: "Peso",
+  bodyMassIndex: "IMC",
+
+  trainingLabel: "Entrenamiento",
+  experienceLabel: "Nivel de experiencia",
+  activityLabel: "Nivel de actividad",
+  goalLabel: "Objetivo",
+  energyLabel: "Energía diaria",
+  energyBmr: "Metabolismo basal",
+  energyTdee: "Gasto total",
+  energyTarget: "Tu objetivo",
+  energyProtein: "Proteína diaria",
+  energyPerKg: (g: number): string => `${g} g de proteína (${g} g/kg)`,
+  energyMaintenanceNote: "Sin datos corporales suficientes para calcularlo.",
+  energyFloorNote: (floor: number): string =>
+    `Ajustado al mínimo de ${floor} kcal: bajar más no es seguro.`,
+
+  /** The gym-settings entry point on this screen, as opposed to the logger's. */
+  gymSettingsLabel: "Tu gimnasio",
+  gymSettingsHint:
+    "Barra y discos disponibles. Lo que pongas aquí es lo que el paso de peso te va a ofrecer.",
+  gymSettingsOpen: "Abrir ajustes del gimnasio",
+
+  importLabel: "Tus datos de otros sitios",
+  importHint:
+    "Trae el historial de Hevy o Strong para no empezar de cero.",
+  importOpen: "Importar desde Hevy o Strong",
+} as const;
+
+/** Experience levels, shared by onboarding and the profile. */
+export const EXPERIENCE_LABELS: Record<"beginner" | "intermediate" | "advanced", string> = {
+  beginner: "Principiante",
+  intermediate: "Intermedio",
+  advanced: "Avanzado",
+};
+
+/** Goals, shared by onboarding and the profile. */
+export const GOAL_LABELS: Record<
+  "lose_weight" | "maintain" | "gain_muscle" | "strength" | "endurance",
+  string
+> = {
+  lose_weight: "Perder peso",
+  gain_muscle: "Ganar músculo",
+  strength: "Ganar fuerza",
+  maintain: "Mantener",
+  endurance: "Resistencia",
+};
+
+/** Activity levels, shared by onboarding and the profile. */
+export const ACTIVITY_LABELS: Record<string, string> = {
+  sedentary: "Sedentario",
+  light: "Ligera",
+  moderate: "Moderada",
+  active: "Alta",
+  athlete: "Atleta",
+};
+
+/** Biological sex, for the profile's read-only summary. */
+export const SEX_LABELS: Record<string, string> = {
+  male: "Hombre",
+  female: "Mujer",
+  other: "Otro",
+};
+
+/**
+ * Copy for the import wizard.
+ *
+ * Every user-facing string for a four-step flow lives in one object, including
+ * the error log, so the whole importer can be read in one place before it ships
+ * -- and so a line added by the analysis has a home waiting for it.
+ */
+export const IMPORT_LABELS = {
+  title: "Importar historial",
+  open: "Importar desde Hevy o Strong",
+
+  // ---- step 1: source --------------------------------------------------
+  stepSource: "Fuente",
+  stepPreview: "Vista previa",
+  stepMapping: "Mapeo",
+  stepConfirm: "Confirmación",
+  step: (n: number, total: number, name: string): string => `Paso ${n} de ${total}: ${name}`,
+
+  sourceTitle: "¿De dónde viene el archivo?",
+  sourceHint:
+    "Cada app exporta un CSV distinto. Elige la tuya y leeremos las columnas por ti; podrás revisarlas antes de importar nada.",
+  sources: {
+    hevy: "Hevy",
+    strong: "Strong",
+    generic: "Otro CSV",
+  } as Record<ImportSource, string>,
+  /** Column names for the mapping step, in `CANONICAL_FIELDS` order. */
+  fields: {
+    date: "Fecha de la sesión",
+    title: "Nombre de la sesión",
+    exercise: "Ejercicio",
+    weight: "Peso",
+    reps: "Repeticiones",
+    rpe: "RPE",
+    setNumber: "Número de serie",
+    setType: "Tipo de serie",
+    notes: "Notas",
+  } as Record<CanonicalField, string>,
+  sourceWeightUnit: "Los pesos del archivo están en",
+  sourceAutoDetected: (name: string): string => `Hemos detectado un archivo de ${name}.`,
+  sourceManual: "Cambiar",
+  fileLabel: "Archivo CSV",
+  fileHint:
+    "Se lee en segundo plano: puedes elegir un archivo de varios megas sin que la app se congele.",
+  fileChoose: "Elegir archivo",
+  fileNoChosen: "Ningún archivo elegido",
+  fileReading: "Leyendo…",
+  fileRead: (name: string, bytes: string): string => `${name} · ${bytes}`,
+  fileTooLarge: (limit: string): string => `El archivo supera los ${limit}.`,
+  next: "Siguiente",
+  back: "Atrás",
+  cancel: "Cancelar",
+  close: "Cerrar",
+
+  // ---- step 2: preview -------------------------------------------------
+  previewTitle: "Esto es lo que hemos leído",
+  previewEmpty: "El archivo no tiene filas de datos.",
+  previewShowing: (shown: number, total: number): string =>
+    shown === total ? `${total} filas` : `Primeras ${shown} de ${total} filas`,
+  previewRows: (n: number): string => `${n} filas`,
+  previewColumns: (n: number): string => `${n} columnas`,
+  previewColumnHeader: "Columna",
+  previewMeaningHeader: "Qué es",
+  previewUnmapped: "Sin usar",
+  previewDuplicated: (name: string): string => `«${name}» está mapeada dos veces`,
+  previewTruncated: "Mostramos solo las primeras filas. El resto se analizan igual.",
+
+  // ---- step 3: mapping -------------------------------------------------
+  mappingTitle: "Confirma qué es cada columna",
+  mappingHint:
+    "Detectamos la origen por ti, pero conviene revisarlo: si un peso acaba siendo repeticiones, los datos entran equivocados y no hay forma de saberlo después.",
+  mappingField: (name: string): string => name,
+  mappingRequired: "Obligatorio",
+  mappingOptional: "Opcional",
+  mappingNotInFile: "Elige una columna",
+  mappingComplete: "Listo para importar.",
+  mappingIncomplete: "Falta mapear: {fields}.",
+  mappingExerciseToMuscle: "Músculo principal",
+  mappingExerciseToMuscleHint:
+    "Asignamos cada ejercicio a un músculo para que los rangos y el mapa muscular tengan algo que leer. Los que no reconoces se quedan sin asignar.",
+  mappingUnmappedExercise: (name: string): string => `${name}: sin músculo asignado`,
+  mappingMappedExercise: (name: string, muscle: string): string => `${name}: ${muscle}`,
+  mappingSelectMuscle: "Elegir músculo",
+  /** Progress on the muscle step, so a long list is not read as a stall. */
+  mappingResolvedCount: (resolved: number, total: number): string =>
+    resolved === total
+      ? `${total} ejercicios con músculo asignado`
+      : `${resolved} de ${total} ejercicios con músculo asignado`,
+  mappingUnresolvedCount: (n: number): string =>
+    n === 1 ? "1 ejercicio sin asignar" : `${n} ejercicios sin asignar`,
+  mappingAssigned: (muscle: string): string => muscle,
+  mappingUnassigned: "Sin músculo",
+  mappingEditing: (name: string): string => `Músculo de ${name}`,
+
+  // ---- step 4: confirm -------------------------------------------------
+  confirmTitle: "Revisa antes de importar",
+  confirmStats: {
+    sessions: (n: number): string => `${n} sesiones`,
+    sets: (n: number): string => `${n} series`,
+    exercises: (n: number): string => `${n} ejercicios distintos`,
+    skipped: (n: number): string => `${n} filas descartadas`,
+  },
+  confirmDuplicates: (n: number): string =>
+    n === 1 ? "1 sesión ya estaba importada" : `${n} sesiones ya estaban importadas`,
+  confirmStart: "Importar",
+  confirmWorking: "Importando…",
+  confirmDone: (sessions: number, sets: number): string =>
+    `Importadas ${sessions} sesiones y ${sets} series.`,
+  confirmFailed: "La importación ha fallado.",
+
+  // ---- error log -------------------------------------------------------
+  issuesTitle: "Registro de errores",
+  issuesEmpty: "Ninguna fila descartada.",
+  issuesCount: (n: number): string => (n === 1 ? "1 aviso" : `${n} avisos`),
+  issueLine: (n: number): string => `Línea ${n}`,
+  issueFileWide: "Todo el archivo",
+  issueDismiss: "Ocultar registro",
+  issueShow: (n: number): string => `Ver ${n} avisos`,
+  issueDownload: "Descargar el log",
+  issueCode: (code: string): string => code,
+
+  // ---- duplicates ------------------------------------------------------
+  duplicatesTitle: "Sesiones repetidas",
+  duplicatesHint:
+    "Hemos encontrado sesiones que ya tienes. Si las importas se duplicarán en tu historial.",
+  duplicatesImportAnyway: "Importar igualmente",
+  duplicatesSkip: "Omitir las repetidas",
+
+  // ---- undo ------------------------------------------------------------
+  undoTitle: "Importación deshecha",
+  undoSummary: (sessions: number, sets: number): string =>
+    `Se han borrado ${sessions} sesiones y ${sets} series de la importación anterior.`,
+  undoUnavailable:
+    "No hemos podido deshacer la importación: comprueba tu conexión y vuelve a intentarlo.",
+  undo: "Deshacer importación",
+  undoDone: "Importación deshecha",
+  undoFailed: "No se ha podido deshacer",
+
+  defaultSessionTitle: "Sesión importada",
+  workerFailed: "No hemos podido leer el archivo en segundo plano.",
+  workerFallingBack:
+    "Este navegador no admite el procesamiento en segundo plano; leeremos el archivo en la pantalla principal.",
+  cancelled: "Importación cancelada",
+
+  /** Every rejection, keyed by the code the analysis emits. */
+  issue: {
+    noHeader: "El archivo no tiene cabecera. Puede que no sea un CSV.",
+    blankHeader:
+      "Alguna columna no tiene nombre. Si los valores se ven desplazados, el separador del archivo probablemente no son comas.",
+    raggedRow: "La fila no tiene el mismo número de columnas que la cabecera.",
+    raggedDetail: (got: string, want: string): string => `${got} columnas, se esperaban ${want}`,
+    missingDate: "Falta la fecha de la sesión, así que no sabemos cuándo fue.",
+    unparseableDate: "No hemos entendido la fecha.",
+    missingExercise: "Falta el nombre del ejercicio.",
+    unparseableWeight: "No hemos entendido el peso; la serie se importa sin peso.",
+    unparseableReps: "No hemos entendido las repeticiones; la serie se importa sin repeticiones.",
+    unparseableRpe: "RPE fuera de 1-10; se importa la serie sin RPE.",
+    noSets: "La sesión no tenía ninguna serie importable, así que no se ha creado.",
+    duplicateSession: "Esta sesión ya estaba en tu historial y no se ha vuelto a importar.",
+    duplicateSet: "Filas repetidas dentro del archivo, contadas una sola vez.",
+    noExercisesMapped: "No hemos encontrado ninguna serie importable.",
+    exerciseNotMapped: "No has elegido qué columna es el ejercicio, así que no hay nada que importar.",
+  },
 } as const;
 
 export const UNDO_LABELS = {

@@ -176,9 +176,10 @@ export function AuthGate() {
               energy={energy}
               onSignOut={() => void signOut()}
             />
-            {/* Only the user id travels through outlet context now: the session lives in
-                `ActiveSessionContext` because `AppShell` has to read it too. */}
-            <Outlet context={{ userId }} />
+            {/* Only the user id and email travel through outlet context now: the
+                session lives in `ActiveSessionContext` because `AppShell` has to
+                read it too. */}
+            <Outlet context={{ userId, email }} />
           </>
         )}
       </main>
@@ -203,9 +204,15 @@ export function AuthGate() {
  * cannot know it: it comes from the Supabase session, which `AuthGate` resolves.
  * Passing it down as a prop would mean the route table had to be built per user,
  * and the table is created once at module scope.
+ *
+ * `email` rides along for the same reason and the same reason it is *not* re-read
+ * from Supabase downstream: a second `getSession()` is a second source of truth
+ * that can disagree with the gate's, and the profile is the screen where that
+ * disagreement would be visible.
  */
 export interface WorkspaceOutletContext {
   userId: string;
+  email: string;
 }
 
 /** Tracks the Supabase session; onAuthStateChange keeps the UI in sync after login. */

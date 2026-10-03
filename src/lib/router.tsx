@@ -28,7 +28,7 @@ import {
   RoutinesView,
   TrainView,
 } from "@/App";
-import { ComingSoon } from "@/components/ComingSoon";
+import { ProfileView } from "@/components/profile/ProfileView";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
 
 /**
@@ -57,7 +57,7 @@ export const router = createBrowserRouter([
           // reload and so the pill's destination is a real screen.
           { path: "/entrenar", element: <TrainView /> },
           { path: "/rangos", element: <RangosView /> },
-          { path: "/perfil", element: <ComingSoon title="Perfil" /> },
+          { path: "/perfil", element: <ProfileView /> },
           ...devRoutes,
         ],
       },

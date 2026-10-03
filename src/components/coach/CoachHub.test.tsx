@@ -207,6 +207,17 @@ describe("CoachHub", () => {
     expect(screen.queryByText(T.nutritionTitle)).toBeNull();
     expect(screen.queryByText(T.workouts(48))).toBeNull();
     expect(screen.queryByText(/61\.4 kg/)).toBeNull();
+    // Nor the chat: it projects this exact context, so a chat rendered against a
+    // skeleton would be asking a coach about a briefing that does not exist yet.
+    expect(screen.queryByRole("heading", { name: T.chatTitle })).toBeNull();
+  });
+
+  it("mounts the chat once the context has settled", async () => {
+    renderHub();
+
+    expect(await screen.findByRole("heading", { name: T.chatTitle })).toBeTruthy();
+    // The medical boundary travels with the screen that can generate the advice.
+    expect(screen.getByText(T.chatDisclaimer)).toBeTruthy();
   });
 
   it("shows the assembled briefing once every source has settled", async () => {
@@ -258,7 +269,7 @@ describe("CoachHub", () => {
   it("writes a note through the seam and shows it", async () => {
     renderHub();
 
-    const box = await screen.findByRole("textbox");
+    const box = await screen.findByLabelText(T.notesPlaceholder);
     fireEvent.change(box, { target: { value: "El press de banca va justo; no subir más la barra." } });
     fireEvent.click(screen.getByRole("button", { name: T.notesSave }));
 
@@ -273,7 +284,7 @@ describe("CoachHub", () => {
   it("survives a re-render with the note still there", async () => {
     const { rerender } = renderHub();
 
-    fireEvent.change(await screen.findByRole("textbox"), {
+    fireEvent.change(await screen.findByLabelText(T.notesPlaceholder), {
       target: { value: "Dormir mejor la próxima semana." },
     });
     fireEvent.click(screen.getByRole("button", { name: T.notesSave }));
@@ -292,7 +303,7 @@ describe("CoachHub", () => {
     // rejected save would throw away what the user was typing.
     renderHub();
 
-    const box = await screen.findByRole("textbox");
+    const box = await screen.findByLabelText(T.notesPlaceholder);
     fireEvent.change(box, { target: { value: "   " } });
 
     const save = screen.getByRole("button", { name: T.notesSave }) as HTMLButtonElement;

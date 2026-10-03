@@ -20,6 +20,8 @@ import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { COACH_LABELS as T, UNRANKED_REASONS } from "@/lib/i18n";
 import type { CoachContext, CoachNote } from "@/lib/coach/types";
 import { useCoachContext, useCoachNotes } from "@/hooks/useCoach";
+import { useGymSettings } from "@/context/GymSettingsContext";
+import { CoachChat } from "./CoachChat";
 import { RANGES_PATH } from "@/components/shell/navItems";
 
 export interface CoachHubProps {
@@ -29,6 +31,13 @@ export interface CoachHubProps {
 export function CoachHub({ userId }: CoachHubProps) {
   const { context, loading, error } = useCoachContext(userId);
   const notes = useCoachNotes(userId);
+  /*
+   * The chat needs the rack, not just the training log: the coach is told which
+   * plates exist so a proposed load is one the athlete can actually put on the bar.
+   * Read here rather than passed down, because it comes from a provider that wraps
+   * the app and threading it through the hub would only add a prop it never uses.
+   */
+  const gym = useGymSettings();
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,6 +76,12 @@ export function CoachHub({ userId }: CoachHubProps) {
         <>
           <ContextSection context={context} />
           <RanksSection context={context} />
+          {/*
+            Inside the loaded branch on purpose: the chat projects this exact context
+            into what the model is told, so rendering it against a skeleton would mean
+            asking a coach about a briefing that does not exist yet.
+          */}
+          <CoachChat context={context} gymSettings={gym} />
         </>
       )}
 

@@ -164,6 +164,79 @@ export const RANK_LABELS = {
   promoted: (muscle: string, rank: string): string => `¡${muscle} subió a ${rank}!`,
   confidence: "Confianza",
   legendHint: "Cada rango tiene color y símbolo, para leerlo sin depender del color.",
+
+  // ---- score breakdown -------------------------------------------------
+  /**
+   * The two halves of the score, each carrying its own weight.
+   *
+   * The weight is part of the answer, not a detail: "Fuerza 68%" invites the
+   * reader to think 68% of the score came from strength, which is not what the
+   * engine computes. Showing `70% del puntaje` next to the percentage is the
+   * difference between a breakdown the user can check and one they have to trust.
+   */
+  strength: "Fuerza",
+  strengthWeight: "70% del puntaje",
+  strengthHint: (sets: number, weeks: number): string =>
+    `1RM estimado · ${sets} series · ${weeks} semanas`,
+  volume: "Volumen y constancia",
+  volumeWeight: "30% del puntaje",
+  volumeHint: (sets: number, weeks: number): string => `${sets} series · ${weeks} semanas`,
+
+  // ---- estimated 1RM ---------------------------------------------------
+  oneRepMaxTitle: "Cómo se estima tu fuerza",
+  /**
+   * Names the formula, because the number is otherwise unverifiable.
+   *
+   * A user told "1RM 116.7 kg" has no way to know it came from a 100 kg set of
+   * five and not from a 116 kg single. Showing the formula and the set it came
+   * from turns an assertion into something they can re-derive.
+   */
+  oneRepMaxFormula: "Epley: 1RM = peso × (1 + repeticiones ÷ 30)",
+  oneRepMaxFormulaHint: (weight: number, reps: number, estimate: number): string =>
+    `${weight} kg × (1 + ${reps} ÷ 30) = ${estimate} kg`,
+  oneRepMaxBestSet: (weight: number, reps: number): string =>
+    `Tu mejor serie: ${weight} kg × ${reps}`,
+  oneRepMaxNoSet: "Ninguna serie con carga suficiente para estimar un 1RM.",
+  oneRepMaxSessions: (sessions: number, sets: number): string =>
+    `${sessions} sesiones · ${sets} series que cuentan`,
+
+  // ---- inactivity decay ------------------------------------------------
+  /**
+   * The decay indicator.
+   *
+   * A muscle that has not been trained in four months looks identical to a fresh
+   * one unless the panel says otherwise, and the user has no other way to tell
+   * that the number on screen is quietly shrinking. The multiplier is shown as a
+   * percentage of what it would be with no layoff, because "0.62" on its own is
+   * not a fact about anything.
+   */
+  decayTitle: "Inactividad",
+  decayNone: "Al día: entrenaste este músculo hace poco.",
+  decayLost: (percent: number): string =>
+    `Tu volumen está al ${percent}% por no entrenar este músculo desde hace tiempo.`,
+  decayDays: (days: number): string => `Última serie hace ${days} días`,
+  decayNever: "Sin registro de ninguna serie.",
+
+  // ---- next rank -------------------------------------------------------
+  progressTitle: "Siguiente rango",
+  pointsToNext: (points: number, rank: string): string =>
+    `Te faltan ${points} ${points === 1 ? "punto" : "puntos"} para ${rank}.`,
+  atTopRank: "Estás en el rango más alto. No queda nada por delante.",
+  progressAria: (rank: string): string => `Progreso hacia ${rank}`,
+  atMaxLabel: "Máximo",
+
+  // ---- contributions ---------------------------------------------------
+  contributionsTitle: "Ejercicios que más aportan",
+  contributionCounted: "Contado",
+  contributionNotCounted: "No contado",
+  contributionPrimary: "principal",
+  contributionSecondary: "secundario",
+  contributionSets: (sets: number): string => `${sets} series`,
+  browseExercises: (muscle: string): string => `Ver ejercicios para ${muscle}`,
+  close: "Cerrar",
+  historyLabel: "Historial de rangos",
+  historyFirst: "Primer rango registrado. Aquí verás tu evolución.",
+  historyEmpty: "Aún no hay historial de rangos.",
 } as const;
 
 /**

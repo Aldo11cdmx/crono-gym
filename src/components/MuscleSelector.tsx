@@ -36,18 +36,37 @@ import {
 } from "../lib/muscleMap";
 import { selectionSides, selectionLabels } from "../lib/muscleFilter";
 import { lighten } from "../lib/ranks/rankColors";
+import { ACCENT } from "../design/tokens";
 import { MUSCLE_FILTER_LABELS as T } from "../lib/i18n";
 
 // --- OLED palette ---------------------------------------------------------
-/** Unselected but trainable: barely lit, just enough to read the silhouette. */
+/**
+ * The map's own four-state palette, and it is local rather than taken from `tokens`.
+ *
+ * These are silhouette values, not roles: a muscle that is neither selected nor in the
+ * catalog has to sit *between* the canvas and the selection, and no general surface token
+ * happens to land there. The selected pair, though, is the product's accent and is taken
+ * from it -- the map is how an athlete picks which muscles to train, so a muscle picked
+ * here should be the same red as the button that will act on it.
+ *
+ * `SELECTED_STROKE` is a lighter tint of the fill rather than `ACCENT.text`, because it
+ * has to survive *on* the fill: at equal luminance the region would read as one flat
+ * silhouette with no edge.
+ */
 const BASE_FILL = "#15151a";
 const BASE_STROKE = "rgba(255,255,255,0.18)";
 /** No exercises in the catalog: recedes into the background. */
 const INERT_FILL = "#0a0a0c";
 const INERT_STROKE = "rgba(255,255,255,0.07)";
-/** Selected: the amber the rest of the product uses. */
-const SELECTED_FILL = "#ff9f0a";
-const SELECTED_STROKE = "#ffd27a";
+/** Selected: the accent. */
+const SELECTED_FILL = ACCENT.base;
+const SELECTED_STROKE = ACCENT.hover;
+/**
+ * The selected region's cast. Stronger than {@link ACCENT.glow} because this one has to
+ * survive *behind* a saturated fill -- a 20% glow under an opaque red is invisible, so
+ * the drop shadow reads as a rim rather than as a halo.
+ */
+const SELECTED_GLOW = "rgba(255, 59, 48, 0.75)";
 
 /** Slug -> CSS selector. Slugs are valid identifiers; `lower-back` is fine. */
 function pathSelector(scopeId: string, slug: Slug): string {
@@ -172,8 +191,8 @@ const hoverRules = hoverTargets
           ? lighten(colorByMuscle?.get(slug) ?? BASE_FILL, 0.12)
           : "#2f2f38";
         const glow = readOnly
-          ? (colorByMuscle?.get(slug) ?? "rgba(255, 159, 10, 0.35)")
-          : "rgba(255, 159, 10, 0.35)";
+          ? (colorByMuscle?.get(slug) ?? ACCENT.glow)
+          : ACCENT.glow;
         return `${pathSelector(scopeId, slug)}:hover {\n  fill: ${hoverFill} !important;\n  filter: drop-shadow(0 0 6px ${glow});\n}`;
       })
       .join("\n");
@@ -187,7 +206,7 @@ const hoverRules = hoverTargets
       `#${scopeId} path { transition: fill 140ms ease, filter 140ms ease; }`,
       hoverRules,
       selectedRules
-        ? `${selectedRules} {\n  filter: drop-shadow(0 0 10px rgba(255, 159, 10, 0.75));\n}`
+        ? `${selectedRules} {\n  filter: drop-shadow(0 0 10px ${SELECTED_GLOW});\n}`
         : "",
       // Must come after the hover rule and be at least as specific, otherwise
       // hovering a selected muscle overwrites its fill with the hover grey and

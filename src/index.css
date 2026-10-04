@@ -30,14 +30,14 @@
     height: 320px;
     pointer-events: none;
     z-index: 0;
-    background: radial-gradient(
+background: radial-gradient(
       60% 100% at 50% 0%,
-      rgba(255, 159, 10, 0.07),
+      rgba(255, 59, 48, 0.07),
       transparent 70%
     );
   }
 
-  /* Accent selection highlight matches the single warm brand tone. */
+  /* Accent selection highlight matches the single brand tone. */
   ::selection {
     @apply bg-accent/30 text-neutral-50;
   }
@@ -115,7 +115,7 @@
   }
 
   .gbtn:focus-visible {
-    outline: 2px solid var(--cronos-accent-text, #f7b955);
+    outline: 2px solid var(--cronos-accent-text, #ff6961);
     outline-offset: 2px;
   }
 
@@ -149,9 +149,19 @@
     );
   }
 
-  .cronos-bottom-nav,
+/*
+   * The rail starts hidden and is switched on by the media query below; the bottom
+   * navigation is the mirror image -- visible on a phone, replaced by the rail on a
+   * pointer. They cannot share one rule because they are on opposite sides of the
+   * breakpoint, and collapsing them to `display: none` left the phone with no navigation
+   * at all.
+   */
   .cronos-side-rail {
     display: none;
+  }
+
+  .cronos-bottom-nav {
+    display: flex;
   }
 
   @media (min-width: 768px) {
@@ -277,5 +287,130 @@
       animation: none !important;
       opacity: 1;
     }
+  }
+}
+/* ------------------------------------------------------------------------- *
+ * Symmetry: the floating button and the sheet it opens.
+ *
+ * Both live here rather than in style props because each needs a media query, and a
+ * style prop cannot express one: the sheet is 85vh on a phone and a fixed 600px on a
+ * desktop, and the button clears the bottom navigation on one and the side rail on the
+ * other.
+ *
+ * The reduced-motion rules are per-class rather than a global `* { transition: none }`.
+ * A blanket override would also stop the chat's own streaming caret, which is a legibility
+ * feature rather than decoration -- the athlete needs to see the answer arriving.
+ * ------------------------------------------------------------------------- */
+
+.symmetry-fab {
+  position: fixed;
+  right: 16px;
+  /* Clears the bottom navigation (NAV_CONTENT_HEIGHT) plus its own half, so the circle
+     sits above it rather than on it. */
+  bottom: calc(16px + var(--cronos-nav-height, 56px) + 8px);
+  z-index: 65;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.symmetry-fab--enter {
+  animation: cronos-fab-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cronos-fab-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (min-width: 900px) {
+  .symmetry-fab {
+    /* Beside the rail rather than over the content column. */
+    right: calc(16px + var(--cronos-rail-width, 0px));
+  }
+}
+
+.symmetry-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 768px) {
+  .symmetry-overlay {
+    align-items: center;
+  }
+}
+
+.symmetry-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /*
+   * 85vh on a phone, with no cap. A cap here is backwards: on a phone the sheet *is* the
+   * interface, and clipping it to 600px would leave a third of the conversation off the
+   * screen behind a scroll the athlete has to find. The fixed height is the desktop case,
+   * below, where a panel as tall as the window would stop reading as a sheet at all.
+   */
+  height: 85vh;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .symmetry-panel {
+    /* A dialog's proportions, centred and inset, rather than a full-width band. */
+    width: min(560px, 100%);
+    height: min(640px, 82vh);
+    margin-bottom: 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+.symmetry-overlay--animate .symmetry-panel {
+  animation: cronos-sheet-up 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cronos-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* The scroll lives on the body only. The header and the disclaimer stay put, so a long
+   conversation does not push the tabs -- and the way out -- off the top of the screen. */
+.symmetry-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .symmetry-fab--enter,
+  .symmetry-overlay--animate .symmetry-panel {
+    animation: none !important;
   }
 }

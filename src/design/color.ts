@@ -16,6 +16,14 @@
  * A test that bans the string `red` misses `#fb7185` (hue 351, saturation 95%),
  * which is exactly the colour the rank ladder used to ship as "Élite". Banning
  * hues catches that class of mistake for any colour, in any token file, forever.
+ *
+ * Why a rule rather than a list of banned hex values
+ * --------------------------------------------------
+ * Same reason, one level up: the accent is now a saturated red, so what has to be
+ * banned is not a colour but a *second* use of one. A list of hexes could not
+ * express that, and could not notice a new red arriving in a token file nobody
+ * thought to grep. `redPolicyFor` checks a colour against the role it plays, so
+ * the rule travels with the palette instead of with the palette's current contents.
  */
 
 // ----------------------------------------------------------------- parsing
@@ -206,7 +214,7 @@ export const AA_LARGE_CONTRAST = 3;
  * Two arcs, because red wraps around 0/360: 345-360 and 0-15. 15 degrees of
  * slack past pure red catches the rose and salmon tones that read as red to a
  * protanope, while staying clear of orange (25-45), which is where the amber
- * accent and the Bronze rank legitimately live.
+ * warning legitimately lives.
  */
 export const RED_HUE_ARCS: ReadonlyArray<readonly [number, number]> = [
   [345, 360],
@@ -223,6 +231,12 @@ export const SATURATED_RED_MIN_SATURATION = 0.6;
  * halves matter. A desaturated warm grey has a red hue but is not a red-green
  * confusion risk, and a fully saturated colour at 200 degrees is a completely
  * different problem.
+ *
+ * **This function no longer decides whether a red is allowed.** It only says what a red
+ * *is*, because the answer to "may this ship" now depends on which role the colour is
+ * playing: the accent is a saturated red on purpose, while an error or a rank that
+ * became one would be indistinguishable from it. See `redPolicyFor` and the
+ * `describeRedViolation` helper for the reporting half.
  */
 export function isSaturatedRed(color: string): boolean {
   const rgb = parseColor(color);
@@ -232,12 +246,40 @@ export function isSaturatedRed(color: string): boolean {
   return RED_HUE_ARCS.some(([from, to]) => h >= from && h <= to);
 }
 
+/**
+ * Where a saturated red is permitted.
+ *
+ * The blanket ban this replaces could only count reds; it could not say how many were
+ * safe. Since the accent became a saturated red, the rule that carries the weight is
+ * narrower and checkable instead: **red is allowed exactly once, in the accent**, and
+ * every other role that could be mistaken for it must stay off it.
+ */
+export type RedPolicyRole = "accent" | "status" | "destructive" | "rank" | "surface";
+
+const RED_POLICY_ALLOWS_RED: ReadonlySet<RedPolicyRole> = new Set<RedPolicyRole>([
+  "accent",
+]);
+
+/**
+ * Whether a colour violates the red policy *for the role it plays*.
+ *
+ * `accent` is the one role that may be a saturated red. Everything else -- the error
+ * wine, every status, every rank -- may not, because each of those can appear on the
+ * same card as the accent and a second saturated red is what turns an actionable screen
+ * into an ambiguous one.
+ */
+export function redPolicyFor(color: string, role: RedPolicyRole): boolean {
+  if (!isSaturatedRed(color)) return false;
+  return !RED_POLICY_ALLOWS_RED.has(role);
+}
+
 /** Human-readable explanation, for the test failure message. */
-export function describeRedViolation(color: string): string {
+export function describeRedViolation(color: string, role?: RedPolicyRole): string {
   const rgb = parseColor(color);
   if (!rgb) return `${color}: formato de color no reconocido`;
   const { h, s, l } = rgbToHsl(rgb);
-  return `${color}: hue ${Math.round(h)}°, saturación ${Math.round(s * 100)}%, luminosidad ${Math.round(l * 100)}%`;
+  const where = role ? ` (${role})` : "";
+  return `${color}${where}: hue ${Math.round(h)}°, saturación ${Math.round(s * 100)}%, luminosidad ${Math.round(l * 100)}%`;
 }
 
 // ------------------------------------------------ colour vision deficiency

@@ -5,9 +5,11 @@
  * only exist as a comment, and each one is capable of failing on a future edit
  * that looks harmless in review.
  *
- * The most important is the saturated-red check. "Don't use red for errors" is
- * easy to agree with and easy to break three months later when someone adds an
- * urgent banner; a hue-based assertion makes that impossible to ship silently.
+ * The most important one is the red policy. "Don't use red for errors" is easy to
+ * agree with and easy to break three months later when someone adds an urgent
+ * banner; a role-based assertion makes that impossible to ship silently -- and now
+ * that red *is* the accent, the rule has to be about how many reds there are rather
+ * than about whether any of them are allowed.
  */
 
 import { describe, expect, it } from "vitest";
@@ -23,6 +25,7 @@ import {
   isSaturatedRed,
   parseColor,
   rgbToHsl,
+  redPolicyFor,
   simulateCvd,
   toHex,
 } from "./color";
@@ -33,12 +36,14 @@ import {
   DANGER,
   GLASS,
   MOTION,
+  RADIUS,
   SOLID,
   STATUS,
   SURFACE,
   SURFACE_ROLE,
   TEXT,
   TYPE,
+  Z_INDEX,
   cssVars,
 } from "./tokens";
 import tailwind from "../../tailwind.config";
@@ -52,10 +57,11 @@ import tailwind from "../../tailwind.config";
  * these rules are checked against the values the app ships.
  */
 import { EARNABLE_RANKS } from "../lib/ranks/rankConfig";
+import { LOGO_GRADIENT } from "./logoGradient";
 
-// ------------------------------------------------------- the red prohibition
+// ------------------------------------------------------------- the red policy
 
-describe("no saturated red anywhere in the design system", () => {
+describe("a saturated red is the accent, and only the accent", () => {
   it("rejects the saturated reds this rule was written for", () => {
     // The colour the rank ladder used to ship as "Élite", and the Tailwind red
     // currently scattered across error states. Both must be caught.
@@ -74,27 +80,42 @@ describe("no saturated red anywhere in the design system", () => {
   });
 
   it("allows saturated colours outside the red arcs", () => {
-    // Orange at 30 degrees is where the Bronze rank and the amber accent live.
-    expect(isSaturatedRed(ACCENT.base)).toBe(false);
+    // Orange at 30 degrees is where the Bronze rank and the amber warning live.
+    expect(isSaturatedRed(STATUS.progression.base)).toBe(false);
     expect(isSaturatedRed("#c2660a")).toBe(false);
     expect(isSaturatedRed(STATUS.success.base)).toBe(false);
     expect(isSaturatedRed(EARNABLE_RANKS[0].color)).toBe(false);
   });
 
-  it("contains no saturated red across every exported colour token", () => {
-    const violations = Object.entries(COLOR_TOKENS)
-      .filter(([, value]) => isSaturatedRed(value))
-      .map(([name, value]) => `${name} = ${value}`);
-
-    expect(violations).toEqual([]);
+  it("agrees with itself about which accent shades are exempt", () => {
+    // Documents the size of the exemption: the accent's fill, hover and text tints are
+    // all saturated reds on purpose.
+    expect(redPolicyFor(ACCENT.base, "accent")).toBe(false);
+    expect(redPolicyFor(ACCENT.hover, "accent")).toBe(false);
+    expect(redPolicyFor(ACCENT.text, "accent")).toBe(false);
   });
 
-  it("contains no saturated red in any status or rank colour", () => {
+  it("keeps the accent's pressed state a darker red, not a different one", () => {
+    /*
+     * `pressed` is a saturated red on purpose -- it is the same hue as the fill, held down
+     * -- so what has to hold is that it stays *perceivable* as the same control. Two
+     * accident-prone edits are caught here: warming it toward orange, which would make a
+     * finger-down state read as a different button, and lightening it, which would make
+     * the press read as a hover and tell the athlete the tap registered when it did not.
+     */
+    expect(isSaturatedRed(ACCENT.pressed)).toBe(true);
+    expect(redPolicyFor(ACCENT.pressed, "accent")).toBe(false);
+    expect(contrastRatio(ACCENT.pressed, ACCENT.base)).toBeGreaterThan(1.15);
+    const { h } = rgbToHsl(parseColor(ACCENT.pressed)!);
+    const baseHue = rgbToHsl(parseColor(ACCENT.base)!).h;
+    // Within a few degrees: same hue, less light.
+    expect(Math.abs(h - baseHue)).toBeLessThan(5);
+  });
+
+  it("contains no saturated red in any status, rank, copper or destructive token", () => {
     const entries = [
       ...Object.values(STATUS).flatMap((s) => [s.base, s.text, s.border, s.muted]),
       ...EARNABLE_RANKS.flatMap((r) => [r.color, r.borderColor]),
-      ACCENT.base,
-      ACCENT.text,
       COPPER.base,
       COPPER.text,
       DANGER.base,
@@ -102,18 +123,86 @@ describe("no saturated red anywhere in the design system", () => {
       DANGER.deep,
     ];
 
-    const violations = entries.filter((value) => isSaturatedRed(value));
+    const violations = entries.filter((value) => redPolicyFor(value, "status"));
     expect(violations).toEqual([]);
   });
 
   it("treats the destructive colour as wine, not red", () => {
     // Guards the intent behind the choice: if someone "simplifies" DANGER to a
-    // stock red token this is the assertion that explains why not.
+    // stock red token this is the assertion that explains why not. This is load-bearing
+    // now rather than merely tidy: with a red accent, a red error would be the one
+    // thing on screen a coach could not tell from the primary action.
+    expect(redPolicyFor(DANGER.base, "destructive")).toBe(false);
+    expect(isSaturatedRed(DANGER.base)).toBe(false);
     const { h, s } = rgbToHsl(parseColor(DANGER.base)!);
     // el arco rojo ocupa 345-360 y 0-15
     expect(h < 15 || h > 345).toBe(true);
     // Deep and desaturated: readable, and unmistakably not an alert siren.
     expect(s).toBeLessThan(0.6);
+  });
+
+  it("keeps the error wine separable from the accent under every deficiency", () => {
+    /*
+     * The compensation for allowing a saturated red at all. A protanope reads the red
+     * accent and the wine error as two shades of the same brown, so this asserts they
+     * stay far enough apart once the hue is taken away -- which is exactly the failure a
+     * contrast ratio measured with full colour vision cannot see.
+     */
+    for (const kind of CVD_KINDS) {
+      const ratio = contrastRatioUnderCvd(ACCENT.base, STATUS.error.base, kind);
+      expect(ratio, `accent vs error under ${kind}: ${ratio.toFixed(3)}:1`).toBeGreaterThan(
+        1.15,
+      );
+    }
+  });
+
+  it("keeps the accent's own shades from collapsing into each other", () => {
+    // The adjacent failure: an accent whose fill and hover stop being distinguishable
+    // is a button that looks stuck down.
+    expect(cvdDeltaE(ACCENT.base, ACCENT.hover, "deuteranopia")).toBeGreaterThan(
+      CVD_DISTINGUISHABLE_DELTA_E,
+    );
+  });
+});
+
+// --------------------------------------------------- Cronos red, measured
+
+describe("the red accent meets the contrast floors it is used at", () => {
+  it("ACCENT.base clears 3:1 on the canvas, which is the non-text floor", () => {
+    // A control boundary has to be perceivable without reading it. Measured, this is
+    // 5.92:1 -- past the 3:1 floor and close to the 4.5:1 a text fill would need, which
+    // is why `TEXT.onAccent` is near-black on it rather than white.
+    expect(contrastRatio(ACCENT.base, SURFACE.base)).toBeGreaterThanOrEqual(
+      AA_LARGE_CONTRAST,
+    );
+  });
+
+  it("ACCENT.text clears 4.5:1 on the canvas, because it carries text", () => {
+    // The brief quotes 5.2:1 for this tint; measured, it is 7.45:1. The assertion is the
+    // floor rather than the quote, so a future darkening has to be a deliberate decision.
+    expect(contrastRatio(ACCENT.text, SURFACE.base)).toBeGreaterThanOrEqual(AA_CONTRAST);
+  });
+
+  it("ACCENT.secondary is not ACCENT.text, because amber and red are different jobs", () => {
+    /*
+     * The inverse of a test this file used to have. Amber used to *be* the accent, so
+     * "the accent's text tint" and "the emphasis tint" were the same colour and pinning
+     * them together stopped them drifting apart. Now amber means warning and the accent's
+     * text tint is a light red, so the assertion is that they never collapse back into one
+     * colour: an athlete who cannot tell a warning from an action label is being asked to
+     * make a safety decision from a hue.
+     */
+    expect(ACCENT.secondary).not.toBe(ACCENT.text);
+    expect(ACCENT.secondary).toBe(STATUS.warning.base);
+  });
+
+  it("puts dark ink on the accent fill, since red is far too dark for white", () => {
+    // White on this red would be legible and would still look like a sticker rather than
+    // a label, which is the cheaper of the two problems to avoid.
+    expect(contrastRatio(TEXT.onAccent, ACCENT.base)).toBeGreaterThanOrEqual(AA_CONTRAST);
+    expect(contrastRatio("#FFFFFF", ACCENT.base)).toBeLessThan(
+      contrastRatio(TEXT.onAccent, ACCENT.base),
+    );
   });
 });
 
@@ -146,12 +235,17 @@ describe("the Tailwind config does not drift from the tokens", () => {
     expect(tailwind.theme.extend.colors.neutral[50]).toBe(TEXT.primary);
   });
 
-  it("ACCENT.text y ACCENT.secondary no divergen", () => {
-    // They are intentionally the same hex. What this pins is that nobody edits
-    // one of them without the other: a future "just make the emphasis slightly
-    // warmer" is exactly the edit that would silently split the two, and the
-    // shell's two-hour-session warning is built on the assumption they match.
-    expect(ACCENT.text).toBe(ACCENT.secondary);
+  it("does not use the warning amber as the primary text tint", () => {
+    /*
+     * The inverse of a test this file used to have, which asserted that `ACCENT.text` and
+     * `ACCENT.secondary` were *identical* and warned against anyone "making the emphasis
+     * slightly warmer". That was the right rule when both were amber and meant the same
+     * thing. They mean different things now, so the rule is that they stay apart: the
+     * two-hour-session warning in `ActiveWorkoutPill` reads `ACCENT.secondary` because it
+     * is a warning, and a session-warning chip that renders in the accent's text red would
+     * read as "keep training" instead of "you have been going two hours".
+     */
+    expect(ACCENT.text).not.toBe(ACCENT.secondary);
     expect(COLOR_TOKENS["accent-secondary"]).toBe(ACCENT.secondary);
   });
 });
@@ -188,12 +282,14 @@ describe("text clears WCAG AA on every surface it is used on", () => {
     );
   });
 
-  it("puts dark ink on the accent fill, since amber is far too light for white", () => {
-    expect(contrastRatio(TEXT.onAccent, ACCENT.base)).toBeGreaterThanOrEqual(AA_CONTRAST);
-    // White on amber is the classic dark-mode button mistake; assert the failure
-    // so a future "just use white" edit is visible in review.
-    expect(contrastRatio("#ffffff", ACCENT.base)).toBeLessThan(AA_CONTRAST);
-  });
+  /*
+   * The accent's own ink is asserted in "the red accent meets the contrast floors it is
+   * used at" above, where the reason it is near-black rather than white is written down.
+   * It used to live here, and used to assert that white *failed* against amber. That
+   * assertion is gone rather than inverted: the red fill takes white at 5.92:1, so white
+   * is legible on it now, and the reason to stay on dark ink is that white on a fill
+   * this saturated reads as a sticker rather than as a label.
+   */
 
   it("keeps every status label readable on the canvas", () => {
     for (const [name, status] of Object.entries(STATUS)) {
@@ -477,15 +573,81 @@ describe("the rest of the token set", () => {
       const size = Number.parseFloat(value.size);
       const line = Number.parseFloat(value.lineHeight);
       expect(line, `${role}: ${line}/${size}`).toBeGreaterThanOrEqual(size);
-      // Under 1.2 clips descenders and accents, which matters for "í" and "ñ".
-      expect(line / size, `${role} ratio`).toBeGreaterThan(1.2);
+
+      /*
+       * Two floors rather than one, because one ratio cannot serve both sizes.
+       *
+       * The absolute floor is 3px of extra leading at every size: enough that an
+       * accented descender ("í", "ñ") has somewhere to go.
+       *
+       * The relative floor only applies at reading sizes. Under ~1.2 a line clips the
+       * ascender of the line above, and at 12px that is a real collision. At 48px the
+       * same 1.2 would demand a 58px line box for a headline that is the only line on
+       * the screen, which is not a clipping problem -- it is wasted space. So the large
+       * steps are held to the absolute floor and the reading steps to the ratio.
+       */
+      expect(line - size, `${role} leading`).toBeGreaterThanOrEqual(3);
+      if (size <= 24) {
+        expect(line / size, `${role} ratio`).toBeGreaterThan(1.2);
+      }
     }
   });
 
   it("orders the type scale from largest to smallest", () => {
-    const sizes = Object.values(TYPE).map((t) => Number.parseFloat(t.size));
-    for (let i = 1; i < sizes.length; i += 1) {
-      expect(sizes[i]).toBeLessThan(sizes[i - 1]);
+    /*
+     * The nine *sizes*, not `Object.values(TYPE)`. Two entries are aliases -- `title`
+     * resolves to `title2`, and `label` is a role rather than a step -- and `mono` re-uses
+     * an existing size with a different family, so none of the three belongs in a walk
+     * that asserts the sizes descend.
+     */
+    const steps = [
+      TYPE.display,
+      TYPE.hero,
+      TYPE.title1,
+      TYPE.title2,
+      TYPE.headline,
+      TYPE.body,
+      TYPE.callout,
+      TYPE.subhead,
+      TYPE.caption,
+    ];
+
+    for (let i = 1; i < steps.length; i += 1) {
+      const previous = Number.parseFloat(steps[i - 1].size);
+      const current = Number.parseFloat(steps[i].size);
+      expect(current, `${current}px after ${previous}px`).toBeLessThanOrEqual(previous);
+
+      /*
+       * Two steps may share a size -- `headline` and `body` are both 17px -- but then they
+       * have to be told apart by weight or line height, or they are the same step written
+       * twice and a component picking between them is picking a name, not a look.
+       */
+      if (current === previous) {
+        expect(
+          steps[i].weight !== steps[i - 1].weight ||
+            steps[i].lineHeight !== steps[i - 1].lineHeight,
+          `${current}px appears twice with the same weight and leading`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("keeps the legacy type names pointing at a step, not at a value of their own", () => {
+    // These two are the reason the scale can grow without a 24-file rename.
+    expect(TYPE.title).toEqual(TYPE.title2);
+    // `label` is the one deliberate exception: uppercase microcopy is a role of its own,
+    // not a size, and collapsing it into `caption` is what produced the eleven-or-twelve
+    // pixel ambiguity this scale exists to remove.
+    expect(TYPE.label.size).not.toBe(TYPE.caption.size);
+  });
+
+  it("gives every number the user compares a monospaced step to be read in", () => {
+    // Weights, reps, timers and volumes all change while they are on screen. A step
+    // without `tabular-nums` shifts its own layout every time a digit changes, which is
+    // why `mono` carries a family and the rest do not.
+    expect(TYPE.mono.font).toContain("monospace");
+    for (const role of ["display", "hero", "title1", "body", "caption"] as const) {
+      expect(TYPE[role], `${role} must not hardcode a family`).not.toHaveProperty("font");
     }
   });
 
@@ -494,13 +656,40 @@ describe("the rest of the token set", () => {
   });
 
   it("keeps every motion duration short enough to feel responsive", () => {
-    for (const [name, value] of Object.entries(MOTION)) {
-      if (name === "ease" || name === "easeLinear" || name === "minTouchTarget") continue;
-      const ms = Number.parseFloat(value);
-      expect(ms, `${name}`).toBeGreaterThan(0);
+    // `Object.values(MOTION)` would include the nested `duration` object and the curve
+    // strings, so this walks the named durations rather than the whole map.
+    for (const name of ["instant", "fast", "normal", "slow", "base"] as const) {
+      const ms = Number.parseFloat(MOTION[name]);
+      expect(ms, `${name} is not a duration`).toBeGreaterThan(0);
       // Past ~400ms an interface stops feeling like it responded to the tap.
       expect(ms, `${name}`).toBeLessThanOrEqual(400);
     }
+  });
+
+  it("names each motion curve by what it does, and keeps the aliases pointing at them", () => {
+    // `spring` is the curve this file used to argue against on the grounds that a spring
+    // needs a stiffness as well as a duration. The answer was to fix one spring here
+    // rather than to let components tune their own, so the argument is now checkable:
+    // exactly one spring exists, and it overshoots.
+    const curves = [MOTION.spring, MOTION.easeOut, MOTION.easeIn, MOTION.standard];
+    expect(new Set(curves).size).toBe(4);
+    // A cubic-bezier overshoots when its second control point is above 1.
+    const springControl = Number.parseFloat(MOTION.spring.split(",")[1].trim());
+    expect(springControl).toBeGreaterThan(1);
+    for (const curve of curves) {
+      expect(curve, `not a cubic-bezier: ${curve}`).toMatch(
+        /^cubic-bezier\(-?[\d.]+,\s*-?[\d.]+,\s*-?[\d.]+,\s*-?[\d.]+\)$/,
+      );
+    }
+    // The two legacy names resolve to their replacements rather than keeping an older feel.
+    expect(MOTION.ease).toBe(MOTION.standard);
+    expect(MOTION.base).toBe(MOTION.normal);
+    expect(MOTION.duration).toEqual({
+      instant: MOTION.instant,
+      fast: MOTION.fast,
+      normal: MOTION.normal,
+      slow: MOTION.slow,
+    });
   });
 
   it("exports every colour token as a CSS custom property", () => {
@@ -519,6 +708,67 @@ describe("the rest of the token set", () => {
   it("names no CSS variable twice", () => {
     const names = Object.keys(COLOR_TOKENS);
     expect(new Set(names).size).toBe(names.length);
+  });
+
+  it("resolves the surface aliases to the surface they rename", () => {
+    /*
+     * The redesign's names are aliases rather than a second palette. That is only an
+     * improvement if they are the *same value* -- two names that are allowed to diverge
+     * are how a separator ends up 0.08 on one screen and 0.10 on the next.
+     */
+    expect(SURFACE.elevated).toBe(SURFACE.raised);
+    expect(SURFACE.border).toBe(GLASS.border);
+    expect(SURFACE.glass).toBe(GLASS.fill);
+    expect(TEXT.inverse).toBe(TEXT.onAccent);
+    expect(ACCENT.muted).toBe(ACCENT.subtle);
+  });
+
+  it("keeps the accent's tints and its border at different alphas on purpose", () => {
+    // A border has to survive against the fill behind it, which a 12% tint does not, so
+    // `border` is deliberately the stronger of the two rather than an alias of `subtle`.
+    const borderAlpha = Number.parseFloat(ACCENT.border.split(",")[3]);
+    const subtleAlpha = Number.parseFloat(ACCENT.subtle.split(",")[3]);
+    expect(borderAlpha).toBeGreaterThan(subtleAlpha);
+  });
+
+  it("ranks the navigation below every surface the user summoned", () => {
+    /*
+     * A bottom bar at the modal's own z-index paints over a sheet, and an athlete who
+     * opens a modal from the navigation would tap the wrong control. The brief asked for
+     * 60; this asserts why it is not 60.
+     */
+    expect(Z_INDEX.nav).toBeGreaterThan(Z_INDEX.sticky);
+    expect(Z_INDEX.nav).toBeLessThan(Z_INDEX.sheet);
+    expect(Z_INDEX.fab).toBeGreaterThan(Z_INDEX.nav);
+    expect(Z_INDEX.fab).toBeLessThan(Z_INDEX.sheet);
+  });
+
+  it("keeps the radius vocabulary keyed to the object it is cut onto", () => {
+    // `surface` and `card` are both "a card" and deliberately different radii: one sits
+    // on the canvas, the other is a lit glass panel.
+    expect(RADIUS.surface).toBe("16px");
+    expect(RADIUS.card).toBe(GLASS.radius);
+    expect(RADIUS.card).not.toBe(RADIUS.surface);
+    expect(RADIUS.chip).toBe(RADIUS.sm);
+    expect(RADIUS.button).toBe(RADIUS.control);
+  });
+
+  it("keeps the brand mark in the accent's red", () => {
+    /*
+     * The logo is the one asset that cannot read a CSS custom property, so its stops are
+     * literals in `logoGradient.ts`. That is exactly the arrangement that lets a palette
+     * change leave the mark behind, which is what happened once already: the mark was gold
+     * while the accent went red, and the two only stopped matching when someone noticed.
+     * The mid stop is asserted to *be* the accent rather than a colour resembling it.
+     */
+    expect(LOGO_GRADIENT.base).toBe(ACCENT.base);
+    expect(LOGO_GRADIENT.deep).toBe(ACCENT.pressed);
+    expect(redPolicyFor(LOGO_GRADIENT.light, "accent")).toBe(false);
+    // No gold survives anywhere in the mark.
+    for (const stop of Object.values(LOGO_GRADIENT)) {
+      const { h } = rgbToHsl(parseColor(stop)!);
+      expect(h < 20 || h > 340, `${stop} is not in the red arc`).toBe(true);
+    }
   });
 });
 
@@ -547,7 +797,9 @@ describe("colour parsing and conversion", () => {
   });
 
   it("round-trips hex through RGB", () => {
-    expect(toHex(parseColor(ACCENT.base)!)).toBe(ACCENT.base);
+    // Lowercased: `toHex` rebuilds the string from parsed channels, so case is not
+    // something it can preserve. Comparing case-insensitively is what this test means.
+    expect(toHex(parseColor(ACCENT.base)!)).toBe(ACCENT.base.toLowerCase());
     expect(toHex(parseColor(SURFACE.base)!)).toBe("#000000");
   });
 

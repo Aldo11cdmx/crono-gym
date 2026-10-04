@@ -24,6 +24,7 @@ import {
 } from "../shell/navItems";
 import { SHELL_LABELS, BRAND_LABELS } from "@/lib/i18n";
 import { ACCENT } from "@/design/tokens";
+import { parseColor } from "@/design/color";
 
 afterEach(cleanup);
 
@@ -121,9 +122,13 @@ describe("SideRail active state", () => {
     const train = itemFor(TRAIN_PATH);
     // The accent means "this is the action" on every screen; dropping it here
     // because the layout is vertical would spend the brand on decoration.
-    // jsdom normalises a hex fill to `rgb()`, so the channels are compared.
     const fill = train.querySelector("span")?.style.backgroundColor ?? "";
-    expect(fill).toContain("245, 165, 36");
+    // jsdom normalises a hex fill to `rgb()`, so the channels are compared --
+    // and the channels are read out of the token through the design system's own
+    // parser rather than written out, so this test follows a palette change
+    // instead of failing on one.
+    const { r, g, b } = parseColor(ACCENT.base)!;
+    expect(fill).toBe(`rgb(${r}, ${g}, ${b})`);
   });
 });
 

@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { Pause, Play, X } from "lucide-react";
 
+import { ACCENT } from "../design/tokens";
+
+/**
+ * How long the ring takes to slide from one second to the next.
+ *
+ * Just under a second rather than exactly one, so the ring arrives at its new position
+ * fractionally *before* the numeral above it changes. The two are driven by the same
+ * timer, and a ring that lands after its own number reads as a lag rather than as
+ * precision.
+ */
+const RING_TICK = "0.9s";
+
 interface RestTimerProps {
   seconds: number;
   onClose: () => void;
@@ -58,11 +70,11 @@ export function RestTimer({ seconds, onClose, onFinished }: RestTimerProps) {
               cy="64"
               r={radius}
               fill="none"
-              stroke="#ff9f0a"
+              stroke={ACCENT.base}
               strokeWidth="6"
               strokeDasharray={`${dash} ${circumference - dash}`}
               strokeLinecap="round"
-              style={{ transition: "stroke-dasharray 0.9s linear" }}
+              style={{ transition: `stroke-dasharray ${RING_TICK} linear` }}
             />
           </svg>
           <span className="absolute text-3xl font-semibold tabular-nums">{remaining}</span>

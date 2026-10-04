@@ -50,6 +50,20 @@ export interface QueuedSet {
   reps: number | null;
   rpe: number | null;
   is_warmup: boolean;
+  /**
+   * What the athlete wrote about this set, or null.
+   *
+   * `20261003040000_exercise_hub_notes.sql`. Optional rather than required so a queue
+   * written by an older build still replays: the column was added with no default, so an
+   * omitted key and an explicit null are the same thing to PostgREST, and making this
+   * required would only mean rewriting every payload already sitting on a device.
+   *
+   * Not on `SetEntry`. That shape is the live editing state of a form and its fields are
+   * strings because a half-typed weight must survive; a note is optional free text that is
+   * written once and never edited in place, so it enters at the persistence boundary
+   * alongside `is_warmup`, which is derived the same way.
+   */
+  notes?: string | null;
 }
 
 export interface FinalizePayload {

@@ -220,6 +220,14 @@ export interface Database {
           reps: number | null;
           rpe: number | null;
           is_warmup: boolean;
+          /**
+           * What the athlete wrote about this set. `20261003040000_exercise_hub_notes.sql`.
+           *
+           * `null` and `''` are different on purpose: null is "no note", which is the
+           * overwhelmingly common case and must not cost a byte per row in the hub's
+           * history query; `''` is a note someone deliberately blanked.
+           */
+          notes: string | null;
         };
         Insert: {
           id?: string;
@@ -230,6 +238,7 @@ export interface Database {
           reps?: number | null;
           rpe?: number | null;
           is_warmup?: boolean;
+          notes?: string | null;
         };
         Update: {
           id?: string;
@@ -240,6 +249,7 @@ export interface Database {
           reps?: number | null;
           rpe?: number | null;
           is_warmup?: boolean;
+          notes?: string | null;
         };
         Relationships: ForeignKey[];
       };

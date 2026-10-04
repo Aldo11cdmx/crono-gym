@@ -27,14 +27,16 @@ export const DB_NAME = "cronos-offline";
  * v1: `drafts`, `queue` (offline workout store)
  * v2: `rankHistory`, `lastRanks` (rank timeline and hysteresis input)
  * v3: `coachChats` (the assistant's daily conversation log)
+ * v4: `exerciseNotes` (per-set notes, queued for sync alongside the set)
  */
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 export const DRAFT_STORE = "drafts";
 export const QUEUE_STORE = "queue";
 export const RANK_HISTORY_STORE = "rankHistory";
 export const LAST_RANKS_STORE = "lastRanks";
 export const COACH_CHATS_STORE = "coachChats";
+export const EXERCISE_NOTES_STORE = "exerciseNotes";
 
 /**
  * Every store in the database, with the index each one needs.
@@ -57,6 +59,22 @@ export const STORES: readonly {
   { name: LAST_RANKS_STORE, keyPath: "slug" },
   // Keyed by the ISO day, so there is exactly one conversation per calendar day.
   { name: COACH_CHATS_STORE, keyPath: "id" },
+  /*
+   * `exerciseNotes` is keyed by the *set's* id and indexed by `exercise_id`.
+   *
+   * Keyed by set id rather than by exercise because a note belongs to one set -- "the grip
+   * gave out at rep 7" is about that set at that weight, and a per-exercise record would
+   * be overwritten by the newest attempt and lose exactly the history the exercise hub
+   * exists to show. `20261003040000_exercise_hub_notes.sql` says the same thing about the
+   * column it adds, and the two must agree or a note written offline would land on a
+   * different row than the one it was written for.
+   *
+   * `exercise_id` is indexed because the hub's primary read is "every note I have written
+   * for this one exercise", which is the same read the new Postgres partial index serves.
+   * The local store and the server query are deliberately shaped alike so a note that was
+   * written offline and one that was synced are read back by the same code.
+   */
+  { name: EXERCISE_NOTES_STORE, keyPath: "setId", indexes: ["exercise_id"] },
 ];
 
 let dbPromise: Promise<IDBDatabase | null> | null = null;

@@ -25,6 +25,7 @@ import {
   DRAFT_STORE,
   DB_NAME,
   DB_VERSION,
+  EXERCISE_NOTES_STORE,
   LAST_RANKS_STORE,
   QUEUE_STORE,
   RANK_HISTORY_STORE,
@@ -44,7 +45,11 @@ describe("the cronos-offline schema", () => {
   });
 
   it("is at the version that includes every store", () => {
-    expect(DB_VERSION).toBe(3);
+    // Pinned rather than derived from `STORES.length`: the version is a promise to
+    // installed clients about what their upgrade will find, so it has to be stated. A
+    // derived number would bump itself every time a store is added and stop meaning
+    // anything.
+    expect(DB_VERSION).toBe(4);
   });
 
   it("declares every store exactly once", () => {
@@ -63,7 +68,20 @@ describe("the cronos-offline schema", () => {
     expect(storeByName(QUEUE_STORE)?.keyPath).toBe("id");
     expect(storeByName(RANK_HISTORY_STORE)?.keyPath).toBe("id");
     expect(storeByName(LAST_RANKS_STORE)?.keyPath).toBe("slug");
+    // Keyed by the *set*, not the exercise: a note is about one attempt at one weight,
+    // so keying by exercise would have the newest attempt overwrite the record of why
+    // the previous one failed. `20261003040000_exercise_hub_notes.sql` places the column
+    // the same way, and these two have to agree or an offline note lands on the wrong row.
+    expect(storeByName(EXERCISE_NOTES_STORE)?.keyPath).toBe("setId");
+    // Keyed by the ISO day, so there is exactly one conversation per calendar day.
     expect(storeByName(COACH_CHATS_STORE)?.keyPath).toBe("id");
+  });
+
+  it("indexes the notes store by exercise, so the hub's read is the local shape too", () => {
+    // The same read the Postgres partial index serves: every note for one exercise. If
+    // the local store were not indexed the same way, a note written offline would be read
+    // back by different code than one that synced.
+    expect(storeByName(EXERCISE_NOTES_STORE)?.indexes).toContain("exercise_id");
   });
 
   it("declares the indexes the queries actually use", () => {

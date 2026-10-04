@@ -95,6 +95,97 @@ background: radial-gradient(
   }
 
   /*
+   * Chart draw-in.
+   *
+   * Applied to both the line and the area, and each uses the property that suits it: the
+   * line animates `stroke-dashoffset` and the area animates a clip. Animating the area's
+   * dash would mean animating the perimeter of a *closed* path, which includes both
+   * vertical edges back to the baseline, so the fill would wipe in from a corner rather
+   * than sweep along the curve.
+   *
+   * The line carries `pathLength={1}` so the dash maths is in normalised units and one
+   * pair of numbers works whatever the rendered length is. Without it the dash array would
+   * have to be recomputed from the DOM on every resize, and a chart that re-animates on
+   * resize is a chart that appears to load twice.
+   *
+   * `transform` and `opacity` for the point and ring animations: both are compositor-only,
+   * which matters on a chart that redraws while an athlete is waiting between sets.
+   */
+  @keyframes cronos-chart-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes cronos-chart-area {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes cronos-chart-point {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /*
+   * `transform-box: fill-box` so `scale()` scales a shape about its own centre.
+   *
+   * Without it the default is `view-box`, whose origin is the top-left of the chart. A point
+   * at x=300 would then slide left as it grew and a record's expanding ring would travel
+   * towards the corner, so both would read as movement rather than as emphasis.
+   *
+   * `transform-box` is not inherited, so this has to be on each shape that scales -- a
+   * class on a wrapping `<g>` would leave its children on the default.
+   */
+  .cronos-chart-scalable {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /*
+   * A record's two rings: one steady, one expanding outward and fading.
+   *
+   * The expanding one scales rather than grows a radius, so it is a transform on the GPU
+   * and does not invalidate the path's layout on every frame. It also cannot drift off the
+   * viewBox the way a growing radius can, which would clip a record near the top of the
+   * chart.
+   */
+  @keyframes cronos-chart-ring {
+    0%,
+    100% {
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+
+  @keyframes cronos-chart-ring-out {
+    0% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    70%,
+    100% {
+      opacity: 0;
+      transform: scale(2.4);
+    }
+  }
+
+  /*
    * The session ring on the nav's centre action.
    *
    * Animates `transform` and `opacity` only, never `border-color` or `box-shadow`. The

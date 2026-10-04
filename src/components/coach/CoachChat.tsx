@@ -235,8 +235,8 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
         }}
       >
         <div>
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{T.chatTitle}</h3>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: TEXT.tertiary }}>
+          <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}>{T.chatTitle}</h3>
+          <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
             {T.chatSubtitle}
           </p>
         </div>
@@ -283,9 +283,9 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
         }}
       >
         {!loaded ? (
-          <p style={{ margin: 0, fontSize: 12, color: TEXT.tertiary }}>{T.loading}</p>
+          <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>{T.loading}</p>
         ) : messages.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 13, color: TEXT.tertiary }}>{T.chatEmpty}</p>
+          <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>{T.chatEmpty}</p>
         ) : (
           messages.map((message) => <Bubble key={message.id} message={message} />)
         )}
@@ -298,7 +298,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           style={{
             display: "block",
             marginBottom: 6,
-            fontSize: 11,
+            fontSize: TYPE.label.size,
             textTransform: "uppercase",
             letterSpacing: TYPE.label.tracking,
             color: tooLong ? "#fca5a5" : TEXT.tertiary,
@@ -331,7 +331,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
             backgroundColor: "rgba(0,0,0,0.25)",
             color: TEXT.primary,
             padding: "10px 12px",
-            fontSize: 13,
+            fontSize: TYPE.subhead.size,
             fontFamily: "inherit",
           }}
         />
@@ -345,7 +345,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
             marginTop: SPACE.sm,
           }}
         >
-          <span style={{ fontSize: 11, color: TEXT.tertiary }}>
+          <span style={{ fontSize: TYPE.label.size, color: TEXT.tertiary }}>
             {tooLong
               ? `${draft.length} / ${MAX_USER_MESSAGE_CHARS}`
               : !persisted && T.chatNotSaved}
@@ -377,7 +377,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           alignItems: "flex-start",
           gap: 6,
           margin: `${SPACE.md}px 0 0`,
-          fontSize: 11,
+          fontSize: TYPE.label.size,
           lineHeight: 1.5,
           color: TEXT.tertiary,
         }}
@@ -407,7 +407,7 @@ function Bubble({ message }: { message: ChatMessage }) {
           border: `1px solid #f871712e`,
           backgroundColor: "#f8717112",
           padding: "9px 12px",
-          fontSize: 12,
+          fontSize: TYPE.caption.size,
           color: TEXT.primary,
         }}
       >
@@ -440,7 +440,7 @@ function Bubble({ message }: { message: ChatMessage }) {
         padding: "9px 12px",
       }}
     >
-      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>
+      <p style={{ margin: 0, fontSize: TYPE.subhead.size, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>
         {message.content}
         {message.isStreaming && (
           <span
@@ -473,7 +473,7 @@ function Bubble({ message }: { message: ChatMessage }) {
           <p
             style={{
               margin: 0,
-              fontSize: 10,
+              fontSize: TYPE.label.size,
               textTransform: "uppercase",
               letterSpacing: TYPE.label.tracking,
               color: ACCENT.text,
@@ -481,7 +481,7 @@ function Bubble({ message }: { message: ChatMessage }) {
           >
             {T.chatActions[message.action.type] ?? message.action.type}
           </p>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: TEXT.secondary }}>
+          <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.secondary }}>
             {describeAction(message.action)}
           </p>
         </div>

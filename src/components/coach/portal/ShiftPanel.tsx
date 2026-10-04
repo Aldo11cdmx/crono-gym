@@ -25,7 +25,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ACCENT, TEXT } from "@/design/tokens";
+import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { localOffsetMinutes, shiftAt, startsAt } from "@/lib/coach/access";
@@ -123,7 +123,7 @@ export function ShiftPanel({ userId }: ShiftPanelProps) {
   return (
     <GlassCard>
       <div className="flex flex-col gap-3">
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: TEXT.primary }}>
+        <h3 style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}>
           {T.availabilityTitle}
         </h3>
 
@@ -131,7 +131,7 @@ export function ShiftPanel({ userId }: ShiftPanelProps) {
          * Derived from the same helpers the athlete's tier gate uses, so the panel and the
          * athlete's screen cannot disagree about what time it is where the coach is.
          */}
-        <p style={{ margin: 0, fontSize: 13, color: TEXT.secondary }}>
+        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
           {shift
             ? T.shiftHours(shift.startHour, shift.endHour)
             : T.nextShiftAt(formatClock(startsAt(now, tzOffset).isoString))}
@@ -140,7 +140,7 @@ export function ShiftPanel({ userId }: ShiftPanelProps) {
         <label
           className="flex items-center gap-3"
           style={{
-            fontSize: 14,
+            fontSize: TYPE.subhead.size,
             color: TEXT.primary,
             cursor: isAvailable === null || saving ? "not-allowed" : "pointer",
           }}
@@ -155,10 +155,10 @@ export function ShiftPanel({ userId }: ShiftPanelProps) {
           {isAvailable ? T.availabilityOn : T.availabilityOff}
         </label>
 
-        <p style={{ margin: 0, fontSize: 12, color: TEXT.tertiary }}>{T.availabilityHint}</p>
+        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>{T.availabilityHint}</p>
 
         {error && (
-          <p role="alert" style={{ margin: 0, fontSize: 13, color: ACCENT.text }}>
+          <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
             {error}
           </p>
         )}

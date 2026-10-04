@@ -35,7 +35,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Lock } from "lucide-react";
 
-import { ACCENT, TEXT } from "@/design/tokens";
+import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { supabase } from "@lib/supabase";
@@ -237,7 +237,7 @@ function PortalHeader({ userId, onClose }: { userId: string; onClose: () => void
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col">
           <h1
-            style={{ margin: 0, fontSize: 20, fontWeight: 700, color: TEXT.primary }}
+            style={{ margin: 0, fontSize: TYPE.title2.size, fontWeight: 700, color: TEXT.primary }}
           >
             {name ?? T.title}
           </h1>
@@ -261,7 +261,7 @@ function PortalHeader({ userId, onClose }: { userId: string; onClose: () => void
 /** The confirmation a coach reads after handing a plan over. */
 const savedStyle = {
   margin: 0,
-  fontSize: 13,
+  fontSize: TYPE.subhead.size,
   color: ACCENT.text,
 } as const;
 
@@ -269,7 +269,7 @@ const savedStyle = {
 function SelectionPrompt() {
   return (
     <GlassCard>
-      <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: TEXT.primary }}>
+      <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
         {T.chatTitle}
       </p>
       {/*
@@ -277,7 +277,7 @@ function SelectionPrompt() {
        * card in the same column and are empty for exactly the same reason, so reusing their
        * sentence printed it three times in a row.
        */}
-      <p style={{ margin: "6px 0 0", fontSize: 13, color: TEXT.tertiary }}>
+      <p style={{ margin: "6px 0 0", fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
         {T.chatSelectPrompt}
       </p>
     </GlassCard>

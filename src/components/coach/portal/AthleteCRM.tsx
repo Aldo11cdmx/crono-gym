@@ -33,7 +33,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ACCENT, TEXT } from "@/design/tokens";
+import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassCard, Skeleton } from "@/components/ui";
 import { AnatomicalRanksView } from "@/components/AnatomicalRanksView";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
@@ -153,14 +153,14 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
   if (athleteId === null) {
     return (
       <GlassCard>
-        <p style={{ margin: 0, fontSize: 13, color: TEXT.tertiary }}>{T.crmSelectPrompt}</p>
+        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>{T.crmSelectPrompt}</p>
       </GlassCard>
     );
   }
 
   return (
     <section aria-labelledby="crm-heading" className="flex min-w-0 flex-col gap-3">
-      <h3 id="crm-heading" style={{ margin: 0, fontSize: 16, fontWeight: 600, color: TEXT.primary }}>
+      <h3 id="crm-heading" style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}>
         {T.crmTitle}
       </h3>
 
@@ -198,12 +198,12 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
             <ul className="flex flex-col gap-2" style={listStyle}>
               {prs.map((pr) => (
                 <li key={pr.exerciseId} className="flex items-baseline justify-between gap-3">
-                  <span style={{ fontSize: 14, color: TEXT.primary }}>{pr.exerciseName}</span>
-                  <span style={{ fontSize: 13, color: TEXT.secondary }}>
+                  <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>{pr.exerciseName}</span>
+                  <span style={{ fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
                     {formatKg(pr.weightKg)}
                     {pr.reps !== null ? ` × ${pr.reps}` : ""}
                     {pr.achievedAt !== "" && (
-                      <span style={{ marginLeft: 8, fontSize: 12, color: TEXT.tertiary }}>
+                      <span style={{ marginLeft: 8, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
                         {T.prsAchievedOn(formatWhen(pr.achievedAt))}
                       </span>
                     )}
@@ -228,15 +228,15 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
               {history.map((routine) => (
                 <li key={routine.id} className="flex flex-col gap-1">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span style={{ fontSize: 14, fontWeight: 600, color: TEXT.primary }}>
+                    <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
                       {routine.title}
                     </span>
-                    <span style={{ fontSize: 12, color: TEXT.tertiary }}>
+                    <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
                       {sourceLabel(routine.source)}
                     </span>
                   </div>
                   {routine.days.map((day) => (
-                    <p key={day.label} style={{ margin: 0, fontSize: 12, color: TEXT.tertiary }}>
+                    <p key={day.label} style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
                       <strong style={{ color: TEXT.secondary }}>{day.label}</strong>
                       {day.exercises.length > 0 ? ` · ${day.exercises.join(", ")}` : ""}
                     </p>
@@ -271,7 +271,7 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
-      <h4 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: TEXT.secondary }}>
+      <h4 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.secondary }}>
         {title}
       </h4>
       {children}
@@ -281,7 +281,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function ErrorLine({ children }: { children: React.ReactNode }) {
   return (
-    <p role="alert" style={{ margin: 0, fontSize: 13, color: ACCENT.text }}>
+    <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
       {children}
     </p>
   );
@@ -311,8 +311,8 @@ function WeeklyVolume({ map }: { map: ReturnType<typeof useMuscleRanks>["map"] }
     <ul className="flex flex-col gap-1" style={listStyle}>
       {rows.map((row) => (
         <li key={row.label} className="flex items-baseline justify-between gap-3">
-          <span style={{ fontSize: 13, color: TEXT.secondary }}>{row.label}</span>
-          <span style={{ fontSize: 13, color: TEXT.primary }}>{row.sets}</span>
+          <span style={{ fontSize: TYPE.subhead.size, color: TEXT.secondary }}>{row.label}</span>
+          <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>{row.sets}</span>
         </li>
       ))}
     </ul>
@@ -396,5 +396,5 @@ function formatWhen(iso: string): string {
   return date.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
 }
 
-const bodyStyle = { margin: 0, fontSize: 13, color: TEXT.tertiary } as const;
+const bodyStyle = { margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary } as const;
 const listStyle = { margin: 0, padding: 0, listStyle: "none" } as const;

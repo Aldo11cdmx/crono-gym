@@ -33,7 +33,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, MessageSquare, X } from "lucide-react";
-import { ACCENT, TEXT } from "@/design/tokens";
+import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
@@ -204,19 +204,19 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
     <section aria-labelledby="request-queue-heading" className="flex flex-col gap-3">
       <h3
         id="request-queue-heading"
-        style={{ margin: 0, fontSize: 16, fontWeight: 600, color: TEXT.primary }}
+        style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}
       >
         {T.queueTitle}
       </h3>
 
       {error && (
-        <p role="alert" style={{ margin: 0, fontSize: 13, color: ACCENT.text }}>
+        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
           {error}
         </p>
       )}
 
       {actionError && (
-        <p role="alert" style={{ margin: 0, fontSize: 13, color: ACCENT.text }}>
+        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
           {actionError}
         </p>
       )}
@@ -225,10 +225,10 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
         <Skeleton />
       ) : pending.length === 0 && active.length === 0 ? (
         <GlassCard>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: TEXT.primary }}>
+          <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
             {T.queueEmptyTitle}
           </p>
-          <p style={{ margin: "6px 0 0", fontSize: 13, color: TEXT.tertiary }}>
+          <p style={{ margin: "6px 0 0", fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
             {T.queueEmptyBody}
           </p>
         </GlassCard>
@@ -329,26 +329,26 @@ function RequestCard({
     <GlassCard>
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-2">
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: TEXT.primary }}>
+          <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
             {row.displayName}
           </p>
-          <span style={{ fontSize: 12, color: TEXT.tertiary }}>
+          <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
             {T.requestSentAt(formatWhen(request.created_at))}
           </span>
         </div>
 
-        <p style={{ margin: 0, fontSize: 12, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.04em" }}>
           {T.requestStatus[request.status] ?? request.status}
         </p>
 
-        <p style={{ margin: 0, fontSize: 13, color: TEXT.secondary }}>
+        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
           {request.athlete_notes?.trim() ? request.athlete_notes : T.requestNotesEmpty}
         </p>
 
         <div className="flex flex-wrap items-center gap-2" style={{ marginTop: 4 }}>
           {actions}
           {busyLabel && (
-            <span aria-live="polite" style={{ fontSize: 12, color: TEXT.tertiary }}>
+            <span aria-live="polite" style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
               {busyLabel}
             </span>
           )}

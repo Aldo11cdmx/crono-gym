@@ -44,12 +44,12 @@ export function CoachHub({ userId }: CoachHubProps) {
       <header>
         <h2
           className="flex items-center gap-2"
-          style={{ margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}
+          style={{ margin: 0, fontSize: TYPE.title2.size, fontWeight: 600, letterSpacing: "-0.01em" }}
         >
           <Sparkles size={22} aria-hidden="true" color={ACCENT.base} />
           {T.title}
         </h2>
-        <p style={{ margin: "6px 0 0", fontSize: 13, color: TEXT.tertiary }}>
+        <p style={{ margin: "6px 0 0", fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
           {T.subtitle}
         </p>
       </header>
@@ -62,7 +62,7 @@ export function CoachHub({ userId }: CoachHubProps) {
             border: `1px solid ${ACCENT.border}`,
             backgroundColor: ACCENT.muted,
             padding: "10px 14px",
-            fontSize: 13,
+            fontSize: TYPE.subhead.size,
             color: TEXT.primary,
           }}
         >
@@ -106,10 +106,10 @@ export function CoachHub({ userId }: CoachHubProps) {
 function ContextSkeleton() {
   return (
     <GlassCard>
-      <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{T.contextTitle}</h3>
+      <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}>{T.contextTitle}</h3>
       <p
         role="status"
-        style={{ margin: "6px 0 0", fontSize: 12, color: TEXT.tertiary }}
+        style={{ margin: "6px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}
       >
         {T.loading}
       </p>
@@ -125,8 +125,8 @@ function ContextSkeleton() {
 function ContextSection({ context }: { context: CoachContext }) {
   return (
     <GlassCard>
-      <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{T.contextTitle}</h3>
-      <p style={{ margin: "4px 0 0", fontSize: 12, color: TEXT.tertiary }}>
+      <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}>{T.contextTitle}</h3>
+      <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
         {T.contextSubtitle}
       </p>
 
@@ -162,13 +162,13 @@ function ContextSection({ context }: { context: CoachContext }) {
         />
       </div>
 
-      <h4 style={{ margin: `${SPACE.lg}px 0 0`, fontSize: 13, fontWeight: 600 }}>
+      <h4 style={{ margin: `${SPACE.lg}px 0 0`, fontSize: TYPE.subhead.size, fontWeight: 600 }}>
         {T.volumeTitle}
       </h4>
       {context.volume.totalWorkouts === 0 ? (
-        <p style={{ margin: "6px 0 0", fontSize: 12, color: TEXT.tertiary }}>{T.noWorkouts}</p>
+        <p style={{ margin: "6px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>{T.noWorkouts}</p>
       ) : (
-        <p style={{ margin: "6px 0 0", fontSize: 13, color: TEXT.secondary }}>
+        <p style={{ margin: "6px 0 0", fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
           {T.workouts(context.volume.totalWorkouts)} · {T.thisMonth(context.volume.workoutsThisMonth)} ·{" "}
           {T.monthlyVolume(context.volume.monthlyVolume)}
         </p>
@@ -176,10 +176,10 @@ function ContextSection({ context }: { context: CoachContext }) {
 
       {context.energy && (
         <>
-          <h4 style={{ margin: `${SPACE.lg}px 0 0`, fontSize: 13, fontWeight: 600 }}>
+          <h4 style={{ margin: `${SPACE.lg}px 0 0`, fontSize: TYPE.subhead.size, fontWeight: 600 }}>
             {T.nutritionTitle}
           </h4>
-          <p style={{ margin: "6px 0 0", fontSize: 13, color: TEXT.secondary }}>
+          <p style={{ margin: "6px 0 0", fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
             {T.calories(context.energy.targetKcal)}
             {context.energy.proteinGrams !== null &&
               ` · ${T.protein(context.energy.proteinGrams)}`}
@@ -208,12 +208,12 @@ function DataGaps({ gaps }: { gaps: CoachContext["dataGaps"] }) {
         borderTop: `1px solid ${TEXT.tertiary}22`,
       }}
     >
-      <h4 style={{ margin: 0, fontSize: 12, fontWeight: 600, color: TEXT.secondary }}>
+      <h4 style={{ margin: 0, fontSize: TYPE.caption.size, fontWeight: 600, color: TEXT.secondary }}>
         {T.gapsTitle}
       </h4>
       <ul style={{ margin: "6px 0 0", paddingLeft: 18, display: "grid", gap: 4 }}>
         {gaps.map((gap) => (
-          <li key={gap} style={{ fontSize: 12, color: TEXT.tertiary, lineHeight: 1.5 }}>
+          <li key={gap} style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary, lineHeight: 1.5 }}>
             {T.gaps[gap] ?? gap}
           </li>
         ))}
@@ -228,7 +228,7 @@ function Fact({ label, value, hint }: { label: string; value: string; hint?: str
       <p
         style={{
           margin: 0,
-          fontSize: 11,
+          fontSize: TYPE.label.size,
           textTransform: "uppercase",
           letterSpacing: TYPE.label.tracking,
           color: TEXT.tertiary,
@@ -236,9 +236,9 @@ function Fact({ label, value, hint }: { label: string; value: string; hint?: str
       >
         {label}
       </p>
-      <p style={{ margin: "4px 0 0", fontSize: 17, fontWeight: 600 }}>{value}</p>
+      <p style={{ margin: "4px 0 0", fontSize: TYPE.body.size, fontWeight: 600 }}>{value}</p>
       {hint && (
-        <p style={{ margin: "2px 0 0", fontSize: 11, color: TEXT.tertiary }}>{hint}</p>
+        <p style={{ margin: "2px 0 0", fontSize: TYPE.label.size, color: TEXT.tertiary }}>{hint}</p>
       )}
     </div>
   );
@@ -261,8 +261,8 @@ function RanksSection({ context }: { context: CoachContext }) {
         }}
       >
         <div>
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{T.ranksTitle}</h3>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: TEXT.tertiary }}>
+          <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}>{T.ranksTitle}</h3>
+          <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
             {T.ranksSubtitle}
           </p>
         </div>
@@ -273,7 +273,7 @@ function RanksSection({ context }: { context: CoachContext }) {
             alignItems: "center",
             gap: 6,
             minHeight: MOTION.minTouchTarget,
-            fontSize: 12,
+            fontSize: TYPE.caption.size,
             fontWeight: 600,
             color: ACCENT.text,
             textDecoration: "none",
@@ -286,7 +286,7 @@ function RanksSection({ context }: { context: CoachContext }) {
       </div>
 
       {classified.length === 0 ? (
-        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: 13, color: TEXT.tertiary }}>
+        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
           {T.noClassifiedMuscles}
         </p>
       ) : (
@@ -311,7 +311,7 @@ function RanksSection({ context }: { context: CoachContext }) {
                   border: `1px solid ${TEXT.tertiary}33`,
                   backgroundColor: `${ACCENT.base}14`,
                   padding: "4px 10px",
-                  fontSize: 12,
+                  fontSize: TYPE.caption.size,
                 }}
               >
                 <span style={{ color: TEXT.primary }}>{muscle.label}</span>
@@ -323,7 +323,7 @@ function RanksSection({ context }: { context: CoachContext }) {
       )}
 
       {pending.length > 0 && (
-        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: 12, color: TEXT.tertiary }}>
+        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
           {T.unrankedMuscles(pending.length)}
           {/*
             The reason is named once, from the first pending muscle, rather than a
@@ -370,12 +370,12 @@ function NotesSection({
     <GlassCard>
       <h3
         className="flex items-center gap-2"
-        style={{ margin: 0, fontSize: 15, fontWeight: 600 }}
+        style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}
       >
         <NotebookPen size={16} aria-hidden="true" />
         {T.notesTitle}
       </h3>
-      <p style={{ margin: "4px 0 0", fontSize: 12, color: TEXT.tertiary }}>
+      <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
         {T.notesSubtitle}
       </p>
 
@@ -385,7 +385,7 @@ function NotesSection({
           style={{
             display: "block",
             marginBottom: 6,
-            fontSize: 11,
+            fontSize: TYPE.label.size,
             textTransform: "uppercase",
             letterSpacing: TYPE.label.tracking,
             color: TEXT.tertiary,
@@ -407,7 +407,7 @@ function NotesSection({
             backgroundColor: "rgba(0,0,0,0.25)",
             color: TEXT.primary,
             padding: "10px 12px",
-            fontSize: 13,
+            fontSize: TYPE.subhead.size,
             fontFamily: "inherit",
           }}
         />
@@ -426,12 +426,12 @@ function NotesSection({
       {loading ? (
         <Skeleton variant="block" />
       ) : notes.length === 0 ? (
-        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: 12, color: TEXT.tertiary }}>
+        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
           {T.notesEmpty}
         </p>
       ) : (
         <>
-          <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: 11, color: TEXT.tertiary }}>
+          <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: TYPE.label.size, color: TEXT.tertiary }}>
             {T.notesCount(notes.length)}
           </p>
           <ul style={{ listStyle: "none", margin: `${SPACE.sm}px 0 0`, padding: 0, display: "grid", gap: SPACE.sm }}>
@@ -470,7 +470,7 @@ function NoteRow({ note, onRemove }: { note: CoachNote; onRemove: (id: string) =
         <p
           style={{
             margin: 0,
-            fontSize: 10,
+            fontSize: TYPE.label.size,
             textTransform: "uppercase",
             letterSpacing: TYPE.label.tracking,
             color: note.author === "coach" ? ACCENT.text : TEXT.tertiary,
@@ -478,7 +478,7 @@ function NoteRow({ note, onRemove }: { note: CoachNote; onRemove: (id: string) =
         >
           {note.author === "coach" ? T.notesAuthorCoach : T.notesAuthorUser} · {day}
         </p>
-        <p style={{ margin: "4px 0 0", fontSize: 13, whiteSpace: "pre-wrap" }}>{note.body}</p>
+        <p style={{ margin: "4px 0 0", fontSize: TYPE.subhead.size, whiteSpace: "pre-wrap" }}>{note.body}</p>
       </div>
       <button
         type="button"
@@ -515,13 +515,13 @@ function RecommendationsSection({
 }) {
   return (
     <GlassCard>
-      <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{T.recommendationsTitle}</h3>
-      <p style={{ margin: "4px 0 0", fontSize: 12, color: TEXT.tertiary }}>
+      <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}>{T.recommendationsTitle}</h3>
+      <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
         {T.recommendationsSubtitle}
       </p>
 
       {recommendations.length === 0 ? (
-        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: 13, color: TEXT.tertiary }}>
+        <p style={{ margin: `${SPACE.md}px 0 0`, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
           {T.recommendationsEmpty}
         </p>
       ) : (
@@ -584,7 +584,7 @@ function RecommendationRow({
           gap: SPACE.sm,
         }}
       >
-        <strong style={{ fontSize: 13 }}>{heading}</strong>
+        <strong style={{ fontSize: TYPE.subhead.size }}>{heading}</strong>
         <button
           type="button"
           onClick={() => onDismiss(recommendation.id)}
@@ -596,7 +596,7 @@ function RecommendationRow({
             border: `1px solid ${TEXT.tertiary}33`,
             backgroundColor: "transparent",
             color: TEXT.tertiary,
-            fontSize: 11,
+            fontSize: TYPE.label.size,
             fontWeight: 600,
             cursor: "pointer",
           }}
@@ -605,9 +605,9 @@ function RecommendationRow({
         </button>
       </div>
       {body && (
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: TEXT.secondary }}>{body}</p>
+        <p style={{ margin: "4px 0 0", fontSize: TYPE.subhead.size, color: TEXT.secondary }}>{body}</p>
       )}
-      <p style={{ margin: "4px 0 0", fontSize: 11, color: TEXT.tertiary }}>
+      <p style={{ margin: "4px 0 0", fontSize: TYPE.label.size, color: TEXT.tertiary }}>
         {recommendation.reason}
       </p>
     </li>

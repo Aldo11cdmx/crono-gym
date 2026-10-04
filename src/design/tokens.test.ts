@@ -59,6 +59,57 @@ import tailwind from "../../tailwind.config";
 import { EARNABLE_RANKS } from "../lib/ranks/rankConfig";
 import { LOGO_GRADIENT } from "./logoGradient";
 
+/**
+ * Every component source file, read as text, so the type scale can be checked for leaks.
+ *
+ * `?raw` rather than `node:fs`, and `?raw` rather than a plain eager glob, which is the
+ * obvious tool and is wrong twice. A plain `import.meta.glob(..., { eager: true })`
+ * *executes* every matched module, which pulls `router.tsx` in -- and that calls
+ * `createBrowserRouter` at module scope and throws outside a DOM. A check for a token
+ * leak must not run the code it is checking. `node:fs` would work at runtime, but the
+ * project has no `@types/node` on purpose: its tsconfig is browser-only, and adding
+ * node types would let any file quietly import a node API it cannot use in a bundle.
+ *
+ * `.test.tsx` is excluded on purpose: a test asserting on a literal font size is
+ * asserting on the implementation, and this rule is about production code only.
+ */
+const COMPONENT_SOURCES = import.meta.glob("../**/*.tsx", {
+  eager: true,
+  query: "?raw",
+  import: "default",
+}) as Record<string, string>;
+
+/**
+ * Sources written by another task and not yet adopted onto the scale.
+ *
+ * Each entry is a file whose owner is mid-change, not a permanent exception. They are
+ * listed individually rather than excluded by pattern so that a *new* literal anywhere
+ * still fails: the moment these three are migrated the entry is deleted and the rule
+ * covers the whole tree again.
+ */
+const IN_FLIGHT_SOURCES: readonly string[] = [
+  "../components/coach/CoachFloatingButton.tsx",
+  "../components/coach/RoutineGeneratorWizard.tsx",
+  "../components/coach/SymmetryBottomSheet.tsx",
+];
+
+/** Every `fontSize: <number>` literal outside production code, as `path:line  text`. */
+function fontSizeLiterals(): string[] {
+  const offenders: string[] = [];
+  for (const path of Object.keys(COMPONENT_SOURCES).sort()) {
+    if (path.endsWith(".test.tsx")) continue;
+    if (IN_FLIGHT_SOURCES.includes(path)) continue;
+    COMPONENT_SOURCES[path]
+      .split("\n")
+      .forEach((text: string, index: number) => {
+        if (/fontSize:\s*\d/.test(text)) {
+          offenders.push(`${path}:${index + 1}  ${text.trim()}`);
+        }
+      });
+  }
+  return offenders;
+}
+
 // ------------------------------------------------------------- the red policy
 
 describe("a saturated red is the accent, and only the accent", () => {
@@ -773,6 +824,57 @@ describe("the rest of the token set", () => {
 });
 
 // --------------------------------------------------------------- colour maths
+
+describe("the type scale is the only source of font sizes", () => {
+  it("has no font-size literal left in any component", () => {
+    // A literal `fontSize: 13` is a size the scale does not contain, so nothing about
+    // it is reviewable in one place and nothing about it moves when the scale does.
+    //
+    // This is the check that makes the scale a system rather than a suggestion. It
+    // found 115 of them, and the interesting ones were not the majority: 41 sites
+    // rendered 13px body copy, which is below the legibility floor iOS and Android
+    // both ask for, so the fix was to raise them onto the scale rather than to add a
+    // tier that enshrined the defect.
+    expect(fontSizeLiterals()).toEqual([]);
+  });
+
+  it("still allows a bespoke size, but only where the brand needs one", () => {
+    // The wordmark scales with the mark, so its two sizes are a function of the mark's
+    // height and not part of the reading scale. Naming the exception is the point:
+    // without it the rule above would be one exception away from being wrong quietly,
+    // and the first thing anyone adds to an absolute rule is a way around it.
+    expect(COMPONENT_SOURCES["../components/shell/BrandLockup.tsx"]).toContain(
+      'size >= 40 ? "22px" : "20px"',
+    );
+  });
+
+  it("keeps every size on the scale one the product actually reads", () => {
+    // The tiers below are the ones components reference. A tier nothing references is
+    // a size someone will reach for, and the scale should say what it is for rather
+    // than leaving it to be discovered.
+    const referenced = [
+      TYPE.label.size,
+      TYPE.caption.size,
+      TYPE.subhead.size,
+      TYPE.callout.size,
+      TYPE.body.size,
+      TYPE.headline.size,
+      TYPE.title2.size,
+      TYPE.title1.size,
+      TYPE.hero.size,
+      TYPE.display.size,
+    ];
+    const pixels = referenced.map((size) => Number.parseFloat(size));
+    for (let i = 1; i < pixels.length; i += 1) {
+      // Ascending and non-decreasing, not strictly: `body` and `headline` are both 17px
+      // on purpose -- the same size, one regular and one bold -- and a strict
+      // comparison would push the scale to invent a difference it does not have.
+      // Every one a real px value, since a rem or a percentage would make the
+      // `fontSize:` comparison above meaningless.
+      expect(pixels[i], "the scale must ascend").toBeGreaterThanOrEqual(pixels[i - 1]);
+    }
+  });
+});
 
 describe("colour parsing and conversion", () => {
   it("parses every notation a design file realistically contains", () => {

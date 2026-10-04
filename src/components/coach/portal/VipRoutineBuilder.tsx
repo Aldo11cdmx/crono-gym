@@ -30,7 +30,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
-import { ACCENT, TEXT } from "@/design/tokens";
+import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { getCoachId } from "@/lib/coach/useCoachAuth";
@@ -156,7 +156,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
 
   return (
     <section aria-labelledby="builder-heading" className="flex min-w-0 flex-col gap-3">
-      <h3 id="builder-heading" style={{ margin: 0, fontSize: 16, fontWeight: 600, color: TEXT.primary }}>
+      <h3 id="builder-heading" style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}>
         {T.builderTitle}
       </h3>
 
@@ -203,7 +203,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
           </GlassButton>
 
           {error && (
-            <p role="alert" style={{ margin: 0, fontSize: 13, color: ACCENT.text }}>
+            <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
               {error}
             </p>
           )}
@@ -214,7 +214,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
            * focus from whatever they do next.
            */}
           {saved && (
-            <p aria-live="polite" style={{ margin: 0, fontSize: 13, color: TEXT.secondary }}>
+            <p aria-live="polite" style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
               {saved}
             </p>
           )}
@@ -508,9 +508,9 @@ function Field({
   );
 }
 
-const bodyStyle = { margin: 0, fontSize: 13, color: TEXT.tertiary } as const;
-const labelStyle = { fontSize: 12, fontWeight: 600, color: TEXT.tertiary } as const;
-const hintStyle = { margin: 0, fontSize: 12, color: TEXT.tertiary } as const;
+const bodyStyle = { margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary } as const;
+const labelStyle = { fontSize: TYPE.caption.size, fontWeight: 600, color: TEXT.tertiary } as const;
+const hintStyle = { margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary } as const;
 const listStyle = { margin: 0, padding: 0, listStyle: "none" } as const;
 
 const inputStyle = {
@@ -521,7 +521,7 @@ const inputStyle = {
   border: `1px solid ${TEXT.tertiary}33`,
   background: "#ffffff08",
   color: TEXT.primary,
-  fontSize: 14,
+  fontSize: TYPE.subhead.size,
 } as const;
 
 const dayStyle = {
@@ -536,6 +536,6 @@ const hitStyle = {
   textAlign: "left" as const,
   padding: "6px 8px",
   borderRadius: 8,
-  fontSize: 13,
+  fontSize: TYPE.subhead.size,
   color: TEXT.primary,
 } as const;

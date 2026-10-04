@@ -31,7 +31,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
-import { ACCENT, TEXT } from "@/design/tokens";
+import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
@@ -175,7 +175,7 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
 
   return (
     <section aria-labelledby="coach-chat-heading" className="flex min-h-0 flex-1 flex-col gap-3">
-      <h3 id="coach-chat-heading" style={{ margin: 0, fontSize: 16, fontWeight: 600, color: TEXT.primary }}>
+      <h3 id="coach-chat-heading" style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}>
         {T.chatTitle}
       </h3>
 
@@ -193,9 +193,9 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
         className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto"
       >
         {loading && messages.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 13, color: TEXT.tertiary }}>{T.loading}</p>
+          <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>{T.loading}</p>
         ) : messages.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 13, color: TEXT.tertiary }}>{T.chatEmpty}</p>
+          <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>{T.chatEmpty}</p>
         ) : (
           messages.map((message) => (
             <MessageBubble key={message.id} message={message} ownId={userId} />
@@ -205,7 +205,7 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
       </div>
 
       {error && (
-        <p role="alert" style={{ margin: 0, fontSize: 13, color: ACCENT.text }}>
+        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
           {error}
         </p>
       )}
@@ -230,7 +230,7 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
             backgroundColor: "rgba(255,255,255,0.06)",
             color: TEXT.primary,
             padding: "8px 10px",
-            fontSize: 14,
+            fontSize: TYPE.subhead.size,
             fontFamily: "inherit",
           }}
         />
@@ -276,7 +276,7 @@ function MessageBubble({ message, ownId }: { message: CoachMessageRow; ownId: st
        * it as markup would make this a place to run script inside a coach's authenticated
        * session. React escapes it, and nothing here goes around that.
        */}
-      <p style={{ margin: 0, fontSize: 14, color: TEXT.primary, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+      <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
         {message.content}
       </p>
     </div>

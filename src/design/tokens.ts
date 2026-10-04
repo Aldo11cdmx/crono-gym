@@ -249,6 +249,44 @@ export const COPPER = {
   muted: "rgba(196, 122, 74, 0.14)",
 } as const;
 
+// ------------------------------------------------------------------- focus
+
+/**
+ * The focus ring.
+ *
+ * A token of its own because the ring is the one piece of the design system that is not
+ * decoration and not information: it is the only thing that tells a keyboard user where
+ * they are, so it is the one thing that must not be themed by whoever happened to write a
+ * component.
+ *
+ * It is declared here rather than living in `index.css` because it is a *colour* and this
+ * file is where colours are reviewed. The widths are here too, for the same reason the
+ * other measurements are: a ring that is 2px on one control and 1px on another stops
+ * being a consistent signal and becomes decoration again.
+ *
+ * The value is an alias of {@link ACCENT.text} and not a second orange. The accent already
+ * means "this is interactive and it is the thing you are on", and a focus ring that
+ * borrowed a different hue would be claiming a meaning the product does not have.
+ */
+export const FOCUS = {
+  /** The ring itself. An alias: one orange, not two. */
+  ring: ACCENT.text,
+  /** Ring thickness. 2px survives being drawn on top of a 1px border. */
+  width: "2px",
+  /** Gap between the control and the ring, so the ring reads as separate from the shape. */
+  offset: "2px",
+  /**
+   * How much a disabled control recedes.
+   *
+   * Applied globally rather than per variant, because 32 controls in the app are
+   * disabled and only 5 of them had any styling for it. An athlete mid-set taps a
+   * disabled "Guardar" and gets no response and no explanation; at 0.45 the control is
+   * still legible as a control, which is what tells them it is waiting rather than
+   * broken.
+   */
+  disabledOpacity: "0.45",
+} as const;
+
 // ------------------------------------------------------------------ scrims
 
 /**
@@ -895,6 +933,11 @@ export const COLOR_TOKENS = {
   "scrim-modal": SCRIM.modal,
   "scrim-recessed": SCRIM.recessed,
 
+  "focus-ring": FOCUS.ring,
+  "focus-width": FOCUS.width,
+  "focus-offset": FOCUS.offset,
+  "focus-disabled-opacity": FOCUS.disabledOpacity,
+
   "text-primary": TEXT.primary,
   "text-secondary": TEXT.secondary,
   "text-tertiary": TEXT.tertiary,
@@ -953,4 +996,78 @@ export function cssVars(): string {
     .join("\n");
 
   return `:root {\n${lines}\n}`;
+}
+
+/**
+ * The global rules for every control that is not a `GlassButton`.
+ *
+ * Generated rather than written in `index.css`, and that is the whole point of it.
+ *
+ * The focus ring existed only on `.gbtn`, so it existed on 28 of the app's 90 native
+ * `<button>`s and none of its 23 `<input>`s. Everything else fell back to whatever the
+ * browser draws -- not a designed state: it differs per engine, it is drawn outside the
+ * element's own dark surface so it can vanish against a card, and forced-colors mode
+ * removes it, which is exactly the mode a keyboard user here is most likely to run in.
+ * The same applied to disabled: 32 controls set `disabled` and 5 said anything about how
+ * it should look, so the rest answered a tap with nothing at all.
+ *
+ * Hand-writing these in the stylesheet is what let them drift in the first place, and it
+ * would also make them untestable -- Vitest does not process CSS, so a stylesheet is not
+ * something a test in this project can read. Generating them from {@link FOCUS} means the
+ * rule cannot disagree with the token it is built from, because there is only one place
+ * the value is written down.
+ *
+ * `:where()` throughout, for zero specificity. Without it these rules would outrank a
+ * component's own `:focus-visible` and every deliberate override would need
+ * `!important` to survive, which is how a global rule becomes something components route
+ * around instead of build on. Zero specificity makes this the floor and lets any component
+ * that wants something else still win.
+ *
+ * `:focus-visible` rather than `:focus`, so a click does not paint a ring on a control the
+ * user is already pointing at. The ring is for keyboard and switch users; a mouse user has
+ * the cursor.
+ *
+ * Emitted with the token's resolved values rather than as `var()` references. That looks
+ * like a step backwards from the custom properties `cssVars()` projects, and it is
+ * deliberate: nothing emits those properties today. `cssVars()` has no caller outside
+ * this project's own tests, so every `var(--cronos-*)` in `index.css` is running on its
+ * fallback. A generated rule that read the variables would render an empty outline.
+ *
+ * Writing the value out here is therefore not a second place the colour lives -- it is the
+ * *only* place, and the token is what generates it. If `cssVars()` ever gets wired into
+ * the stylesheet, this function should switch to `var()` in one edit, and the test below
+ * will say so.
+ */
+export function stateRules(): string {
+  return `/*
+   * Generated from \`FOCUS\`. See \`stateRules()\` in \`design/tokens.ts\` for why the
+   * focus ring and the disabled state live here rather than being hand-written.
+   */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: ${FOCUS.width} solid ${FOCUS.ring};
+  outline-offset: ${FOCUS.offset};
+}
+
+/*
+ * Disabled, and the ARIA form of it.
+ *
+ * Opacity rather than a different fill, for the reason \`.gbtn\` used one: a disabled
+ * control is still a control and has to still read as the control it was. Only its
+ * emphasis changes.
+ */
+:where(button, input, select, textarea, fieldset):disabled {
+  opacity: ${FOCUS.disabledOpacity};
+  cursor: not-allowed;
+}
+
+/*
+ * A control disabled through \`aria-disabled\` rather than the attribute.
+ *
+ * It still receives clicks, so it has to *look* inert or the athlete has no way to know
+ * their tap did nothing. Zero specificity again, so a component can still override it.
+ */
+:where(button, [role="button"], [role="tab"], [aria-disabled="true"])[aria-disabled="true"] {
+  opacity: ${FOCUS.disabledOpacity};
+  cursor: not-allowed;
+}`;
 }

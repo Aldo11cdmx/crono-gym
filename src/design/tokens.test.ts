@@ -35,6 +35,7 @@ import {
   COPPER,
   DANGER,
   DIAGRAM,
+  FOCUS,
   GLASS,
   MOTION,
   RADIUS,
@@ -47,7 +48,9 @@ import {
   TYPE,
   Z_INDEX,
   cssVars,
+  stateRules,
 } from "./tokens";
+import { designTokensCss } from "./installDesignTokens";
 import tailwind from "../../tailwind.config";
 
 /**
@@ -1094,6 +1097,164 @@ describe("scrims darken rather than lighten", () => {
     expect(COMPONENT_SOURCES["../components/workout/GymSettingsModal.tsx"]).toContain(
       "SCRIM.modal",
     );
+  });
+});
+
+/**
+ * The generated interactive-state CSS, and the app stylesheet next to it.
+ *
+ * Asserted on directly because the interesting part of the focus and disabled states is
+ * *the rule*, not the token: `FOCUS` can be perfectly correct while no control has a ring,
+ * because what paints it is CSS. Testing the token alone would pass against the state this
+ * commit was written to fix.
+ *
+ * Two sources, because there are now two places the rule could live and they must not both
+ * answer. `GENERATED` is what reaches the browser, from `stateRules()`. `STYLESHEET` is
+ * `index.css`, asserted only to confirm it has stopped restating what is generated --
+ * a hand-written copy would be the same value in two files, and the next edit to `FOCUS`
+ * would reach one of them.
+ *
+ * A static `?raw` import rather than a glob. The glob form was tried first and returns
+ * nothing for `.css` under this project's Vite pipeline, where it works fine for `.tsx` --
+ * so this is the third tool tried for reading source in this file, after an eager glob
+ * that executed every module and `node:fs`, which the browser-only tsconfig will not type.
+ * A static import is the one that was always going to work, because `?raw` is a
+ * first-class Vite feature and does not depend on glob expansion at all.
+ */
+import STYLESHEET from "../index.css?raw";
+
+describe("every focusable control can show where it is", () => {
+  it("paints a ring on more than the one button primitive", () => {
+    // The reason this commit exists: the ring lived only on `.gbtn`, and the app has 90
+    // native `<button>`s and 23 `<input>`s. Everything else fell back to the browser's
+    // default, which is not a designed state -- it differs per engine, it is drawn outside
+    // the element's own dark surface, and forced-colors mode removes it, which is exactly
+    // the mode a keyboard user here is most likely to be in.
+    expect(stateRules()).toMatch(/:where\([^)]*\):focus-visible\s*\{[^}]*outline/);
+  });
+
+  it("covers the elements a keyboard actually lands on", () => {
+    const rule = stateRules().match(/:where\([^)]*\):focus-visible/);
+    expect(rule).toBeTruthy();
+    // A rule that lists only `button` would leave every link in the app unfocusable, and
+    // `input` covers the numeric fields an athlete uses mid-set.
+    for (const selector of ["button", "a", "input", "select", "textarea", "[tabindex]"]) {
+      expect(rule![0], `focus rule omits ${selector}`).toContain(selector);
+    }
+  });
+
+  it("uses :where(), so a component can still override it", () => {
+    // Without zero specificity this global rule outranks a component's own
+    // :focus-visible, and every deliberate override then needs !important to survive --
+    // which is how a global rule becomes something components route around instead of
+    // build on. Asserted structurally so the intent cannot be lost to a refactor that
+    // "simplifies" `:where` away.
+    const focusRules = stateRules().match(/[^\n]*:focus-visible[^\n]*\{/g) ?? [];
+    expect(focusRules.length).toBeGreaterThan(0);
+    expect(focusRules.every((rule) => rule.includes(":where("))).toBe(true);
+  });
+
+  it("writes the token's value, so it cannot drift from the token", () => {
+    // The ring is interpolated from `FOCUS`, not restated. Asserted by value rather than
+    // by looking for the absence of a hex, because `FOCUS.ring` legitimately *is* a hex --
+    // it aliases `ACCENT.text` -- so "no hex" would only prove the rule reads something.
+    const outline = stateRules().match(/outline:[^;]*;/);
+    expect(outline, "no outline declaration in the generated rules").toBeTruthy();
+    expect(outline![0]).toBe(`outline: ${FOCUS.width} solid ${FOCUS.ring};`);
+    expect(stateRules()).toContain(`outline-offset: ${FOCUS.offset};`);
+  });
+
+  it("leaves the stylesheet free of a second copy of the ring", () => {
+    // The generated rule and a hand-written one would disagree the first time `FOCUS`
+    // changed, and the loser would be invisible until someone tabbed through the app.
+    expect(STYLESHEET).not.toContain("--cronos-focus-ring");
+    expect(STYLESHEET).not.toMatch(/\.gbtn:focus-visible/);
+  });
+
+  it("is the accent itself, not a second colour beside it", () => {
+    // Identity is the assertion. The ring aliases `ACCENT.text` rather than restating a
+    // hue, so the accent changing changes the ring in the same edit -- and there is no
+    // second colour to drift out of step with the first.
+    expect(FOCUS.ring).toBe(ACCENT.text);
+    // The accent is red, and Block A made that deliberate: red is allowed as the accent and
+    // nowhere else. `redPolicyFor` is a *violation* predicate -- it answers "does this
+    // colour break the rule for the role it plays" -- so both directions are asserted:
+    // clean as an accent, and genuinely load-bearing, because the same red would break the
+    // rule the moment it was used anywhere else. That is the whole shape of the decision:
+    // one red, one place, and the focus ring is that place by aliasing rather than copying.
+    expect(isSaturatedRed(FOCUS.ring)).toBe(true);
+    expect(redPolicyFor(FOCUS.ring, "accent")).toBe(false);
+    expect(redPolicyFor(FOCUS.ring, "status")).toBe(true);
+    // The one thing it must not become is the warning. That is the confusion the alias
+    // exists to prevent: an amber warning and a red focus ring are both "pay attention to
+    // this control", and an athlete mid-set cannot tell which one they are looking at.
+    expect(FOCUS.ring).not.toBe(STATUS.warning.base);
+    expect(FOCUS.ring).not.toBe(STATUS.error.base);
+  });
+
+  it("survives being drawn on top of a control's own border", () => {
+    // 1px is the hairline every control here draws. A 1px ring drawn outside a 1px
+    // border reads as a slightly thick border rather than as a ring, and the one state
+    // that has to be unmistakable becomes the easiest to miss.
+    expect(Number.parseFloat(FOCUS.width)).toBeGreaterThanOrEqual(2);
+    expect(Number.parseFloat(FOCUS.offset)).toBeGreaterThan(0);
+  });
+
+  it("is actually installed, so the token cannot be correct and unreachable", () => {
+    // `cssVars()` had no caller outside this file for as long as it existed: the
+    // projection looked alive and painted nothing. Asserting the shape of the output is
+    // not enough -- this checks the one function that puts it in the document, and that it
+    // puts the custom properties in too, since that is what makes `--cronos-*` in
+    // `index.css` real instead of a fallback that always wins.
+    expect(designTokensCss()).toContain(`--cronos-focus-ring: ${FOCUS.ring};`);
+    expect(designTokensCss()).toContain(stateRules());
+  });
+});
+
+describe("a disabled control says so", () => {
+  it("styles disabled globally, not only on the button primitive", () => {
+    // 32 controls in the app set `disabled` and 5 had any styling for it. The rest
+    // answered a tap with nothing, which is the worst version of a disabled state: the
+    // athlete cannot tell a control that is waiting from one that is broken, so they tap
+    // it again.
+    expect(stateRules()).toMatch(/:where\([^)]*\):disabled\s*\{[^}]*opacity/);
+  });
+
+  it("stays legible, because a control nobody can read is just absent", () => {
+    const opacity = Number.parseFloat(FOCUS.disabledOpacity);
+    // Dim enough to say "not now", bright enough that the label survives. Text on a
+    // disabled control is exempt from the contrast floor precisely because it is still
+    // information, so dimming it below legibility throws away the one thing it is for.
+    expect(opacity).toBeGreaterThan(0.3);
+    expect(opacity).toBeLessThan(1);
+  });
+
+  it("styles the ARIA form too, because it still takes clicks", () => {
+    // `aria-disabled` does not stop a tap landing, so it has to look inert or the
+    // athlete has no way to know their tap did nothing.
+    expect(stateRules()).toContain('[aria-disabled="true"]');
+  });
+
+  it("keeps the not-allowed cursor, so the pointer agrees with the opacity", () => {
+    // Matched by block rather than by selector. The `aria-disabled` selector contains a
+    // `)`, so any regex shaped like `:where\([^)]*\)\[aria-` cannot span it -- and a test
+    // that has to be re-shaped whenever a selector gains an attribute is a test that will
+    // be loosened until it passes.
+    const blocks = stateRules().match(/\{[^}]*\}/g) ?? [];
+    const dimmed = blocks.filter((block) => block.includes("opacity"));
+    expect(dimmed, "no disabled declaration").toHaveLength(2);
+    // Both forms: the attribute and the ARIA one, which are separate rules precisely
+    // because they are separate reasons.
+    for (const block of dimmed) {
+      expect(block).toContain(`opacity: ${FOCUS.disabledOpacity};`);
+      expect(block).toContain("cursor: not-allowed;");
+    }
+  });
+
+  it("leaves the stylesheet free of a second copy", () => {
+    // Same reason as the ring: `.gbtn:disabled` was the hand-written original, and the
+    // generated rule now reaches that button too.
+    expect(STYLESHEET).not.toMatch(/\.gbtn:disabled/);
   });
 });
 

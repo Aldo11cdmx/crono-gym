@@ -114,15 +114,12 @@ background: radial-gradient(
     filter: brightness(0.92);
   }
 
-  .gbtn:focus-visible {
-    outline: 2px solid var(--cronos-accent-text, #ff6961);
-    outline-offset: 2px;
-  }
-
-  .gbtn:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
-  }
+  /*
+   * No `.gbtn:focus-visible` and no `.gbtn:disabled`: both are generated from `FOCUS` and
+   * reach this button through the `:where()` rules in `stateRules()`. Leaving a copy here
+   * would be the same value in two places, and the next person to change `FOCUS` would
+   * change one of them.
+   */
 
   @media (prefers-reduced-motion: reduce) {
     .gbtn {

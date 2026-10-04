@@ -7,9 +7,10 @@
  *
  * The padding lives in CSS (`.cronos-shell`) rather than in a style prop because
  * part of it is responsive -- at desktop width the bottom bar is replaced by a
- * side rail -- and inline styles cannot express a media query. The one number both
- * sides need, the navigation's height, is published here as a custom property so
- * the stylesheet and the components cannot disagree about it.
+ * side nav -- and inline styles cannot express a media query. The numbers both
+ * sides need, the navigation's height and the nav's width, are published here as
+ * custom properties so the stylesheet and the components cannot disagree about
+ * them.
  */
 
 import type { CSSProperties } from "react";
@@ -18,8 +19,10 @@ import { SURFACE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BottomNav } from "./BottomNav";
 import { ActiveWorkoutPill } from "./ActiveWorkoutPill";
-import { SideRail } from "../nav/SideRail";
-import { SIDE_RAIL_WIDTH } from "./navItems";
+import { SideNav } from "../nav/SideNav";
+import { CoachFloatingButton } from "../coach/CoachFloatingButton";
+import { SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from "./navItems";
+import { useSideNavCollapsed } from "./useSideNavCollapsed";
 
 /**
  * Content height of the bottom navigation, in px, excluding the safe-area inset.
@@ -32,14 +35,13 @@ import { SIDE_RAIL_WIDTH } from "./navItems";
 export const NAV_CONTENT_HEIGHT = 56;
 
 /**
- * Width of the desktop side rail, in px.
- *
- * Re-exported from `navItems.ts`, which is where the number is decided: the
- * shell pads the content by it and `SideRail` occupies it, so a rail importing
- * the width from the component that renders it would close an import cycle. The
- * re-export keeps the name available from the shell for existing callers.
+ * Widths of the desktop side nav, re-exported from `navItems.ts`, which is where the
+ * numbers are decided: the shell pads the content by one of them and `SideNav`
+ * occupies the other, so a nav importing its own width from the component that renders
+ * it would close an import cycle. The re-export keeps the names available from the
+ * shell for existing callers.
  */
-export { SIDE_RAIL_WIDTH } from "./navItems";
+export { SIDE_NAV_WIDTH, SIDE_NAV_COLLAPSED_WIDTH } from "./navItems";
 
 /** Gap between the navigation and the active-session pill, in px. */
 export const PILL_GAP = 8;
@@ -47,6 +49,13 @@ export const PILL_GAP = 8;
 export function AppShell() {
   const { pathname } = useLocation();
   const reducedMotion = useReducedMotion();
+  /*
+    Owned here, not inside `SideNav`, because the shell pads the content by the width
+    the nav is actually occupying. If the nav kept its own copy the two would disagree
+    the moment it collapsed, and the content would sit under a 64px bar with a 240px
+    gap beside it.
+  */
+  const { collapsed, toggle } = useSideNavCollapsed();
 
   return (
     <div
@@ -55,9 +64,9 @@ export function AppShell() {
         {
           backgroundColor: SURFACE.base,
           // Read by the stylesheet for the shell's own padding. Set here because
-          // this is the only place the navigation height is decided.
+          // this is the only place the navigation height and the nav width are decided.
           "--cronos-nav-height": `${NAV_CONTENT_HEIGHT}px`,
-          "--cronos-rail-width": `${SIDE_RAIL_WIDTH}px`,
+          "--cronos-nav-width": `${collapsed ? SIDE_NAV_COLLAPSED_WIDTH : SIDE_NAV_WIDTH}px`,
         } as CSSProperties
       }
     >
@@ -74,9 +83,17 @@ export function AppShell() {
         <Outlet />
       </div>
 
-      <SideRail />
+      <SideNav collapsed={collapsed} onToggleCollapsed={toggle} />
       <BottomNav />
       <ActiveWorkoutPill />
+
+      {/*
+        Last, so it stacks over the navigation and the pill, and after the outlet so that
+        opening the assistant never re-mounts the screen underneath it. It renders nothing
+        without a signed-in athlete and nothing on the coach portal; both are its own
+        rules, tested there.
+      */}
+      <CoachFloatingButton />
     </div>
   );
 }

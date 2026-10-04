@@ -251,6 +251,9 @@ export const SHELL_LABELS = {
   navAriaLabel: "Navegación principal",
   sidebarAriaLabel: "Navegación lateral",
   sidebarPlaceholder: "Barra lateral",
+  /** Collapsed to icons only. */
+  sidebarCollapse: "Contraer la barra lateral",
+  sidebarExpand: "Expandir la barra lateral",
   /** Names a destination, both as a visible label and as an accessible name. */
   destinations: {
     home: { label: "Inicio", aria: "Ir al inicio" },
@@ -260,8 +263,11 @@ export const SHELL_LABELS = {
     // unification exists to end.
     library: { label: "Rutinas", aria: "Ir a tus rutinas" },
     train: { label: "Entrenar", aria: "Ir a entrenar" },
-    coaches: { label: "Coaches", aria: "Ir a los coaches" },
     profile: { label: "Perfil", aria: "Ir a tu perfil" },
+    // Rail-only. These are places an athlete arrives *from* a muscle on the map or a
+    // number on the dashboard, never by aiming at the bottom of a phone.
+    ranks: { label: "Rangos", aria: "Ir a tus rangos" },
+    progress: { label: "Progreso", aria: "Ir a tu progreso" },
   },
   /**
    * Announced when the pill appears.
@@ -534,6 +540,26 @@ export const PROFILE_LABELS = {
   importHint:
     "Trae el historial de Hevy o Strong para no empezar de cero.",
   importOpen: "Importar desde Hevy o Strong",
+
+  /**
+   * The premium-services card.
+   *
+   * The coach left the thumb bar and arrived here, which is where a pitch belongs: the
+   * destination is a person deciding whether this is worth paying for, not a tab they
+   * open mid-set. The card lists what the workspace actually contains rather than
+   * promising a subscription -- three concrete things an athlete can look for in the
+   * screen they are about to enter.
+   */
+  premiumLabel: "Servicios premium",
+  premiumCoachName: "Coach con IA",
+  premiumCoachHint:
+    "Lee tu entrenamiento y tu contexto, y te dice qué conviene cambiar.",
+  premiumFeatures: [
+    "Tu contexto de entrenamiento, al día",
+    "Chat con el coach sobre tus datos",
+    "Notas y recomendaciones pendientes",
+  ] as const,
+  premiumOpen: "Abrir el coach",
 } as const;
 
 /** Experience levels, shared by onboarding and the profile. */

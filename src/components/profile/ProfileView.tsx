@@ -20,8 +20,8 @@
  */
 
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import { useOutletContext } from "react-router-dom";
-import { LogOut, Upload } from "lucide-react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { ArrowRight, Check, LogOut, Sparkles, Upload } from "lucide-react";
 import { supabase } from "@lib/supabase";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GymSettingsTrigger } from "@/components/workout/GymSettingsTrigger";
@@ -49,6 +49,7 @@ import {
   TYPE,
 } from "@/design/tokens";
 import type { WorkspaceOutletContext } from "@/App";
+import { COACH_PATH } from "@/components/shell/navItems";
 
 /** BMI bands, in the order a clinician reads them. */
 const BMI_BANDS: readonly { max: number; label: string }[] = [
@@ -88,6 +89,7 @@ export function ProfileView() {
   const { userId, email } = useOutletContext<WorkspaceOutletContext>();
   const { profile, energy, loading, saving, error, update, refresh } = useProfile(userId);
   const gym = useGymSettings();
+  const navigate = useNavigate();
   const [wizardOpen, setWizardOpen] = useState(false);
 
   const age = useMemo(() => (profile ? ageFrom(profile.birth_date) : null), [profile]);
@@ -275,6 +277,105 @@ export function ProfileView() {
         >
           {PROFILE_LABELS.importOpen}
         </GlassButton>
+      </Section>
+
+      {/* ------------------------------------------------- premium coach */}
+      {/*
+        The coach's pitch, which is where the redesign moved it from the bottom bar.
+
+        It is a card and not a navigation item because of what the destination is: a
+        person deciding whether this is worth paying for. A tab in the thumb zone is
+        for things you do mid-set, and a fifth one also put the raised training button
+        half a column off centre.
+
+        The link is the only way into `/coach`. The route is deliberately unlisted in
+        `navItems.ts`, so this card is what keeps the AI coach's workspace -- the
+        briefing, the chat, the notes, the pending recommendations -- reachable at all.
+      */}
+      <Section title={PROFILE_LABELS.premiumLabel}>
+        <div style={{ display: "flex", gap: SPACE.md, alignItems: "flex-start" }}>
+          <span
+            aria-hidden="true"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              borderRadius: RADIUS.round,
+              backgroundColor: ACCENT.subtle,
+              color: ACCENT.text,
+            }}
+          >
+            <Sparkles size={20} />
+          </span>
+          <div style={{ minWidth: 0 }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: TYPE.subhead.size,
+                lineHeight: TYPE.subhead.lineHeight,
+                fontWeight: TYPE.subhead.weight,
+                color: TEXT.primary,
+              }}
+            >
+              {PROFILE_LABELS.premiumCoachName}
+            </h3>
+            <p style={{ ...mutedStyle, margin: `${SPACE.xs} 0 ${SPACE.md}` }}>
+              {PROFILE_LABELS.premiumCoachHint}
+            </p>
+            <ul
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: SPACE.xs,
+                margin: `0 0 ${SPACE.md}`,
+                padding: 0,
+                listStyle: "none",
+              }}
+            >
+              {PROFILE_LABELS.premiumFeatures.map((feature) => (
+                <li
+                  key={feature}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: SPACE.sm,
+                    fontSize: TYPE.caption.size,
+                    lineHeight: TYPE.caption.lineHeight,
+                    color: TEXT.secondary,
+                  }}
+                >
+                  {/*
+                    A drawn tick rather than a list bullet, because the section already
+                    sets `listStyle: none` and the default disc would be the only thing
+                    on the screen not built from tokens.
+                  */}
+                  <Check
+                    size={14}
+                    aria-hidden="true"
+                    style={{ flexShrink: 0, marginTop: 1, color: ACCENT.text }}
+                  />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            {/*
+              `variant="secondary"`, not the accent fill. This screen's primary action
+              is signing in through no button at all -- every control here is a setting --
+              and spending the one accent fill on a pitch would make a marketing surface
+              look like the thing to press next.
+            */}
+            <GlassButton
+              variant="secondary"
+              icon={<ArrowRight size={16} aria-hidden="true" />}
+              onClick={() => void navigate(COACH_PATH)}
+            >
+              {PROFILE_LABELS.premiumOpen}
+            </GlassButton>
+          </div>
+        </div>
       </Section>
 
       {error && (

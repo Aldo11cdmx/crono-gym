@@ -20,7 +20,15 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { NAV_DESTINATIONS, THUMB_DESTINATIONS, TRAIN_PATH } from "@/components/shell/navItems";
+import {
+  COACH_PATH,
+  LEGACY_ROUTINES_PATH,
+  NAV_DESTINATIONS,
+  ROUTINES_PATH,
+  SECONDARY_DESTINATIONS,
+  THUMB_DESTINATIONS,
+  TRAIN_PATH,
+} from "@/components/shell/navItems";
 import { router } from "./router";
 
 /** Every path the router declares, flattened out of the nested layout. */
@@ -59,11 +67,14 @@ describe("route table", () => {
     }
   });
 
-  it("advertises exactly five destinations, with unique paths", () => {
-    // Five is a design decision, not a current number: the bar is a thumb zone and
+  it("advertises exactly four destinations, with unique paths", () => {
+    // Four is a design decision, not a current number: the bar is a thumb zone and
     // the raised centre item only stays centred while there is an even number of
-    // items either side of it. A sixth would need the geometry re-derived.
-    expect(NAV_DESTINATIONS).toHaveLength(5);
+    // items either side of it. Five put two items on one side of the button and one on
+    // the other, so the control the athlete reaches for sat half a column off centre --
+    // which looked correct in code and was wrong in the hand. A sixth would need the
+    // geometry re-derived.
+    expect(NAV_DESTINATIONS).toHaveLength(4);
 
     const paths = NAV_DESTINATIONS.map((d) => d.path);
     expect(new Set(paths).size).toBe(paths.length);
@@ -72,9 +83,9 @@ describe("route table", () => {
   it("keeps exactly one primary destination, in the centre", () => {
     const primaries = NAV_DESTINATIONS.filter((d) => d.primary);
     expect(primaries).toHaveLength(1);
-    // `BottomNav` translates the primary item up and hides its label on the
-    // assumption that it sits in the middle column. Primary at an end would render
-    // a bar whose one special item is in a corner.
+    // `BottomNav` derives its grid columns and its centring from this list's order, on
+    // the assumption that the primary sits in the middle column. Primary at an end
+    // would render a bar whose one special item is in a corner.
     expect(NAV_DESTINATIONS.indexOf(primaries[0])).toBe(2);
     expect(THUMB_DESTINATIONS.indexOf(primaries[0])).toBe(2);
   });
@@ -82,9 +93,43 @@ describe("route table", () => {
   it("gives every destination an accessible name", () => {
     // The centre item shows no visible label on the bar, so `ariaLabel` is the only
     // thing naming it. An empty one leaves an icon with no name.
-    for (const destination of NAV_DESTINATIONS) {
+    for (const destination of [...NAV_DESTINATIONS, ...SECONDARY_DESTINATIONS]) {
       expect(destination.ariaLabel, `${destination.path} has no accessible name`).toBeTruthy();
-      expect(destination.label, `${destination.path} has no label`).toBeTruthy();
+    }
+    // Visible labels are required everywhere *except* the centre action, which is the
+    // one item the bar deliberately leaves unlabelled.
+    for (const destination of [...NAV_DESTINATIONS, ...SECONDARY_DESTINATIONS]) {
+      if (destination.primary) {
+        expect(destination.label, `${destination.path} should have no visible label`).toBe("");
+      } else {
+        expect(destination.label, `${destination.path} has no label`).toBeTruthy();
+      }
+    }
+  });
+
+  it("does not list a destination in both groups", () => {
+    // Two lists are how a route ends up rendered twice in two navigations, and there
+    // being two navigations was already the bug Fase 7 fixed.
+    const primary = new Set(NAV_DESTINATIONS.map((d) => d.path));
+    for (const destination of SECONDARY_DESTINATIONS) {
+      expect(primary.has(destination.path), `${destination.path} is in both`).toBe(false);
+      expect(destination.secondary, `${destination.path} is not marked secondary`).toBe(true);
+    }
+  });
+
+  it("keeps the secondary group out of the thumb zone", () => {
+    // `/rangos` and `/progreso` are places an athlete arrives *from* a muscle on the
+    // map or a number on the dashboard, not by aiming at the bottom of a phone.
+    const thumb = new Set(THUMB_DESTINATIONS.map((d) => d.path));
+    for (const destination of SECONDARY_DESTINATIONS) {
+      expect(thumb.has(destination.path), `${destination.path} leaked into the bar`).toBe(false);
+    }
+  });
+
+  it("has a route for every secondary destination", () => {
+    const paths = routePaths();
+    for (const destination of SECONDARY_DESTINATIONS) {
+      expect(paths, `no route for ${destination.label}`).toContain(destination.path);
     }
   });
 
@@ -96,10 +141,32 @@ describe("route table", () => {
     expect(routePaths()).toContain("/inicio");
   });
 
+  it("redirects /biblioteca to /rutinas and stops serving the old path", () => {
+    // The screen did not move; the address did. "Biblioteca" says where routines are
+    // kept, and every label in the product already said "Rutinas" -- so the route was
+    // the last place disagreeing. A duplicate route would give the same screen two URLs,
+    // and the one that is not in the navigation is the one that ends up in a bookmark
+    // and then drifts.
+    expect(routePaths()).toContain(LEGACY_ROUTINES_PATH);
+    expect(routePaths()).toContain(ROUTINES_PATH);
+  });
+
   it("serves the coach, not a placeholder", () => {
     // Same regression this file was written for. The hub used to be a header-tab
     // destination, so nothing else would notice it degrading to `ComingSoon`.
-    expect(routeElement("/coach")).toBeTruthy();
+    expect(routeElement(COACH_PATH)).toBeTruthy();
+  });
+
+  it("keeps the coach reachable but out of the navigation", () => {
+    // The redesign asked for the coach to leave the thumb bar and the pitch to move into
+    // the profile, which is right about the pitch and was written on the assumption that
+    // `/coach` was a coach marketplace. It is not -- it is the AI coach's workspace, so
+    // the route stays live and the profile's premium-services card is the way in.
+    // Redirecting the address would have left the chat, the notes and the pending
+    // recommendations with no route into them.
+    expect(routeElement(COACH_PATH)).toBeTruthy();
+    const advertised = [...NAV_DESTINATIONS, ...SECONDARY_DESTINATIONS].map((d) => d.path);
+    expect(advertised).not.toContain(COACH_PATH);
   });
 
   it("routes the active-session pill to the train screen", () => {

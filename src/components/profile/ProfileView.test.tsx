@@ -14,7 +14,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Outlet, Route, Routes } from "react-router-dom";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 
 const db = vi.hoisted(() => ({
   /** What `.select("*")` on `profiles` resolves with. */
@@ -63,6 +63,11 @@ import {
 } from "@/lib/i18n";
 import { ACTIVITY_FACTORS } from "@/lib/profile";
 import { GymSettingsProvider } from "@/context/GymSettingsContext";
+import {
+  COACH_PATH,
+  NAV_DESTINATIONS,
+  SECONDARY_DESTINATIONS,
+} from "@/components/shell/navItems";
 import type { WorkspaceOutletContext } from "@/App";
 
 const EMAIL = "someone@example.com";
@@ -89,6 +94,12 @@ const ROW: Record<string, unknown> = {
  * child route underneath. Wrapping it the other way round would leave the hook
  * reading an empty context and the screen would never load a profile.
  */
+/** Reports where the router actually is, so the coach card's link can be checked for real. */
+function LocationProbe() {
+  const { pathname } = useLocation();
+  return <span data-testid="location">{pathname}</span>;
+}
+
 function renderView() {
   return render(
     <MemoryRouter initialEntries={["/perfil"]}>
@@ -103,6 +114,7 @@ function renderView() {
             <Route index element={<ProfileView />} />
           </Route>
         </Routes>
+        <LocationProbe />
       </GymSettingsProvider>
     </MemoryRouter>,
   );
@@ -209,6 +221,39 @@ describe("ProfileView entry points", () => {
     // Step one, not a finished import: nothing is written from this screen.
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("¿De dónde viene el archivo?")).toBeTruthy();
+  });
+});
+
+describe("ProfileView premium coach card", () => {
+  it("pitches the coach here, where the redesign moved it from the bar", async () => {
+    renderView();
+    await waitFor(() => expect(screen.getByText(PROFILE_LABELS.premiumLabel)).toBeTruthy());
+    expect(screen.getByText(PROFILE_LABELS.premiumCoachName)).toBeTruthy();
+  });
+
+  it("names what the workspace actually contains, not a subscription", async () => {
+    // Three concrete things an athlete can look for in the screen they are about to
+    // enter. A pitch that promised something the screen does not do would be the one
+    // lie in a product whose whole organising rule is not to lie about a body.
+    renderView();
+    await waitFor(() => expect(screen.getByText(PROFILE_LABELS.premiumLabel)).toBeTruthy());
+    for (const feature of PROFILE_LABELS.premiumFeatures) {
+      expect(screen.getByText(feature)).toBeTruthy();
+    }
+  });
+
+  it("is the way into the coach workspace, which has no navigation entry", async () => {
+    // `COACH_PATH` is deliberately absent from `navItems.ts`, so this card is the only
+    // route into the briefing, the chat, the notes and the pending recommendations.
+    // Drop it and the coach becomes unreachable, not merely unadvertised.
+    renderView();
+    await waitFor(() => expect(screen.getByText(PROFILE_LABELS.premiumLabel)).toBeTruthy());
+
+    const advertised = [...NAV_DESTINATIONS, ...SECONDARY_DESTINATIONS].map((d) => d.path);
+    expect(advertised).not.toContain(COACH_PATH);
+
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(PROFILE_LABELS.premiumOpen) }));
+    expect(screen.getByTestId("location").textContent).toBe(COACH_PATH);
   });
 });
 

@@ -10,18 +10,43 @@
  * that stylesheet reads, since a mismatch is the whole bug.
  */
 
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useEffect, useRef } from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { AppShell, NAV_CONTENT_HEIGHT, PILL_GAP, SIDE_RAIL_WIDTH } from "./AppShell";
+import {
+  AppShell,
+  NAV_CONTENT_HEIGHT,
+  PILL_GAP,
+  SIDE_NAV_COLLAPSED_WIDTH,
+  SIDE_NAV_WIDTH,
+} from "./AppShell";
 import { BottomNav } from "./BottomNav";
+import { SHELL_LABELS } from "@/lib/i18n";
+import { SIDE_NAV_COLLAPSED_KEY } from "./navItems";
 import {
   ActiveSessionProvider,
   useActiveSession,
 } from "@/context/ActiveSessionContext";
 
+/*
+ * The button, stubbed.
+ *
+ * What is being pinned here is the *wiring* -- that the shell is the thing that mounts it.
+ * Its own rules (which routes, which users) are tested where it lives; asserting those
+ * again from here would only be testing that the shell renders its children.
+ */
+vi.mock("../coach/CoachFloatingButton", () => ({
+  CoachFloatingButton: () => <div data-testid="coach-fab-slot" />,
+}));
+
 afterEach(cleanup);
+
+beforeEach(() => {
+  // The side nav's preference lives in `localStorage` on purpose, so these tests would
+  // otherwise inherit each other's collapse state and pass or fail by ordering.
+  window.localStorage.clear();
+});
 
 /** Starts a session on mount. See the note in ActiveWorkoutPill.test.tsx. */
 function StartSession({ title = "Pecho" }: { title?: string }) {
@@ -51,7 +76,7 @@ function renderShell({
         <Routes>
           <Route element={<AppShell />}>
             <Route path="/" element={<RouteStub name="inicio" />} />
-            <Route path="/biblioteca" element={<RouteStub name="biblioteca" />} />
+            <Route path="/rutinas" element={<RouteStub name="rutinas" />} />
             <Route path="/entrenar" element={<RouteStub name="entrenar" />} />
             <Route path="/rangos" element={<RouteStub name="rangos" />} />
             <Route path="/perfil" element={<RouteStub name="perfil" />} />
@@ -69,9 +94,19 @@ describe("AppShell", () => {
   });
 
   it("renders the routed view through the outlet", () => {
-    renderShell({ path: "/biblioteca" });
-    expect(screen.getByText("Vista biblioteca")).toBeDefined();
+    renderShell({ path: "/rutinas" });
+    expect(screen.getByText("Vista rutinas")).toBeDefined();
     expect(screen.queryByText("Vista inicio")).toBeNull();
+  });
+
+  it("monta el acceso al asistente en toda pantalla", () => {
+    // The shell is the only place it is mounted, so a button per screen would be six
+    // chances for one of them to be missing. This pins the single mount point.
+    for (const path of ["/", "/rutinas", "/entrenar", "/rangos", "/perfil"]) {
+      const view = renderShell({ path });
+      expect(screen.getByTestId("coach-fab-slot"), `faltaba en ${path}`).toBeDefined();
+      view.unmount();
+    }
   });
 
   it("does not render the session pill when no session is running", () => {
@@ -91,7 +126,7 @@ describe("AppShell", () => {
     expect(screen.getByRole("navigation", { name: "Navegación principal" })).toBeDefined();
   });
 
-  it("publishes the navigation height and rail width the stylesheet pads against", () => {
+  it("publishes the navigation height and nav width the stylesheet pads against", () => {
     // A mismatch here is the bug where content sits under the navigation: the
     // padding is `calc(var(--cronos-nav-height) + safe-area)` and the bar is
     // `calc(NAV_CONTENT_HEIGHT + safe-area)`.
@@ -101,7 +136,47 @@ describe("AppShell", () => {
     expect(shell.style.getPropertyValue("--cronos-nav-height")).toBe(
       `${NAV_CONTENT_HEIGHT}px`,
     );
-    expect(shell.style.getPropertyValue("--cronos-rail-width")).toBe(`${SIDE_RAIL_WIDTH}px`);
+    expect(shell.style.getPropertyValue("--cronos-nav-width")).toBe(`${SIDE_NAV_WIDTH}px`);
+  });
+
+  it("pads the content by the nav's collapsed width once it is collapsed", () => {
+    // The reason the shell owns the preference rather than the nav: if only the nav
+    // knew, the padding would stay at 240px and leave a 176px column of dead space --
+    // which is exactly the space the athlete collapsed the rail to get back.
+    const { container } = renderShell();
+    fireEvent.click(screen.getByLabelText(SHELL_LABELS.sidebarCollapse));
+    const shell = container.querySelector(".cronos-shell") as HTMLElement;
+
+    expect(shell.style.getPropertyValue("--cronos-nav-width")).toBe(
+      `${SIDE_NAV_COLLAPSED_WIDTH}px`,
+    );
+  });
+
+  it("remembers the collapse across a remount", () => {
+    // A layout preference is the one piece of state worth keeping: an athlete who
+    // collapses the rail has said something about how they work, and asking again on
+    // every reload is the kind of friction that makes an app feel like it is arguing.
+    const first = renderShell();
+    fireEvent.click(screen.getByLabelText(SHELL_LABELS.sidebarCollapse));
+    expect(window.localStorage.getItem(SIDE_NAV_COLLAPSED_KEY)).toBe("1");
+    first.unmount();
+
+    const second = renderShell();
+    const nav = screen.getByRole("navigation", { name: SHELL_LABELS.sidebarAriaLabel });
+    expect(nav.style.width).toBe(`${SIDE_NAV_COLLAPSED_WIDTH}px`);
+    // Collapsed, so the wordmark is gone and only the 32px mark is left: 64px of column
+    // has no room for the word and the mark together.
+    expect(screen.queryByText("CRONOS")).toBeNull();
+    second.unmount();
+  });
+
+  it("mounts both navigations, since the breakpoint hides one of them", () => {
+    // `.cronos-side-nav` is `display: none` under 768px and `.cronos-bottom-nav` is
+    // `display: none` above it, so exactly one is ever visible. jsdom evaluates neither,
+    // which is why the test asserts the pair exists rather than which one shows.
+    const { container } = renderShell();
+    expect(container.querySelectorAll(".cronos-side-nav")).toHaveLength(1);
+    expect(container.querySelectorAll(".cronos-bottom-nav")).toHaveLength(1);
   });
 
   it("reserves exactly the navigation's height, no less and no more", () => {
@@ -116,7 +191,7 @@ describe("AppShell", () => {
     const route = container.querySelector(".cronos-route") as HTMLElement;
 
     expect(route.className).toContain("cronos-route--animate");
-    expect(container.querySelectorAll(".cronos-side-rail")).toHaveLength(1);
+    expect(container.querySelectorAll(".cronos-side-nav")).toHaveLength(1);
   });
 });
 

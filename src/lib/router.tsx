@@ -33,7 +33,13 @@ import { ProfileView } from "@/components/profile/ProfileView";
 import { CoachPortal } from "@/components/coach/portal/CoachPortal";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
 import { CoachPortalPreview } from "@/components/dev/CoachPortalPreview";
-import { HOME_PATH } from "@/components/shell/navItems";
+import {
+  COACH_PATH,
+  HOME_PATH,
+  LEGACY_ROUTINES_PATH,
+  PROFILE_PATH,
+  ROUTINES_PATH,
+} from "@/components/shell/navItems";
 
 /**
  * The dev-only component catalog and the coach-portal preview.
@@ -67,6 +73,20 @@ const devRoutes = import.meta.env.DEV
  */
 const legacyHomeRoute = { path: "/", element: <Navigate to={HOME_PATH} replace /> };
 
+/**
+ * `/biblioteca` -> `/rutinas`.
+ *
+ * The screen did not move; the address did. "Biblioteca" says where routines are kept,
+ * and every label in the product already said "Rutinas" -- so the route was the last
+ * place disagreeing. A redirect rather than a duplicate route, for the same reason as
+ * `/`: two paths serving one screen means two URLs for the same page, and the one that
+ * is not in the navigation is the one that ends up in a bookmark and then drifts.
+ */
+const legacyRoutinesRoute = {
+  path: LEGACY_ROUTINES_PATH,
+  element: <Navigate to={ROUTINES_PATH} replace />,
+};
+
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
@@ -76,23 +96,31 @@ export const router = createBrowserRouter([
         children: [
           { path: HOME_PATH, element: <HomeView /> },
           legacyHomeRoute,
-          { path: "/biblioteca", element: <RoutinesView /> },
+          { path: ROUTINES_PATH, element: <RoutinesView /> },
+          legacyRoutinesRoute,
           { path: "/progreso", element: <ProgressView /> },
           // The workout has its own address so a running session survives a
           // reload and so the pill's destination is a real screen.
           { path: "/entrenar", element: <TrainView /> },
           { path: "/rangos", element: <RangosView /> },
-          { path: "/perfil", element: <ProfileView /> },
-          // A thumb-zone destination since Fase 7. It used to be reachable only
-          // from the header tab row, which no longer exists.
-          { path: "/coach", element: <CoachView /> },
+          { path: PROFILE_PATH, element: <ProfileView /> },
+          /*
+           * The AI coach's workspace: the context briefing, the chat, the notes and the
+           * pending recommendations.
+           *
+           * A live route that is not a destination. `COACH_PATH` is absent from
+           * `navItems.ts`, so it appears in neither the thumb bar nor the desktop rail --
+           * the profile's premium-services card is what links here. That is the whole
+           * navigation change, and it is why five thumb-zone destinations became four.
+           */
+          { path: COACH_PATH, element: <CoachView /> },
           /*
            * The coach's own vault. Inside `AuthGate` because the coach signs in as a normal
            * user first -- the boundary that decides which rows they may read is
            * `auth.uid()`, so there is no signed-out way to render this at all.
            *
            * Deliberately absent from `navItems.ts`. A route listed there appears in
-           * `BottomNav` and `SideRail`, and this is not an athlete's tab: it would put a
+           * `BottomNav` and `SideNav`, and this is not an athlete's tab: it would put a
            * coach's inbox one thumb-tap away from every free user's home screen.
            */
           { path: "/coach/portal", element: <CoachPortal /> },

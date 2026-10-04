@@ -519,12 +519,16 @@ export function RangosView() {
 }
 
 /**
- * The coach hub, on its own route.
+ * The coach workspace, on its own route.
  *
  * Thin on purpose, exactly like `RangosView`: the route's whole job is to read the
  * user id out of the auth gate and hand it to the screen. Anything the coach knows
  * is derived inside the hub, so there is no state for a route wrapper to own and
  * nothing here that a refresh could lose.
+ *
+ * Reachable, but not navigable: `COACH_PATH` is a route without a destination, and the
+ * profile's premium-services card is the way in. See `navItems.ts` for why it left the
+ * bar rather than redirecting.
  */
 export function CoachView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();

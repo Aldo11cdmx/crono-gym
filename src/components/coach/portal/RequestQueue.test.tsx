@@ -461,7 +461,9 @@ describe("RequestQueue · aceptar y rechazar", () => {
 
     fireEvent.click(screen.getByRole("button", { name: T.openConversation }));
 
-    expect(onOpenConversation).toHaveBeenCalledWith(ACTIVE);
+    // Both halves: the CRM and the builder filter by `user_id`, so a callback carrying only
+    // the request id would send the parent back to the database to learn who this was.
+    expect(onOpenConversation).toHaveBeenCalledWith(ACTIVE, "athlete-1");
   });
 
   it("no ofrece conversación ni botones a una solicitud rechazada", async () => {

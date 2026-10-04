@@ -64,10 +64,16 @@ export interface RequestQueueProps {
   /**
    * Opens an athlete's conversation.
    *
-   * The queue does not render the chat: `CoachPortal` owns the selection so the CRM beside
-   * it can follow the same athlete without a second piece of state.
+   * Carries the athlete as well as the request, and that is not convenience. `CoachPortal`
+   * hands the same selection to the CRM and the routine builder, whose reads are filtered by
+   * `user_id` and rely on the coach SELECT policies to qualify them -- so a callback with
+   * only the request id would leave the parent doing a second lookup to turn a conversation
+   * into a person, and a lookup whose answer could disagree with the row that produced it.
+   *
+   * The queue does not render the chat: the parent owns the selection so the CRM beside it
+   * follows the same athlete without a second piece of state.
    */
-  onOpenConversation: (requestId: string) => void;
+  onOpenConversation: (requestId: string, athleteId: string) => void;
 }
 
 export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
@@ -285,7 +291,7 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
                     <GlassButton
                       variant="secondary"
                       icon={<MessageSquare size={16} aria-hidden="true" />}
-                      onClick={() => onOpenConversation(row.request.id)}
+                      onClick={() => onOpenConversation(row.request.id, row.request.athlete_id)}
                     >
                       {T.openConversation}
                     </GlassButton>

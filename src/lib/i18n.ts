@@ -1257,6 +1257,15 @@ export const COACH_PORTAL_LABELS = {
 
   // ---- chat --------------------------------------------------------------
   chatTitle: "Conversación",
+  /**
+   * The chat's own "no athlete chosen yet" line.
+   *
+   * Deliberately not `crmSelectPrompt`. The portal stacks the chat, the CRM and the builder in
+   * one column and all three are empty at the same moment, so a shared sentence printed the
+   * same sentence three times in a row -- once per card -- which reads as a bug rather than a
+   * reminder. Each card now says what that card is waiting for.
+   */
+  chatSelectPrompt: "Abre una solicitud para hablar con el atleta.",
   chatPlaceholder: "Escribe un mensaje…",
   chatSend: "Enviar",
   chatEmpty: "Todavía no hay mensajes. Escribe el primero.",
@@ -1291,6 +1300,12 @@ export const COACH_PORTAL_LABELS = {
 
   // ---- VIP routine builder ----------------------------------------------
   builderTitle: "Rutina para el atleta",
+  /** The builder's own "no athlete chosen yet" line -- see `chatSelectPrompt`. */
+  builderSelectPrompt: "Elige una solicitud para preparar su rutina.",
+  builderRoutineTitleLabel: "Nombre de la rutina",
+  builderRoutineTitlePlaceholder: "Fuerza 4 días",
+  /** Shown when the coach reaches for the save button with no name typed. */
+  builderNoTitle: "Ponle un nombre a la rutina antes de guardarla.",
   builderEmpty: "Sin días todavía.",
   builderAddDay: "Añadir día",
   builderRemoveDay: (n: number): string => `Quitar el día ${n}`,
@@ -1299,6 +1314,7 @@ export const COACH_PORTAL_LABELS = {
   builderAddExercise: "Añadir ejercicio",
   builderExerciseSearchLabel: "Buscar ejercicio",
   builderExerciseSearchPlaceholder: "Press de banca",
+  builderNoExerciseChosen: "Sin ejercicio elegido.",
   builderNoExercisesFound: "Ningún ejercicio coincide.",
   builderExerciseSets: "Series",
   builderExerciseRepsMin: "Reps mínimo",
@@ -1310,6 +1326,7 @@ export const COACH_PORTAL_LABELS = {
   builderSaveError: "No se pudo guardar la rutina.",
   builderSaved: (title: string): string => `«${title}» guardada en la biblioteca del atleta.`,
   builderNeedsDay: "Añade al menos un día con un ejercicio antes de guardar.",
+  builderNeedsExerciseChoice: "Elige el ejercicio de cada fila antes de guardar.",
   builderNeedsCoach: "Tu sesión de entrenador no tiene id. Recarga la página.",
 
   // ---- shared ------------------------------------------------------------

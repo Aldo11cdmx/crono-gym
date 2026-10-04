@@ -1321,8 +1321,14 @@ describe("every focusable control can show where it is", () => {
   it("leaves the stylesheet free of a second copy of the ring", () => {
     // The generated rule and a hand-written one would disagree the first time `FOCUS`
     // changed, and the loser would be invisible until someone tabbed through the app.
-    expect(STYLESHEET).not.toContain("--cronos-focus-ring");
-    expect(STYLESHEET).not.toMatch(/\.gbtn:focus-visible/);
+    //
+    // Comments are stripped because `index.css` explains this decision in prose that names
+    // `.gbtn:focus-visible` outright. Matching a comment that documents the rule is the
+    // same failure as a colour guard matching this file's own documentation, and
+    // `stripComments` already exists for it.
+    const css = stripComments(STYLESHEET);
+    expect(css).not.toContain("--cronos-focus-ring");
+    expect(css).not.toMatch(/\.gbtn:focus-visible/);
   });
 
   it("is the accent itself, not a second colour beside it", () => {
@@ -1407,8 +1413,87 @@ describe("a disabled control says so", () => {
 
   it("leaves the stylesheet free of a second copy", () => {
     // Same reason as the ring: `.gbtn:disabled` was the hand-written original, and the
-    // generated rule now reaches that button too.
-    expect(STYLESHEET).not.toMatch(/\.gbtn:disabled/);
+    // generated rule now reaches that button too. Stripped of comments for the same reason
+    // -- the stylesheet names the class in the note explaining why it is gone.
+    expect(stripComments(STYLESHEET)).not.toMatch(/\.gbtn:disabled/);
+  });
+});
+
+describe("the session ring reaches the screen", () => {
+  /**
+   * The stylesheet read back, with comments stripped.
+   *
+   * Every assertion about `index.css` goes through this rather than the raw import, for
+   * one reason: `vitest.config.ts` disables CSS processing by default, and with it off
+   * Vitest replaces a `.css` module with an empty string *before* `?raw` is resolved. The
+   * import then yields `""` -- silently. Only a positive assertion notices, so the two
+   * guards written as "the stylesheet must not contain X" passed against nothing at all
+   * for as long as they existed.
+   *
+   * Asserting the import is non-empty makes that failure loud. It is a positive assertion
+   * on purpose, because that is the only shape that can catch an empty read.
+   */
+  it("reads the stylesheet back rather than an empty stand-in for it", () => {
+    expect(STYLESHEET.length).toBeGreaterThan(0);
+    expect(STYLESHEET).toContain("@tailwind base");
+    expect(stripComments(STYLESHEET).length).toBeGreaterThan(0);
+  });
+
+  /**
+   * The ring's keyframes are asserted here rather than in a component test on purpose.
+   *
+   * `BottomNav` names `cronos-session-ring` and this is where it is defined, so the two
+   * can only be checked together. Nothing else in the file reads the stylesheet, and a
+   * component test can only see the name it passed in -- if the keyframes were renamed or
+   * deleted, every component test would still pass while the ring rendered nothing.
+   *
+   * `scale` rather than a growing `width`, asserted because that is the reason the ring
+   * exists as a keyframe instead of an animated `box-shadow`: `transform` does not force
+   * layout, and this is on a fixed bar that a phone is trying to animate mid-workout.
+   */
+  it("defines the keyframes the nav's centre action names", () => {
+    expect(STYLESHEET).toContain("@keyframes cronos-session-ring");
+  });
+
+  it("animates transform and opacity, never a layout property or a colour", () => {
+    const frames = STYLESHEET.match(
+      /@keyframes cronos-session-ring \{([\s\S]*?)\n  \}/,
+    );
+    expect(frames, "no cronos-session-ring keyframes").toBeTruthy();
+
+    for (const property of ["transform", "opacity"]) {
+      expect(frames![1], `the ring never animates ${property}`).toContain(property);
+    }
+    // The colour comes from `ACCENT.base` on the element, so the keyframes cannot hold an
+    // orange beside a red circle. Same reasoning as the `DIAGRAM` migration.
+    expect(frames![1]).not.toMatch(/#[0-9a-fA-F]{3,8}|rgba?\(/);
+    // Animating `width` or `box-shadow` on a fixed bottom bar reflows or repaints every
+    // frame for an effect that is purely decorative.
+    expect(frames![1]).not.toMatch(/^\s*(width|height|box-shadow|border[a-z-]*)\s*:/m);
+  });
+
+  it("scales outward, because growing inward collides with the press animation", () => {
+    const frames = STYLESHEET.match(
+      /@keyframes cronos-session-ring \{([\s\S]*?)\n  \}/,
+    )!;
+    const scales = [...frames[1].matchAll(/scale\(([\d.]+)\)/g)].map((m) =>
+      Number.parseFloat(m[1]),
+    );
+    expect(scales.length).toBeGreaterThanOrEqual(2);
+    // Outward and further outward. A ring that starts smaller than the button would read as
+    // the button swelling, which is what the press animation already does.
+    expect(Math.min(...scales)).toBeGreaterThanOrEqual(1);
+    expect(Math.max(...scales)).toBeGreaterThan(1);
+  });
+
+  it("stops under reduced motion without being removed", () => {
+    // What the ring says -- a session is running -- is information. The override is about
+    // movement, so the animation is cancelled and the element stays; `BottomNav` renders
+    // it at a static alpha in that mode.
+    const reduced = STYLESHEET.match(
+      /@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n  \}/g,
+    ) ?? [];
+    expect(reduced.some((block) => block.includes(".cronos-nav-session-ring"))).toBe(true);
   });
 });
 

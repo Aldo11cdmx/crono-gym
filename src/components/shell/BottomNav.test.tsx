@@ -15,8 +15,15 @@
 
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { useEffect, useRef } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { BottomNav, ACTIVE_DOT_SIZE, CENTRE_ACTION_LIFT, CENTRE_ACTION_SIZE } from "./BottomNav";
+import {
+  BottomNav,
+  ACTIVE_DOT_SIZE,
+  CENTRE_ACTION_LIFT,
+  CENTRE_ACTION_SIZE,
+  SESSION_RING_STATIC_ALPHA,
+} from "./BottomNav";
 import {
   COACH_PATH,
   HOME_PATH,
@@ -26,10 +33,42 @@ import {
   THUMB_DESTINATIONS,
   TRAIN_PATH,
 } from "./navItems";
-import { ACCENT, Z_INDEX } from "@/design/tokens";
+import { ACCENT, MOTION, Z_INDEX } from "@/design/tokens";
 import { parseColor } from "@/design/color";
+import { ActiveSessionProvider, useActiveSession } from "@/context/ActiveSessionContext";
 
-afterEach(cleanup);
+/**
+ * Restores `matchMedia` after a test that replaced it.
+ *
+ * `restoreMocks: true` in `vitest.config.ts` restores `vi.fn` spies but not a
+ * `Object.defineProperty` on `window`, which is how the reduced-motion tests set the
+ * preference here. Without this the flag leaks into every later test in the file and a
+ * suite that passes alone fails in order -- the worst kind of failure to debug.
+ */
+let restoreMatchMedia: (() => void) | null = null;
+
+function stubReducedMotion(): void {
+  const original = Object.getOwnPropertyDescriptor(window, "matchMedia");
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }),
+  });
+  restoreMatchMedia = () => {
+    if (original) Object.defineProperty(window, "matchMedia", original);
+    else delete (window as unknown as Record<string, unknown>).matchMedia;
+  };
+}
+
+afterEach(() => {
+  restoreMatchMedia?.();
+  restoreMatchMedia = null;
+  cleanup();
+});
 
 /** Reports where the router actually is, so a tap can be checked for real. */
 function LocationProbe() {
@@ -37,11 +76,48 @@ function LocationProbe() {
   return <span data-testid="location">{pathname}</span>;
 }
 
-function renderAt(path: string) {
+/**
+ * Renders the bar, optionally with a session running.
+ *
+ * The provider is always present because `BottomNav` reads the session store for its
+ * centre-action ring, and `useActiveSession` throws rather than returning a permissive
+ * default outside one. That is the right behaviour -- a missing provider must not look
+ * like "the athlete is not training" -- so the tests carry the provider instead of
+ * weakening the hook.
+ *
+ * A session is started through the provider's own `start()` rather than injected as a
+ * prop or mocked, so the test drives the same path the app does and the ring's absence
+ * when idle is a real absence.
+ */
+function renderAt(path: string, options: { session?: boolean; reducedMotion?: boolean } = {}) {
+  // Stubbed *before* render, not after: `useReducedMotion` reads the query in a `useEffect`,
+  // so a stub installed afterwards would never be seen and the test would silently assert
+  // the unreduced branch.
+  if (options.reducedMotion) stubReducedMotion();
+
+  function MaybeStartingSession() {
+    const { start } = useActiveSession();
+    const started = useRef(false);
+
+    // `start()` inside an effect, not during render: it is a state setter, and calling one
+    // while rendering is a side effect this component would not survive under StrictMode's
+    // double render.
+    useEffect(() => {
+      if (!options.session || started.current) return;
+      started.current = true;
+      start({ id: "routine-1", title: "Fuerza" });
+    }, []);
+
+    return null;
+  }
+
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <BottomNav />
-      <LocationProbe />
+      <ActiveSessionProvider>
+        <MaybeStartingSession />
+        <BottomNav />
+        <LocationProbe />
+      </ActiveSessionProvider>
     </MemoryRouter>,
   );
 }
@@ -297,5 +373,74 @@ describe("BottomNav centre action", () => {
   it("still marks the current page when it is the training route", () => {
     renderAt(TRAIN_PATH);
     expect(linkFor(TRAIN_PATH).getAttribute("aria-current")).toBe("page");
+  });
+});
+
+/**
+ * The session ring.
+ *
+ * The one piece of Block B that was not already built: the raised centre action has to
+ * show that a workout is running without the athlete reading anything.
+ */
+describe("BottomNav session ring", () => {
+  function ringIn(container: HTMLElement): HTMLElement | null {
+    return container.querySelector("[data-testid='bottom-nav-session-ring']");
+  }
+
+  it("does not render when nothing is running, rather than animating an invisible ring", () => {
+    // An always-mounted ring would be an infinite animation on every screen, including
+    // the ones where there is nothing to announce -- battery spent to say nothing.
+    const { container } = renderAt(HOME_PATH);
+    expect(ringIn(container)).toBeNull();
+  });
+
+  it("appears while a session is running", () => {
+    const { container } = renderAt(HOME_PATH, { session: true });
+    expect(ringIn(container)).not.toBeNull();
+  });
+
+  it("paints in the accent, not a second colour baked into the keyframes", () => {
+    const { container } = renderAt(HOME_PATH, { session: true });
+    const ring = ringIn(container)!;
+    const { r, g, b } = parseColor(ACCENT.base)!;
+    expect(ring.style.border).toBe(`2px solid rgb(${r}, ${g}, ${b})`);
+  });
+
+  it("takes its period and curve from MOTION, not from a literal", () => {
+    const { container } = renderAt(HOME_PATH, { session: true });
+    // The session ring and the nav's own session pill are the same fact on two surfaces,
+    // so they run on the same period. Two periods would read as two unrelated sessions.
+    expect(ringIn(container)!.style.animation).toBe(
+      `cronos-session-ring ${MOTION.loop.session} ${MOTION.standard} infinite`,
+    );
+  });
+
+  it("is a sibling of the action rather than its shadow", () => {
+    const { container } = renderAt(HOME_PATH, { session: true });
+    const centre = container.querySelector(
+      "[data-testid='bottom-nav-centre-action']",
+    ) as HTMLElement;
+    const ring = ringIn(container)!;
+
+    // The pulse animates its own spread and the press animates `transform` on the action.
+    // If the ring were a `box-shadow` on the circle, both would be writing one property
+    // and whichever mounted last would win.
+    expect(ring.parentElement).toBe(centre);
+    expect(centre.style.boxShadow).toBe(ACCENT.ring);
+
+    // And it must not swallow the tap that opens the workout.
+    expect(ring.style.pointerEvents).toBe("none");
+  });
+
+  it("keeps saying a session is running when motion is reduced", () => {
+    // The reduced-motion override is about movement, not about signals. Dropping the ring
+    // entirely would leave the nav with no cue at all about a workout in progress, for the
+    // one user who least needs another thing to misread.
+    const { container } = renderAt(HOME_PATH, { session: true, reducedMotion: true });    const ring = ringIn(container)!;
+
+    expect(ring).not.toBeNull();
+    expect(ring.style.animation).toBe("none");
+    // Legible as a halo rather than as a second border on a red circle.
+    expect(ring.style.opacity).toBe(String(SESSION_RING_STATIC_ALPHA));
   });
 });

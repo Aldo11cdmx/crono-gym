@@ -29,6 +29,7 @@ import type { CSSProperties } from "react";
 import { NavLink } from "react-router-dom";
 import { ACCENT, GLASS, MOTION, RADIUS, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { SHELL_LABELS } from "@/lib/i18n";
+import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { THUMB_DESTINATIONS, type NavDestination } from "./navItems";
 import { NAV_CONTENT_HEIGHT } from "./AppShell";
@@ -38,6 +39,16 @@ export const CENTRE_ACTION_SIZE = 56;
 
 /** How far the centre action sits proud of the bar. */
 export const CENTRE_ACTION_LIFT = 12;
+
+/**
+ * How visible the session ring stays when motion is reduced.
+ *
+ * The ring keeps rendering under `prefers-reduced-motion` because it carries information
+ * -- a session is running -- and only its movement is removed. At full strength a ring
+ * that never animates reads as a second border on a red circle, which is noise rather than
+ * a signal, so it sits at a value where it is legible as a halo and not as an outline.
+ */
+export const SESSION_RING_STATIC_ALPHA = 0.55;
 
 /** Diameter of the dot under the active item's icon, in px. */
 export const ACTIVE_DOT_SIZE = 4;
@@ -103,6 +114,10 @@ export function BottomNav() {
 function NavItem({ destination }: { destination: NavDestination }) {
   const Icon = destination.icon;
   const reducedMotion = useReducedMotion();
+  // Only the centre action needs this, and only the centre action is allowed to read the
+  // session store -- a nav item that lit up for reasons of its own would be a second
+  // signal competing with the pill.
+  const sessionActive = useActiveSession().session !== null;
 
   return (
     <li style={{ display: "flex" }}>
@@ -136,7 +151,11 @@ function NavItem({ destination }: { destination: NavDestination }) {
         {({ isActive }) => (
           <>
             {destination.primary ? (
-              <CentreAction destination={destination} reducedMotion={reducedMotion} />
+              <CentreAction
+                destination={destination}
+                reducedMotion={reducedMotion}
+                sessionActive={sessionActive}
+              />
             ) : (
               <>
                 <Icon
@@ -208,13 +227,22 @@ function NavItem({ destination }: { destination: NavDestination }) {
  * The press is a scale rather than a colour change. On a filled circle the fill cannot
  * darken much before the glyph loses contrast, and a scale reads as "pushed" from
  * across a gym floor.
+ *
+ * The session ring is a *sibling* rather than a `boxShadow` on the circle itself,
+ * because an animated `box-shadow` and the press transition both want to own the same
+ * property. Sharing it means whichever effect starts last wins and the other stops
+ * working; the pulse is therefore a second, larger, transparent circle behind the action
+ * that animates its own spread. The action's own shadow stays `ACCENT.ring` and stays
+ * static.
  */
 function CentreAction({
   destination,
   reducedMotion,
+  sessionActive,
 }: {
   destination: NavDestination;
   reducedMotion: boolean;
+  sessionActive: boolean;
 }) {
   const Icon = destination.icon;
 
@@ -223,6 +251,7 @@ function CentreAction({
       aria-hidden="true"
       data-testid="bottom-nav-centre-action"
       style={{
+        position: "relative",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -239,7 +268,49 @@ function CentreAction({
       }}
       className="cronos-nav-centre"
     >
-      <Icon size={24} strokeWidth={2.5} />
+      {/*
+        The pulse. A separate element rather than an animated shadow, per the note above.
+
+        `animation: none` under reduced motion -- and the ring is *still rendered*, because
+        what it says is "a session is running", which is information. Dropping the whole
+        ring would remove the only cue the nav gives about a workout in progress; a
+        non-animated ring still says it.
+
+        Only rendered while a session is active, so an idle bar is not paying for an
+        animation nobody can see.
+      */}
+      {sessionActive && (
+        <span
+          data-testid="bottom-nav-session-ring"
+          aria-hidden="true"
+          className="cronos-nav-session-ring"
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: RADIUS.round,
+            border: `2px solid ${ACCENT.base}`,
+            opacity: reducedMotion ? SESSION_RING_STATIC_ALPHA : undefined,
+            animation: reducedMotion
+              ? "none"
+              : `cronos-session-ring ${MOTION.loop.session} ${MOTION.standard} infinite`,
+            // The ring must not eat the tap that opens the workout, so it is a sibling
+            // that is painted behind and pointed-through by nothing: the parent's own hit
+            // area is what receives it.
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
+      <span
+        style={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon size={24} strokeWidth={2.5} />
+      </span>
     </span>
   );
 }

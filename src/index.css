@@ -95,6 +95,34 @@ background: radial-gradient(
   }
 
   /*
+   * The session ring on the nav's centre action.
+   *
+   * Animates `transform` and `opacity` only, never `border-color` or `box-shadow`. The
+   * colour comes from `ACCENT.base` on the element itself and the duration and curve from
+   * `MOTION`, so a ring is accent-coloured on every surface it can land on rather than
+   * being an orange baked in beside a red circle.
+   *
+   * `scale` rather than a growing `width`: transform is the only property here that does
+   * not force layout on every frame, and a ring that reflows the fixed bar sixty times a
+   * second is a ring that costs frames on a phone mid-workout.
+   *
+   * It scales *out* and fades, rather than scaling in from nothing. Growing outward is
+   * what makes it read as an emanation from the button; growing inward reads as the
+   * button swelling, which is the press animation's job and would collide with it.
+   */
+  @keyframes cronos-session-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    70%,
+    100% {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+  }
+
+  /*
    * Button interaction states.
    *
    * A `filter` rather than a per-variant colour, because the four variants share
@@ -195,6 +223,17 @@ background: radial-gradient(
   @media (prefers-reduced-motion: reduce) {
     .cronos-side-nav-item {
       transition: none;
+    }
+
+    /*
+     * The session ring stops moving but stays visible: what it says is that a session is
+     * running, which is information, and the reduced-motion override is about movement --
+     * not about removing signals. `BottomNav` renders it at a static alpha in this mode
+     * rather than relying on this rule alone, so the intent is visible from the component
+     * that owns the ring instead of only from the stylesheet.
+     */
+    .cronos-nav-session-ring {
+      animation: none !important;
     }
 
     /*

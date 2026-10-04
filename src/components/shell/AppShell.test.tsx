@@ -197,9 +197,15 @@ describe("AppShell", () => {
 
 describe("BottomNav and AppShell agree on their shared numbers", () => {
   it("mounts the navigation the shell padded for", () => {
+    // The provider is here because `BottomNav` reads the session store for the centre
+    // action's ring. `useActiveSession` throws rather than defaulting to null outside one,
+    // which is the behaviour worth keeping -- a missing provider must not be
+    // indistinguishable from "the athlete is not training" -- so the test carries it.
     const { container } = render(
       <MemoryRouter>
-        <BottomNav />
+        <ActiveSessionProvider>
+          <BottomNav />
+        </ActiveSessionProvider>
       </MemoryRouter>,
     );
     const nav = screen.getByRole("navigation", { name: "Navegación principal" });

@@ -22,6 +22,21 @@ export default defineConfig({
     // Component tests opt into jsdom with a per-file docblock.
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
+    /*
+     * CSS processing, off by default in Vitest.
+     *
+     * On because `design/tokens.test.ts` asserts on `index.css` as text, and with this
+     * off Vitest replaces every `.css` module with an empty string *before* the `?raw`
+     * query is resolved. The `?raw` import therefore yields `""` -- silently, and only
+     * visible to a positive assertion. The negative guards ("the stylesheet must not
+     * contain X") pass against an empty string and prove nothing, which is the worst
+     * possible failure for a rule whose job is to fail.
+     *
+     * The cost is that CSS now goes through the pipeline in tests. Measured on this
+     * project: no meaningful difference in duration, and the design suite is the only
+     * consumer.
+     */
+    css: true,
     // The DOM suite uses Testing Library's auto-cleanup, which needs a global
     // afterEach; declaring globals here keeps every suite consistent.
     globals: false,

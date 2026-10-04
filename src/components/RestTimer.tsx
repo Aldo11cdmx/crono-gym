@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pause, Play, X } from "lucide-react";
 
-import { ACCENT } from "../design/tokens";
+import { ACCENT, DIAGRAM } from "../design/tokens";
 
 /**
  * How long the ring takes to slide from one second to the next.
@@ -62,7 +62,7 @@ export function RestTimer({ seconds, onClose, onFinished }: RestTimerProps) {
               cy="64"
               r={radius}
               fill="none"
-              stroke="rgba(255,255,255,0.08)"
+              stroke={DIAGRAM.inert}
               strokeWidth="6"
             />
             <circle

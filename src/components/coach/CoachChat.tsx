@@ -32,7 +32,7 @@ import {
   type FormEvent,
 } from "react";
 import { AlertTriangle, Send, Square, Trash2 } from "lucide-react";
-import { ACCENT, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, MOTION, RADIUS, SCRIM, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_LABELS as T } from "@/lib/i18n";
 import { useAuthModal } from "@/context/AuthModalContext";
@@ -301,7 +301,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
             fontSize: TYPE.label.size,
             textTransform: "uppercase",
             letterSpacing: TYPE.label.tracking,
-            color: tooLong ? "#fca5a5" : TEXT.tertiary,
+            color: tooLong ? STATUS.warning.text : TEXT.tertiary,
           }}
         >
           {T.chatPlaceholder}
@@ -327,8 +327,8 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
             width: "100%",
             resize: "vertical",
             borderRadius: RADIUS.control,
-            border: `1px solid ${tooLong ? "#fca5a5" : `${TEXT.tertiary}33`}`,
-            backgroundColor: "rgba(0,0,0,0.25)",
+            border: `1px solid ${tooLong ? STATUS.warning.text : `${TEXT.tertiary}33`}`,
+            backgroundColor: SCRIM.recessed,
             color: TEXT.primary,
             padding: "10px 12px",
             fontSize: TYPE.subhead.size,
@@ -436,7 +436,7 @@ function Bubble({ message }: { message: ChatMessage }) {
         borderBottomLeftRadius: mine ? RADIUS.control : 2,
         borderBottomRightRadius: mine ? 2 : RADIUS.control,
         border: `1px solid ${mine ? `${ACCENT.base}44` : `${TEXT.tertiary}22`}`,
-        backgroundColor: mine ? `${ACCENT.base}14` : "rgba(0,0,0,0.25)",
+        backgroundColor: mine ? `${ACCENT.base}14` : SCRIM.recessed,
         padding: "9px 12px",
       }}
     >

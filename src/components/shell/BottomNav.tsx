@@ -67,7 +67,7 @@ export function BottomNav() {
          * sells it; the fill only has to hide what is behind.
          */
         backgroundColor: GLASS.fillRaised,
-        borderTop: `1px solid ${SURFACE_HAIRLINE}`,
+        borderTop: `1px solid ${GLASS.borderStrong}`,
         backdropFilter: "blur(20px) saturate(140%)",
         WebkitBackdropFilter: "blur(20px) saturate(140%)",
       }}
@@ -91,15 +91,15 @@ export function BottomNav() {
 }
 
 /**
- * The bar's own hairline.
+ * The bar's hairline is `GLASS.borderStrong`, not `GLASS.border` and not a third value.
  *
- * `GLASS.border` at 10% white is invisible against an opaque bar at the top edge on an
- * OLED panel, which is where the bar most often is -- over the black end of a list. One
- * step stronger so the bar reads as a separate surface rather than as content that
- * happens to stop.
+ * An earlier version of this file declared its own `rgba(255, 255, 255, 0.08)` here,
+ * on the reasoning that 10% is invisible against an opaque bar on an OLED panel. The
+ * reasoning was right and the conclusion was wrong: the answer for "a hairline that must
+ * survive against a known background" is the token that already means exactly that, and
+ * inventing a fourth white alpha in a component is how a separator ends up 0.08 on one
+ * screen and 0.10 on the next depending on which file drew it.
  */
-const SURFACE_HAIRLINE = "rgba(255, 255, 255, 0.08)";
-
 function NavItem({ destination }: { destination: NavDestination }) {
   const Icon = destination.icon;
   const reducedMotion = useReducedMotion();

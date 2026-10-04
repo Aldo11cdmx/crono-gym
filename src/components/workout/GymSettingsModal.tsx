@@ -17,7 +17,7 @@
 
 import type { CSSProperties } from "react";
 import { GymSettingsPanel } from "./GymSettingsPanel";
-import { SURFACE, Z_INDEX } from "@/design/tokens";
+import { SCRIM, SURFACE, Z_INDEX } from "@/design/tokens";
 
 export interface GymSettingsModalProps {
   onClose: () => void;
@@ -41,7 +41,7 @@ export function GymSettingsModal({ onClose }: GymSettingsModalProps) {
         // dialog that the rail can steal focus from is not a dialog. Below the
         // simulator (100), which has to tint everything.
         zIndex: Z_INDEX.popover,
-        backgroundColor: "rgba(0, 0, 0, 0.72)",
+        backgroundColor: SCRIM.modal,
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
       }}

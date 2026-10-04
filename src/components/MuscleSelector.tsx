@@ -36,7 +36,7 @@ import {
 } from "../lib/muscleMap";
 import { selectionSides, selectionLabels } from "../lib/muscleFilter";
 import { lighten } from "../lib/ranks/rankColors";
-import { ACCENT } from "../design/tokens";
+import { ACCENT, DIAGRAM } from "../design/tokens";
 import { MUSCLE_FILTER_LABELS as T } from "../lib/i18n";
 
 // --- OLED palette ---------------------------------------------------------
@@ -49,24 +49,28 @@ import { MUSCLE_FILTER_LABELS as T } from "../lib/i18n";
  * from it -- the map is how an athlete picks which muscles to train, so a muscle picked
  * here should be the same red as the button that will act on it.
  *
- * `SELECTED_STROKE` is a lighter tint of the fill rather than `ACCENT.text`, because it
+ * `DIAGRAM.selectedStroke` is a lighter tint of the fill rather than `ACCENT.text`, because it
  * has to survive *on* the fill: at equal luminance the region would read as one flat
  * silhouette with no edge.
  */
-const BASE_FILL = "#15151a";
-const BASE_STROKE = "rgba(255,255,255,0.18)";
-/** No exercises in the catalog: recedes into the background. */
-const INERT_FILL = "#0a0a0c";
-const INERT_STROKE = "rgba(255,255,255,0.07)";
-/** Selected: the accent. */
-const SELECTED_FILL = ACCENT.base;
-const SELECTED_STROKE = ACCENT.hover;
+const BASE_FILL = DIAGRAM.regionFill;
 /**
- * The selected region's cast. Stronger than {@link ACCENT.glow} because this one has to
- * survive *behind* a saturated fill -- a 20% glow under an opaque red is invisible, so
- * the drop shadow reads as a rim rather than as a halo.
+ * A region with exercises in the catalog.
+ *
+ * `DIAGRAM.regionStroke` rather than an alpha written here: the map used to draw a body
+ * in seven different greys, and on a diagram where weight is supposed to mean something,
+ * seven arbitrary values means there is nothing consistent for an athlete to learn.
  */
-const SELECTED_GLOW = "rgba(255, 59, 48, 0.75)";
+const BASE_STROKE = DIAGRAM.regionStroke;
+/**
+ * No exercises in the catalog: recedes into the background.
+ *
+ * Its edge is `DIAGRAM.inert` -- the same value as the rest ring's track and the
+ * carousel's inactive dot. Those were 0.07, 0.08 and 0.08, which is one role written
+ * three times with a rounding difference, not three roles.
+ */
+const INERT_FILL = DIAGRAM.inertFill;
+const INERT_STROKE = DIAGRAM.inert;
 
 /** Slug -> CSS selector. Slugs are valid identifiers; `lower-back` is fine. */
 function pathSelector(scopeId: string, slug: Slug): string {
@@ -144,7 +148,7 @@ export function MuscleSelector({
       MUSCLE_DEFINITIONS.map((muscle) => {
         const isSelected = selectedSet.has(muscle.slug);
         const override = colorByMuscle?.get(muscle.slug);
-        const fill = override ?? (!muscle.enabled ? INERT_FILL : isSelected ? SELECTED_FILL : BASE_FILL);
+        const fill = override ?? (!muscle.enabled ? INERT_FILL : isSelected ? DIAGRAM.selectedFill : BASE_FILL);
         return {
           slug: muscle.slug,
           styles: {
@@ -152,7 +156,7 @@ export function MuscleSelector({
             stroke: !muscle.enabled
               ? INERT_STROKE
               : isSelected
-                ? SELECTED_STROKE
+                ? DIAGRAM.selectedStroke
                 : BASE_STROKE,
             strokeWidth: isSelected ? 2 : 1,
           },
@@ -189,7 +193,7 @@ const hoverRules = hoverTargets
       .map((slug) => {
         const hoverFill = readOnly
           ? lighten(colorByMuscle?.get(slug) ?? BASE_FILL, 0.12)
-          : "#2f2f38";
+          : DIAGRAM.regionHoverFill;
         const glow = readOnly
           ? (colorByMuscle?.get(slug) ?? ACCENT.glow)
           : ACCENT.glow;
@@ -206,13 +210,13 @@ const hoverRules = hoverTargets
       `#${scopeId} path { transition: fill 140ms ease, filter 140ms ease; }`,
       hoverRules,
       selectedRules
-        ? `${selectedRules} {\n  filter: drop-shadow(0 0 10px ${SELECTED_GLOW});\n}`
+        ? `${selectedRules} {\n  filter: drop-shadow(0 0 10px ${DIAGRAM.selectedGlow});\n}`
         : "",
       // Must come after the hover rule and be at least as specific, otherwise
       // hovering a selected muscle overwrites its fill with the hover grey and
       // the selection appears to drop out.
       selectedRules
-        ? `${selectedRules}:hover {\n  fill: ${SELECTED_FILL} !important;\n  filter: drop-shadow(0 0 14px rgba(255, 159, 10, 0.9));\n}`
+        ? `${selectedRules}:hover {\n  fill: ${DIAGRAM.selectedFill} !important;\n  filter: drop-shadow(0 0 14px ${DIAGRAM.selectedHoverGlow});\n}`
         : "",
       inertRule ? `${inertRule} {\n  pointer-events: none;\n  cursor: default;\n}` : "",
     ]
@@ -292,7 +296,7 @@ const hoverRules = hoverTargets
             data={data}
             side={side}
             scale={0.82}
-            border="rgba(255,255,255,0.22)"
+            border={DIAGRAM.figureStroke}
             defaultFill={BASE_FILL}
             defaultStroke={BASE_STROKE}
             defaultStrokeWidth={1}

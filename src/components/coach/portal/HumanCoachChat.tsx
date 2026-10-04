@@ -31,7 +31,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
@@ -226,8 +226,8 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
             flex: 1,
             resize: "vertical",
             borderRadius: 12,
-            border: "1px solid rgba(255,255,255,0.12)",
-            backgroundColor: "rgba(255,255,255,0.06)",
+            border: `1px solid ${GLASS.border}`,
+            backgroundColor: GLASS.fill,
             color: TEXT.primary,
             padding: "8px 10px",
             fontSize: TYPE.subhead.size,
@@ -260,6 +260,15 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
 function MessageBubble({ message, ownId }: { message: CoachMessageRow; ownId: string }) {
   const mine = message.sender_id === ownId && message.sender_role === "coach";
 
+  /*
+    Mine reads brighter than theirs, but *alignment* is the primary signal and the fill
+    is the secondary one: `alignSelf` already puts the athlete's messages on the right
+    and the coach's on the left, which is how every chat app has taught people to read
+    it. So the two fills are the app's own glass steps rather than a pair of tuned
+    alphas -- the old 0.12 against 0.05 was a 2.4x contrast between two bubbles of the
+    same conversation, which is louder than the distinction needs to be and cost the
+    screen two more surface values to hold in its head.
+  */
   return (
     <div
       style={{
@@ -267,8 +276,8 @@ function MessageBubble({ message, ownId }: { message: CoachMessageRow; ownId: st
         maxWidth: "85%",
         borderRadius: 14,
         padding: "8px 12px",
-        backgroundColor: mine ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        backgroundColor: mine ? GLASS.fillRaised : GLASS.fill,
+        border: `1px solid ${GLASS.border}`,
       }}
     >
       {/*

@@ -12,6 +12,7 @@
 import { useEffect, useRef } from "react";
 import { CheckCircle2 } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
+import { DIAGRAM } from "@/design/tokens";
 
 export interface CarouselItem {
   key: string;
@@ -95,7 +96,7 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
                       cy="18"
                       r="16"
                       fill="none"
-                      stroke="rgba(255,255,255,0.08)"
+                      stroke={DIAGRAM.inert}
                       strokeWidth="2.5"
                     />
                     <circle

@@ -54,6 +54,7 @@ import {
   MOTION,
   NUMERIC,
   RADIUS,
+  SCRIM,
   SOLID,
   SPACE,
   STATUS,
@@ -849,7 +850,7 @@ const overlayStyle: CSSProperties = {
   justifyContent: "center",
   padding: SPACE.lg,
   zIndex: Z_INDEX.popover,
-  backgroundColor: "rgba(0, 0, 0, 0.72)",
+  backgroundColor: SCRIM.modal,
   backdropFilter: "blur(8px)",
   WebkitBackdropFilter: "blur(8px)",
 };

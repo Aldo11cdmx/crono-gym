@@ -249,6 +249,154 @@ export const COPPER = {
   muted: "rgba(196, 122, 74, 0.14)",
 } as const;
 
+// ------------------------------------------------------------------ scrims
+
+/**
+ * Darkening layers: the backdrop behind a summoned surface.
+ *
+ * The fourth way colour is used in this app, and the only one that goes *down* instead
+ * of up. `SURFACE` and `GLASS` lighten a black canvas to build layers; `DIAGRAM` stays
+ * neutral to draw; a scrim darkens what is already there so that something in front of
+ * it becomes the subject.
+ *
+ * This group exists because the modal backdrop was written out in full in two different
+ * files -- `ImportWizard` and `GymSettingsModal` both said `rgba(0, 0, 0, 0.72)` -- which
+ * is how two modals end up dimming their surroundings at slightly different strengths and
+ * nobody notices until one of them is opened after the other.
+ */
+export const SCRIM = {
+  /**
+   * A modal's backdrop.
+   *
+   * 72%, not lighter: a modal has to be unambiguous about being modal. A lighter scrim
+   * lets the content behind it stay legible, and a dialog the user can read the page
+   * through is a dialog they will answer the wrong question on.
+   */
+  modal: "rgba(0, 0, 0, 0.72)",
+  /**
+   * A surface nested inside a dark one, which has to read as *recessed* rather than
+   * lighter.
+   *
+   * Darkening is the only option here. The chat bubble this serves sits on the canvas, and
+   * a bubble drawn with any of the white fills would be brighter than the surrounding
+   * card -- which is the visual grammar for "raised", and would claim the wrong elevation.
+   */
+  recessed: "rgba(0, 0, 0, 0.25)",
+} as const;
+
+// ----------------------------------------------------------- illustration
+
+/**
+ * Illustration colour: the muscle map, the rest ring, the carousel's dots.
+ *
+ * A third category, alongside surfaces and text, and the reason this file needed one.
+ * `GLASS` covers fills and the hairlines between them; none of it covers the ring on the
+ * rest timer, the dot on the exercise carousel, or a region of a body. Those draw
+ * something, and they were all written as inline literals.
+ *
+ * Named by role, and grouped as *pairs*
+ * -------------------------------------
+ * The muscle map is what made this a problem rather than a tidiness issue. It was drawing
+ * a human body in **seven** different greys -- 0.05, 0.06, 0.07, 0.08, 0.12, 0.18 and 0.22
+ * across the coach module, the map, the timer and the carousel. On a diagram where a
+ * region's weight is supposed to say how much is there, seven arbitrary values means an
+ * athlete cannot learn what any of them mean, because there is nothing consistent to
+ * learn.
+ *
+ * So a region is one state, not one colour: every entry that has a fill has an edge, and
+ * they are named together so that they cannot be separated. A hover that brightened the
+ * fill without moving the edge would read as a different muscle rather than as the same
+ * muscle being touched.
+ *
+ * Three of the edge values were also merged. They were 0.07, 0.08 and 0.08, which is not
+ * three roles -- it is one role written three times with a rounding difference.
+ *
+ * Declared after `ACCENT` and `GLASS` because it reads from both. That ordering is the
+ * price of a group that is composed rather than a palette of independent values, and it
+ * is worth paying: a region's fill is defined *relative to* the surfaces and the accent,
+ * which is the only way the relationship is visible to the next person reading it.
+ */
+export const DIAGRAM = {
+  /**
+   * An edge that is present but carries nothing: the remainder of a progress ring, an
+   * inactive carousel dot, and the boundary of a muscle region with no exercises in the
+   * catalog.
+   */
+  inert: "rgba(255, 255, 255, 0.08)",
+
+  /**
+   * A muscle region that has content in the catalog: its fill, and the edge that keeps it
+   * from dissolving into the canvas.
+   *
+   * The fill sits between `SURFACE.raised` and `SURFACE.overlay` on purpose. A diagram
+   * region cannot use a card's fill -- it is not a card and casts no shadow -- but it does
+   * have to sit above the canvas, and reusing a surface value here is what would make a
+   * muscle look like a panel.
+   */
+  regionFill: "#15151a",
+  /**
+   * An alias of {@link GLASS.borderStrong} rather than a second 0.18: it is the same value
+   * doing the same job, and this file has spent its whole life arguing against two names
+   * for one job.
+   */
+  regionStroke: GLASS.borderStrong,
+
+  /**
+   * A muscle region with nothing in the catalog.
+   *
+   * Darker than {@link regionFill} and closer to the canvas, so a region with no data
+   * reads as absent rather than as empty. A region that kept the region's own fill would
+   * still be outlined at {@link regionStroke}, and an outline with nothing behind it is a
+   * shape, not an absence.
+   */
+  inertFill: "#0a0a0c",
+
+  /** The fill an interactive region takes on hover. */
+  regionHoverFill: "#2f2f38",
+
+  /**
+   * The outer boundary of a whole figure, one step above its regions.
+   *
+   * Separate from `regionStroke` because it is a different object: the outline of the
+   * body, not the outline of a muscle. At the same weight the figure's edge would be
+   * indistinguishable from the regions inside it and the diagram would lose its shape.
+   */
+  figureStroke: "rgba(255, 255, 255, 0.22)",
+
+  /**
+   * Selected: the accent, and nothing else.
+   *
+   * The one place a diagram is allowed to use the product's accent, because selection is
+   * the one thing a diagram does that is an action rather than a description.
+   */
+  selectedFill: ACCENT.base,
+  /**
+   * A lighter tint of the fill rather than `ACCENT.text`, because this one has to survive
+   * *on* the fill: at equal luminance the region would read as one flat silhouette with no
+   * edge.
+   */
+  selectedStroke: ACCENT.hover,
+  /**
+   * The selected region's cast. Stronger than {@link ACCENT.glow} because this one has to
+   * survive *behind* a saturated fill -- a 20% glow under an opaque red is invisible, so
+   * the drop shadow reads as a rim rather than as a halo.
+   */
+  selectedGlow: "rgba(255, 59, 48, 0.75)",
+  /**
+   * The cast when a selected region is also hovered.
+   *
+   * Stronger, but the *same hue* as {@link selectedGlow}. This used to be amber at 0.9,
+   * on the reasoning that a second colour would read as a second state -- but amber now
+   * means warning and nothing else, so painting "you are hovering this" in the warning
+   * colour puts a fourth warm meaning in the product: the accent is red, the warning is
+   * amber, copper is tertiary, and now a muscle is amber. It does not need to be a
+   * different hue to be distinguishable: the hovered state already forces the fill back to
+   * the selection colour at `!important`, so the glow only has to be *louder*, not a
+   * different colour.
+   */
+  selectedHoverGlow: "rgba(255, 59, 48, 0.9)",
+} as const;
+
 // -------------------------------------------------------------- destructive
 
 /**
@@ -734,6 +882,18 @@ export const COLOR_TOKENS = {
   "solid-popover": SOLID.popover,
   "solid-border": SOLID.border,
   "solid-border-strong": SOLID.borderStrong,
+
+  "diagram-inert": DIAGRAM.inert,
+  "diagram-region-fill": DIAGRAM.regionFill,
+  "diagram-region-stroke": DIAGRAM.regionStroke,
+  "diagram-inert-fill": DIAGRAM.inertFill,
+  "diagram-region-hover-fill": DIAGRAM.regionHoverFill,
+  "diagram-figure-stroke": DIAGRAM.figureStroke,
+  "diagram-selected-fill": DIAGRAM.selectedFill,
+  "diagram-selected-hover-glow": DIAGRAM.selectedHoverGlow,
+
+  "scrim-modal": SCRIM.modal,
+  "scrim-recessed": SCRIM.recessed,
 
   "text-primary": TEXT.primary,
   "text-secondary": TEXT.secondary,

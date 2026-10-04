@@ -15,7 +15,7 @@
 import { useId, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Award, NotebookPen, Sparkles, Trash2 } from "lucide-react";
-import { ACCENT, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, MOTION, RADIUS, SCRIM, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { COACH_LABELS as T, UNRANKED_REASONS } from "@/lib/i18n";
 import type { CoachContext, CoachNote } from "@/lib/coach/types";
@@ -404,7 +404,7 @@ function NotesSection({
             resize: "vertical",
             borderRadius: RADIUS.control,
             border: `1px solid ${TEXT.tertiary}33`,
-            backgroundColor: "rgba(0,0,0,0.25)",
+            backgroundColor: SCRIM.recessed,
             color: TEXT.primary,
             padding: "10px 12px",
             fontSize: TYPE.subhead.size,

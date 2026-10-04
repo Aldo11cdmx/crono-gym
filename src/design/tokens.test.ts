@@ -34,9 +34,11 @@ import {
   COLOR_TOKENS,
   COPPER,
   DANGER,
+  DIAGRAM,
   GLASS,
   MOTION,
   RADIUS,
+  SCRIM,
   SOLID,
   STATUS,
   SURFACE,
@@ -93,7 +95,9 @@ const IN_FLIGHT_SOURCES: readonly string[] = [
   "../components/coach/SymmetryBottomSheet.tsx",
 ];
 
-/** Every `fontSize: <number>` literal outside production code, as `path:line  text`. */
+/**
+ * Every `fontSize: <number>` literal outside production code, as `path:line  text`.
+ */
 function fontSizeLiterals(): string[] {
   const offenders: string[] = [];
   for (const path of Object.keys(COMPONENT_SOURCES).sort()) {
@@ -108,6 +112,89 @@ function fontSizeLiterals(): string[] {
       });
   }
   return offenders;
+}
+
+/**
+ * Strips comments before a source is searched for colour literals.
+ *
+ * Without this the guards below read their own documentation: this file's prose quotes
+ * the alphas it removed on purpose, and a rule that fails because a comment explains the
+ * rule is a rule people turn off.
+ */
+function stripComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
+/** Every inline white alpha in production code, as `path:line  text`. */
+function inlineWhiteAlphas(): string[] {
+  const offenders: string[] = [];
+  for (const path of Object.keys(COMPONENT_SOURCES).sort()) {
+    if (path.endsWith(".test.tsx")) continue;
+    if (IN_FLIGHT_SOURCES.includes(path)) continue;
+    stripComments(COMPONENT_SOURCES[path])
+      .split("\n")
+      .forEach((text: string, index: number) => {
+        if (/rgba\(\s*255,\s*255,\s*255,/.test(text)) {
+          offenders.push(`${path}:${index + 1}  ${text.trim()}`);
+        }
+      });
+  }
+  return offenders;
+}
+
+/** Every inline `#rrggbb` literal in production code, as `path:line  text`. */
+function inlineHexColours(): string[] {
+  const offenders: string[] = [];
+  for (const path of Object.keys(COMPONENT_SOURCES).sort()) {
+    if (path.endsWith(".test.tsx")) continue;
+    if (IN_FLIGHT_SOURCES.includes(path)) continue;
+    stripComments(COMPONENT_SOURCES[path])
+      .split("\n")
+      .forEach((text: string, index: number) => {
+        if (/#[0-9a-fA-F]{6}\b/.test(text) && !/from\s+"/.test(text)) {
+          offenders.push(`${path}:${index + 1}  ${text.trim()}`);
+        }
+      });
+  }
+  return offenders;
+}
+
+/**
+ * Every `rgba()` literal in production code, of any hue.
+ *
+ * The white-only version of this rule was not enough, and it took two defects slipping
+ * through it to see why: a muscle's selected glow at `rgba(255, 59, 48, 0.75)` and a
+ * hovered selection at `rgba(255, 159, 10, 0.9)`. Both are accent hues, so neither looks
+ * like a stray grey, and a rule that only watches for greys would have watched them walk
+ * past. Colour is one system; the guard has to be too.
+ */
+function inlineRgbaColours(): string[] {
+  const offenders: string[] = [];
+  for (const path of Object.keys(COMPONENT_SOURCES).sort()) {
+    if (path.endsWith(".test.tsx")) continue;
+    if (IN_FLIGHT_SOURCES.includes(path)) continue;
+    stripComments(COMPONENT_SOURCES[path])
+      .split("\n")
+      .forEach((text: string, index: number) => {
+        if (/rgba\(/.test(text)) {
+          offenders.push(`${path}:${index + 1}  ${text.trim()}`);
+        }
+      });
+  }
+  return offenders;
+}
+
+/**
+ * The alpha channel of a `rgba()` string.
+ *
+ * `parseColor` deliberately drops alpha and returns channels only, because everything
+ * that uses it wants the colour and not how transparent it is. Ordering three strokes by
+ * weight is the one thing here that does want the alpha, so it reads the string.
+ */
+function alphaOf(colour: string): number {
+  const match = colour.match(/rgba\([^,]+,\s*[^,]+,\s*[^,]+,\s*([\d.]+)\s*\)/);
+  if (!match) throw new Error(`no alpha in ${colour}`);
+  return Number.parseFloat(match[1]);
 }
 
 // ------------------------------------------------------------- the red policy
@@ -873,6 +960,140 @@ describe("the type scale is the only source of font sizes", () => {
       // `fontSize:` comparison above meaningless.
       expect(pixels[i], "the scale must ascend").toBeGreaterThanOrEqual(pixels[i - 1]);
     }
+  });
+});
+
+describe("colour reaches components only through a token", () => {
+  it("has no inline white alpha left in any component", () => {
+    // This is the rule that found the muscle map drawing a human body in seven
+    // different greys. Those seven were not seven decisions; they were seven places
+    // where somebody needed a grey and reached past the token file because the token file
+    // had nothing for it. Adding `STROKE` was the fix, and this is what keeps the gap
+    // from reopening.
+    expect(inlineWhiteAlphas()).toEqual([]);
+  });
+
+  it("has no hex colour left in any component either", () => {
+    // A hex in a component cannot be reviewed next to the palette it is competing with,
+    // which is the whole reason the palette is a module. `#15151a` as a muscle region
+    // and `#15151a` as a card are one colour that will drift apart the first time
+    // someone edits one of them.
+    expect(inlineHexColours()).toEqual([]);
+  });
+
+  it("has no rgba literal of any hue left in any component", () => {
+    // Supersedes the white-only rule above, which was too narrow to be useful: accent
+    // hues do not look like stray greys, so two of them walked straight past it.
+    expect(inlineRgbaColours()).toEqual([]);
+  });
+
+  it("keeps illustration states distinct from surface hairlines", () => {
+    // `DIAGRAM` exists because `GLASS` covers fills and the lines between them, and
+    // nothing covered the things that *draw* something. The three edges ascend, because
+    // on a diagram the weight of a line is the only thing saying how much is there.
+    expect(alphaOf(DIAGRAM.inert)).toBeLessThan(alphaOf(DIAGRAM.regionStroke));
+    expect(alphaOf(DIAGRAM.regionStroke)).toBeLessThan(alphaOf(DIAGRAM.figureStroke));
+  });
+
+  it("separates an inert region from one with content, on both fill and edge", () => {
+    // Both halves matter and they fail separately. A region that receded only in fill
+    // would still be outlined and would read as a shape rather than as an absence; one
+    // that receded only in edge would keep a panel's worth of weight while claiming to
+    // have nothing in it.
+    expect(DIAGRAM.inertFill).not.toBe(DIAGRAM.regionFill);
+    expect(DIAGRAM.inert).not.toBe(DIAGRAM.regionStroke);
+    // Inert is darker, so it is closer to the canvas rather than brighter than a region
+    // that has content -- the two states must not be ordered by "which looks more".
+    expect(relativeLuminanceOf(DIAGRAM.inertFill)).toBeLessThan(
+      relativeLuminanceOf(DIAGRAM.regionFill),
+    );
+  });
+
+  it("aliases the region edge to the hairline it renames", () => {
+    // Not a second 0.18. This file has argued against two names for one job since the
+    // rank ladder, and a region's edge is the same value doing the same work as a border.
+    expect(DIAGRAM.regionStroke).toBe(GLASS.borderStrong);
+  });
+
+  it("lets the accent into a diagram exactly once, as selection", () => {
+    // Selection is the one thing a diagram does that is an action rather than a
+    // description, so it is the one thing allowed to wear the product's accent. Every
+    // other diagram value is a neutral, which is what makes a selected region legible as
+    // a selection rather than as "the diagram has some colour in it".
+    expect(DIAGRAM.selectedFill).toBe(ACCENT.base);
+    for (const neutral of [
+      DIAGRAM.inert,
+      DIAGRAM.regionFill,
+      DIAGRAM.regionStroke,
+      DIAGRAM.regionHoverFill,
+      DIAGRAM.figureStroke,
+      DIAGRAM.inertFill,
+    ]) {
+      expect(isSaturatedRed(neutral), neutral).toBe(false);
+    }
+  });
+
+  it("keeps a hovered selection in the accent's own hue", () => {
+    // It used to be amber, on the reasoning that a second colour would read as a second
+    // state. Amber now means warning and nothing else, so that put a fourth warm meaning
+    // into a product that already has the accent, the warning and copper. The state is
+    // already carried by the fill being forced back to the selection colour, so the glow
+    // only has to be louder.
+    expect(DIAGRAM.selectedHoverGlow).not.toBe(DIAGRAM.selectedGlow);
+    const resting = parseColor(DIAGRAM.selectedGlow)!;
+    const hovered = parseColor(DIAGRAM.selectedHoverGlow)!;
+    expect(rgbToHsl(hovered).h).toBe(rgbToHsl(resting).h);
+    // Louder, not different: a stronger alpha on the same hue.
+    expect(alphaOf(DIAGRAM.selectedHoverGlow)).toBeGreaterThan(alphaOf(DIAGRAM.selectedGlow));
+    // And it is emphatically not the warning's amber.
+    expect(hovered).not.toEqual(parseColor(STATUS.warning.base));
+  });
+});
+
+describe("scrims darken rather than lighten", () => {
+  it("dims a modal's surroundings hard enough to be unambiguous", () => {
+    // A lighter scrim lets the content behind it stay legible, and a dialog the user can
+    // read the page through is a dialog they will answer the wrong question on.
+    expect(alphaOf(SCRIM.modal)).toBeGreaterThan(0.6);
+  });
+
+  it("is darker than the canvas it dims, not a fifth surface", () => {
+    // Every other surface in this file builds *up* from black. A scrim is the one thing
+    // that goes down, and a scrim expressed as a white fill would be a lighter panel,
+    // which is the visual grammar for "raised" -- the wrong elevation entirely.
+    expect(alphaOf(SCRIM.modal)).toBeGreaterThan(0);
+    const modal = parseColor(SCRIM.modal)!;
+    const recessed = parseColor(SCRIM.recessed)!;
+    expect(modal.r).toBe(0);
+    expect(recessed.r).toBe(0);
+    expect(relativeLuminanceOf(SCRIM.modal)).toBe(0);
+  });
+
+  it("keeps the recessed step recessed rather than merely darker", () => {
+    // It sits on the canvas rather than over content, so it does not need to dim as hard.
+    // It does need to be dim *something*: at zero it would be invisible, and a bubble
+    // drawn with no backdrop on a dark surface has no edge to be read by.
+    expect(alphaOf(SCRIM.recessed)).toBeGreaterThan(0);
+    expect(alphaOf(SCRIM.recessed)).toBeLessThan(alphaOf(SCRIM.modal));
+  });
+
+  it("is the same backdrop everywhere a modal appears", () => {
+    // It was written out in full in two files, which is how two modals end up dimming
+    // their surroundings at different strengths and nobody notices until one is opened
+    // after the other. One value, and the components read it.
+    const scrimFiles = Object.keys(COMPONENT_SOURCES).filter(
+      (path) =>
+        !path.endsWith(".test.tsx") &&
+        !IN_FLIGHT_SOURCES.includes(path) &&
+        /Modal\.tsx$/.test(path),
+    );
+    expect(scrimFiles.length).toBeGreaterThan(0);
+    // `GymSettingsModal` is the modal the app has, and it reads the token rather than a
+    // literal -- which the `rgba` guard above already enforces. Asserted here anyway
+    // because this is the pair of facts that guard alone does not explain.
+    expect(COMPONENT_SOURCES["../components/workout/GymSettingsModal.tsx"]).toContain(
+      "SCRIM.modal",
+    );
   });
 });
 

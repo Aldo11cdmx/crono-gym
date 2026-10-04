@@ -12,3 +12,13 @@ project_id = "cronos"
 # this true means the platform rejects an unauthenticated call before the function
 # is even invoked, so an invalid token never reaches the handler.
 verify_jwt = true
+
+[functions.coach-auth]
+# The same reason, and it matters more here: this function holds the PIN gate, so an
+# anonymous call must never reach the handler at all -- not even to be turned into a 401.
+#
+# True is also what lets the handler treat the bearer token as an identity without a
+# second verification step. `verify_jwt = false` would still work, because the handler
+# resolves the caller with `auth.getUser(token)`, but that is defence in depth: the
+# gateway check is free and the handler's is the one that can be forgotten.
+verify_jwt = true

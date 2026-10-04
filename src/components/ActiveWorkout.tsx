@@ -808,7 +808,7 @@ function UndoBanner({
           width: "100%",
           transformOrigin: "left center",
           background: ACCENT.base,
-          animation: `cronos-undo-drain ${UNDO_WINDOW_MS}ms linear forwards`,
+          animation: `cronos-undo-drain ${UNDO_WINDOW_MS}ms ${MOTION.easeLinear} forwards`,
         }}
       />
     </div>

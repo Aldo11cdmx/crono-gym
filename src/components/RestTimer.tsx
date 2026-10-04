@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pause, Play, X } from "lucide-react";
 
-import { ACCENT, DIAGRAM } from "../design/tokens";
+import { ACCENT, DIAGRAM, MOTION } from "../design/tokens";
 
 /**
  * How long the ring takes to slide from one second to the next.
@@ -10,8 +10,12 @@ import { ACCENT, DIAGRAM } from "../design/tokens";
  * fractionally *before* the numeral above it changes. The two are driven by the same
  * timer, and a ring that lands after its own number reads as a lag rather than as
  * precision.
+ *
+ * `MOTION.loop.rest`, so the period is the design system's rather than this file's. The
+ * "just under a second" reasoning above is why the token exists in the first place; a
+ * second, which is the obvious value, is the one that lags.
  */
-const RING_TICK = "0.9s";
+const RING_TICK = MOTION.loop.rest;
 
 interface RestTimerProps {
   seconds: number;
@@ -74,7 +78,14 @@ export function RestTimer({ seconds, onClose, onFinished }: RestTimerProps) {
               strokeWidth="6"
               strokeDasharray={`${dash} ${circumference - dash}`}
               strokeLinecap="round"
-              style={{ transition: `stroke-dasharray ${RING_TICK} linear` }}
+              /*
+               * `MOTION.easeLinear`, not the bare `linear` keyword. Same value -- but the
+               * keyword reads as "no curve thought about here", and this ring is the one
+               * place in the app where the linear curve is a deliberate choice: the dash
+               * shrinks at a constant rate so the remaining time is readable as distance,
+               * and any easing would make the countdown lie about how fast it is going.
+               */
+              style={{ transition: `stroke-dasharray ${RING_TICK} ${MOTION.easeLinear}` }}
             />
           </svg>
           <span className="absolute text-3xl font-semibold tabular-nums">{remaining}</span>

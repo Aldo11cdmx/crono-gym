@@ -142,7 +142,7 @@ export function ActiveWorkoutPill() {
           opacity: phase === "leave" ? 0 : 1,
           transition: reducedMotion
             ? "none"
-            : `opacity ${MOTION.slow} ${MOTION.ease}, transform ${MOTION.slow} ${MOTION.ease}`,
+            : `opacity ${MOTION.slow} ${MOTION.standard}, transform ${MOTION.slow} ${MOTION.standard}`,
         } satisfies CSSProperties
       }
     >

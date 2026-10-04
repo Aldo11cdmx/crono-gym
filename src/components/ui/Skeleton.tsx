@@ -12,7 +12,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { GLASS, RADIUS } from "@/design/tokens";
+import { GLASS, MOTION, RADIUS } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export interface SkeletonProps {
@@ -44,7 +44,15 @@ export function Skeleton({
         height: height ?? (variant === "text" ? "14px" : "88px"),
         borderRadius: variant === "text" ? RADIUS.sm : RADIUS.control,
         backgroundColor: GLASS.fillRaised,
-        animation: reducedMotion ? undefined : "cronos-pulse 1.6s ease-in-out infinite",
+        /*
+         * `MOTION.loop.skeleton` + `MOTION.standard`, not the CSS keywords this used to
+         * carry. `1.6s` was the one duration in the app no token owned, and `ease-in-out` is
+         * the keyword for `cubic-bezier(0.4, 0, 0.2, 1)` -- the same curve as
+         * `MOTION.standard`, now said by name so the two can be changed together.
+         */
+        animation: reducedMotion
+          ? undefined
+          : `cronos-pulse ${MOTION.loop.skeleton} ${MOTION.standard} infinite`,
         ...style,
       }}
     />

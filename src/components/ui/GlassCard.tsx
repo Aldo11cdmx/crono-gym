@@ -64,7 +64,7 @@ export function GlassCard({
         borderWidth: "1px",
         borderStyle: "solid",
         boxShadow: GLASS.shadow,
-        transition: `border-color ${MOTION.base} ${MOTION.ease}`,
+        transition: `border-color ${MOTION.normal} ${MOTION.standard}`,
         padding: flush ? undefined : "20px",
         color: TEXT.primary,
         ...recipe,

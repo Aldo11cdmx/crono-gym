@@ -79,6 +79,6 @@ const triggerStyle: CSSProperties = {
   background: GLASS.fillRaised,
   color: TEXT.secondary,
   cursor: "pointer",
-  transition: `background-color ${MOTION.fast} ${MOTION.ease}, color ${MOTION.fast} ${MOTION.ease}`,
+  transition: `background-color ${MOTION.fast} ${MOTION.standard}, color ${MOTION.fast} ${MOTION.standard}`,
   fontSize: TYPE.label.size,
 };

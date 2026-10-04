@@ -36,7 +36,7 @@ import {
 } from "../lib/muscleMap";
 import { selectionSides, selectionLabels } from "../lib/muscleFilter";
 import { lighten } from "../lib/ranks/rankColors";
-import { ACCENT, DIAGRAM } from "../design/tokens";
+import { ACCENT, DIAGRAM, MOTION } from "../design/tokens";
 import { MUSCLE_FILTER_LABELS as T } from "../lib/i18n";
 
 // --- OLED palette ---------------------------------------------------------
@@ -207,7 +207,7 @@ const hoverRules = hoverTargets
       .join(",\n");
 
     return [
-      `#${scopeId} path { transition: fill 140ms ease, filter 140ms ease; }`,
+      `#${scopeId} path { transition: fill ${MOTION.fast} ${MOTION.standard}, filter ${MOTION.fast} ${MOTION.standard}; }`,
       hoverRules,
       selectedRules
         ? `${selectedRules} {\n  filter: drop-shadow(0 0 10px ${DIAGRAM.selectedGlow});\n}`

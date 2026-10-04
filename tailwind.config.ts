@@ -55,6 +55,35 @@ export default {
       fontFamily: {
         sans: ["-apple-system", "SF Pro Text", "Inter", "system-ui", "sans-serif"],
       },
+      /*
+       * Motion defaults, so a bare `transition` *is* the token.
+       *
+       * Roughly forty call sites write `className="... transition"` with no duration and no
+       * curve. Each was silently taking Tailwind's stock 150ms / `cubic-bezier(0.4,0,0.2,1)`
+       * -- which happens to be exactly `MOTION.fast` and `MOTION.standard`. Adding
+       * `duration-fast` to forty class names would document a value that was already
+       * correct and would make the next diff noisy with no behaviour change.
+       *
+       * So the defaults are set here instead: the bare class now resolves through
+       * `MOTION`, and changing the token changes the forty call sites in one edit.
+       *
+       * Duplicated rather than imported because this file is loaded by Tailwind's config
+       * loader, not by the app's module graph, and the established pattern in this repo is
+       * to duplicate and pin: see the accent and `boxShadow` entries above. `tokens.test.ts`
+       * asserts these agree with `MOTION`, so the copy cannot drift silently.
+       */
+      transitionDuration: {
+        instant: "80ms",
+        fast: "150ms",
+        normal: "250ms",
+        slow: "400ms",
+      },
+      transitionTimingFunction: {
+        spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        easeOut: "cubic-bezier(0.0, 0.0, 0.2, 1.0)",
+        easeIn: "cubic-bezier(0.4, 0.0, 1.0, 1.0)",
+        standard: "cubic-bezier(0.4, 0.0, 0.2, 1.0)",
+      },
       backdropBlur: {
         xs: "2px",
       },
@@ -81,8 +110,18 @@ export default {
         },
       },
       animation: {
-        "fade-in": "fade-in 250ms ease-out",
-        "pulse-ring": "pulse-ring 2s ease-in-out infinite",
+        /*
+         * Durations and curves from `MOTION`: `fade-in` is `MOTION.normal` +
+         * `MOTION.easeOut`, `pulse-ring` is `MOTION.loop.ring` +
+         * `MOTION.standard`. `ease-out` in `fade-in` was the CSS keyword, which is
+         * `cubic-bezier(0, 0, 0.58, 1)` -- a different curve from the design system's
+         * `easeOut`, so that declaration was quietly using motion nobody had chosen.
+         * `pulse-ring` used `ease-in-out`, which is the keyword for
+         * `cubic-bezier(0.4, 0, 0.2, 1)` -- the same curve as `MOTION.standard`, now said
+         * by name.
+         */
+        "fade-in": "fade-in 250ms cubic-bezier(0.0, 0.0, 0.2, 1.0)",
+        "pulse-ring": "pulse-ring 2s cubic-bezier(0.4, 0.0, 0.2, 1.0) infinite",
       },
     },
   },

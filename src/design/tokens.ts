@@ -854,10 +854,58 @@ export const MOTION = {
   minTouchTarget: "44px",
 
   /*
-   * Aliases. `ease` was the only curve the app had and `base` the only medium duration,
-   * and both still have callers. They resolve to the replacements above rather than
-   * keeping their old values, so a call site that was not migrated gets the new motion
-   * instead of a second, older feel. `tokens.test.ts` pins both.
+   * Loop periods, for animations that repeat rather than arrive.
+   *
+   * Deliberately not in `DURATION`. The four durations there describe how long it takes
+   * to get somewhere; these describe how long one breath takes, and they are two orders of
+   * magnitude apart. Mixing the two sets is how a loading shimmer ends up running at the
+   * speed of a tap -- a 250ms loop at infinite repeats is a strobe, and a strobe on a
+   * screen an athlete stares at mid-set is a genuine problem rather than a styling nit.
+   * Kept as a separate group so reaching for the wrong one is a visible mistake.
+   *
+   * Neither belongs in a `transition`. `transition: ... 1.6s` on a property that settles
+   * would look like a hang; these only ever pair with `infinite`.
+   */
+  loop: {
+    /**
+     * The loading skeleton.
+     *
+     * Slower than the session ring on purpose. A skeleton stands in for content the
+     * athlete is waiting on, so it wants to read as patient and unobtrusive; the session
+     * ring marks work that is already running and needs to be noticed from across the room.
+     */
+    skeleton: "1.6s",
+    /** The "a session is running" ring on the centre action. */
+    session: "2s",
+    /**
+     * One tick of the rest timer's ring.
+     *
+     * The fastest loop in the app and the only one the athlete watches on purpose, so it
+     * is named for what it belongs to rather than for its speed -- `fast` here would read
+     * as a recommendation about a transition.
+     */
+    rest: "0.9s",
+    /**
+     * The coach chat's blinking caret.
+     *
+     * A full second, which is the slowest loop here and the only one the athlete is not
+     * waiting on. Faster than that and it stops reading as a cursor and starts reading as
+     * an alarm.
+     *
+     * Pairs with `steps(2, start)` rather than one of the four curves, which is the point:
+     * a caret has to snap on and off. Easing it would make it fade at the edges, and a
+     * cursor that fades is not a cursor. The curves are for things that move.
+     */
+    caret: "1s",
+  } as const,
+
+  /*
+   * Aliases. `ease` was the only curve the app had and `base` the only medium duration.
+   *
+   * They resolve to their replacements rather than keeping their old values, so a call site
+   * that was never migrated gets the current motion instead of a second, older feel.
+   * `tokens.test.ts` pins both, and pins the call-site count to zero: an alias exists to
+   * be retired, and one that still has callers is just a name nobody chose.
    */
   ease: "cubic-bezier(0.4, 0.0, 0.2, 1.0)",
   base: DURATION.normal,

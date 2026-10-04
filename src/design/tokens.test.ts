@@ -188,6 +188,46 @@ function inlineRgbaColours(): string[] {
 }
 
 /**
+ * Every motion literal in production code: a raw duration or a raw curve.
+ *
+ * Motion is the one design system that had no guard at all, and it drifted the way colour
+ * did before it: a muscle diagram crossfading at `140ms ease`, a skeleton pulsing at
+ * `1.6s ease-in-out`, both correct-looking and neither reachable from `MOTION`. `140ms` in
+ * particular is nobody's decision -- it is not `fast`, it is not `normal`, and it is close
+ * enough to `fast` that nobody would notice it as wrong.
+ *
+ * The pattern is chosen to catch the *value* rather than the property, so `transition` and
+ * `animation` are both covered, and both the `ms`/`s` and the keyword forms:
+ * - `\d+ms` and `\d+(\.\d+)?s` catch durations, including the loop periods.
+ * - `cubic-bezier(` catches curves written out.
+ * - The keyword list catches the curves Tailwind and CSS reach for by name, which are
+ *   what `tailwind.config.ts` used to carry.
+ *
+ * `MOTION.ease` and `MOTION.base` are not matched by any of these -- they are the retired
+ * aliases, and the separate test below pins their call-site count to zero.
+ */
+function motionLiterals(): string[] {
+  const offenders: string[] = [];
+  const DURATION = /\b\d+(?:\.\d+)?m?s\b/;
+  const CURVE = /\bcubic-bezier\s*\(|\bease-in-out\b|\bease-out\b|\bease-in\b|\blinear\b/;
+
+  for (const path of Object.keys(COMPONENT_SOURCES).sort()) {
+    if (path.endsWith(".test.tsx")) continue;
+    if (IN_FLIGHT_SOURCES.includes(path)) continue;
+    stripComments(COMPONENT_SOURCES[path])
+      .split("\n")
+      .forEach((text: string, index: number) => {
+        // A CSS custom property name is not a duration.
+        if (/--cronos-/.test(text)) return;
+        if (DURATION.test(text) || CURVE.test(text)) {
+          offenders.push(`${path}:${index + 1}  ${text.trim()}`);
+        }
+      });
+  }
+  return offenders;
+}
+
+/**
  * The alpha channel of a `rgba()` string.
  *
  * `parseColor` deliberately drops alpha and returns channels only, because everything
@@ -833,6 +873,92 @@ describe("the rest of the token set", () => {
     });
   });
 
+  it("keeps the loop periods apart from the transition durations", () => {
+    // The two sets are two orders of magnitude apart and mixing them is the failure that
+    // matters: a 250ms period on an infinite repeat is a strobe, and the loading skeleton
+    // is the last thing on this app that should strobe -- an athlete watches it mid-set.
+    // Asserted structurally so a `pulse` added to `DURATION` fails here rather than
+    // shipping.
+    //
+    // Compared in milliseconds: the two sets are written in different units, and a naive
+    // `parseFloat` comparison calls 1.6s "less than" 400ms, which would pass a loop period
+    // that is actually two hundred times too short.
+    const ms = (value: string) => {
+      const n = Number.parseFloat(value);
+      return value.trim().endsWith("s") && !value.trim().endsWith("ms") ? n * 1000 : n;
+    };
+
+    for (const period of Object.values(MOTION.loop)) {
+      expect(ms(period), `${period} is not longer than the slowest transition`).toBeGreaterThan(
+        ms(MOTION.slow),
+      );
+    }
+    // And all three are genuinely loop periods, not transition lengths wearing a longer
+    // number. Named for what they belong to, not for how fast they are.
+    expect(MOTION.loop.skeleton).toBe("1.6s");
+    expect(MOTION.loop.session).toBe("2s");
+    expect(MOTION.loop.rest).toBe("0.9s");
+    expect(MOTION.loop.caret).toBe("1s");
+  });
+});
+
+/**
+ * Tailwind carries a second copy of every duration and curve.
+ *
+ * Duplicated on purpose -- see the note in `tailwind.config.ts` -- but a copy that nothing
+ * checks is a copy that drifts, so it is pinned here. `tailwind.config.ts` is loaded by
+ * Tailwind's own loader rather than by the app's module graph, so importing `MOTION` into
+ * it would make the config's resolution depend on how it was loaded; this is the same
+ * duplicate-and-pin arrangement already used for the accent colour and `boxShadow`.
+ */
+describe("Tailwind's motion defaults are the design system's motion", () => {
+  const extended = tailwind.theme?.extend ?? {};
+
+  it("resolves a bare `transition` through MOTION, not Tailwind's stock values", () => {
+    // Roughly forty call sites write `transition` with no duration or curve, so these
+    // defaults are what almost every animated surface in the app actually uses.
+    expect(extended.transitionDuration).toEqual({
+      instant: MOTION.instant,
+      fast: MOTION.fast,
+      normal: MOTION.normal,
+      slow: MOTION.slow,
+    });
+    expect(extended.transitionTimingFunction).toEqual({
+      spring: MOTION.spring,
+      easeOut: MOTION.easeOut,
+      easeIn: MOTION.easeIn,
+      standard: MOTION.standard,
+    });
+  });
+
+  it("names the curves in the keyframes rather than reaching for the CSS keywords", () => {
+    // `fade-in` said `ease-out`, which is `cubic-bezier(0, 0, 0.58, 1)` -- a different
+    // curve from `MOTION.easeOut`, so a sheet was easing along a curve nobody had chosen.
+    // `pulse-ring` said `ease-in-out`, which happens to equal `MOTION.standard`; it is now
+    // spelled out so the two can move together.
+    const animations = extended.animation ?? {};
+    expect(animations["fade-in"]).toBe(`fade-in ${MOTION.normal} ${MOTION.easeOut}`);
+    expect(animations["pulse-ring"]).toBe(
+      `pulse-ring ${MOTION.loop.session} ${MOTION.standard} infinite`,
+    );
+    // A bare keyword here means the curve is whatever the browser decides, which is the
+    // exact thing the token group exists to stop.
+    for (const [name, value] of Object.entries(animations)) {
+      expect(value, `${name} uses a CSS keyword for its curve`).not.toMatch(
+        /\b(ease-in-out|ease-out|ease-in|ease|linear)\b/,
+      );
+    }
+  });
+
+  it("does not expose the retired aliases as Tailwind classes", () => {
+    // `ease-linear` and `ease` are absent above on purpose. The keywords exist as values
+    // in CSS but naming one as a Tailwind utility is how the old `ease` alias came back
+    // after being retired.
+    expect(Object.keys(extended.transitionTimingFunction ?? {})).not.toContain("ease");
+  });
+});
+
+describe("the token set", () => {
   it("exports every colour token as a CSS custom property", () => {
     const css = cssVars();
     for (const name of Object.keys(COLOR_TOKENS)) {
@@ -988,6 +1114,34 @@ describe("colour reaches components only through a token", () => {
     // Supersedes the white-only rule above, which was too narrow to be useful: accent
     // hues do not look like stray greys, so two of them walked straight past it.
     expect(inlineRgbaColours()).toEqual([]);
+  });
+
+  it("has no raw duration or curve left in any component", () => {
+    // Motion was the one design system with no guard, and it drifted the way colour did
+    // before it: `140ms ease` on the muscle diagram, `1.6s ease-in-out` on the skeleton,
+    // and `linear` on the rest ring. All three looked right, and none of them were
+    // reachable from `MOTION`.
+    //
+    // The rule covers `transition` and `animation` alike, and the keyword curves as well as
+    // `cubic-bezier`, because the keywords are what this codebase actually reached for --
+    // they were in `tailwind.config.ts` and in three components, and a duration-only rule
+    // would have watched all of it walk past.
+    expect(motionLiterals()).toEqual([]);
+  });
+
+  it("has retired the motion aliases, rather than leaving them as a second vocabulary", () => {
+    // `MOTION.ease` and `MOTION.base` exist so an un-migrated call site gets the current
+    // motion instead of an older feel. That work is done -- three call sites, all migrated
+    // -- and an alias that still has callers is just a name nobody chose. Pinned to zero so
+    // a new one has to be written deliberately.
+    for (const [path, source] of Object.entries(COMPONENT_SOURCES).sort()) {
+      if (path.endsWith(".test.tsx")) continue;
+      if (IN_FLIGHT_SOURCES.includes(path)) continue;
+      const hits = stripComments(source)
+        .split("\n")
+        .filter((text: string) => /MOTION\.(ease|base)\b/.test(text));
+      expect(hits, `${path} still uses a retired motion alias`).toEqual([]);
+    }
   });
 
   it("keeps illustration states distinct from surface hairlines", () => {

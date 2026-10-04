@@ -456,7 +456,13 @@ function Bubble({ message }: { message: ChatMessage }) {
               // The one animation here worth having: it is the only signal that the
               // answer is still arriving. The keyframes and the reduced-motion
               // override live in index.css with the app's other motion.
-              animation: "cronos-caret 1s steps(2, start) infinite",
+              //
+              // `steps(2, start)` is deliberately not one of `MOTION`'s curves. A caret
+              // has to snap on and off; easing it would make it fade at the edges, and a
+              // cursor that fades is not a cursor. The period is the token because a
+              // duration is a decision, and the timing function is not because this is the
+              // one thing on screen that should not move smoothly.
+              animation: `cronos-caret ${MOTION.loop.caret} steps(2, start) infinite`,
             }}
           />
         )}

@@ -18,6 +18,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { Slug } from "react-muscle-highlighter";
 import { MuscleReadonlyMap, countMuscleSets } from "./MuscleReadonlyMap";
 import { MUSCLE_DEFINITIONS } from "../lib/muscleMap";
+import { BODY_PART_LABELS, TARGET_LABELS } from "../lib/i18n";
 import { ACCENT, DIAGRAM } from "../design/tokens";
 
 afterEach(cleanup);
@@ -419,6 +420,66 @@ describe("countMuscleSets", () => {
     }
     expect(announced(container)).toContain("Pecho y Glúteos");
     expect(announced(container)).toContain("3 más");
+  });
+});
+
+describe("the vocabulary it shares with the catalog", () => {
+  /*
+   * Two namespaces that have to line up, and that look identical from the outside:
+   * `MUSCLE_DEFINITIONS[].targets` holds catalog `target` values ("quads", "delts"), while
+   * the muscle library's own slugs are a different set ("quadriceps", "deltoids"). A test
+   * fixture that reaches for the wrong one counts nothing at all -- and then a percentage
+   * assertion passes, because one row of one muscle at 100% is exactly what a broken
+   * fixture looks like.
+   *
+   * So: the target vocabulary is pinned to the catalog's, not to the library's.
+   */
+  const targets = [...new Set(MUSCLE_DEFINITIONS.flatMap((m) => m.targets))].sort();
+  const bodyParts = [...new Set(MUSCLE_DEFINITIONS.flatMap((m) => m.bodyParts))].sort();
+
+  it("gives every target a Spanish label", () => {
+    // The caption under an exercise title falls back to the raw value, so an untranslated
+    // target is not a crash -- it is an English slug in the middle of a Spanish sentence.
+    const missing = targets.filter((t) => !(t in TARGET_LABELS));
+
+    expect(missing).toEqual([]);
+  });
+
+  it("gives every body part a Spanish label", () => {
+    const missing = bodyParts.filter((p) => !(p in BODY_PART_LABELS));
+
+    expect(missing).toEqual([]);
+  });
+
+  it("matches on catalog targets, never on the library's own slugs", () => {
+    // The distinction, asserted so it cannot be quietly forgotten. The two namespaces
+    // overlap for some muscles -- `abs`, `adductors` and `biceps` are slugs *and* catalog
+    // targets -- which is exactly what makes the mistake easy: the ones you reach for first
+    // happen to work, so the wrong one only fails later, on the muscles that do not overlap.
+    expect(targets).toContain("quads");
+    expect(targets).not.toContain("quadriceps");
+
+    // A fixture passing `quadriceps` counts nothing at all, and then a percentage assertion
+    // passes anyway -- one muscle at 100% is exactly what a broken fixture looks like.
+  });
+
+  it("leaves no enabled muscle unreachable", () => {
+    // An `enabled: true` muscle that no catalog `target` and no `body_part` can ever reach is
+    // a region the athlete can be shown but never has lit: dead UI in the legend, dead fill
+    // on the figure.
+    const unreachable = MUSCLE_DEFINITIONS.filter(
+      (m) => m.enabled && m.targets.length === 0 && m.bodyParts.length === 0,
+    ).map((m) => m.slug);
+
+    expect(unreachable).toEqual([]);
+  });
+
+  it("names each muscle in Spanish for the list under the figure", () => {
+    // The list is the key for the shading, so a muscle with no label is a region the athlete
+    // is shown twice and can never identify.
+    const unlabelled = MUSCLE_DEFINITIONS.filter((m) => m.label.trim() === "").map((m) => m.slug);
+
+    expect(unlabelled).toEqual([]);
   });
 });
 

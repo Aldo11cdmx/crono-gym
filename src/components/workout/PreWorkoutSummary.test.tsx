@@ -157,6 +157,23 @@ describe("the distribution list", () => {
     expect(rows().sort()).toEqual(["Cuádriceps3 series50%", "Glúteos3 series50%"]);
   });
 
+  it("shows one row for an aliased muscle, not two", () => {
+    // `obliques` is declared `aliasOf: "abs"` -- the same coverage under two names. Two rows
+    // here would print the same four sets twice and halve every other muscle's share.
+    renderSummary({ planned: [plan("abs", 4), plan("pectorals", 4, "chest")] });
+
+    expect(rows()).toEqual(["Abdominales4 series50%", "Pecho4 series50%"]);
+  });
+
+  it("keeps the shares honest when an exercise could light two names", () => {
+    // The symptom this protects against: "Abdominales 33%, Oblicuos 33%, Pecho 33%" for a
+    // session that is half abs and half chest.
+    renderSummary({ planned: [plan("abs", 4), plan("pectorals", 4, "chest")] });
+
+    expect(rows().some((row) => row.includes("Oblicuos"))).toBe(false);
+    expect(rows().every((row) => row.includes("50%"))).toBe(true);
+  });
+
   it("cuts at six and says how many were left out", () => {
     // Eight muscles is a wall, and on a phone the wall pushes the start button below the
     // fold, which is the one control here that must always be visible.

@@ -269,6 +269,17 @@ function describeDistribution(counts: ReadonlyMap<Slug, number>, total: number):
  * A muscle the catalog lists under several keys is counted once per exercise, not once per
  * matching key: `chest` covers both `target: "pectorals"` and `body_part: "chest"`, and a
  * bench press that matches both must be three sets of chest, not six.
+ *
+ * The same holds for an alias, and `canonicalSlug` is where it happens. `obliques` declares
+ * `aliasOf: "abs"` precisely so that it is *not* a second muscle -- the catalog has no
+ * obliques row, so the two names cover the same thing. Counting both would put one plank in
+ * two rows of the summary and count it twice in the denominator ("Abdominales 33%, Oblicuos
+ * 33%" for a session that is half abs and half chest), and it would inflate the total the tint
+ * thresholds read, shading a muscle the athlete never trained.
+ *
+ * Folded here, in the one function both consumers read, rather than in the summary: folding
+ * downstream would let the list and the figure disagree, which is the single failure this
+ * function exists to prevent.
  */
 export function countMuscleSets(
   planned: readonly {
@@ -288,7 +299,9 @@ export function countMuscleSets(
 
       const byTarget = definition.targets.includes(item.exercise.target);
       const byBodyPart = definition.bodyParts.includes(item.exercise.body_part);
-      if (byTarget || byBodyPart) touched.add(slug);
+      if (!byTarget && !byBodyPart) continue;
+
+      touched.add(canonicalSlug(slug));
     }
 
     for (const slug of touched) {
@@ -297,4 +310,21 @@ export function countMuscleSets(
   }
 
   return counts;
+}
+
+/**
+ * The muscle a slug should be counted as.
+ *
+ * An alias resolves to the muscle it aliases. `abs` maps to itself, so every non-aliased
+ * muscle needs no special case and the caller can apply this unconditionally.
+ */
+function canonicalSlug(slug: Slug): Slug {
+  const definition = muscleDefinition(slug);
+  if (!definition?.aliasOf) return slug;
+
+  // Only follow the alias when the muscle it names is one the product can actually show. A
+  // typo in `aliasOf` would otherwise move every set into a region that renders inert --
+  // the count would still add up, and the athlete would just be told they trained nothing.
+  const canonical = muscleDefinition(definition.aliasOf);
+  return canonical?.enabled ? definition.aliasOf : slug;
 }

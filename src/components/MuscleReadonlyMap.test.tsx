@@ -361,6 +361,44 @@ describe("countMuscleSets", () => {
     }
   });
 
+  it("counts an alias as the muscle it aliases, not as a second one", () => {
+    // `obliques` declares `aliasOf: "abs"` so that the duplication is deliberate rather than
+    // accidental. Counting both keys would put one plank in two rows of the summary and count
+    // it twice in the denominator.
+    const counts = countMuscleSets([press("abs", "cardio", 3)]);
+
+    expect(counts.get("abs")).toBe(3);
+    expect(counts.has("obliques")).toBe(false);
+  });
+
+  it("does not let an alias inflate the total the tint thresholds read", () => {
+    // The total is what decides which muscle gets the strongest fill, so a doubled total
+    // moves the shading rather than just the list.
+    const counts = countMuscleSets([press("abs", "cardio", 3), press("pectorals", "chest", 3)]);
+
+    expect([...counts.values()].reduce((a, b) => a + b, 0)).toBe(6);
+    expect(counts.size).toBe(2);
+  });
+
+  it("counts an aliased muscle once when both names match the same exercise", () => {
+    // `abs` is reached through its own `targets` and through `obliques`' `targets`. Both match
+    // here, and the exercise is still one set of one muscle.
+    const counts = countMuscleSets([press("abs", "cardio", 4)]);
+
+    expect(counts.get("abs")).toBe(4);
+    expect([...counts.values()].reduce((a, b) => a + b, 0)).toBe(4);
+  });
+
+  it("still credits a waist exercise to the lower back alongside the alias", () => {
+    // The fold is not a way of collapsing regions: `waist` genuinely works lumbar and abs, so
+    // both are counted, and the alias only stops `abs` being counted twice.
+    const counts = countMuscleSets([press("abs", "waist", 4)]);
+
+    expect(counts.get("lower-back")).toBe(4);
+    expect(counts.get("abs")).toBe(4);
+    expect(counts.has("obliques")).toBe(false);
+  });
+
   it("returns an empty map for no exercises, so the figure renders inert", () => {
     expect(countMuscleSets([]).size).toBe(0);
   });

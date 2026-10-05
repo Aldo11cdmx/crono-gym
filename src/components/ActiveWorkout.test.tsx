@@ -89,7 +89,15 @@ function planned(items: PlannedExercise[] | null = null, targetSets = 3): Planne
   return items ?? [{ exercise: SQUAT, target_sets: targetSets, rest_seconds: 90 }];
 }
 
-function renderWorkout(items: PlannedExercise[] = planned()) {
+/**
+ * Renders the session.
+ *
+ * `start: false` stops at the pre-workout summary, which is the screen every athlete
+ * sees first. Everything else in this file is about the logger *behind* that gate, so
+ * the default walks through it -- and doing so here rather than in each test means a
+ * test that breaks can only be about the logger, not about a missing gate tap.
+ */
+function renderWorkout(items: PlannedExercise[] = planned(), start = true) {
   const onFinished = vi.fn();
   const view = render(
     <ActiveSessionProvider>
@@ -104,7 +112,13 @@ function renderWorkout(items: PlannedExercise[] = planned()) {
       </GymSettingsProvider>
     </ActiveSessionProvider>,
   );
+  if (start) tapStart();
   return { ...view, onFinished };
+}
+
+/** Through the pre-workout gate and into the logger. */
+function tapStart() {
+  fireEvent.click(screen.getByRole("button", { name: /Empezar/ }));
 }
 
 /** The row for set number n, resolved through its accessible group name. */

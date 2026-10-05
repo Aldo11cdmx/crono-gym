@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import {
   CheckCircle2,
   CloudOff,
@@ -10,12 +11,15 @@ import {
 } from "lucide-react";
 import { NotionJournal } from "./NotionJournal";
 import { GymSettingsTrigger } from "./workout/GymSettingsTrigger";
+import { GymSettingsModal } from "./workout/GymSettingsModal";
 import { RestTimer } from "./RestTimer";
-import { SetLoggerRow } from "./SetLoggerRow";
+import { ExerciseStage } from "./workout/ExerciseStage";
+import { ExerciseActions, type ExerciseActionId } from "./workout/ExerciseActions";
+import { PreWorkoutSummary } from "./workout/PreWorkoutSummary";
+import { SetTable } from "./workout/SetTable";
 import type { SetEntry } from "../lib/workout/types";
 import { ExerciseBrowser } from "./ExerciseBrowser";
 import { ExerciseCarousel, type CarouselItem } from "./ExerciseCarousel";
-import { ExercisePanel } from "./ExercisePanel";
 import { TutorialModal } from "./TutorialModal";
 import {
   EMPTY_PERFORMANCE,
@@ -104,7 +108,16 @@ export function ActiveWorkout({
   const [browsingFor, setBrowsingFor] = useState<string | null>(null);
   const [tutorial, setTutorial] = useState<Exercise | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [panelOpen, setPanelOpen] = useState(true);
+  /**
+   * Whether the athlete has walked past the pre-workout summary.
+   *
+   * New state, and the only one this redesign adds: the summary is a decision, not a
+   * header. It is shown until "Empezar" is tapped and never again in this session, so
+   * coming back to a session does not put the athlete back in front of a gate they have
+   * already passed.
+   */
+  const [started, setStarted] = useState(false);
+  const [gearOpen, setGearOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [recovered, setRecovered] = useState<SessionDraft | null>(null);
   // The single recoverable deletion, or null. See `removeSet`.
@@ -117,7 +130,17 @@ export function ActiveWorkout({
   // is in the same unit the stepper is offering.
   const gym = useGymSettings();
 
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  /**
+   * The session journal's own node.
+   *
+   * The old layout put it in a sticky rail, so the "Nota" chip could not name it. Below
+   * the exercise it is out of sight until scrolled to, and a chip that scrolls somewhere
+   * without saying so is a coin toss -- hence a ref and an explicit notice rather than a
+   * silent jump.
+   */
+  const journalRef = useRef<HTMLDivElement | null>(null);
+  /** The rendered exercise, so selecting one can bring it to the top. */
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const sync = useOfflineSync();
 
   const selected = useMemo(
@@ -144,6 +167,9 @@ export function ActiveWorkout({
     setItems(recovered.items);
     setNotes(recovered.notes);
     setRecovered(null);
+    // Straight into the logger: the summary is for a session that has not begun, and
+    // this one has sets already logged against it.
+    setStarted(true);
     setNotice("Sesión recuperada. Continue donde lo dejaste.");
   }
 
@@ -236,6 +262,32 @@ export function ActiveWorkout({
       return Number.isInteger(shown) ? String(shown) : shown.toFixed(1);
     },
     [gym.weightUnit],
+  );
+
+  /**
+   * The exercise's caption for the stage header, or null when it is new.
+   *
+   * The rep range from the overload engine is folded in here rather than shown beside
+   * it, because "Objetivo 6-8" and "Última sesión: 95 kg × 5" are the same kind of fact
+   * -- both are about what the athlete is about to do -- and two pills saying it would
+   * be one pill too many on a line that already carries the set count.
+   */
+  const lastSessionFor = useCallback(
+    (exerciseId: string): string | null => {
+      const previous = performance[exerciseId];
+      const target = overload[selectedKey ?? ""];
+      const range = target?.repRange ? formatRepRange(target.repRange) : null;
+
+      if (previous?.bestSet?.weight == null) return range;
+
+      const sentence = SET_LOGGER_LABELS.lastSession(
+        displayKg(previous.bestSet.weight),
+        gym.weightUnit,
+        String(previous.bestSet.reps ?? "—"),
+      );
+      return range ? `${sentence} · ${range}` : sentence;
+    },
+    [performance, overload, selectedKey, displayKg, gym.weightUnit],
   );
 
   function patchEntry(
@@ -368,13 +420,18 @@ export function ActiveWorkout({
     setSelectedKey((current) => (current === itemKey ? null : current));
   }
 
-  /** Scrolls the chosen exercise into view and opens its panel. */
+  /**
+   * Selects an exercise, and puts its own card at the top of the viewport.
+   *
+   * There is no panel to open any more and no stack of sections to scroll between: one
+   * exercise is rendered, so selecting means "make this the one that is rendered". The
+   * scroll is to the stage rather than to a section because the carousel is sticky, and
+   * without this the newly selected exercise would change underneath the athlete's eyes
+   * while they were still reading the strip.
+   */
   function focusExercise(key: string) {
     setSelectedKey(key);
-    setPanelOpen(true);
-    const node = sectionRefs.current[key];
-    if (!node) return;
-    node.scrollIntoView({ behavior: "smooth", block: "center" });
+    stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   // ---- finish (never blocks on the network) ------------------------------
@@ -437,29 +494,80 @@ export function ActiveWorkout({
     total: item.sets.length,
   }));
 
-  const showPanel = panelOpen && selected !== null && !recovered;
+  // Recovery skips the gate: a restored draft is by definition a session already
+  // under way, and putting the athlete back behind "Empezar" would ask them to
+  // confirm something that already happened.
+  const showSummary = !started && !recovered && items.length > 0;
+
+  /**
+   * Moves to the next exercise that still has sets left.
+   *
+   * Wraps round to the first, so the last exercise's "Avance" says "again" rather
+   * than doing nothing -- a verb that stops working on the one row where the
+   * athlete most wants it to is how a control teaches distrust.
+   */
+  function advance() {
+    if (items.length === 0) return;
+    const index = items.findIndex((item) => item.key === selectedKey);
+    const next = items[(index + 1) % items.length];
+    if (!next) return;
+    focusExercise(next.key);
+  }
+
+  const actionHandlers: Partial<Record<ExerciseActionId, () => void>> = {
+    avance: advance,
+    nota: () => {
+      journalRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setNotice("Tus notas de la sesión están aquí abajo.");
+    },
+    cambiar: () => {
+      if (!selected) return;
+      setBrowsingFor(selected.key);
+      setBrowsing(true);
+    },
+    ajustar: () => setGearOpen(true),
+  };
 
   return (
-    <div className="space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-50">{routineTitle}</h2>
-          <p className="text-xs text-neutral-500">
+    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg }}>
+      {/*
+        The session chrome sits above the gate as well as below it: sync state and the
+        gear are facts about the session, not about the exercise, and an athlete who
+        cannot reach them from the summary cannot fix a rack problem before starting.
+      */}
+      <header
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: SPACE.md,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: TYPE.title2.size,
+              lineHeight: TYPE.title2.lineHeight,
+              fontWeight: TYPE.title2.weight,
+              letterSpacing: TYPE.title2.tracking,
+              color: TEXT.primary,
+            }}
+          >
+            {routineTitle}
+          </h2>
+          <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
             {done} de {total} series completadas
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
           <SyncBadge
             status={sync.status}
             pending={sync.pending}
             onClick={() => void sync.syncNow()}
           />
-          {/*
-            The gear sits in the header rather than beside the stepper because the
-            stepper is per-set: the answer it needs is the same for the whole
-            session, and a control that repeats on every row invites the user to
-            think it is per-exercise.
-          */}
           <GymSettingsTrigger className="border-white/10 text-neutral-300 hover:bg-white/5" />
           <button
             type="button"
@@ -467,34 +575,61 @@ export function ActiveWorkout({
               setBrowsingFor(null);
               setBrowsing(true);
             }}
-            className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs text-neutral-300 transition hover:bg-white/5"
+            style={quietButtonStyle}
           >
-            <Plus className="h-3.5 w-3.5" /> Ejercicio
+            <Plus size={14} aria-hidden="true" /> Ejercicio
           </button>
-          <button
-            type="button"
-            onClick={() => void finish()}
-            className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-neutral-950 transition hover:brightness-110"
-          >
-            <CheckCircle2 className="h-4 w-4" /> Finalizar
+          <button type="button" onClick={() => void finish()} className="gbtn" style={primaryButtonStyle}>
+            <CheckCircle2 size={14} aria-hidden="true" /> Finalizar
           </button>
         </div>
       </header>
 
-      <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+      {!showSummary && (
         <div
-          className="h-full rounded-full bg-accent transition-all"
-          style={{ width: `${total === 0 ? 0 : (done / total) * 100}%` }}
-        />
-      </div>
+          style={{
+            height: 6,
+            overflow: "hidden",
+            borderRadius: RADIUS.pill,
+            background: GLASS.fill,
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              borderRadius: RADIUS.pill,
+              background: ACCENT.base,
+              transition: `width ${MOTION.normal} ${MOTION.standard}`,
+              width: `${total === 0 ? 0 : (done / total) * 100}%`,
+            }}
+          />
+        </div>
+      )}
 
+      {/*
+        Recovery sits above the gate for the same reason: it is the more urgent of the
+        two questions, and an athlete whose session was recovered has work to finish,
+        not a plan to approve.
+      */}
       {recovered && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3">
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: SPACE.md,
+            padding: SPACE.md,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${ACCENT.border}`,
+            background: ACCENT.subtle,
+          }}
+        >
           <div>
-            <p className="text-sm text-neutral-100">
+            <p style={{ margin: 0, fontSize: TYPE.body.size, color: TEXT.primary }}>
               Encontramos una sesión sin terminar ({recovered.routineTitle})
             </p>
-            <p className="text-[11px] text-neutral-400">
+            <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.secondary }}>
               {recovered.items.reduce(
                 (n: number, i: DraftExercise) =>
                   n + i.sets.filter((s) => s.completed).length,
@@ -503,19 +638,11 @@ export function ActiveWorkout({
               series guardadas en este dispositivo.
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={discardRecovered}
-              className="rounded-lg border border-white/15 px-3 py-1.5 text-[11px] text-neutral-300 transition hover:bg-white/5"
-            >
+          <div style={{ display: "flex", gap: SPACE.sm }}>
+            <button type="button" onClick={discardRecovered} style={quietButtonStyle}>
               Descartar
             </button>
-            <button
-              type="button"
-              onClick={restoreRecovered}
-              className="rounded-lg bg-accent px-3 py-1.5 text-[11px] font-semibold text-neutral-950 transition hover:brightness-110"
-            >
+            <button type="button" onClick={restoreRecovered} className="gbtn" style={primaryButtonStyle}>
               Recuperar
             </button>
           </div>
@@ -523,15 +650,28 @@ export function ActiveWorkout({
       )}
 
       {notice && (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-neutral-300">
-          <span>{notice}</span>
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: SPACE.md,
+            padding: `${SPACE.sm} ${SPACE.md}`,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${GLASS.border}`,
+            background: SOLID.popover,
+          }}
+        >
+          <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>{notice}</span>
           <button
             type="button"
             onClick={() => setNotice(null)}
             aria-label="Cerrar aviso"
-            className="text-neutral-500 transition hover:text-neutral-200"
+            style={{ ...quietButtonStyle, minWidth: MOTION.minTouchTarget }}
           >
-            <X className="h-3.5 w-3.5" />
+            <X size={14} aria-hidden="true" />
           </button>
         </div>
       )}
@@ -545,153 +685,70 @@ export function ActiveWorkout({
       )}
 
       {sync.error && !sync.online && (
-        <p className="text-[11px] text-neutral-500">
+        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
           Sin conexión: tu sesión está segura en este dispositivo y se sincronizará
           automáticamente.
         </p>
       )}
 
-      {carouselItems.length > 0 && <ExerciseCarousel items={carouselItems} selectedKey={selected?.key ?? null} onSelect={focusExercise} />}
+      {gearOpen && <GymSettingsModal onClose={() => setGearOpen(false)} />}
 
-      {items.length === 0 ? (
+      {showSummary ? (
+        <PreWorkoutSummary
+          routineTitle={routineTitle}
+          planned={planned}
+          onStart={() => setStarted(true)}
+        />
+      ) : items.length === 0 ? (
         <EmptyState onAdd={() => setBrowsing(true)} />
       ) : (
-        <div className="grid gap-5 lg:grid-cols-[1fr_340px] lg:items-start">
-          <div className="space-y-4">
-            {showPanel && selected && (
-              <ExercisePanel
+        <>
+          {/*
+            The strip is sticky and above the exercise, and it is the only navigation.
+            Everything else on this screen is about the one exercise in front of the
+            athlete.
+          */}
+          <ExerciseCarousel
+            items={carouselItems}
+            selectedKey={selected?.key ?? null}
+            onSelect={focusExercise}
+          />
+
+          {selected && (
+            <div ref={stageRef}>
+              <ExerciseStage
                 exercise={selected.exercise}
-                onOpenTutorial={() => setTutorial(selected.exercise)}
-                onOpenNotes={() => {
-                  const node = sectionRefs.current[selected.key];
-                  node?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  setNotice("Registra el RPE y las notas en cada serie de abajo.");
-                }}
-                onReplace={() => {
-                  setBrowsingFor(selected.key);
-                  setBrowsing(true);
-                }}
-                onClose={() => setPanelOpen(false)}
-              />
-            )}
+                progress={`${selected.sets.filter((s) => s.completed).length} de ${selected.sets.length} series`}
+                lastSession={lastSessionFor(selected.exercise.id)}
+                onRemove={() => removeExercise(selected.key)}
+                actions={<ExerciseActions onSelect={actionHandlers} />}
+              >
+                <SetTable
+                  sets={selected.sets}
+                  previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
+                  previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
+                  formatWeight={displayKg}
+                  suggestion={overload[selected.key] ?? null}
+                  barType={gym.barType}
+                  onChange={(index, entry) => updateSet(selected.key, index, entry)}
+                  onRemove={(index) => removeSet(selected.key, index)}
+                  onDuplicate={(index) => duplicateSet(selected.key, index)}
+                  onAdd={() => addSet(selected.key)}
+                />
+              </ExerciseStage>
+            </div>
+          )}
 
-            {items.map((item) => {
-              const previous = performance[item.exercise.id];
-              const target = overload[item.key];
-              const isSelected = selected?.key === item.key;
-
-              return (
-                <section
-                  key={item.key}
-                  ref={(node) => {
-                    sectionRefs.current[item.key] = node;
-                  }}
-                  onFocusCapture={() => setSelectedKey(item.key)}
-                  className={`scroll-mt-24 rounded-2xl border bg-neutral-900/60 p-4 shadow-glass backdrop-blur-md transition ${
-                    isSelected
-                      ? "border-accent/40 ring-1 ring-accent/20"
-                      : "border-white/10"
-                  }`}
-                >
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => focusExercise(item.key)}
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <h3 className="truncate text-sm font-semibold text-neutral-50">{item.exercise.name}</h3>
-                      <p className="mt-0.5 text-[11px] text-neutral-500">
-                        {item.exercise.target} · {item.exercise.equipment} · Descanso{" "}
-                        {item.restSeconds}s
-                        {target?.repRange && ` · Objetivo ${formatRepRange(target.repRange)}`}
-                      </p>
-                    </button>
-                    {previous?.bestSet?.weight != null && (
-                      <span
-                        className="shrink-0 text-[11px] font-semibold"
-                        style={{ color: STATUS.comeback.text }}
-                        aria-label={SET_LOGGER_LABELS.lastSessionAriaLabel(
-                          displayKg(previous.bestSet.weight),
-                          gym.weightUnit,
-                          String(previous.bestSet.reps ?? "—"),
-                        )}
-                      >
-                        {SET_LOGGER_LABELS.lastSession(
-                          displayKg(previous.bestSet.weight),
-                          gym.weightUnit,
-                          String(previous.bestSet.reps ?? "—"),
-                        )}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeExercise(item.key)}
-                      className="shrink-0 text-[11px] transition"
-                      style={{ color: TEXT.tertiary }}
-                      onMouseEnter={(event) => {
-                        event.currentTarget.style.color = DANGER.text;
-                      }}
-                      onMouseLeave={(event) => {
-                        event.currentTarget.style.color = TEXT.tertiary;
-                      }}
-                      onFocus={(event) => {
-                        event.currentTarget.style.color = DANGER.text;
-                      }}
-                      onBlur={(event) => {
-                        event.currentTarget.style.color = TEXT.tertiary;
-                      }}
-                    >
-                      Quitar
-                    </button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {item.sets.map((entry, index) => {
-                      const isFirst = index === 0;
-                      // The hint belongs on the opening set only, and never on a
-                      // set the athlete has already completed.
-                      const showSuggestion =
-                        isFirst &&
-                        !!target &&
-                        target.decision !== "first_time" &&
-                        !entry.completed;
-
-                      return (
-                        <SetLoggerRow
-                          key={`${item.key}-${index}`}
-                          entry={entry}
-                          index={index}
-                          onChange={(next) => updateSet(item.key, index, next)}
-                          onRemove={() => removeSet(item.key, index)}
-                          onDuplicate={() => duplicateSet(item.key, index)}
-                          previousKg={
-                            isFirst ? (previous?.bestSet?.weight ?? undefined) : undefined
-                          }
-                          previousReps={
-                            isFirst ? (previous?.bestSet?.reps ?? undefined) : undefined
-                          }
-                          suggestion={showSuggestion && target ? target : null}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => addSet(item.key)}
-                    className="mt-2 w-full rounded-lg border border-dashed border-white/10 px-3 py-2 text-xs text-neutral-400 transition hover:border-accent/50 hover:text-neutral-200"
-                  >
-                    + Agregar serie
-                  </button>
-                </section>
-              );
-            })}
-          </div>
-
-          <div className="lg:sticky lg:top-24">
+          {/*
+            The journal moves below the exercise rather than sitting beside it. In the
+            old two-column layout it had a dedicated rail to itself; here it would be
+            pushing the set table off a phone screen, and it is a between-exercises
+            tool rather than a during-the-set one.
+          */}
+          <div ref={journalRef}>
             <NotionJournal value={notes} onChange={setNotes} />
           </div>
-        </div>
+        </>
       )}
 
       {browsing && (
@@ -889,10 +946,55 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   );
 }
 
+/**
+ * The quiet button.
+ *
+ * Hairline, no fill, tertiary text. Everything in the header that is not "Finalizar" is
+ * this, so the one accent-filled control in the header is the only thing the eye is
+ * pulled to -- and it is the only irreversible one.
+ */
+const quietButtonStyle: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "6px",
+  minHeight: 36,
+  padding: "0 12px",
+  borderRadius: RADIUS.control,
+  border: `1px solid ${GLASS.border}`,
+  background: "transparent",
+  color: TEXT.secondary,
+  fontSize: TYPE.label.size,
+  fontWeight: 600,
+  cursor: "pointer",
+};
+
+/**
+ * The accent-filled button: "Finalizar" and "Recuperar".
+ *
+ * The token's resolved value rather than `var(--cronos-accent-base)` -- nothing injects
+ * the custom properties into the document, so a `var()` here would arrive with no fill.
+ * See the note on `stateRules()` in `design/tokens.ts`.
+ */
+const primaryButtonStyle: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "6px",
+  minHeight: 36,
+  padding: "0 14px",
+  borderRadius: RADIUS.control,
+  border: `1px solid ${ACCENT.base}`,
+  background: ACCENT.base,
+  color: TEXT.onAccent,
+  fontSize: TYPE.label.size,
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
 function buildSets(count: number): SetEntry[] {
   return Array.from({ length: Math.max(count, 1) }, (_, i) => emptySet(i));
 }
-
 function emptySet(index: number): SetEntry {
   return {
     set_number: index + 1,

@@ -302,13 +302,15 @@ describe("the description", () => {
 });
 
 describe("countMuscleSets", () => {
-  const press = (target: string[], body_part: string, target_sets = 3) => ({
+  // `target` is a single string, not a list: that is the catalog's shape, and a test
+  // that passed an array would have let a wrong signature pass too.
+  const press = (target: string, body_part: string, target_sets = 3) => ({
     exercise: { target, body_part },
     target_sets,
   });
 
   it("adds the sets for a matching exercise", () => {
-    const counts = countMuscleSets([press(["pectorals"], "chest", 4)]);
+    const counts = countMuscleSets([press("pectorals", "chest", 4)]);
     expect(counts.get("chest")).toBe(4);
   });
 
@@ -316,7 +318,7 @@ describe("countMuscleSets", () => {
     // Chest is covered by `targets: ["pectorals"]` *and* `bodyParts: ["chest"]`, so a bench
     // press matches it twice. Counting both would report eight sets of chest for a four-set
     // exercise, and the tint thresholds would be scaled off a fictional total.
-    const counts = countMuscleSets([press(["pectorals"], "chest", 4)]);
+    const counts = countMuscleSets([press("pectorals", "chest", 4)]);
 
     expect(counts.get("chest")).toBe(4);
     expect([...counts.values()].reduce((a, b) => a + b, 0)).toBe(4);
@@ -326,7 +328,7 @@ describe("countMuscleSets", () => {
     // Lumbar is reached through `bodyParts: ["waist", "back"]`. Matching only `target` would
     // under-report it and the summary would claim a routine hits less of the body than it
     // does -- the exact mistake the pre-workout panel exists to catch.
-    const counts = countMuscleSets([press(["glutes"], "waist", 3)]);
+    const counts = countMuscleSets([press("glutes", "waist", 3)]);
 
     expect(counts.get("lower-back")).toBe(3);
     expect(counts.get("abs")).toBe(3);
@@ -334,9 +336,9 @@ describe("countMuscleSets", () => {
 
   it("accumulates across exercises", () => {
     const counts = countMuscleSets([
-      press(["pectorals"], "chest", 4),
-      press(["pectorals"], "chest", 3),
-      press(["quads"], "upper legs", 5),
+      press("pectorals", "chest", 4),
+      press("pectorals", "chest", 3),
+      press("quads", "upper legs", 5),
     ]);
 
     expect(counts.get("chest")).toBe(7);
@@ -344,7 +346,7 @@ describe("countMuscleSets", () => {
   });
 
   it("ignores an exercise that matches nothing", () => {
-    const counts = countMuscleSets([press(["kettlebell swings"], "core", 3)]);
+    const counts = countMuscleSets([press("kettlebell swings", "core", 3)]);
     // Not an error: the catalog is broader than the anatomy map, and inventing a muscle for
     // an unmapped target would light a region the routine does not train.
     expect(counts.size).toBe(0);
@@ -352,7 +354,7 @@ describe("countMuscleSets", () => {
 
   it("never counts a muscle the catalog has no exercises for", () => {
     const unreachable = MUSCLE_DEFINITIONS.find((m) => !m.enabled)!;
-    const counts = countMuscleSets([press(["knees"], unreachable.bodyParts[0] ?? "", 3)]);
+    const counts = countMuscleSets([press("knees", unreachable.bodyParts[0] ?? "", 3)]);
 
     for (const [slug] of counts) {
       expect(MUSCLE_DEFINITIONS.find((m) => m.slug === slug)!.enabled).toBe(true);
@@ -366,7 +368,7 @@ describe("countMuscleSets", () => {
   it("agrees with the map it feeds, and credits a leg exercise to the whole leg", () => {
     // The two halves are one feature. A summary that counts differently from the figure it
     // sits next to is worse than no summary, because both look authoritative.
-    const planned = [press(["pectorals"], "chest", 4), press(["quads"], "upper legs", 4)];
+    const planned = [press("pectorals", "chest", 4), press("quads", "upper legs", 4)];
     const counts = countMuscleSets(planned);
     const { container } = render(<MuscleReadonlyMap counts={counts} label="Distribución" />);
 

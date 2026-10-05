@@ -186,6 +186,52 @@ background: radial-gradient(
   }
 
   /*
+   * A set being ticked off.
+   *
+   * `MOTION.spring` is the curve for "picked up and confirmed" and it overshoots
+   * slightly, which is the vocabulary the tick needs: the mark lands and settles rather
+   * than fading in place. Driven by a class rather than an inline `animation` so the
+   * keyframes live beside the other ones and `prefers-reduced-motion` below can cancel
+   * the whole group in one place.
+   *
+   * The colour change is deliberately NOT animated. The colour is the information -- it
+   * is what says the set is logged -- and a colour that eases in over 300ms is a colour
+   * the athlete has to wait to be sure about.
+   */
+  @keyframes cronos-set-check {
+    0% {
+      transform: scale(0.6);
+      opacity: 0.45;
+    }
+    60% {
+      transform: scale(1.18);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /*
+   * The set tick, and the carousel's scrollbar, both cancelled rather than shortened.
+   *
+   * Cancelled, not slowed: these are not transitions between states that would still read
+   * at a lower speed, they are a one-shot flourish and a control that is in the way. A
+   * reduced-motion user should get the same information -- the tick still appears, the
+   * carousel still scrolls -- without the movement.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .cronos-set-check {
+      animation: none !important;
+    }
+
+    .cronos-carousel {
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /*
    * The session ring on the nav's centre action.
    *
    * Animates `transform` and `opacity` only, never `border-color` or `box-shadow`. The

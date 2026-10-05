@@ -256,18 +256,23 @@ function describeDistribution(counts: ReadonlyMap<Slug, number>, total: number):
  * Only `target_sets` counts: a warm-up set is not a set the athlete is working towards, and
  * counting them would inflate every muscle equally and make the distribution say nothing.
  *
- * Matched on both `targets` and `bodyParts`, because that is what the library filter does
- * (`useExerciseFilter` and friends). Matching only `target` would under-report every muscle
- * whose exercises are filed under a region -- lower back and obliques in particular -- and
- * the pre-workout summary would say a routine hits less of the body than it does.
+ * Matched on both `target` and `bodyParts`, because that is what the library filter does
+ * (`muscleFilter`'s matcher and `MUSCLE_DEFINITIONS`' own docblock). Matching only `target`
+ * would under-report every muscle whose exercises are filed under a region -- lower back and
+ * obliques in particular -- and the pre-workout summary would say a routine hits less of the
+ * body than it does.
+ *
+ * `target` is a single string, not a list: that is the catalog's shape
+ * (`exercises.target` in the generated types), and a muscle covers it when the string is
+ * one of its `targets`.
  *
  * A muscle the catalog lists under several keys is counted once per exercise, not once per
- * matching key: `pecho` covers both `target: "pecho"` and `body_part: "upper_body"`, and a
- * push-up that matches both must be three sets of chest, not six.
+ * matching key: `chest` covers both `target: "pectorals"` and `body_part: "chest"`, and a
+ * bench press that matches both must be three sets of chest, not six.
  */
 export function countMuscleSets(
   planned: readonly {
-    exercise: { target: string[]; body_part: string };
+    exercise: { target: string; body_part: string };
     target_sets: number;
   }[],
 ): Map<Slug, number> {
@@ -281,7 +286,7 @@ export function countMuscleSets(
       const definition = muscleDefinition(slug);
       if (!definition) continue;
 
-      const byTarget = item.exercise.target.some((t) => definition.targets.includes(t));
+      const byTarget = definition.targets.includes(item.exercise.target);
       const byBodyPart = definition.bodyParts.includes(item.exercise.body_part);
       if (byTarget || byBodyPart) touched.add(slug);
     }

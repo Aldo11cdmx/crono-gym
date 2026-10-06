@@ -41,8 +41,13 @@ import type { CoachContext } from "@/lib/coach/types";
 import {
   MAX_USER_MESSAGE_CHARS,
   askCoach,
+  type AssistantResponse,
+  type ToolCall,
 } from "@/lib/ai/coachAssistant";
 import { toAssistantContext, type CoachError, type ChatMessage } from "@/lib/ai/types";
+import { EXERCISE_TOOLS } from "@/lib/ai/tools";
+import { parseRoutinePayload, validateRoutine } from "@/lib/ai/routineGenerator";
+import type { GeneratedRoutine } from "@/lib/ai/routineGenerator";
 import {
   chatDay,
   loadChat,
@@ -50,6 +55,38 @@ import {
   saveChat,
   toConversationTurns,
 } from "@/lib/ai/chatStorage";
+
+const EXERCISE_KEYWORDS = [
+  "rutina",
+  "ejercicio",
+  "ejercicios",
+  "pr",
+  "récord",
+  "1rm",
+  "repeticiones",
+  "reps",
+  "peso",
+  "libre",
+  "máquina",
+  "máquinas",
+  "gimnasio",
+  "equipo",
+  "sentadilla",
+  "press",
+  "curl",
+  "remo",
+  "peso muerto",
+  "carga",
+  "serie",
+  "series",
+  "descanso",
+  "calentamiento",
+];
+
+function selectTools(text: string): boolean {
+  const lower = text.toLowerCase();
+  return EXERCISE_KEYWORDS.some((kw) => lower.includes(kw));
+}
 
 export interface CoachChatProps {
   /** The hub's already-loaded context. Not re-fetched: it would be a second source. */
@@ -63,10 +100,9 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [persisted, setPersisted] = useState(true);
+  const [proposedRoutine, setProposedRoutine] = useState<GeneratedRoutine | null>(null);
+  const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(null);
 
-  // The day is captured once per mount. If it changed mid-session -- the tab left open
-  // past midnight -- the transcript stays the one the athlete is reading rather than
-  // silently splitting across two keys.
   const day = useMemo(() => chatDay(), []);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -138,6 +174,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           userMessage: trimmed,
           context: assistantContext,
           conversationHistory: toConversationTurns(messages),
+          ...(selectTools(trimmed) ? { tools: [...EXERCISE_TOOLS] } : {}),
         },
         (chunk) => {
           // One functional update per chunk rather than a captured `messages`: the
@@ -165,6 +202,9 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
         controller.signal,
       )
         .then((response) => {
+          if (response.toolCalls && response.toolCalls.length > 0) {
+            handleToolCalls(response.toolCalls);
+          }
           setMessages((current) => {
             const next = finalize(current, assistantId, response);
             persist(next);
@@ -205,9 +245,35 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           abortRef.current = null;
           setBusy(false);
         });
-    },
-    [assistantContext, busy, messages, persist],
-  );
+      },
+     [assistantContext, busy, messages, persist],
+   );
+
+  const handleToolCalls = (toolCalls: ToolCall[]) => {
+    for (const tc of toolCalls) {
+      if (tc.function.name === "createRoutine") {
+        let args: Record<string, unknown> = {};
+        try {
+          args = JSON.parse(tc.function.arguments);
+        } catch {
+          setProposedRoutineError("Respuesta no válida de Symmetry.");
+          return;
+        }
+        const parsed = parseRoutinePayload(JSON.stringify(args));
+        const routine = validateRoutine(parsed);
+        if (routine) {
+          setProposedRoutine(routine);
+        } else {
+          setProposedRoutineError("La rutina propuesta no tiene el formato esperado.");
+        }
+      }
+    }
+  };
+
+  const dismissProposed = () => {
+    setProposedRoutine(null);
+    setProposedRoutineError(null);
+  };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -385,6 +451,41 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
         <AlertTriangle size={13} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
         {T.chatDisclaimer}
       </p>
+
+      {proposedRoutineError && (
+        <div
+          role="alert"
+          style={{
+            marginTop: SPACE.md,
+            padding: "9px 12px",
+            borderRadius: RADIUS.control,
+            border: `1px solid #f871712e`,
+            backgroundColor: "#f8717112",
+            fontSize: TYPE.caption.size,
+            color: TEXT.primary,
+          }}
+        >
+          {proposedRoutineError}
+          <button
+            type="button"
+            onClick={dismissProposed}
+            style={{
+              marginLeft: 8,
+              border: "none",
+              background: "transparent",
+              color: ACCENT.text,
+              fontSize: TYPE.caption.size,
+              cursor: "pointer",
+            }}
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
+
+      {proposedRoutine && (
+        <ProposedRoutineCard routine={proposedRoutine} onAccept={dismissProposed} />
+      )}
     </GlassCard>
   );
 }
@@ -534,7 +635,7 @@ function describeAction(action: NonNullable<ChatMessage["action"]>): string {
 function finalize(
   current: ChatMessage[],
   assistantId: string,
-  response?: { message: string; action?: ChatMessage["action"] },
+  response?: AssistantResponse,
 ): ChatMessage[] {
   const bubble: ChatMessage = {
     id: assistantId,
@@ -587,4 +688,41 @@ function classify(cause: unknown): CoachError {
     }
   }
   return { code: "SERVICE_UNAVAILABLE" };
+}
+
+// --------------------------------------------------------------- proposed
+
+function ProposedRoutineCard({
+  routine,
+  onAccept,
+}: {
+  routine: GeneratedRoutine;
+  onAccept: () => void;
+}) {
+  return (
+    <div
+      style={{
+        marginTop: SPACE.md,
+        padding: "9px 12px",
+        borderRadius: RADIUS.control,
+        border: `1px solid ${ACCENT.border}`,
+        backgroundColor: `${ACCENT.base}14`,
+      }}
+    >
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: ACCENT.text }}>
+        Symmetry propuso una rutina
+      </p>
+      <p style={{ margin: "4px 0 0", fontSize: 11, color: TEXT.tertiary }}>
+        {routine.name} · {routine.days.length} día{routine.days.length === 1 ? "" : "s"}
+      </p>
+      <div style={{ marginTop: 8, display: "flex", gap: SPACE.sm }}>
+        <GlassButton variant="primary" onClick={onAccept}>
+          Ver rutina
+        </GlassButton>
+        <GlassButton variant="ghost" onClick={onAccept}>
+          Cerrar
+        </GlassButton>
+      </div>
+    </div>
+  );
 }

@@ -214,6 +214,29 @@ background: radial-gradient(
   }
 
   /*
+   * The applying rule for the set tick.
+   *
+   * Scoped to `[data-check="on"]` rather than to the class alone, and that
+   * scoping is the whole rule: the component puts the class on the tick in *both*
+   * states -- completed and not -- so an animation on the bare class would play
+   * once on mount for every open set and then never again, which is the opposite
+   * of the moment it exists for. `data-check` is the attribute that flips when a
+   * set is completed, so the instant it goes "off" -> "on" is the instant the
+   * animation starts, and an already-completed set that simply re-renders does
+   * not replay it.
+   *
+   * `MOTION.spring` -- `cubic-bezier(0.34, 1.56, 0.64, 1)` -- spelled as a
+   * literal like the timing function of every other animation here, and the same
+   * curve as the record badge: a completed set and a broken record are the same
+   * kind of event, so they should not feel like two apps' ideas of confirmation.
+   * No `forwards`: the keyframes end where the completed tick's own inline
+   * styles already sit (scale 1, opacity 1), so there is nothing to hold.
+   */
+  .cronos-set-check[data-check="on"] {
+    animation: cronos-set-check 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /*
    * The set tick, and the carousel's scrollbar, both cancelled rather than shortened.
    *
    * Cancelled, not slowed: these are not transitions between states that would still read
@@ -221,11 +244,70 @@ background: radial-gradient(
    * reduced-motion user should get the same information -- the tick still appears, the
    * carousel still scrolls -- without the movement.
    */
+/*
+   * A record being broken.
+   *
+   * The same `MOTION.spring` curve as the set tick, deliberately: a PR is the same kind of
+   * event a completed set is, only bigger, and reusing the curve means the two do not feel
+   * like two different apps' ideas of confirmation. It arrives from below and slightly
+   * small, because the badge appears over the set the athlete just did -- rising reads as
+   * "this came up from what you just lifted".
+   *
+   * Only the entrance is a keyframe. The exit is a React transition on `opacity` and
+   * `transform` (`RecordBadge` sets `data-leaving`), because the exit is state the
+   * component owns and has to be able to cancel.
+   */
+  @keyframes cronos-record-pop {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(14px) scale(0.92);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+  }
+
+  /*
+   * The applying rule for `cronos-record-pop`.
+   *
+   * The curve is `MOTION.spring` -- `cubic-bezier(0.34, 1.56, 0.64, 1)` -- spelled as a
+   * literal, exactly like the other `@keyframes` blocks in this file, because a CSS variable
+   * cannot be used in the shorthand's timing-function position portably. The overshoot is
+   * the point and it comes from the curve, so the keyframes above do not hand-tune a
+   * mid-stop: two stops, and the spring supplies the rest. This is the same curve as the set
+   * tick, so a PR and a completed set feel like the same app agreeing twice.
+   *
+   * `translateX(-50%)` is repeated at every stop because the badge is centred with
+   * `left: 50%` plus a translate, and a keyframe that drops it mid-animation would fling the
+   * badge to the right edge for a frame.
+   */
+  .cronos-record-pop {
+    animation: cronos-record-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    /*
+     * The notification still arrives and still leaves; it just stops travelling. Dropping
+     * the whole element would take the confirmation with it, and a PR that nobody is told
+     * about is the one outcome this component cannot have.
+     */
+    .cronos-record-pop {
+      animation: none !important;
+    }
+
     .cronos-set-check {
       animation: none !important;
     }
 
+    /*
+     * The carousel's smooth scrolling is a nicety, not information, so it is
+     * the one thing this query takes away rather than holds still: a strip
+     * scrolling itself under a reduced-motion user is movement nobody asked
+     * for. It sits inside this media query on purpose -- lifted out, it would
+     * disable smooth scrolling for everyone, not only for the users who asked
+     * for none.
+     */
     .cronos-carousel {
       scroll-behavior: auto !important;
     }

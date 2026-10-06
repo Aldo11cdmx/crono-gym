@@ -18,7 +18,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { SetTable, type SetTableProps } from "./SetTable";
 import { SET_LOGGER_LABELS, SET_TYPE_LABELS } from "../../lib/i18n";
 import type { OverloadTarget } from "../../lib/overload";
@@ -430,5 +430,173 @@ describe("no previous session", () => {
     expect(screen.queryByText("Anterior")).toBeNull();
     expect(row(1)).toBeTruthy();
     expect(row(3)).toBeTruthy();
+  });
+});
+
+describe("the record badge", () => {
+  /**
+   * Completing a set through the toggle, the way the athlete does it, rather
+   * than through a prop -- the badge has to be earned by the flip, not by a
+   * value the caller happened to pass.
+   */
+  function completeSet(
+    index: number,
+    overrides: Partial<SetTableProps> = {},
+  ) {
+    const { props } = renderTable({
+      sets: [
+        set({
+          set_number: index + 1,
+          weight: "100",
+          reps: "8",
+        }),
+      ],
+      ...overrides,
+    });
+    fireEvent.click(
+      within(row(1)).getByRole("button", {
+        name: SET_LOGGER_LABELS.completeAriaLabel(1, false),
+      }),
+    );
+    return props;
+  }
+
+  it("fires when the set beats the all-time best", () => {
+    completeSet(0, {
+      exerciseName: "Press de banca",
+      allTimeBestKg: 100,
+      allTimeBestReps: 5,
+    });
+
+    const alert = screen.getByRole("alert");
+    // The estimate of 100×8 is 126.7 against a best of 100×5 at 116.7. The
+    // weight goes through the caller's `formatWeight`, which is the reason that
+    // is a prop: the badge spells the unit the way the rest of the screen does.
+    expect(alert.getAttribute("aria-label")).toBe(
+      "Nuevo récord: Press de banca: 100 × 8",
+    );
+  });
+
+  it("spells the weight through the caller's formatter, unit included", () => {
+    renderTable({
+      sets: [set({ set_number: 1, weight: "92.5", reps: "8" })],
+      exerciseName: "Press de banca",
+      allTimeBestKg: 80,
+      allTimeBestReps: 5,
+      formatWeight: (kg) => `${(kg * 2.20462).toFixed(1)} lb`,
+    });
+    fireEvent.click(
+      within(row(1)).getByRole("button", {
+        name: SET_LOGGER_LABELS.completeAriaLabel(1, false),
+      }),
+    );
+
+    // 92.5 kg on an imperial screen reads as 203.9 lb, and the badge is the one
+    // place it must not revert to kg.
+    expect(screen.getByRole("alert").getAttribute("aria-label")).toBe(
+      "Nuevo récord: Press de banca: 203.9 lb × 8",
+    );
+  });
+
+  it("still flips the set even when it is a record", () => {
+    // The badge is a decoration on the completion, never a condition of it. If
+    // the record check ever threw or short-circuited, the set would stay open.
+    const props = completeSet(0, {
+      exerciseName: "Press de banca",
+      allTimeBestKg: 100,
+      allTimeBestReps: 5,
+    });
+
+    expect(props.onChange).toHaveBeenCalledWith(0, {
+      set_number: 1,
+      weight: "100",
+      reps: "8",
+      rpe: "",
+      kind: "normal",
+      completed: true,
+    });
+  });
+
+  it("stays silent when the set only matches the best", () => {
+    // 100×5 against a best of 100×5: holding the record is not breaking it, and
+    // a badge for holding it would fire on every repeat of the record weight.
+    completeSet(0, {
+      exerciseName: "Press de banca",
+      allTimeBestKg: 100,
+      allTimeBestReps: 5,
+      sets: [set({ set_number: 1, weight: "100", reps: "5" })],
+    });
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("stays silent on a first set, because a first is not a record", () => {
+    // No all-time best means nothing was beaten. "Nuevo récord" here would be a
+    // claim about a competition that has not happened.
+    completeSet(0, { exerciseName: "Press de banca" });
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("stays silent for a warm-up set, whatever it lifts", () => {
+    // A warm-up is preparation, and `useAthletePRs` filters `is_warmup` for the
+    // same reason: crowning one would put a record on a load the athlete was
+    // easing into.
+    const { props } = renderTable({
+      sets: [set({ set_number: 1, weight: "140", reps: "3", kind: "warmup" })],
+      exerciseName: "Sentadilla",
+      allTimeBestKg: 100,
+      allTimeBestReps: 5,
+    });
+    fireEvent.click(
+      within(row(1)).getByRole("button", {
+        name: SET_LOGGER_LABELS.completeAriaLabel(1, false),
+      }),
+    );
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    // The warm-up set still completes.
+    expect(props.onChange).toHaveBeenCalledWith(0, expect.objectContaining({ completed: true }));
+  });
+
+  it("stays silent for a set past the estimable range", () => {
+    // 100×11 has no 1RM to compare, so claiming a record for it would be a
+    // second rule from the one the Records tab uses.
+    completeSet(0, {
+      exerciseName: "Press de banca",
+      allTimeBestKg: 100,
+      allTimeBestReps: 5,
+      sets: [set({ set_number: 1, weight: "100", reps: "11" })],
+    });
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("stays silent when there is no exercise name to show", () => {
+    // The badge names the movement; without a name it has nothing honest to say.
+    completeSet(0, { allTimeBestKg: 100, allTimeBestReps: 5 });
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("dismisses itself, so it cannot cover the set logger", () => {
+    vi.useFakeTimers();
+    try {
+      completeSet(0, {
+        exerciseName: "Press de banca",
+        allTimeBestKg: 100,
+        allTimeBestReps: 5,
+      });
+      expect(screen.getByRole("alert")).toBeTruthy();
+
+      // Past the badge's own four seconds plus its exit: a confirmation left
+      // on screen is one that covers the set the athlete is on next.
+      // `act` because the timers call React state setters, and a state
+      // update outside `act` never reaches the DOM the query reads.
+      act(() => void vi.advanceTimersByTime(4500));
+      expect(screen.queryByRole("alert")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

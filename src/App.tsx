@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { Lock, LogOut, Play } from "lucide-react";
+import { Lock, LogOut } from "lucide-react";
 import { Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
 import { AuthModal } from "./components/AuthModal";
 import { CronosLogo } from "./components/CronosLogo";
 import { BrandLockup } from "./components/shell/BrandLockup";
+import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { Onboarding } from "./components/Onboarding";
 import { ProgressDashboard } from "./components/ProgressDashboard";
 import { AnatomicalRanksView } from "./components/AnatomicalRanksView";
@@ -17,7 +18,6 @@ import { MUSCLE_PARAM } from "./lib/muscleFilter";
 import {
   useProgress,
   useRoutines,
-  type RoutineWithExercises,
 } from "./hooks/useGymData";
 import { useProfile } from "./hooks/useProfile";
 import { useOfflineSync } from "./hooks/useOfflineSync";
@@ -331,28 +331,26 @@ function Welcome({
 }
 
 /**
- * The home screen: pick something to train.
+ * The home screen: the dashboard.
  *
- * Always the picker, never the workout itself. Training lives at `/entrenar` so
- * that the session has one address: the pill, the deep link and the routine
+ * Always the dashboard, never the workout itself. Training lives at `/entrenar`
+ * so that the session has one address: the pill, the deep link and the routine
  * builder all arrive at the same screen, and reloading mid-session returns to the
  * workout rather than to a menu with a session silently running behind it.
  */
 export function HomeView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
-  const { start } = useActiveSession();
-  const { routines } = useRoutines(userId);
-  const navigate = useNavigate();
 
-  return (
-    <StartPicker
-      routines={routines}
-      onStartSession={(routine) => {
-        start(routine);
-        navigate(TRAIN_PATH);
-      }}
-    />
-  );
+  if (!userId) {
+    return (
+      <Welcome
+        requestedLabel={null}
+        onOpenAuth={() => {}}
+      />
+    );
+  }
+
+  return <DashboardPage userId={userId} />;
 }
 
 /**
@@ -378,52 +376,6 @@ export function TrainView() {
       planned={source?.exercises ?? []}
       onFinished={end}
     />
-  );
-}
-
-function StartPicker({
-  routines,
-  onStartSession,
-}: {
-  routines: RoutineWithExercises[];
-  onStartSession: (routine: RoutineWithExercises | null) => void;
-}) {
-  return (
-    <section className="rounded-2xl border border-white/10 bg-neutral-900/60 p-5 shadow-glass">
-      <h2 className="text-xl font-semibold tracking-tight">Entrenamiento de hoy</h2>
-      <p className="mt-1 text-xs text-neutral-500">Elige una rutina o empieza desde cero.</p>
-
-      <button
-        type="button"
-        onClick={() => onStartSession(null)}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:brightness-110"
-      >
-        <Play className="h-4 w-4" /> Sesión libre
-      </button>
-
-      {routines.length === 0 ? (
-        <p className="mt-4 text-xs text-neutral-500">
-          Aún no tienes rutinas. Créala desde la pestaña Rutinas.
-        </p>
-      ) : (
-        <ul className="mt-4 space-y-2">
-          {routines.map((routine) => (
-            <li key={routine.id}>
-              <button
-                type="button"
-                onClick={() => onStartSession(routine)}
-                className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-neutral-950/40 px-3 py-2.5 text-left transition hover:border-accent/50"
-              >
-                <span className="truncate text-sm">{routine.title}</span>
-                <span className="shrink-0 text-xs text-neutral-500">
-                  {routine.exercises.length} ejercicios
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
   );
 }
 

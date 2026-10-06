@@ -31,13 +31,16 @@ import {
 } from "@/App";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { CoachPortal } from "@/components/coach/portal/CoachPortal";
+import { ExerciseHub } from "@/components/hub/ExerciseHub";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
 import { CoachPortalPreview } from "@/components/dev/CoachPortalPreview";
 import {
   COACH_PATH,
+  EXERCISE_PATH,
   HOME_PATH,
   LEGACY_ROUTINES_PATH,
   PROFILE_PATH,
+  PROGRESS_PATH,
   ROUTINES_PATH,
 } from "@/components/shell/navItems";
 
@@ -98,7 +101,19 @@ export const router = createBrowserRouter([
           legacyHomeRoute,
           { path: ROUTINES_PATH, element: <RoutinesView /> },
           legacyRoutinesRoute,
-          { path: "/progreso", element: <ProgressView /> },
+          { path: PROGRESS_PATH, element: <ProgressView /> },
+          /*
+           * The exercise hub: one movement's demo, progression and records, in three tabs.
+           *
+           * `/ejercicio/:exerciseId` -- a param rather than a query string, because a URL a
+           * lifter can paste to a training partner is worth having, and `?tab=` inside it
+           * already handles the tab so the deep link can land on the right tab too.
+           *
+           * Absent from `navItems.ts`, like `/rangos`: this is reached from the exercise
+           * strip during a session, not from the thumb bar. A hub for one movement is not a
+           * destination anybody navigates to in order to browse.
+           */
+          { path: `${EXERCISE_PATH}/:exerciseId`, element: <ExerciseHub /> },
           // The workout has its own address so a running session survives a
           // reload and so the pill's destination is a real screen.
           { path: "/entrenar", element: <TrainView /> },

@@ -15,6 +15,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { useActiveSession, type ActiveSession } from "@/context/ActiveSessionContext";
+import { useElapsedMs, formatElapsed } from "@/hooks/useElapsedMs";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ACCENT, GLASS, MOTION, RADIUS, TEXT } from "@/design/tokens";
 import { SHELL_LABELS } from "@/lib/i18n";
@@ -42,12 +43,7 @@ export function truncateRoutineName(name: string): string {
 }
 
 /** Elapsed time as `MM:SS`. Minutes are not capped: a 3-hour session is `180:00`. */
-export function formatElapsed(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000));
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
+export { formatElapsed };
 
 type Phase = "idle" | "enter" | "leave";
 
@@ -86,20 +82,16 @@ export function ActiveWorkoutPill() {
     return () => window.clearTimeout(timer);
   }, [phase, reducedMotion]);
 
-  // One clock, one interval, cleared on unmount. A `setInterval` that is not
-  // cleared is the leak that keeps a jsdom test file open.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
+  // One clock, owned by one hook. An interval that is not cleared is the leak that keeps a
+  // jsdom test file open; an interval that *is* created twice is the drift nobody sees until
+  // two readings of one session disagree.
+  const elapsedMs = useElapsedMs(shown?.startedAt);
 
   if (!shown) return null;
   // The screen the user is on *is* the workout, so the pill would repeat it.
   if (pathname === TRAIN_PATH) return null;
 
-  const elapsedMs = now - new Date(shown.startedAt).getTime();
-  const elapsed = formatElapsed(elapsedMs);
+const elapsed = formatElapsed(elapsedMs);
   const isLong = elapsedMs > LONG_SESSION_MS;
   const accent = isLong ? ACCENT.secondary : ACCENT.base;
 

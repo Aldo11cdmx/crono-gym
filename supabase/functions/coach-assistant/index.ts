@@ -301,11 +301,16 @@ interface CoachRequestBody {
   userMessage: string;
   context: unknown;
   conversationHistory?: { role: "user" | "assistant"; content: string }[];
+  /** OpenRouter-compatible tool specs. When present, the model may invoke tools. */
+  tools?: unknown[];
+  /** Forces a specific tool choice (e.g. { type: "function", function: { name: "createRoutine" } }). */
+  tool_choice?: unknown;
 }
 
 interface ConversationMessage {
-  role: "system" | "user" | "assistant";
+  role: "system" | "user" | "assistant" | "tool";
   content: string;
+  tool_call_id?: string;
 }
 
 // ------------------------------------------------------------- rate limit
@@ -444,6 +449,10 @@ async function callOpenRouter(
 ): Promise<UpstreamResult> {
   const messages = await buildMessages(userMessage, payload);
 
+  if (payload.tools && Array.isArray(payload.tools) && payload.tools.length > 0) {
+    return callWithTools(apiKey, messages, payload);
+  }
+
   for (let attempt = 0; attempt < 2; attempt += 1) {
     let response: Response;
     try {
@@ -517,8 +526,291 @@ async function callOpenRouter(
   return { ok: false, status: 503, body: null, usage: UNKNOWN_USAGE };
 }
 
+// --------------------------------------------------------------- tool calling
+
 /**
- * The messages sent upstream.
+ * Equipment tags this gym has, embedded so `getGymEquipment` can be executed
+ * server-side without importing the app's static file (Deno cannot resolve it).
+ */
+const GYM_EQUIPMENT_TAGS = [
+  "leverage machine",
+  "smith machine",
+  "barbell",
+  "olympic barbell",
+  "ez barbell",
+  "cable",
+  "assisted",
+  "body weight",
+  "dumbbell",
+  "kettlebell",
+  "weighted",
+];
+
+/** One OpenRouter tool call chunk. */
+interface ToolCallChunk {
+  index: number;
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
+}
+
+/** Non-streaming OpenRouter completion response. */
+interface OpenRouterResponse {
+  choices: Array<{
+    message?: {
+      role?: string;
+      content?: string;
+      tool_calls?: ToolCallChunk[];
+    };
+  }>;
+  usage?: { total_tokens?: number };
+}
+
+/**
+ * Tool-calling variant of {@link callOpenRouter}.
+ *
+ * When tools are present, the model may return `tool_calls` instead of text.
+ * This function drives the full loop: receive a tool call, execute it locally
+ * (the context data is already in the request body), send the result back to
+ * the model, and repeat until the model gives a final text reply.
+ *
+ * `createRoutine` is a special case: its arguments ARE the routine, so the
+ * arguments are returned to the client as JSON text rather than executed and
+ * fed back to the model. The client's routine parser picks up the JSON directly.
+ *
+ * Other tools (`getAthletePRs`, `getGymEquipment`) are executed here and their
+ * results are sent back to the model, which incorporates them and answers.
+ */
+async function callWithTools(
+  apiKey: string,
+  messages: ConversationMessage[],
+  payload: CoachRequestBody,
+): Promise<UpstreamResult> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": Deno.env.get("APP_URL") ?? "https://cronos.app",
+          "X-Title": "Cronos Coach",
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages,
+          stream: false,
+          max_tokens: MAX_TOKENS,
+          temperature: TEMPERATURE,
+          top_p: TOP_P,
+          reasoning: { ...REASONING },
+          tools: payload.tools,
+          ...(payload.tool_choice ? { tool_choice: payload.tool_choice } : {}),
+        }),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+    } catch (cause) {
+      console.error("openrouter fetch failed (tools)", {
+        attempt,
+        name: cause instanceof Error ? cause.name : typeof cause,
+        message: cause instanceof Error ? cause.message : String(cause),
+      });
+      return { ok: false, status: 503, body: null, usage: UNKNOWN_USAGE };
+    }
+
+    if (!response.ok) {
+      console.error("openrouter rejected the tool request", {
+        status: response.status,
+        attempt,
+        body: await response.text().catch(() => "<unreadable>"),
+      });
+      await response.body?.cancel().catch(() => undefined);
+      const retryable = response.status === 429 || response.status === 503;
+      if (!retryable || attempt === 1) break;
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      continue;
+    }
+
+    const json = (await response.json()) as OpenRouterResponse;
+    const tokensUsed = json.usage?.total_tokens ?? null;
+    const message = json.choices?.[0]?.message;
+    const toolCalls = message?.tool_calls;
+
+    if (toolCalls && toolCalls.length > 0) {
+      // createRoutine: the args ARE the routine — return them as JSON text for the client.
+      const createRoutineCall = toolCalls.find((tc) => tc.function.name === "createRoutine");
+      if (createRoutineCall) {
+        const routineJson = buildRoutineFromToolCall(createRoutineCall.function.arguments, payload);
+        const stream = sseFromText(routineJson, tokensUsed);
+        return { ok: true, status: 200, body: stream, usage: Promise.resolve(tokensUsed) };
+      }
+
+      // Other tools: execute server-side, send results back, keep looping.
+      const toolResults: ConversationMessage[] = [];
+      for (const tc of toolCalls) {
+        let args: Record<string, unknown> = {};
+        try {
+          args = JSON.parse(tc.function.arguments);
+        } catch {
+          // Malformed arguments — pass an empty result so the model can recover.
+        }
+        const result = executeTool(tc.function.name, args, payload.context);
+        toolResults.push({
+          role: "tool",
+          tool_call_id: tc.id ?? tc.function.name,
+          content: JSON.stringify(result),
+        });
+      }
+
+      messages.push({ role: "assistant", content: message?.content ?? "" });
+      messages.push(...toolResults);
+      continue;
+    }
+
+    // No tool calls: return the text reply as SSE.
+    const text = message?.content ?? "";
+    const stream = sseFromText(text, tokensUsed);
+    return { ok: true, status: 200, body: stream, usage: Promise.resolve(tokensUsed) };
+  }
+
+  return { ok: false, status: 503, body: null, usage: UNKNOWN_USAGE };
+}
+
+/**
+ * Executes a named tool server-side using the request context.
+ *
+ * `getAthletePRs` reads the athlete's recent PRs (matched by name, since the
+ * context carries names not UUIDs), applies the Epley formula, and returns the
+ * 1RM estimate. `getGymEquipment` returns the static gym inventory.
+ */
+function executeTool(name: string, args: Record<string, unknown>, context: unknown): unknown {
+  switch (name) {
+    case "getAthletePRs": {
+      const exerciseRef = typeof args.exerciseId === "string" ? args.exerciseId : "";
+      const ctx = (context ?? {}) as {
+        recentPRs?: Array<{ exercise: string; weightKg: number; reps: number }>;
+      };
+      const prs = ctx.recentPRs ?? [];
+      const match = prs.find(
+        (p) => p.exercise.toLowerCase() === exerciseRef.toLowerCase(),
+      );
+      if (!match) {
+        return { found: false, exercise: exerciseRef };
+      }
+      const weight = match.weightKg;
+      const reps = match.reps;
+      // Epley: 1RM = weight * (1 + reps/30). Only valid for reps ≤ 10.
+      const oneRepMax = weight * (1 + reps / 30);
+      return {
+        found: true,
+        exercise: match.exercise,
+        weightKg: weight,
+        reps,
+        estimatedOneRepMax: reps <= 10 ? oneRepMax : null,
+      };
+    }
+
+    case "getGymEquipment":
+      return { tags: [...GYM_EQUIPMENT_TAGS] };
+
+    case "createRoutine": {
+      const exercises = Array.isArray(args.exercises) ? args.exercises.length : 0;
+      return {
+        routineId: `routine_${Date.now()}`,
+        name: typeof args.name === "string" ? args.name : "Sin nombre",
+        exerciseCount: exercises,
+      };
+    }
+
+    default:
+      return { error: `Unknown tool: ${name}` };
+  }
+}
+
+/**
+ * Transforms a `createRoutine` tool-call's arguments into the JSON the client
+ * expects from a generation: `{"name":string,"days":[]}`.
+ *
+ * The tool schema accepts a flat `exercises` array. The client's validator needs
+ * a `days` array, so the exercises are distributed evenly across the requested
+ * number of days (read from `context.routineRequest.daysPerWeek`).
+ */
+function buildRoutineFromToolCall(
+  rawArgs: string,
+  payload: CoachRequestBody,
+): string {
+  let args: Record<string, unknown> = {};
+  try {
+    args = JSON.parse(rawArgs);
+  } catch {
+    // If the arguments are not parseable, send an empty routine so the client
+    // gets a structured error rather than a stream timeout.
+    args = { name: "Sin nombre", exercises: [] };
+  }
+
+  const ctx = (payload.context ?? {}) as { routineRequest?: { daysPerWeek?: number } };
+  const daysPerWeek = ctx?.routineRequest?.daysPerWeek ?? 3;
+
+  const name = typeof args.name === "string" ? args.name : "Sin nombre";
+  const exercises = Array.isArray(args.exercises) ? args.exercises : [];
+
+  const exercisesPerDay = Math.max(1, Math.ceil(exercises.length / daysPerWeek));
+  const days: unknown[] = [];
+
+  for (let d = 0; d < daysPerWeek; d++) {
+    const start = d * exercisesPerDay;
+    const end = start + exercisesPerDay;
+    const dayExercises = exercises.slice(start, end);
+
+    if (dayExercises.length === 0) continue;
+
+    days.push({
+      dayNumber: d + 1,
+      focus: "",
+      exercises: dayExercises.map((e) => {
+        const ex = (e as Record<string, unknown>) ?? {};
+        return {
+          exerciseId: typeof ex.exerciseId === "string" ? ex.exerciseId : "",
+          ...(typeof ex.exerciseName === "string" ? { exerciseName: ex.exerciseName } : {}),
+          sets: typeof ex.sets === "number" ? ex.sets : 3,
+          repsMin: typeof ex.repsMin === "number" ? ex.repsMin : 8,
+          repsMax: typeof ex.repsMax === "number" ? ex.repsMax : 12,
+          restSeconds: typeof ex.restSeconds === "number" ? ex.restSeconds : 90,
+        };
+      }),
+    });
+  }
+
+  return JSON.stringify({ name, days });
+}
+
+/**
+ * Wraps a non-streaming response into Server-Sent Events so the client's
+ * `readStream` can consume it unchanged.
+ */
+function sseFromText(text: string, tokensUsed: number | null): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  const frames: string[] = [];
+
+  if (text) {
+    frames.push(
+      `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`,
+    );
+  }
+  frames.push("data: [DONE]\n\n");
+  if (tokensUsed !== null && tokensUsed !== undefined) {
+    frames.push(`data: ${JSON.stringify({ usage: { total_tokens: tokensUsed } })}\n\n`);
+  }
+
+  const full = frames.join("");
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(encoder.encode(full));
+      controller.close();
+    },
+  });
+}
  *
  * The system prompt is loaded rather than inlined: the reviewed copy lives in
  * `src/lib/ai/coachPrompt.ts`, which a Deno runtime cannot import. That leaves three

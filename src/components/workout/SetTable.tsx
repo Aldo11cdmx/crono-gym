@@ -31,13 +31,16 @@
  */
 
 import type { CSSProperties, ReactNode } from "react";
+import { useState } from "react";
 import { Check, Copy, Flame, Flag, Layers, Trash2, TrendingUp } from "lucide-react";
 import { SET_LOGGER_LABELS, SET_TYPE_LABELS } from "../../lib/i18n";
 import { SET_KINDS, type SetKind } from "../../lib/workout/setKind";
+import { isRecordBreak } from "../../lib/workout/recordBreak";
 import type { OverloadTarget } from "../../lib/overload";
 import type { BarType } from "../../lib/workout/weightUtils";
 import type { SetEntry } from "../../lib/workout/types";
 import { WeightStepper } from "./WeightStepper";
+import { RecordBadge, type RecordNotice } from "../hub/RecordBadge";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import {
   ACCENT,
@@ -58,6 +61,27 @@ export interface SetTableProps {
   /** Last session's best working set, in kg. Drives the "Anterior" row and the autofill. */
   previousKg?: number | null;
   previousReps?: number | null;
+  /**
+   * The exercise's name, for the record badge's title.
+   *
+   * Optional because the table is also rendered where no single exercise is in
+   * focus. Without it the badge has nothing to name and stays silent.
+   */
+  exerciseName?: string;
+  /**
+   * The all-time best working set for this exercise, in kg.
+   *
+   * The *pre-session* best, supplied by `ActiveWorkout` from
+   * `usePreviousPerformance`'s `allTimeBest` -- not a best computed from this
+   * session's sets. That is the whole point: the badge has to notice the moment
+   * the ceiling moves, and a ceiling computed from the sets already done would
+   * move on the first set and never again.
+   *
+   * Absent means "no history to beat", which is a first, not a record.
+   */
+  allTimeBestKg?: number | null;
+  /** Reps on the all-time best set. Null when it was logged without a count. */
+  allTimeBestReps?: number | null;
   /**
    * Formats a kg value into the unit this user reads.
    *
@@ -88,6 +112,9 @@ export function SetTable({
   sets,
   previousKg,
   previousReps,
+  exerciseName,
+  allTimeBestKg,
+  allTimeBestReps,
   formatWeight,
   suggestion,
   barType,
@@ -97,6 +124,72 @@ export function SetTable({
   onAdd,
 }: SetTableProps) {
   const reducedMotion = useReducedMotion();
+
+  /*
+   * The record notice, and the one piece of state this table owns.
+   *
+   * Everything else here is a controlled display of `ActiveWorkout`'s state --
+   * completion, kind, the numbers -- deliberately, because the autosave, the undo
+   * window and the sync payload all have to see the same flip. This is the
+   * exception: a badge that lives for four seconds and is nobody's business but
+   * the athlete's. Owning it here keeps `ActiveWorkout` out of it entirely.
+   */
+  const [recordNotice, setRecordNotice] = useState<RecordNotice | null>(null);
+
+  /**
+   * Flips a set's completion, and notices a record on the way up.
+   *
+   * The record check runs *before* `onChange`, on the entry as it is being
+   * completed -- not in an effect watching `sets`, because an effect would also
+   * fire for a set that was completed in a previous render, imported, or
+   * restored from a draft, and none of those are "the moment the ceiling moved".
+   *
+   * `onChange` is called unconditionally and with exactly the same payload
+   * whether or not a record was found: the badge is a decoration on the flip,
+   * never a condition of it.
+   */
+  const handleToggle = (index: number, entry: SetEntry) => {
+    const completing = !entry.completed;
+
+    if (completing && entry.kind !== "warmup") {
+      maybeNoticeRecord(entry);
+    }
+
+    onChange(index, { ...entry, completed: completing });
+  };
+
+  /**
+   * Fires the badge when this set beats the all-time best.
+   *
+   * Warm-up sets are excluded for the same reason `useAthletePRs` filters
+   * `is_warmup`: a warm-up is preparation, and crowning one would put a record
+   * on a load the athlete was easing into. Failure and drop sets count, because
+   * they are real work and the record table counts them too.
+   */
+  const maybeNoticeRecord = (entry: SetEntry) => {
+    if (!exerciseName) return;
+    if (allTimeBestKg === null || allTimeBestKg === undefined) return;
+
+    const weightKg = Number.parseFloat(entry.weight);
+    const reps = Number.parseInt(entry.reps, 10);
+
+    if (
+      !isRecordBreak(weightKg, reps, {
+        weightKg: allTimeBestKg,
+        reps: allTimeBestReps ?? null,
+      })
+    ) {
+      return;
+    }
+
+    setRecordNotice({
+      // The achievement, not a timestamp: the same set re-toggled re-fires the
+      // same notice rather than minting a second one, and `RecordBadge` keys
+      // its dismiss timer on this.
+      id: `${exerciseName}:${weightKg}x${reps}`,
+      title: `${exerciseName}: ${formatWeight(weightKg)} × ${reps}`,
+    });
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
@@ -231,7 +324,7 @@ export function SetTable({
               index={index}
               completed={entry.completed}
               reducedMotion={reducedMotion}
-              onToggle={() => onChange(index, { ...entry, completed: !entry.completed })}
+              onToggle={() => handleToggle(index, entry)}
             />
           </div>
         );
@@ -253,6 +346,16 @@ export function SetTable({
       >
         + Agregar serie
       </button>
+
+      {/*
+        Rendered here, but mounted nowhere in particular: the badge is
+        `position: fixed`, so it floats over the workout whichever component
+        tree it happens to live in. Putting it in the table rather than in a
+        shell-level provider is the whole reason the table needs the all-time
+        best as a prop -- the one place both the set just completed and the
+        ceiling it would have to beat are already in scope.
+      */}
+      <RecordBadge notice={recordNotice} />
     </div>
   );
 }

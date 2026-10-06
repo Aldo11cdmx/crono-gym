@@ -21,6 +21,8 @@
 
 import { CoachRequestError, isCoachAction, type AssistantContext, type CoachError } from "./types";
 import type { Exercise } from "@/types/supabase";
+import { EXERCISE_TOOLS, executeToolCall } from "./tools";
+import type { AssistantResponse } from "./coachAssistant";
 
 // ------------------------------------------------------------------ contracts
 
@@ -559,9 +561,9 @@ export async function generateRoutine(
   const instruction = buildRoutineInstruction(request);
   const context = buildRoutineContext(request);
 
-  let reply: string;
+  let response: AssistantResponse;
   try {
-    reply = await ask(instruction, context, options.signal);
+    response = await ask(instruction, context, options.signal);
   } catch (cause) {
     if (options.signal?.aborted) throw cause;
     if (cause instanceof RoutineGenerationError) throw cause;
@@ -574,12 +576,69 @@ export async function generateRoutine(
 
   throwIfAborted(options.signal);
 
-  const routine = validateRoutine(parseRoutinePayload(reply));
+  let routine: GeneratedRoutine | null = null;
+
+  if (response.toolCalls && response.toolCalls.length > 0) {
+    const createRoutineCall = response.toolCalls.find(
+      (tc) => tc.function.name === "createRoutine",
+    );
+    if (createRoutineCall) {
+      let args: Record<string, unknown> = {};
+      try {
+        args = JSON.parse(createRoutineCall.function.arguments);
+      } catch {
+        args = {};
+      }
+      await executeToolCall("createRoutine", args, {
+        catalog: catalog as Pick<Exercise, "id" | "name">[],
+      }).catch(() => undefined);
+      routine = routineFromToolCallArgs(args, context.routineRequest.daysPerWeek);
+    }
+  }
+
+  if (routine === null) {
+    routine = validateRoutine(parseRoutinePayload(response.message));
+  }
+
   if (routine === null) {
     throw new RoutineGenerationError({ code: "SERVICE_UNAVAILABLE" });
   }
 
   return substituteUnknownExercises(routine, request.availableExerciseIds, catalog);
+}
+
+function routineFromToolCallArgs(args: Record<string, unknown>, daysPerWeek: number): GeneratedRoutine | null {
+  const name = typeof args.name === "string" ? args.name.trim() : "";
+  if (name === "") return null;
+
+  const exercises = Array.isArray(args.exercises) ? args.exercises : [];
+  const exercisesPerDay = Math.max(1, Math.ceil(exercises.length / daysPerWeek));
+  const days: GeneratedDay[] = [];
+
+  for (let d = 0; d < daysPerWeek; d++) {
+    const start = d * exercisesPerDay;
+    const end = start + exercisesPerDay;
+    const dayExercises = exercises.slice(start, end);
+    if (dayExercises.length === 0) continue;
+
+    days.push({
+      dayNumber: d + 1,
+      focus: "",
+      exercises: dayExercises.map((e): GeneratedExercise => {
+        const ex = (e as Record<string, unknown>) ?? {};
+        return {
+          exerciseId: typeof ex.exerciseId === "string" ? ex.exerciseId : "",
+          sets: typeof ex.sets === "number" ? ex.sets : 3,
+          repsMin: typeof ex.repsMin === "number" ? ex.repsMin : 8,
+          repsMax: typeof ex.repsMax === "number" ? ex.repsMax : 12,
+          restSeconds: typeof ex.restSeconds === "number" ? ex.restSeconds : 90,
+        };
+      }),
+    });
+  }
+
+  if (days.length === 0) return null;
+  return validateRoutine({ name, days });
 }
 
 /**
@@ -592,22 +651,25 @@ export type RoutineTransport = (
   instruction: string,
   context: RoutinePromptContext,
   signal?: AbortSignal,
-) => Promise<string>;
+) => Promise<AssistantResponse>;
 
 /** The default transport: the same Edge Function and the same rate-limit budget as the chat. */
 export const askAssistant: RoutineTransport = async (instruction, context, signal) => {
   const { askCoach } = await import("./coachAssistant");
 
   const response = await askCoach(
-    // Routed through a variable rather than an object literal so the superset is not
-    // flagged as an excess property: `askCoach` is typed against `AssistantContext`, and
-    // this context is one with a key added, not a different shape.
-    { userMessage: instruction, context, conversationHistory: [] },
+    {
+      userMessage: instruction,
+      context,
+      conversationHistory: [],
+      tools: [...EXERCISE_TOOLS],
+      tool_choice: { type: "function", function: { name: "createRoutine" } },
+    },
     () => undefined,
     signal,
   );
 
-  return response.message;
+  return response;
 };
 
 /**

@@ -26,6 +26,7 @@ import {
   type RoutineGenerationRequest,
   type RoutineTransport,
 } from "./routineGenerator";
+import type { AssistantResponse } from "./coachAssistant";
 import type { Exercise } from "@/types/supabase";
 
 const REQUEST: RoutineGenerationRequest = {
@@ -44,15 +45,34 @@ const CATALOG: Pick<Exercise, "id" | "body_part">[] = [
   { id: "ex-pulldown", body_part: "back" },
 ];
 
-/** A transport that answers with `reply`, recording what it was asked. */
-function transport(reply: string): { ask: RoutineTransport; calls: string[] } {
+/** A transport that answers with `response`, recording what it was asked. */
+function transport(response: AssistantResponse): { ask: RoutineTransport; calls: string[] } {
   const calls: string[] = [];
   return {
     calls,
     ask: async (instruction) => {
       calls.push(instruction);
-      return reply;
+      return response;
     },
+  };
+}
+
+/** Text-only response (no tool calls), as the Edge Function returns after server-side execution. */
+function textResponse(reply: string): AssistantResponse {
+  return { message: reply };
+}
+
+/** A tool-call response where createRoutine args are the routine. */
+function toolCallResponse(args: Record<string, unknown>): AssistantResponse {
+  return {
+    message: "",
+    toolCalls: [
+      {
+        id: "call_create",
+        type: "function",
+        function: { name: "createRoutine", arguments: JSON.stringify(args) },
+      },
+    ],
   };
 }
 
@@ -368,8 +388,50 @@ describe("routineGenerator · substituting invented ids", () => {
 // ---------------------------------------------------------------- generate
 
 describe("routineGenerator · generating", () => {
+  it("returns a routine parsed from a tool-call response", async () => {
+    const args = {
+      name: "Pecho y espalda",
+      exercises: [
+        { exerciseId: "ex-press", sets: 4, repsMin: 8, repsMax: 10, restSeconds: 120 },
+        { exerciseId: "ex-fly", sets: 3, repsMin: 12, repsMax: 15, restSeconds: 90 },
+        { exerciseId: "ex-row", sets: 4, repsMin: 6, repsMax: 8, restSeconds: 150 },
+      ],
+    };
+
+    const { ask } = transport(toolCallResponse(args));
+    const { routine, substituted } = await generateRoutine(REQUEST, { ask, catalog: CATALOG });
+
+    expect(routine.name).toBe("Pecho y espalda");
+    expect(routine.days.length).toBe(3);
+    expect(routine.days[0].exercises).toHaveLength(1);
+    expect(routine.days[0].exercises[0].exerciseId).toBe("ex-press");
+    expect(substituted).toBe(0);
+  });
+
+  it("substitutes unknown ids from a tool-call response before the routine reaches the wizard", async () => {
+    const args = {
+      name: "Pecho y espalda",
+      exercises: [
+        { exerciseId: "ex-press", sets: 4, repsMin: 8, repsMax: 10, restSeconds: 120 },
+        { exerciseId: "sentadilla-inventada", sets: 3, repsMin: 12, repsMax: 15, restSeconds: 90 },
+        { exerciseId: "ex-row", sets: 4, repsMin: 6, repsMax: 8, restSeconds: 150 },
+      ],
+    };
+
+    const { ask } = transport(toolCallResponse(args));
+    const { routine, substituted } = await generateRoutine(REQUEST, { ask, catalog: CATALOG });
+
+    expect(substituted).toBe(1);
+    const known = new Set([...REQUEST.availableExerciseIds, ...CATALOG.map((e) => e.id)]);
+    for (const day of routine.days) {
+      for (const exercise of day.exercises) {
+        expect(known.has(exercise.exerciseId)).toBe(true);
+      }
+    }
+  });
+
   it("returns a routine with every id the catalog holds", async () => {
-    const { ask } = transport(JSON.stringify(validPayload()));
+    const { ask } = transport(textResponse(JSON.stringify(validPayload())));
 
     const { routine, substituted } = await generateRoutine(REQUEST, { ask, catalog: CATALOG });
 
@@ -379,7 +441,7 @@ describe("routineGenerator · generating", () => {
   });
 
   it("substitutes an invented id before the routine reaches the wizard", async () => {
-    const { ask } = transport(JSON.stringify(validPayload("sentadilla")));
+    const { ask } = transport(textResponse(JSON.stringify(validPayload("sentadilla"))));
 
     const { routine, substituted } = await generateRoutine(REQUEST, { ask, catalog: CATALOG });
 
@@ -391,7 +453,7 @@ describe("routineGenerator · generating", () => {
   });
 
   it("throws a classified error for a reply that is not a routine", async () => {
-    const { ask } = transport("Lo siento, no puedo ayudarte con eso.");
+    const { ask } = transport(textResponse("Lo siento, no puedo ayudarte con eso."));
 
     // Typed, not a bare SyntaxError: the wizard switches on the code to decide whether to
     // offer "retry" or to give up, and it cannot do that from an exception name.
@@ -404,7 +466,7 @@ describe("routineGenerator · generating", () => {
   });
 
   it("throws a classified error for well-formed JSON that is not a routine", async () => {
-    const { ask } = transport('{"name":"A","days":[]}');
+    const { ask } = transport(textResponse('{"name":"A","days":[]}'));
 
     await expect(generateRoutine(REQUEST, { ask, catalog: CATALOG })).rejects.toMatchObject({
       detail: { code: "SERVICE_UNAVAILABLE" },
@@ -425,7 +487,7 @@ describe("routineGenerator · generating", () => {
     let calls = 0;
     const ask: RoutineTransport = async () => {
       calls += 1;
-      return "{}";
+      return { message: "{}" };
     };
 
     // Aborted before the first await: the wizard shows a spinner the instant Cancel is
@@ -440,7 +502,7 @@ describe("routineGenerator · generating", () => {
     const controller = new AbortController();
     const ask: RoutineTransport = async () => {
       controller.abort();
-      return JSON.stringify(validPayload());
+      return { message: JSON.stringify(validPayload()) };
     };
 
     // The distinction the wizard needs: "the user stopped this" and "this failed" are
@@ -455,7 +517,7 @@ describe("routineGenerator · generating", () => {
     let received: AbortSignal | undefined;
     const ask: RoutineTransport = async (_instruction, _context, signal) => {
       received = signal;
-      return JSON.stringify(validPayload());
+      return { message: JSON.stringify(validPayload()) };
     };
 
     await generateRoutine(REQUEST, { ask, signal: controller.signal, catalog: CATALOG });

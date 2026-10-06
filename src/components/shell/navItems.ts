@@ -108,6 +108,31 @@ export const RANGES_PATH = "/rangos";
 
 export const PROGRESS_PATH = "/progreso";
 
+/**
+ * The exercise hub's prefix.
+ *
+ * A prefix and not a function returning a path, because `router.tsx` declares the same
+ * string as a pattern and the two have to stay in step. A helper here would compute the
+ * route and the router would compute it differently, which is exactly the drift this file
+ * was written to stop -- only for a screen that did not exist when it was written.
+ */
+export const EXERCISE_PATH = "/ejercicio";
+
+/**
+ * `/ejercicio/:exerciseId`, the hub for one movement.
+ *
+ * Not a navigation destination. It is somewhere an athlete arrives *from* the carousel
+ * strip or an exercise chip, never by aiming at the bottom of a phone, and it is absent
+ * from both `NAV_DESTINATIONS` and `SECONDARY_DESTINATIONS` for that reason. Adding it to
+ * `navItems` would also break the grid arithmetic `BottomNav` derives from the count.
+ */
+export function exercisePath(exerciseId: string): string {
+  // `encodeURIComponent`, not a template literal: catalog ids are free text in the schema,
+  // and one containing a slash would otherwise produce a path that matches no route while
+  // looking like it does.
+  return `${EXERCISE_PATH}/${encodeURIComponent(exerciseId)}`;
+}
+
 export interface NavDestination {
   /** Router path. */
   path: string;

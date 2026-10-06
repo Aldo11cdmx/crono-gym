@@ -762,6 +762,171 @@ export const IMPORT_LABELS = {
   },
 } as const;
 
+/**
+ * UI copy for the exercise hub — the screen at `/ejercicio/:exerciseId`.
+ *
+ * Grouped by tab rather than by component, because the three tabs share vocabulary
+ * ("sesión", "peso", "repeticiones") and a translator reviewing the hub should see that
+ * shared vocabulary once rather than three times.
+ */
+export const HUB_LABELS = {
+  /** Names the whole screen, for the landmark. */
+  regionLabel: (exercise: string): string => `Ficha de ${exercise}`,
+
+  /** The way back. Present only when there is a session to go back to. */
+  backToSession: "Volver a la sesión",
+  backToSessionAriaLabel: (title: string): string => `Volver a la sesión ${title}`,
+
+  /**
+   * The tab strip.
+   *
+   * `aria` names the destination ("Ver la progresión") while `label` names the thing on
+   * screen ("Progresión"): a tab called just "Progresión" and a heading called "Progresión"
+   * are the same word twice in a row in a screen reader's reading, and the extra verb is
+   * what makes them distinguishable out of context.
+   */
+  tabsAriaLabel: "Datos del ejercicio",
+  tabs: {
+    demo: { label: "Demo", aria: "Ver la demo y el calentamiento" },
+    progress: { label: "Progresión", aria: "Ver la progresión" },
+    records: { label: "Récords", aria: "Ver los récords personales" },
+  } as Record<string, { label: string; aria: string }>,
+
+  /** Shown in the header while a session runs, next to its clock. */
+  sessionRunning: "Sesión en curso",
+  sessionRunningAriaLabel: (title: string, elapsed: string): string =>
+    `Sesión en curso: ${title}, ${elapsed}. Sigue contando mientras miras esta ficha.`,
+
+  /** The clock itself, for when it is the only thing describing the session. */
+  sessionClockAriaLabel: (elapsed: string): string => `${elapsed} de sesión en curso`,
+
+  /** No session: the way back goes elsewhere. */
+  noSession: "Sin sesión activa",
+  backToTrain: "Ir a entrenar",
+
+  notFound: "No encontramos ese ejercicio",
+  notFoundHint: "Puede que el enlace apunte a un ejercicio que ya no está en el catálogo.",
+  loading: "Cargando ficha…",
+
+  /** The dynamic chips: what the athlete has actually got going for this movement. */
+  chipsAriaLabel: "Resumen rápido del ejercicio",
+} as const;
+
+/** Copy for the demo tab: the media, the muscles, and the warm-up ramp. */
+export const HUB_DEMO_LABELS = {
+  primaryMuscles: "Músculos principales",
+  secondaryMuscles: "Músculos secundarios",
+  musclesAriaLabel: (exercise: string): string => `Músculos que trabaja ${exercise}`,
+
+  warmup: "Rampa de calentamiento",
+  warmupOpen: "Generar calentamiento",
+  warmupOpenAriaLabel: (exercise: string): string =>
+    `Generar una rampa de calentamiento para ${exercise}`,
+  warmupWorkingWeight: (exercise: string): string => `Peso de trabajo de ${exercise}`,
+  warmupWorkingWeightHint: "La rampa se calcula sobre el peso con el que vas a trabajar.",
+  warmupInsert: "Añadir a la sesión",
+  warmupInsertAriaLabel: (weights: string): string =>
+    `Añadir ${weights} a la sesión como calentamiento`,
+  warmupNoSession: "Inicia una sesión para añadirlas",
+  warmupEmpty: "No hace falta calentamiento para ese peso",
+  warmupRampAriaLabel: (weights: string): string => `Rampa: ${weights}`,
+  warmupQueued: (n: number): string =>
+    n === 1
+      ? "1 serie de calentamiento añadida a la sesión"
+      : `${n} series de calentamiento añadidas a la sesión`,
+
+  /** Not in the rack: the ramp snapped to what the gym can actually build. */
+  warmupNote: "Cada paso se ajusta a los discos que tienes en el gimnasio.",
+} as const;
+
+/** Copy for the progression tab. */
+export const HUB_PROGRESS_LABELS = {
+  /** Metric choice. Each entry names the series it draws. */
+  metricsAriaLabel: "Métrica",
+  metrics: {
+    topWeight: "Peso máx.",
+    estimate: "1RM est.",
+    volume: "Volumen",
+  } as Record<string, string>,
+
+  /** Period choice, in days. `null` would mean "everything", which is not a choice. */
+  periodAriaLabel: "Periodo",
+  periods: {
+    m1: "1M",
+    m3: "3M",
+    y1: "1A",
+  } as Record<string, string>,
+
+  /** Fewer than this many sessions in range: the chart draws but says why it is thin. */
+  thinData: (n: number): string =>
+    n === 1 ? "Solo hay 1 sesión registrada" : `Solo hay ${n} sesiones registradas`,
+
+  /** Nothing at all, ever. Different from thin: there is no line to draw. */
+  empty: "Todavía no hay sesiones de este ejercicio",
+
+  /**
+   * Sessions exist but none inside the selected window.
+   *
+   * A separate string from `empty` because the two need different actions. "Never trained
+   * this" sends someone to their first session; "nothing in the last month" sends someone
+   * to switch the period back, and telling them the exercise has no history when they
+   * trained it in March is simply a bug wearing a sentence.
+   */
+  emptyInPeriod: (period: string): string =>
+    `No hay sesiones en los últimos ${period}. Prueba con un periodo más largo.`,
+
+  unitVolume: "kg·rep",
+  unitKg: "kg",
+
+  history: "Historial de sesiones",
+  historyCollapseAriaLabel: (exercise: string, open: boolean): string =>
+    open
+      ? `Ocultar el historial de ${exercise}`
+      : `Ver el historial de ${exercise}`,
+  historyEmpty: "Sin sesiones",
+
+  /** The plateau verdict, in the athlete's words rather than the engine's. */
+  plateauInsufficientFew: "Muy pocas sesiones para saber si te has estancado",
+  plateauInsufficientTime: (days: number): string =>
+    days === 1
+      ? "Solo llevas 1 día con este ejercicio: demasiado pronto para saberlo"
+      : `Solo llevas ${days} días con este ejercicio: demasiado pronto para saberlo`,
+  plateau: (shortfall: string, sessions: number): string =>
+    `Sin gains desde hace ${sessions} ${sessions === 1 ? "sesión" : "sesiones"}. Te faltan unos ${shortfall}.`,
+  plateauSuggestionUp: "Prueba a subir un poco el peso o las repeticiones",
+  plateauSuggestionDeload: "Considera una semana de descarga antes de volver a intentarlo",
+  progressing: (gain: string): string => `Vas ganando: ${gain} desde la última vez`,
+
+  /** How the chart should name itself for a screen reader. */
+  chartAriaLabel: (exercise: string, metric: string): string =>
+    `${metric} de ${exercise}`,
+} as const;
+
+/** Copy for the records tab. */
+export const HUB_RECORDS_LABELS = {
+  gridAriaLabel: (exercise: string): string => `Récords de ${exercise}`,
+
+  maxWeight: "Peso máximo",
+  estimate: "1RM estimado",
+  maxReps: "Máx. repeticiones",
+  sessionVolume: "Volumen de sesión",
+
+  /** Never reached. The honest report of "no record" is "no record", not a zero. */
+  noRecord: "Sin marca",
+
+  rankAriaLabel: (rank: string, exercise: string): string => `Rango ${rank} en ${exercise}`,
+  standardAriaLabel: (percent: string, exercise: string): string =>
+    `${percent} del estándar de fuerza en ${exercise}`,
+  noStandard: "Este movimiento no tiene un estándar de fuerza definido",
+
+  /** The floating notification that fires when a record breaks during the session. */
+  badgeAriaLabel: (title: string): string => `Nuevo récord: ${title}`,
+  badgeDismissAriaLabel: "Cerrar el aviso de récord",
+
+  /** How long the notification stays before it clears itself. */
+  badgeAutoDismissMs: 4000,
+} as const;
+
 export const UNDO_LABELS = {
   removed: (n: number): string => `Serie ${n} eliminada`,
   undo: "Deshacer",

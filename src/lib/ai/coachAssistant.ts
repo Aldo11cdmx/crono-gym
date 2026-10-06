@@ -25,6 +25,21 @@ import {
   type CoachAction,
 } from "./types";
 
+export interface ToolCall {
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
+}
+
+export type AssistantResponse = CoachResponse & {
+  toolCalls?: ToolCall[];
+};
+
+type CoachRequestWithTools = CoachRequest & {
+  tools?: unknown[];
+  tool_choice?: unknown;
+};
+
 /** Longest user message the Edge Function will accept. Mirrored, not discovered. */
 export const MAX_USER_MESSAGE_CHARS = 500;
 
@@ -235,10 +250,10 @@ function shouldUseDevMock(): boolean {
  * @throws {CoachRequestError} classified per {@link CoachError}.
  */
 export async function askCoach(
-  request: CoachRequest,
+  request: CoachRequestWithTools,
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
-): Promise<CoachResponse> {
+): Promise<AssistantResponse> {
   const message = request.userMessage.trim();
 
   // Validated before anything else, including the mock: an over-long message is a
@@ -262,12 +277,12 @@ export async function askCoach(
         Authorization: `Bearer ${token}`,
         ...(origin ? { Origin: origin } : {}),
       },
-      body: JSON.stringify({
+       body: JSON.stringify({
         userMessage: message,
         context: request.context,
-        // Capped here as well as upstream: the last N *pairs*, so the model always
-        // sees a coherent exchange rather than a reply with no question in it.
         conversationHistory: request.conversationHistory.slice(-MAX_HISTORY_TURNS * 2),
+        ...(request.tools ? { tools: request.tools } : {}),
+        ...(request.tool_choice ? { tool_choice: request.tool_choice } : {}),
       }),
       signal,
     });
@@ -435,7 +450,7 @@ async function classifyHttpError(response: Response): Promise<CoachRequestError>
 async function readStream(
   response: Response,
   onChunk: (chunk: string) => void,
-): Promise<CoachResponse> {
+): Promise<AssistantResponse> {
   const body = response.body;
   if (!body) {
     const { message, action } = parseCoachAction(await response.text());
@@ -447,23 +462,10 @@ async function readStream(
   const decoder = new TextDecoder();
   let buffer = "";
   let full = "";
-  // Everything received, frames or not. Held so a body that turned out not to be
-  // SSE at all -- an error page from a proxy, a JSON object -- can still be shown as
-  // text instead of leaving the athlete with an empty bubble.
   let raw = "";
+  let toolCalls: ToolCall[] = [];
 
-  // The action block is held back by the filter rather than stripped afterwards: a stream
-  // that has already shown the JSON cannot un-show it. `full` keeps every fragment,
-  // filtered or not, because that is what the final `parseCoachAction` reads.
   const filter = createActionBlockFilter();
-  /**
-   * What the athlete has actually been shown, as distinct from `full`.
-   *
-   * The returned `message` is this string rather than a second pass of `parseCoachAction`
-   * over `full`. Two passes would be two independent opinions about which fenced block is
-   * the action one, and a reply carrying more than one fence -- where they can disagree --
-   * would leave the bubble showing something different from the message that replaces it.
-   */
   let shown = "";
   const emit = (fragment: string) => {
     if (!fragment) return;
@@ -481,7 +483,6 @@ async function readStream(
     buffer += decoded;
     raw += decoded;
 
-    // Frames are newline-delimited and a network read can split one in half.
     const lines = buffer.split("\n");
     buffer = lines.pop() ?? "";
 
@@ -493,10 +494,21 @@ async function readStream(
 
       const fragment = textFromFrame(data);
       if (fragment) emit(fragment);
+
+      const parsedCalls = toolCallsFromFrame(data);
+      if (parsedCalls) {
+        for (const call of parsedCalls) {
+          const existing = toolCalls.find((tc) => tc.id === call.id);
+          if (existing) {
+            existing.function.arguments += call.function.arguments;
+          } else {
+            toolCalls.push({ ...call });
+          }
+        }
+      }
     }
   }
 
-  // A final frame with no trailing newline would still be sitting in the buffer.
   const tail = buffer.trim();
   if (tail.startsWith("data:")) {
     const fragment = textFromFrame(tail.slice("data:".length).trim());
@@ -504,17 +516,9 @@ async function readStream(
   }
 
   if (full === "" && raw.trim() !== "") {
-    /*
-     * Not SSE. Show what arrived rather than nothing: an empty assistant bubble
-     * looks like the coach having nothing to say, when in fact something was
-     * delivered and this client could not read it.
-     */
     emit(raw.trim());
   }
 
-  // Anything the filter was still holding -- a block whose closing fence never arrived.
-  // Emitted here rather than dropped, so the streamed text is not quietly shorter than the
-  // message this function returns.
   const held = filter.flush();
   if (held !== "") {
     shown += held;
@@ -522,7 +526,25 @@ async function readStream(
   }
 
   const { action } = parseCoachAction(full);
-  return { message: shown.trim(), ...(action ? { action } : {}) };
+  return {
+    message: shown.trim(),
+    ...(action ? { action } : {}),
+    ...(toolCalls.length > 0 ? { toolCalls } : {}),
+  };
+}
+
+function toolCallsFromFrame(data: string): ToolCall[] | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return null;
+  }
+  if (typeof parsed !== "object" || parsed === null) return null;
+  const choices = (parsed as { choices?: unknown }).choices;
+  if (!Array.isArray(choices) || choices.length === 0) return null;
+  const delta = (choices[0] as { delta?: { tool_calls?: ToolCall[] } } | undefined)?.delta;
+  return delta?.tool_calls ?? null;
 }
 
 /** Pulls `choices[0].delta.content` out of one frame, or `""` if it is not there. */

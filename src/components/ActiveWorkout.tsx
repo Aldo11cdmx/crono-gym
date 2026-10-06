@@ -91,7 +91,7 @@ export function ActiveWorkout({
   // bottom-nav pill shows and the `started_at` written to the log are the same
   // instant. Captured locally it would restart from zero every time this
   // component remounts, and every remount is a session the user believes is one.
-  const { session, end } = useActiveSession();
+  const { session, end, warmups, resolveWarmup } = useActiveSession();
   const startedAt = session?.startedAt ?? new Date().toISOString();
 
   const [items, setItems] = useState<DraftExercise[]>(() =>
@@ -320,6 +320,52 @@ export function ActiveWorkout({
       ),
     );
   }
+
+  /**
+   * Applies warm-up ramps asked for from another screen.
+   *
+   * The exercise hub is a different route, and this component's set array is local state, so
+   * the hub cannot reach in here. Rather than lifting `items` into context -- which would
+   * mean re-plumbing the autosave effect, the undo window, the recovery path and the sync
+   * payload for every set in the app -- the hub *asks*, and this drains the queue through
+   * `setItems`.
+   *
+   * Two decisions worth stating:
+   *
+   * - **Inserted before the working sets, not after.** A ramp that lands below the first
+   *   working set is not a ramp; the athlete would do their top set cold. Prepending is why
+   *   the request carries its own order.
+   * - **`kind: "warmup"` is set here and not in the hub.** `finish()` reads `kind` to decide
+   *   the `is_warmup` column, and a warm-up set that reaches the payload unflagged is
+   *   counted as volume and corrupts the 1RM estimate for every later session. There is one
+   *   place that knows how a set becomes a row, and this is it.
+   */
+  useEffect(() => {
+    const pending = warmups[0];
+    if (!pending) return;
+
+    setItems((prev) => {
+      // The hub is opened for one movement and the session may not contain it. A ramp for
+      // an exercise nobody is training today is discarded rather than silently creating a
+      // new row for it -- adding an exercise to a session behind the athlete's back is a
+      // worse surprise than the ramp not arriving.
+      const index = prev.findIndex((item) => item.exercise.name === pending.exerciseName);
+      if (index === -1) return prev;
+
+      const item = prev[index];
+      const warmupEntries: DraftExercise["sets"] = pending.weights.map((weight, position) => ({
+        ...emptySet(item.sets.length + position),
+        weight: String(weight),
+        kind: "warmup",
+      }));
+
+      return prev.map((entry, at) =>
+        at === index ? { ...entry, sets: [...warmupEntries, ...entry.sets] } : entry,
+      );
+    });
+
+    resolveWarmup(pending.id);
+  }, [warmups, resolveWarmup]);
 
   /**
    * Deletes a set but keeps it recoverable.
@@ -725,8 +771,11 @@ export function ActiveWorkout({
               >
                 <SetTable
                   sets={selected.sets}
+                  exerciseName={selected.exercise.name}
                   previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
                   previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
+                  allTimeBestKg={performance[selected.exercise.id]?.allTimeBest?.weight ?? null}
+                  allTimeBestReps={performance[selected.exercise.id]?.allTimeBest?.reps ?? null}
                   formatWeight={displayKg}
                   suggestion={overload[selected.key] ?? null}
                   barType={gym.barType}

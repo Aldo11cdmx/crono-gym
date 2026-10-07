@@ -398,10 +398,16 @@ describe("CoachPinGate", () => {
   it("disables the form while a lockout is in force", async () => {
     // A button left enabled invites a coach to keep guessing, and each attempt spends
     // the budget the server is protecting.
+    //
+    // The instant is *future*, computed from the clock: a hardcoded one goes
+    // stale the day it is written, and a stale lockout is no lockout at all --
+    // the countdown reports it expired and the form stays enabled, which is
+    // exactly what this test exists to forbid.
+    const lockedUntil = new Date(Date.now() + 15 * 60_000).toISOString();
     const auth = mockAuth({
       isUnlocked: false,
-      error: { code: "TOO_MANY_ATTEMPTS", lockedUntil: "2026-10-05T12:15:00.000Z" },
-      lockedUntil: "2026-10-05T12:15:00.000Z",
+      error: { code: "TOO_MANY_ATTEMPTS", lockedUntil },
+      lockedUntil,
     });
     const { CoachPinGate } = await loadGates();
     render(
@@ -421,7 +427,9 @@ describe("CoachPinGate", () => {
   });
 
   it("shows when the lockout lifts", async () => {
-    const lockedUntil = "2026-10-05T12:15:00.000Z";
+    // Future, like the lockout this renders: a past instant would count as
+    // expired, and an expired lockout is not one to announce.
+    const lockedUntil = new Date(Date.now() + 15 * 60_000).toISOString();
     mockAuth({
       isUnlocked: false,
       error: { code: "TOO_MANY_ATTEMPTS", lockedUntil },

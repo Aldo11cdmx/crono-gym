@@ -27,6 +27,7 @@ import {
   DB_VERSION,
   EXERCISE_NOTES_STORE,
   LAST_RANKS_STORE,
+  LOCAL_STATE_STORE,
   QUEUE_STORE,
   RANK_HISTORY_STORE,
   STORES,
@@ -49,7 +50,7 @@ describe("the cronos-offline schema", () => {
     // installed clients about what their upgrade will find, so it has to be stated. A
     // derived number would bump itself every time a store is added and stop meaning
     // anything.
-    expect(DB_VERSION).toBe(4);
+    expect(DB_VERSION).toBe(5);
   });
 
   it("declares every store exactly once", () => {
@@ -75,6 +76,10 @@ describe("the cronos-offline schema", () => {
     expect(storeByName(EXERCISE_NOTES_STORE)?.keyPath).toBe("setId");
     // Keyed by the ISO day, so there is exactly one conversation per calendar day.
     expect(storeByName(COACH_CHATS_STORE)?.keyPath).toBe("id");
+    // One row of device-local state, keyed by the versioned key the reader and the
+    // writer both agree on. Not keyed by user_id: this is device state, and a second
+    // device is a second row, which is the intended behaviour.
+    expect(storeByName(LOCAL_STATE_STORE)?.keyPath).toBe("key");
   });
 
   it("indexes the notes store by exercise, so the hub's read is the local shape too", () => {

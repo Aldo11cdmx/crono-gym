@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Lock, LogOut } from "lucide-react";
 import { Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
@@ -374,10 +374,20 @@ export function TrainView() {
    * with an empty plan is a session with no exercises, and the library
    * landing a beat later does not fill it back in.
    */
-  const [libraryLoaded, setLibraryLoaded] = useState(false);
-  useEffect(() => {
-    if (!loading) setLibraryLoaded(true);
-  }, [loading]);
+const [libraryLoaded, setLibraryLoaded] = useState(false);
+   /**
+    * True once a load has completed at least once. `loading` starts false, so
+    * gating on it alone would mark the library loaded on first render before
+    * the first effect ever ran -- the exact bug this ref exists to prevent.
+    * The effect below sets both together, so the two cannot disagree.
+    */
+   const loadedOnceRef = useRef(false);
+   useEffect(() => {
+     if (!loading && !loadedOnceRef.current) {
+       loadedOnceRef.current = true;
+       setLibraryLoaded(true);
+     }
+   }, [loading]);
 
   if (!session) return <HomeView />;
 

@@ -55,7 +55,7 @@ export function ExerciseBrowser({
    * Marks exercises already in the destination (a routine draft or the
    * running session) so their card can say so instead of offering a
    * blind "Agregar al entrenamiento". Optional: a caller with no notion
-   * of "already added" keeps the plain button.
+   * of "already alreadyAdded" keeps the plain button.
    */
   isAdded?: (exerciseId: string) => boolean;
 }) {
@@ -389,7 +389,7 @@ export function ExerciseBrowser({
                     exercise={ex}
                     level={levelById.get(ex.id)}
                     onSelect={onSelect}
-                    added={isAdded?.(ex.id) ?? false}
+                    alreadyAdded={isAdded?.(ex.id) ?? false}
                   />
                 ))}
               </div>
@@ -544,12 +544,12 @@ function ExerciseCard({
   exercise,
   level,
   onSelect,
-  added,
+  alreadyAdded,
 }: {
   exercise: Exercise;
   level?: "primary" | "secondary";
   onSelect: (ex: Exercise) => void;
-  added: boolean;
+  alreadyAdded: boolean;
 }) {
   const [imgError, setImgError] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
@@ -611,14 +611,14 @@ function ExerciseCard({
         <button
           type="button"
           onClick={() => onSelect(exercise)}
-          disabled={added}
+          disabled={alreadyAdded}
           className={`mt-2 w-full rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-            added
+            alreadyAdded
               ? "cursor-default bg-white/5 text-neutral-400"
               : "bg-accent text-neutral-950 hover:brightness-110"
           }`}
         >
-          {added ? "Agregado" : "Agregar al entrenamiento"}
+          {alreadyAdded ? "Agregado" : "Agregar al entrenamiento"}
         </button>
       </div>
     </div>

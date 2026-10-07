@@ -613,6 +613,58 @@ export const PROFILE_LABELS = {
     "Notas y recomendaciones pendientes",
   ] as const,
   premiumOpen: "Abrir el coach",
+
+  /**
+   * The developer surface, reached from this screen.
+   *
+   * Behind `DeveloperGate` because it is the one panel here that can touch
+   * device-local state and the role itself. A gate that renders nothing while
+   * loading is the only honest way to show it: an athlete seeing a developer
+   * panel for one frame is a leak, and the frame is invisible in review.
+   */
+  devLabel: "Modo desarrollador",
+  devHint: "Herramientas para depurar esta cuenta: cambiar rol, ver flags y resetar estado local.",
+  devOpen: "Abrir panel de desarrollador",
+
+  /**
+   * The God Mode panel itself.
+   *
+   * Everything here is developer tooling, so the copy is short and specific:
+   * it names what each control does rather than what it is, because a
+   * developer reading their own debug screen does not need "toggle" -- they
+   * need "la IA ya no contesta".
+   */
+  godTitle: "Cueva de Batman",
+  godSubtitle: "Estado de esta cuenta y de este dispositivo.",
+  godMetricActive: " Usuarios activos",
+  godMetricTokens: "Tokens consumidos",
+  godMetricHint: "Sin conectar",
+  godMetricValue: "—",
+  godFlagsTitle: "Features",
+  godFlagsHint: "Cambios locales. No afectan a otros dispositivos.",
+  godFlagMaintenance: "Mantenimiento",
+  godFlagMaintenanceHint: "Banner en toda la app.",
+  godFlagAi: "IA habilitada",
+  godFlagAiHint: "Coach responde; apagado, dice que no está disponible.",
+  godFlagPreamble: "Mostrar preámbulo de IA",
+  godFlagPreambleHint: "Debug: texto que se envía a OpenRouter.",
+  godFlagVerbose: "Modo verbose",
+  godFlagVerboseHint: "Logs del módulo coach.",
+  godRoleTitle: "Rol local",
+  godRoleHint: "Cambia cómo se ve esta cuenta. No es seguridad: la protección real es el servidor.",
+  godRoleConfirm: "¿Confirmar cambio de rol?",
+  godRoleWarning: "Al salir de `developer` pierdes el acceso a esta sección.",
+  godRoleCancel: " Cancelar",
+  godRoleApply: "Confirmar",
+  godResetTitle: "Restablecer estado local",
+  godResetHint: "Borra rol, flags, contexto y consentimiento. El perfil central (peso, altura, objetivo) no se toca.",
+  godResetButton: "Borrar estado local",
+  godResetConfirm: "¿Borrar el estado local de esta cuenta?",
+  godResetDone: "Estado local restablecido.",
+  godVersionTitle: "Versiones",
+  godVersionApp: "App",
+  godVersionDb: "Base local",
+  godVersionSchema: "Esquema",
 } as const;
 
 /** Experience levels, shared by onboarding and the profile. */

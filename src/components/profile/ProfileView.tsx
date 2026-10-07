@@ -26,6 +26,9 @@ import { supabase } from "@lib/supabase";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { GymSettingsTrigger } from "@/components/workout/GymSettingsTrigger";
 import { ImportWizard } from "@/components/import/ImportWizard";
+import { DeveloperGate } from "@/components/profile/DeveloperGate";
+import { FeatureFlagSwitch } from "@/components/profile/FeatureFlagSwitch";
+import { useLocalState } from "@/hooks/useLocalState";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { useProfile } from "@/hooks/useProfile";
 import {
@@ -91,6 +94,13 @@ export function ProfileView() {
   const gym = useGymSettings();
   const navigate = useNavigate();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const local = useLocalState();
+  const flags = local.row?.flags ?? {
+    maintenance: false,
+    aiEnabled: true,
+    showAiPreamble: false,
+    verboseMode: false,
+  };
 
   const age = useMemo(() => (profile ? ageFrom(profile.birth_date) : null), [profile]);
   const bmi = useMemo(
@@ -278,6 +288,67 @@ export function ProfileView() {
           {PROFILE_LABELS.importOpen}
         </GlassButton>
       </Section>
+
+      {/* ------------------------------------------------- developer gate */}
+      {/*
+        The God Mode panel. Behind `DeveloperGate` because it is the one surface
+        here that can touch device-local state and the role itself, and a gate
+        that renders nothing while loading is the only honest way to show it:
+        an athlete seeing a developer panel for one frame is a leak, and the
+        frame is invisible in review.
+      */}
+      <DeveloperGate fallback={null}>
+        <Section title={PROFILE_LABELS.godTitle}>
+          <p style={{ ...mutedStyle, margin: `0 0 ${SPACE.md}` }}>{PROFILE_LABELS.godSubtitle}</p>
+
+          <div style={{ marginBottom: SPACE.md }}>
+            <span style={{ ...fieldLabelStyle, margin: 0 }}>{PROFILE_LABELS.godFlagsTitle}</span>
+            <p style={{ ...hintStyle, margin: `0 0 ${SPACE.sm}` }}>{PROFILE_LABELS.godFlagsHint}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+              <FeatureFlagSwitch
+                id="flag-maintenance"
+                value={flags?.maintenance ?? false}
+                label={PROFILE_LABELS.godFlagMaintenance}
+                hint={PROFILE_LABELS.godFlagMaintenanceHint}
+                onChange={(next) => void local.save({ flags: { ...flags, maintenance: next } })}
+                disabled={local.loading}
+              />
+              <FeatureFlagSwitch
+                id="flag-ai"
+                value={flags?.aiEnabled ?? true}
+                label={PROFILE_LABELS.godFlagAi}
+                hint={PROFILE_LABELS.godFlagAiHint}
+                onChange={(next) => void local.save({ flags: { ...flags, aiEnabled: next } })}
+                disabled={local.loading}
+              />
+              <FeatureFlagSwitch
+                id="flag-preamble"
+                value={flags?.showAiPreamble ?? false}
+                label={PROFILE_LABELS.godFlagPreamble}
+                hint={PROFILE_LABELS.godFlagPreambleHint}
+                onChange={(next) => void local.save({ flags: { ...flags, showAiPreamble: next } })}
+                disabled={local.loading}
+              />
+              <FeatureFlagSwitch
+                id="flag-verbose"
+                value={flags?.verboseMode ?? false}
+                label={PROFILE_LABELS.godFlagVerbose}
+                hint={PROFILE_LABELS.godFlagVerboseHint}
+                onChange={(next) => void local.save({ flags: { ...flags, verboseMode: next } })}
+                disabled={local.loading}
+              />
+            </div>
+          </div>
+
+          <GlassButton
+            variant="secondary"
+            icon={<Sparkles size={16} aria-hidden="true" />}
+            onClick={() => void navigate("/dev/ui")}
+          >
+            {PROFILE_LABELS.devOpen}
+          </GlassButton>
+        </Section>
+      </DeveloperGate>
 
       {/* ------------------------------------------------- premium coach */}
       {/*

@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly DEV: boolean;
   readonly PROD: boolean;
   readonly SSR: boolean;
+  /** Injected by `vite.config.ts` from `package.json`. */
+  readonly PACKAGE_VERSION: string;
 }
 
 interface ImportMeta {

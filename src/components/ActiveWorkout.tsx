@@ -17,6 +17,7 @@ import { ExerciseStage } from "./workout/ExerciseStage";
 import { ExerciseActions, type ExerciseActionId } from "./workout/ExerciseActions";
 import { PreWorkoutSummary } from "./workout/PreWorkoutSummary";
 import { SetTable } from "./workout/SetTable";
+import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
 import { ExerciseBrowser } from "./ExerciseBrowser";
 import { ExerciseCarousel, type CarouselItem } from "./ExerciseCarousel";
@@ -307,7 +308,13 @@ export function ActiveWorkout({
   function updateSet(itemKey: string, setIndex: number, entry: SetEntry) {
     patchEntry(itemKey, setIndex, () => entry);
     if (!entry.completed) return;
-    const restSeconds = items.find((i) => i.key === itemKey)?.restSeconds ?? DEFAULT_REST;
+    // The rest this exercise has earned: the athlete's own
+    // override when the fatigue summary asked for a longer
+    // one, the routine's default otherwise.
+    const restSeconds = loadRestSeconds(
+      itemKey,
+      items.find((i) => i.key === itemKey)?.restSeconds ?? DEFAULT_REST,
+    );
     startRest(restSeconds);
   }
 
@@ -789,6 +796,16 @@ export function ActiveWorkout({
                   formatWeight={displayKg}
                   suggestion={overload[selected.key] ?? null}
                   barType={gym.barType}
+                  // The rest this exercise should get -- the athlete's
+                  // own override when they asked for a longer one -- so
+                  // the fatigue summary's "30 s más" builds on the rest
+                  // that is actually running, not the routine's first
+                  // draft of it.
+                  exerciseId={selected.exercise.id}
+                  restSeconds={loadRestSeconds(
+                    selected.exercise.id,
+                    selected.restSeconds,
+                  )}
                   onChange={(index, entry) => updateSet(selected.key, index, entry)}
                   onRemove={(index) => removeSet(selected.key, index)}
                   onDuplicate={(index) => duplicateSet(selected.key, index)}

@@ -215,7 +215,7 @@ export function ActiveWorkout({
 
   // ---- progressive overload ---------------------------------------------
   const exerciseIds = useMemo(() => items.map((i) => i.exercise.id), [items]);
-  const { performance } = usePreviousPerformance(userId, exerciseIds);
+  const { performance, previousNotes } = usePreviousPerformance(userId, exerciseIds);
 
   const overload = useMemo(() => {
     const map: Record<string, OverloadTarget> = {};
@@ -505,6 +505,12 @@ export function ActiveWorkout({
             // The richer `kind` stops here: the column has been a boolean since
             // before drop and failure sets existed.
             is_warmup: toWarmupColumn(set.kind),
+            // The per-set note travels with the row it belongs to. `?? null`
+            // rather than the raw value: an unset note is "no note" in the
+            // column, and an explicit null (not an omitted key) is what keeps
+            // a re-synced session from resurrecting a note the athlete
+            // deleted on another device.
+            notes: set.notes ?? null,
           })),
       ),
     };
@@ -776,6 +782,10 @@ export function ActiveWorkout({
                   previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
                   allTimeBestKg={performance[selected.exercise.id]?.allTimeBest?.weight ?? null}
                   allTimeBestReps={performance[selected.exercise.id]?.allTimeBest?.reps ?? null}
+                  // The last session's notes for this exercise, by set
+                  // number, so a set can remind the athlete what they
+                  // wrote about it last time without a second query.
+                  previousNotes={previousNotes[selected.exercise.id]}
                   formatWeight={displayKg}
                   suggestion={overload[selected.key] ?? null}
                   barType={gym.barType}

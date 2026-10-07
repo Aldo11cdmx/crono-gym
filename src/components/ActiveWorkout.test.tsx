@@ -352,6 +352,31 @@ describe("ActiveWorkout set kind at the persistence boundary", () => {
     const call = vi.mocked(queueAndSync).mock.calls[0]?.[0];
     expect((call?.sets ?? []).map((s) => s.set_number)).toEqual([1, 2]);
   });
+
+  it("carries the per-set note onto the row it belongs to", async () => {
+    // The note is written mid-session, behind its own glyph, and has to
+    // land on the same `completed_sets` row as the weight it describes --
+    // not on the log, and not on the wrong set.
+    renderWorkout();
+    fireEvent.click(within(setRow(1)).getByLabelText("Nota de la serie 1"));
+    fireEvent.change(
+      within(setRow(1)).getByLabelText("Texto de la nota de la serie 1"),
+      { target: { value: "rodilla protestó" } },
+    );
+    // Blur closes the field and flushes the draft.
+    fireEvent.blur(
+      within(setRow(1)).getByLabelText("Texto de la nota de la serie 1"),
+    );
+    for (const n of [1, 2, 3]) fireEvent.click(completeButton(n));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("Finalizar"));
+    });
+    const call = vi.mocked(queueAndSync).mock.calls[0]?.[0];
+    const sets = (call?.sets ?? []) as { set_number: number; notes: string | null }[];
+    expect(sets.find((s) => s.set_number === 1)?.notes).toBe("rodilla protestó");
+    expect(sets.find((s) => s.set_number === 2)?.notes).toBeNull();
+  });
 });
 
 // ------------------------------------------------------------------- previous

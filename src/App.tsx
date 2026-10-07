@@ -363,9 +363,32 @@ export function HomeView() {
 export function TrainView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const { session, end } = useActiveSession();
-  const { routines } = useRoutines(userId);
+  const { routines, loading } = useRoutines(userId);
+  /**
+   * True once the routine library has finished a load. `loading` starts
+   * false -- the first read happens in an effect, after the first paint --
+   * so "not loading" on its own cannot tell a library that arrived from one
+   * that has not been asked for yet. ActiveWorkout seeds its exercises from
+   * the first render it mounts with and never re-seeds, so a session that
+   * names a routine must not mount it until the library is in: mounting it
+   * with an empty plan is a session with no exercises, and the library
+   * landing a beat later does not fill it back in.
+   */
+  const [libraryLoaded, setLibraryLoaded] = useState(false);
+  useEffect(() => {
+    if (!loading) setLibraryLoaded(true);
+  }, [loading]);
 
   if (!session) return <HomeView />;
+
+  // A free session (no routine) is empty by design -- the picker is the
+  // point -- so only a routine-backed session waits for the library. The
+  // gate opens once and stays open: `loading` only rises again on a
+  // re-fetch this screen does not trigger, so the workout is never
+  // unmounted mid-session.
+  if (session.routineId !== null && !(libraryLoaded && !loading)) {
+    return <p className="text-neutral-500">Cargando…</p>;
+  }
 
   const source = routines.find((r) => r.id === session.routineId);
   return (

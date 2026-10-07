@@ -248,6 +248,7 @@ export function RoutineBuilder({
             setBrowsing(false);
           }}
           onClose={() => setBrowsing(false)}
+          isAdded={(id) => draft.items.some((i) => i.exercise.id === id)}
         />
       )}
     </div>

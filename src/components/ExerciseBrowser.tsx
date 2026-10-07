@@ -47,9 +47,17 @@ type Source = "supabase" | "fallback";
 export function ExerciseBrowser({
   onSelect,
   onClose,
+  isAdded,
 }: {
   onSelect: (ex: Exercise) => void;
   onClose: () => void;
+  /**
+   * Marks exercises already in the destination (a routine draft or the
+   * running session) so their card can say so instead of offering a
+   * blind "Agregar al entrenamiento". Optional: a caller with no notion
+   * of "already added" keeps the plain button.
+   */
+  isAdded?: (exerciseId: string) => boolean;
 }) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [query, setQuery] = useState("");
@@ -381,6 +389,7 @@ export function ExerciseBrowser({
                     exercise={ex}
                     level={levelById.get(ex.id)}
                     onSelect={onSelect}
+                    added={isAdded?.(ex.id) ?? false}
                   />
                 ))}
               </div>
@@ -535,10 +544,12 @@ function ExerciseCard({
   exercise,
   level,
   onSelect,
+  added,
 }: {
   exercise: Exercise;
   level?: "primary" | "secondary";
   onSelect: (ex: Exercise) => void;
+  added: boolean;
 }) {
   const [imgError, setImgError] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
@@ -600,9 +611,14 @@ function ExerciseCard({
         <button
           type="button"
           onClick={() => onSelect(exercise)}
-          className="mt-2 w-full rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-neutral-950 transition hover:brightness-110"
+          disabled={added}
+          className={`mt-2 w-full rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            added
+              ? "cursor-default bg-white/5 text-neutral-400"
+              : "bg-accent text-neutral-950 hover:brightness-110"
+          }`}
         >
-          Agregar al entrenamiento
+          {added ? "Agregado" : "Agregar al entrenamiento"}
         </button>
       </div>
     </div>

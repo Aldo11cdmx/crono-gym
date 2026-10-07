@@ -438,6 +438,33 @@ async function classifyHttpError(response: Response): Promise<CoachRequestError>
 }
 
 /**
+ * An upstream failure carried inside an HTTP 200 stream.
+ *
+ * Providers report errors such as "Service temporarily overloaded" as a
+ * frame with an empty `choices` array and an `error` object rather than as
+ * an HTTP error. Left unhandled the frame is neither text nor a tool call,
+ * and the non-SSE fallback at the end of the stream prints the raw frame
+ * as the assistant's reply -- the athlete reads a JSON blob instead of an
+ * answer or an error. Classified here so the caller renders the same
+ * localized bubble any other failure produces.
+ */
+function upstreamErrorFromFrame(data: string): CoachRequestError | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return null;
+  }
+  if (typeof parsed !== "object" || parsed === null) return null;
+  const error = (parsed as { error?: unknown }).error;
+  if (typeof error !== "object" || error === null) return null;
+  const code = (error as { code?: unknown }).code;
+  if (code === 429) return new CoachRequestError({ code: "RATE_LIMITED", retryAfterMs: 0 });
+  if (code === 401 || code === 403) return new CoachRequestError({ code: "AUTH_ERROR" });
+  return new CoachRequestError({ code: "SERVICE_UNAVAILABLE" });
+}
+
+/**
  * Reads a Server-Sent Events stream, emitting each text fragment.
  *
  * Assumes OpenRouter's OpenAI-compatible shape: `data: {json}` lines terminated by a
@@ -464,6 +491,8 @@ async function readStream(
   let full = "";
   let raw = "";
   let toolCalls: ToolCall[] = [];
+  /** True once any `data:` line was seen, so an SSE stream is never dumped raw. */
+  let sawDataLine = false;
 
   const filter = createActionBlockFilter();
   let shown = "";
@@ -489,8 +518,12 @@ async function readStream(
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed === "" || !trimmed.startsWith("data:")) continue;
+      sawDataLine = true;
       const data = trimmed.slice("data:".length).trim();
       if (data === "[DONE]") continue;
+
+      const upstreamError = upstreamErrorFromFrame(data);
+      if (upstreamError) throw upstreamError;
 
       const fragment = textFromFrame(data);
       if (fragment) emit(fragment);
@@ -511,11 +544,19 @@ async function readStream(
 
   const tail = buffer.trim();
   if (tail.startsWith("data:")) {
-    const fragment = textFromFrame(tail.slice("data:".length).trim());
+    sawDataLine = true;
+    const data = tail.slice("data:".length).trim();
+    const upstreamError = upstreamErrorFromFrame(data);
+    if (upstreamError) throw upstreamError;
+    const fragment = textFromFrame(data);
     if (fragment) emit(fragment);
   }
 
-  if (full === "" && raw.trim() !== "") {
+  // A body that turned out not to be SSE at all -- an error page from a
+  // proxy, a JSON object -- is the one case where the raw bytes are the
+  // most honest message there is. An SSE stream that simply carried no
+  // text is not that case: its frames were already handled above.
+  if (full === "" && raw.trim() !== "" && !sawDataLine) {
     emit(raw.trim());
   }
 

@@ -663,7 +663,14 @@ async function callWithTools(
         });
       }
 
-      messages.push({ role: "assistant", content: message?.content ?? "" });
+      // Replay exactly what the model sent, tool_calls included: a
+      // "tool" message must be preceded by the assistant message that
+      // carried the calls, or the API rejects the round trip with a 400.
+      messages.push({
+        role: "assistant",
+        content: message?.content ?? "",
+        ...(toolCalls.length > 0 ? { tool_calls: toolCalls } : {}),
+      });
       messages.push(...toolResults);
       continue;
     }

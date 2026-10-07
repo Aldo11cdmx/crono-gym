@@ -839,6 +839,7 @@ export function ActiveWorkout({
             setBrowsing(false);
             setBrowsingFor(null);
           }}
+          isAdded={(id) => items.some((i) => i.exercise.id === id)}
         />
       )}
 

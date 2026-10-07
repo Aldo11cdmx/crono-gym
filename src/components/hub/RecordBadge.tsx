@@ -11,13 +11,13 @@
  * confirmed", and it is the same token `SetTable`'s completion tick uses, so the two
  * animations agree.
  *
- * Why it is not an `AudioContext` beep
+ * Why it *is* an `AudioContext` beep
  * ------------------------------------
- * The brief allowed one, optionally. Not shipping it is a decision, not an omission: an
- * `AudioContext` has to be constructed after a user gesture and resumed on every browser's
- * own schedule, and a PR is the one moment where a surprise noise out of a phone in a gym
- * is worse than no confirmation at all. The visual is enough, and it works with the
- * screen silent -- which is how most people train.
+ * A two-tone confirmation plays when the badge arrives, through a lazily-created
+ * shared `AudioContext` so the first user gesture pays the resume tax once.
+ * The sound is skipped when `prefers-reduced-motion` is on: a reduced-motion
+ * user has already asked for the screen to quiet down, and an unexpected tone
+ * mid-set would be the one thing that cannot be silenced.
  *
  * The dismissal is timed, not conditional
  * ---------------------------------------
@@ -29,6 +29,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Sparkles, X } from "lucide-react";
 import { HUB_RECORDS_LABELS } from "@/lib/i18n";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { playBeep } from "@/lib/audio";
 import { GLASS, MOTION, RADIUS, SPACE, STATUS, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 export interface RecordNotice {
@@ -65,11 +66,17 @@ export function RecordBadge({ notice, autoDismissMs }: RecordBadgeProps) {
   useEffect(() => {
     if (noticeId === null) return;
 
-    // The dismiss runs first and unmounts the badge itself. A parent that had to clear the
+     // The dismiss runs first and unmounts the badge itself. A parent that had to clear the
     // notice would be a second thing to get right, and the usual result of forgetting is a
     // badge that never goes away.
     setLeaving(false);
     setVisible(true);
+
+    // The beep fires the moment the record arrives. Skipped under reduced-motion so
+    // the user who asked for quiet stays quiet.
+    if (!reducedMotion) {
+      playBeep();
+    }
 
     const ms = autoDismissMs ?? HUB_RECORDS_LABELS.badgeAutoDismissMs;
     timer.current = window.setTimeout(() => {

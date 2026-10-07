@@ -19,6 +19,7 @@
  */
 
 import { Navigate, createBrowserRouter } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { AppShell } from "@/components/shell/AppShell";
 import {
   AuthGate,
@@ -31,7 +32,7 @@ import {
 } from "@/App";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { CoachPortal } from "@/components/coach/portal/CoachPortal";
-import { ExerciseHub } from "@/components/hub/ExerciseHub";
+import { HubSkeleton } from "@/components/hub/HubSkeleton";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
 import { CoachPortalPreview } from "@/components/dev/CoachPortalPreview";
 import {
@@ -43,6 +44,19 @@ import {
   PROGRESS_PATH,
   ROUTINES_PATH,
 } from "@/components/shell/navItems";
+
+/**
+ * The exercise hub is code-split at the route level. Importing it eagerly would
+ * pull in its three tab components, the muscle map, the chart and the audio layer
+ * onto the main bundle even when the athlete never opens it -- a non-trivial cost
+ * for a screen reached from a single strip button. The lazy chunk lands on demand
+ * and the skeleton keeps the shell visible while it streams in.
+ */
+const ExerciseHub = lazy(() =>
+  import("@/components/hub/ExerciseHub").then((mod) => ({
+    default: mod.ExerciseHub,
+  })),
+);
 
 /**
  * The dev-only component catalog and the coach-portal preview.
@@ -112,8 +126,21 @@ export const router = createBrowserRouter([
            * Absent from `navItems.ts`, like `/rangos`: this is reached from the exercise
            * strip during a session, not from the thumb bar. A hub for one movement is not a
            * destination anybody navigates to in order to browse.
+           *
+           * The element is wrapped in a Suspense boundary so the skeleton renders while the
+           * lazy chunk streams in. The boundary is mounted here rather than inside
+           * ExerciseHub so that navigating away and back does not flash the skeleton a
+           * second time -- the shell itself is already in the DOM and only the lazy child
+           * is suspended.
            */
-          { path: `${EXERCISE_PATH}/:exerciseId`, element: <ExerciseHub /> },
+          {
+            path: `${EXERCISE_PATH}/:exerciseId`,
+            element: (
+              <Suspense fallback={<HubSkeleton />}>
+                <ExerciseHub />
+              </Suspense>
+            ),
+          },
           // The workout has its own address so a running session survives a
           // reload and so the pill's destination is a real screen.
           { path: "/entrenar", element: <TrainView /> },

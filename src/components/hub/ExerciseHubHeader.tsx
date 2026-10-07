@@ -19,12 +19,17 @@
  *      movement sits, how it is trending -- in one scrollable row, because an athlete who
  *      opened the hub mid-set wants the answer without descending into a tab.
  *
- * The chips scroll rather than wrap. Wrapping makes the header taller every time an
- * exercise gains a fact, and the tab strip below it moves; a header that resizes while
- * someone is reading it is worse than one that scrolls.
+ * Compact mode on scroll
+ * ----------------------
+ * The header starts full: back button, exercise name, session chip with the running label.
+ * Once the athlete scrolls past the first screen, the header condenses to a sticky bar
+ * that holds only the essentials — icon-only back button, the clock, and the tab strip
+ * takes over the title. This costs a single `useMotionValue`-free `onscroll` listener
+ * because the alternative (a `position: sticky` element that reflows its children on
+ * every scroll frame) is the kind of jank that makes a 44px tap target slide.
  */
 
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArrowLeft, TrendingDown, TrendingUp } from "lucide-react";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useElapsedMs, formatElapsed } from "@/hooks/useElapsedMs";
@@ -55,19 +60,38 @@ export interface ExerciseHubHeaderProps {
   onBack?: () => void;
 }
 
+const COMPACT_THRESHOLD = 64;
+
 export function ExerciseHubHeader({ exerciseName, chips, onBack }: ExerciseHubHeaderProps) {
   const { session, isActive } = useActiveSession();
   const elapsedMs = useElapsedMs(session?.startedAt);
   const elapsed = formatElapsed(elapsedMs);
+  const headerRef = useRef<HTMLElement>(null);
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setCompact(y > COMPACT_THRESHOLD);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <header
+      ref={headerRef}
       style={{
         display: "flex",
         flexDirection: "column",
         gap: SPACE.sm,
         paddingBottom: SPACE.sm,
         borderBottom: `1px solid ${GLASS.border}`,
+        position: "sticky",
+        top: 0,
+        background: compact ? GLASS.fillRaised : undefined,
+        backdropFilter: compact ? "blur(12px)" : undefined,
+        zIndex: 2,
       }}
     >
       <div style={topRow}>
@@ -83,23 +107,38 @@ export function ExerciseHubHeader({ exerciseName, chips, onBack }: ExerciseHubHe
             onClick={onBack}
             className="cronos-hub-back"
             aria-label={HUB_LABELS.backToSessionAriaLabel(session?.title ?? "")}
-            style={backButton}
+            style={{
+              ...backButton,
+              ...(compact ? compactBackButton : undefined),
+            }}
           >
             <ArrowLeft size={16} aria-hidden="true" />
-            {HUB_LABELS.backToSession}
+            {!compact ? HUB_LABELS.backToSession : null}
           </button>
         ) : (
           <span style={{ flex: 1 }} />
         )}
 
         {isActive && session ? (
-          <SessionChip title={session.title} elapsed={elapsed} />
+          compact ? (
+            <span
+              role="status"
+              aria-label={HUB_LABELS.sessionClockAriaLabel(elapsed)}
+              style={compactClock}
+            >
+              <span aria-hidden="true" style={clock}>
+                {elapsed}
+              </span>
+            </span>
+          ) : (
+            <SessionChip title={session.title} elapsed={elapsed} />
+          )
         ) : (
           <span style={{ flex: 1 }} />
         )}
       </div>
 
-      <h1 style={title}>{exerciseName}</h1>
+      {!compact ? <h1 style={title}>{exerciseName}</h1> : null}
 
       {chips && chips.length > 0 ? <ChipRow chips={chips} /> : null}
     </header>
@@ -211,6 +250,25 @@ const backButton: CSSProperties = {
   // A child of the top row that can shrink. Without this a long Spanish label plus the
   // session chip overflows a 320px phone, and the clock is what gets pushed off.
   minWidth: 0,
+};
+
+const compactBackButton: CSSProperties = {
+  padding: "0 8px",
+  minWidth: MOTION.minTouchTarget,
+  justifyContent: "center",
+};
+
+/**
+ * Compact clock: just the digits, no surrounding chip padding. The full `SessionChip` has
+ * the word "Sesión en curso" — in compact mode the tab strip below carries the title and
+ * the clock is the only thing the header needs to keep alive.
+ */
+const compactClock: CSSProperties = {
+  fontFamily: TYPE.mono.font,
+  fontVariantNumeric: "tabular-nums",
+  color: TEXT.primary,
+  fontWeight: TYPE.mono.weight,
+  fontSize: TYPE.caption.size,
 };
 
 const sessionChip: CSSProperties = {

@@ -808,6 +808,12 @@ export const HUB_LABELS = {
   notFoundHint: "Puede que el enlace apunte a un ejercicio que ya no está en el catálogo.",
   loading: "Cargando ficha…",
 
+  /** Skeleton screen shown while the lazy hub chunk streams in. */
+  skeleton: {
+    title: "Cargando ficha de ejercicio",
+    content: "Contenido de la ficha",
+  },
+
   /** The dynamic chips: what the athlete has actually got going for this movement. */
   chipsAriaLabel: "Resumen rápido del ejercicio",
 } as const;

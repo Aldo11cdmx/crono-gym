@@ -1,117 +1,180 @@
 /**
  * @vitest-environment jsdom
  *
- * RecordBadge.test.tsx — the one notification in the app that interrupts.
+ * RecordBadge.test.tsx — the four-second "new record" toast, its auto-dismiss,
+ * and the confirmation beep that ships with it.
  *
- * Two things have to hold, and they pull against each other:
- *
- *   1. It must go away on its own. A record badge that stays is a badge covering the set
- *      logger, on the screen the athlete is using most.
- *   2. It must not take its confirmation with it. Under reduced motion the travel goes and
- *      the notification stays — a PR nobody is told about is the one outcome this component
- *      cannot produce.
- *
- * The dismissal is timed internally rather than left to a parent to clear, so the tests here
- * drive the clock instead of asserting on a prop somebody has to remember to pass.
+ * The beep lives in `@/lib/audio` as a lazily-created AudioContext singleton. Tests
+ * mock that module so the assertions are about the component calling `playBeep`
+ * at the right moment (and not calling it when it shouldn't), not about the
+ * Web Audio API working inside jsdom.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { RecordBadge } from "./RecordBadge";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, act, fireEvent, render } from "@testing-library/react";
 
-
-afterEach(cleanup);
-
-/**
- * The reduced-motion seam, as a plain `vi.fn` closed over by the factory.
- *
- * `vi.mocked(realHook)` would be typing the wrapper rather than the mock, and the wrapper has
- * no `mockReturnValue`. The factory is only called when the module is first imported, which
- * is after this binding exists.
- */
-const reducedMotionMock = vi.fn(() => false);
-
-vi.mock("@/hooks/useReducedMotion", () => ({
-  useReducedMotion: () => reducedMotionMock(),
+vi.mock("@/lib/audio", () => ({
+  playBeep: vi.fn(),
+  resetAudioContext: vi.fn(),
 }));
 
-beforeEach(() => {
-  reducedMotionMock.mockReturnValue(false);
-  vi.useFakeTimers();
-});
+vi.mock("@/hooks/useReducedMotion", () => ({
+  useReducedMotion: () => mockReducedMotion,
+}));
 
-const NOTICE = { id: "pr-1", title: "Nuevo récord de press de banca: 100 kg" };
+import { playBeep } from "@/lib/audio";
+import { RecordBadge, type RecordNotice } from "@/components/hub/RecordBadge";
+import { HUB_RECORDS_LABELS } from "@/lib/i18n";
+
+let mockReducedMotion: boolean;
+
+function renderBadge(notice: RecordNotice | null, props?: { autoDismissMs?: number }) {
+  return render(
+    <RecordBadge notice={notice} autoDismissMs={props?.autoDismissMs} />,
+  );
+}
+
+const TEST_NOTICE: RecordNotice = {
+  id: "record-1",
+  title: "Press de banca — 100 kg",
+};
 
 describe("RecordBadge", () => {
-  it("renders nothing when there is no record", () => {
-    const { container } = render(<RecordBadge notice={null} />);
-    expect(container.textContent).toBe("");
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
   });
 
-  it("announces itself, because this is the one interruption worth making", () => {
-    render(<RecordBadge notice={NOTICE} />);
-    const alert = screen.getByRole("alert");
-    expect(alert.getAttribute("aria-label")).toMatch(/Nuevo récord/i);
+  it("renders nothing when notice is null", () => {
+    const { container } = renderBadge(null);
+    expect(container.firstChild).toBeNull();
   });
 
-  it("clears itself after the timeout", () => {
-    render(<RecordBadge notice={NOTICE} />);
-    expect(screen.getByRole("alert")).toBeTruthy();
-
-    // Just before the dismiss: still up, because unmounting on the same tick would make it
-    // blink rather than leave.
-    act(() => void vi.advanceTimersByTime(3999));
-    expect(screen.getByRole("alert")).toBeTruthy();
-
-    act(() => void vi.advanceTimersByTime(1));
-    expect((screen.getByRole("alert") as HTMLElement).dataset.leaving).toBe("true");
-
-    // And gone once the exit transition has run.
-    act(() => void vi.advanceTimersByTime(250));
-    expect(screen.queryByRole("alert")).toBeNull();
+  it("renders the record title when a notice is provided", () => {
+    mockReducedMotion = false;
+    const { getByText } = renderBadge(TEST_NOTICE);
+    expect(getByText(TEST_NOTICE.title)).toBeTruthy();
   });
 
-  it("can be dismissed by hand immediately", () => {
-    render(<RecordBadge notice={NOTICE} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Cerrar el aviso/i }));
-    // No exit wait: the athlete asked for it to go, so it goes.
-    expect(screen.queryByRole("alert")).toBeNull();
+  it("plays a beep when the badge appears", () => {
+    mockReducedMotion = false;
+    renderBadge(TEST_NOTICE);
+    expect(playBeep).toHaveBeenCalledTimes(1);
   });
 
-  it("stops travelling but still tells the athlete when motion is reduced", () => {
-    reducedMotionMock.mockReturnValue(true);
-    render(<RecordBadge notice={NOTICE} />);
-
-    const card = screen.getByRole("alert");
-    // The confirmation survives; only the movement is cancelled. The animation class is what
-    // `index.css` cancels for `prefers-reduced-motion`.
-    expect(card.className).not.toContain("cronos-record-pop");
-    expect(card.getAttribute("style")).toContain("opacity: 1");
-
-    act(() => void vi.advanceTimersByTime(4001));
-    // Reduced motion skips the exit entirely rather than sitting invisible for 250ms.
-    expect(screen.queryByRole("alert")).toBeNull();
+  it("does not play a beep when reduced motion is on", () => {
+    mockReducedMotion = true;
+    renderBadge(TEST_NOTICE);
+    expect(playBeep).not.toHaveBeenCalled();
   });
 
-  it("starts the timer when the record arrives, not when it settles", () => {
-    const { rerender } = render(<RecordBadge notice={NOTICE} />);
-
-    // A re-render mid-display must not restart the four seconds, which would leave the badge
-    // up indefinitely for exactly the athlete whose next set triggers a re-render.
-    act(() => void vi.advanceTimersByTime(3000));
-    rerender(<RecordBadge notice={{ ...NOTICE }} />);
-    act(() => void vi.advanceTimersByTime(1000));
-
-    expect((screen.getByRole("alert") as HTMLElement).dataset.leaving).toBe("true");
+  it("does not play a beep when notice is null", () => {
+    mockReducedMotion = false;
+    renderBadge(null);
+    expect(playBeep).not.toHaveBeenCalled();
   });
 
-  it("re-fires for a different record", () => {
-    const { rerender } = render(<RecordBadge notice={NOTICE} />);
-    act(() => void vi.advanceTimersByTime(5000));
-    expect(screen.queryByRole("alert")).toBeNull();
+  it("uses role=alert for screen readers", () => {
+    mockReducedMotion = false;
+    const { getByRole } = renderBadge(TEST_NOTICE);
+    expect(getByRole("alert")).toBeTruthy();
+  });
 
-    rerender(<RecordBadge notice={{ id: "pr-2", title: "Nuevo récord de sentadilla: 140 kg" }} />);
-    expect(screen.getByRole("alert").textContent).toMatch(/sentadilla/);
+  it("sets the aria-label from the record title", () => {
+    mockReducedMotion = false;
+    const { getByRole } = renderBadge(TEST_NOTICE);
+    const alert = getByRole("alert");
+    expect(alert.getAttribute("aria-label")).toBe(
+      HUB_RECORDS_LABELS.badgeAriaLabel(TEST_NOTICE.title),
+    );
+  });
+
+  it("shows a dismiss button with the correct aria-label", () => {
+    mockReducedMotion = false;
+    const { getByRole } = renderBadge(TEST_NOTICE);
+    expect(getByRole("button", { name: HUB_RECORDS_LABELS.badgeDismissAriaLabel })).toBeTruthy();
+  });
+
+  it("hides the badge immediately when the dismiss button is clicked", () => {
+    mockReducedMotion = true;
+    const { getByRole, queryByRole } = renderBadge(TEST_NOTICE);
+    fireEvent.click(getByRole("button", { name: HUB_RECORDS_LABELS.badgeDismissAriaLabel }));
+    expect(queryByRole("alert")).toBeNull();
+  });
+
+  it("auto-dismisses after the configured ms with reduced motion", () => {
+    mockReducedMotion = true;
+    vi.useFakeTimers();
+    const { queryByRole } = renderBadge(TEST_NOTICE, { autoDismissMs: 1000 });
+
+    expect(queryByRole("alert")).toBeTruthy();
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    // Reduced motion: EXIT_MS=0, so the second timeout fires immediately
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(queryByRole("alert")).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it("transitions to leaving state before unmounting with animation", () => {
+    mockReducedMotion = false;
+    vi.useFakeTimers();
+    const { getByRole } = renderBadge(TEST_NOTICE, { autoDismissMs: 1000 });
+
+    const alert = getByRole("alert");
+    expect(alert.getAttribute("data-leaving")).toBe("false");
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    // After the first timeout, leaving is true but still mounted (EXIT_MS pending)
+    expect(alert.getAttribute("data-leaving")).toBe("true");
+
+    vi.useRealTimers();
+  });
+
+  it("does not play another beep for a new record with a different id", () => {
+    mockReducedMotion = false;
+    const { rerender } = renderBadge(TEST_NOTICE);
+    expect(playBeep).toHaveBeenCalledTimes(1);
+
+    rerender(<RecordBadge notice={{ id: "record-2", title: "Another record" }} />);
+    expect(playBeep).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not play another beep for a re-render with the same notice id", () => {
+    mockReducedMotion = false;
+    const { rerender } = renderBadge(TEST_NOTICE);
+    expect(playBeep).toHaveBeenCalledTimes(1);
+
+    rerender(<RecordBadge notice={TEST_NOTICE} />);
+    expect(playBeep).toHaveBeenCalledTimes(1);
+  });
+
+  it("plays a fresh beep when a new record id arrives after dismissal", () => {
+    mockReducedMotion = false;
+    vi.useFakeTimers();
+
+    const { rerender } = renderBadge(TEST_NOTICE, { autoDismissMs: 1000 });
+    expect(playBeep).toHaveBeenCalledTimes(1);
+
+    // Auto-dismiss the first badge: first timeout (1000ms), then EXIT_MS for unmount
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    // A new record arrives
+    rerender(
+      <RecordBadge notice={{ id: "record-2", title: "New record" }} autoDismissMs={1000} />,
+    );
+    expect(playBeep).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
   });
 });

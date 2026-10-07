@@ -7,7 +7,7 @@
 
 import { DashboardCard } from "./DashboardCard";
 import type { WeeklyProgress } from "@/lib/dashboard/dashboardMetrics";
-import { ACCENT, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, MOTION, STATUS, TEXT, TYPE } from "@/design/tokens";
 
 export interface WeeklyGoalCardProps {
   loading?: boolean;
@@ -72,7 +72,7 @@ export function WeeklyGoalCard({
               flex: 1,
               height: "8px",
               borderRadius: "4px",
-              background: "rgba(255, 255, 255, 0.06)",
+              background: GLASS.fill,
               overflow: "hidden",
             }}
           >
@@ -81,7 +81,7 @@ export function WeeklyGoalCard({
                 width: `${pct}%`,
                 height: "100%",
                 background: ACCENT.base,
-                transition: "width 250ms ease-out",
+                transition: `width ${MOTION.normal} ${MOTION.easeOut}`,
               }}
             />
           </div>
@@ -136,8 +136,8 @@ export function WeeklyGoalCard({
                     width: "100%",
                     height,
                     borderRadius: "4px 4px 0 0",
-                    background: trained ? ACCENT.base : "rgba(255, 255, 255, 0.06)",
-                    transition: "height 250ms ease-out",
+                    background: trained ? ACCENT.base : GLASS.fill,
+                    transition: `height ${MOTION.normal} ${MOTION.easeOut}`,
                   }}
                 />
                 <span

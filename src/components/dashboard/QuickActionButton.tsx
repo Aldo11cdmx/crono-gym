@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ACCENT, GLASS, RADIUS, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
+import { ACCENT, GLASS, MOTION, RADIUS, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 export interface QuickActionItem {
   id: string;
@@ -78,8 +78,8 @@ export function QuickActionButton({
             width: "56px",
             height: "56px",
             borderRadius: RADIUS.round,
-            background: "rgba(255, 59, 48, 0.24)",
-            animation: "cronos-pulse 1.6s ease-in-out infinite",
+            background: ACCENT.glow,
+            animation: `cronos-pulse ${MOTION.loop.skeleton} ${MOTION.standard} infinite`,
           }}
         />
       </div>
@@ -138,7 +138,7 @@ export function QuickActionButton({
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                transition: "background 150ms ease",
+                transition: `background ${MOTION.fast} ${MOTION.standard}`,
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background = GLASS.fillRaised;
@@ -171,7 +171,7 @@ export function QuickActionButton({
           fontSize: "20px",
           cursor: "pointer",
           boxShadow: ACCENT.ring,
-          transition: "background 150ms ease",
+          transition: `background ${MOTION.fast} ${MOTION.standard}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

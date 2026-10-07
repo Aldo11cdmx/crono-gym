@@ -10,7 +10,7 @@
 import type { ReactNode } from "react";
 import { DashboardCard } from "./DashboardCard";
 import { formatDuration } from "@/lib/dashboard/formatters";
-import { ACCENT, RADIUS, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, MOTION, RADIUS, TEXT, TYPE } from "@/design/tokens";
 
 export interface HeroWorkoutCardProps {
   /** When true, the card shows a skeleton instead of real content. */
@@ -87,7 +87,7 @@ export function HeroWorkoutCard({
                 fontSize: TYPE.body.size,
                 fontWeight: 600,
                 cursor: "pointer",
-                transition: `background ${"150ms"}`,
+                transition: `background ${MOTION.fast} ${MOTION.standard}`,
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background = ACCENT.hover;

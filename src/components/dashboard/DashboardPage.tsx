@@ -15,6 +15,7 @@ import { useRoutines, type PlannedExercise } from "@/hooks/useGymData";
 import { useDashboardSessions } from "@/hooks/useDashboardSessions";
 import { useAthletePRs, type AthletePR } from "@/hooks/useAthletePRs";
 import { ROUTINES_PATH, TRAIN_PATH } from "@/components/shell/navItems";
+import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import {
   getNextSuggestedRoutine,
   getRecentPRs,
@@ -114,7 +115,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   // Active-session banner shown inside the hero card when a workout is running.
   const activeContent = isActive ? (
     <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-      <span style={{ fontSize: "14px", color: "#9ca3af" }}>
+      <span style={{ fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
         Entrenamiento en curso: {activeSession?.title ?? "Sesión"}
       </span>
       <button
@@ -124,9 +125,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           padding: "8px 16px",
           borderRadius: "8px",
           border: "none",
-          background: "#FF3B30",
-          color: "#ffffff",
-          fontSize: "14px",
+          background: ACCENT.base,
+          color: TEXT.onAccent,
+          fontSize: TYPE.subhead.size,
           fontWeight: 600,
           cursor: "pointer",
         }}

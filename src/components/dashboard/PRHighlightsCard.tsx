@@ -10,7 +10,7 @@
 import { DashboardCard } from "./DashboardCard";
 import { formatDateRelative, formatOneRepMax } from "@/lib/dashboard/formatters";
 import type { RecentPR } from "@/lib/dashboard/dashboardMetrics";
-import { ACCENT, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, STATUS, TEXT, TYPE } from "@/design/tokens";
 
 export interface PRHighlightsCardProps {
   loading?: boolean;
@@ -64,7 +64,7 @@ export function PRHighlightsCard({
               alignItems: "center",
               justifyContent: "space-between",
               padding: "8px 0",
-              borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+              borderBottom: `1px solid ${GLASS.fill}`,
             }}
           >
             <div

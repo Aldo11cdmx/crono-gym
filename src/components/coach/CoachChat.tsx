@@ -709,10 +709,10 @@ function ProposedRoutineCard({
         backgroundColor: `${ACCENT.base}14`,
       }}
     >
-      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: ACCENT.text }}>
+      <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: ACCENT.text }}>
         Symmetry propuso una rutina
       </p>
-      <p style={{ margin: "4px 0 0", fontSize: 11, color: TEXT.tertiary }}>
+      <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
         {routine.name} · {routine.days.length} día{routine.days.length === 1 ? "" : "s"}
       </p>
       <div style={{ marginTop: 8, display: "flex", gap: SPACE.sm }}>

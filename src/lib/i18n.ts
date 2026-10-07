@@ -841,9 +841,22 @@ export const HUB_DEMO_LABELS = {
       ? "1 serie de calentamiento añadida a la sesión"
       : `${n} series de calentamiento añadidas a la sesión`,
 
-  /** Not in the rack: the ramp snapped to what the gym can actually build. */
-  warmupNote: "Cada paso se ajusta a los discos que tienes en el gimnasio.",
-} as const;
+    /** Not in the rack: the ramp snapped to what the gym can actually build. */
+    warmupNote: "Cada paso se ajusta a los discos que tienes en el gimnasio.",
+
+    /** Technique tips, below the muscle map. */
+    tipsTitle: "Tips de técnica",
+    tipsAriaLabel: (exercise: string): string => `Tips de técnica de ${exercise}`,
+    /** The list of official tips. */
+    tipsOfficialAriaLabel: "Instrucciones del catálogo",
+    /** The athlete's own tips, kept apart from the official ones. */
+    tipsMine: "Mis tips",
+    tipsMineAriaLabel: "Tus tips para este ejercicio",
+    tipsMinePlaceholder: "Añade tu propio tip…",
+    tipsMineAdd: "Guardar tip",
+    tipsMineEmpty: "Aún no tienes tips propios para este ejercicio.",
+    tipsMineDeleteAriaLabel: (tip: string): string => `Borrar tip: ${tip}`,
+  } as const;
 
 /** Copy for the progression tab. */
 export const HUB_PROGRESS_LABELS = {

@@ -51,8 +51,12 @@ vi.mock("../hooks/usePreviousPerformance", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../hooks/usePreviousPerformance")>();
   return {
     ...actual,
-    usePreviousPerformance: (): { performance: Record<string, PreviousPerformance> } => ({
+    usePreviousPerformance: (): {
+      performance: Record<string, PreviousPerformance>;
+      previousNotes: Record<string, (string | null)[]>;
+    } => ({
       performance: globalThis.__cronosPerformance ?? {},
+      previousNotes: globalThis.__cronosPreviousNotes ?? {},
     }),
   };
 });
@@ -71,6 +75,8 @@ vi.mock("./ExerciseCarousel", () => ({ ExerciseCarousel: () => null }));
 declare global {
   // eslint-disable-next-line no-var
   var __cronosPerformance: Record<string, PreviousPerformance> | undefined;
+  // eslint-disable-next-line no-var
+  var __cronosPreviousNotes: Record<string, (string | null)[]> | undefined;
 }
 
 function exercise(id: string, name: string): Exercise {
@@ -158,6 +164,7 @@ const TAILWIND_COLOR_UTILITIES =
 beforeEach(() => {
   window.localStorage.clear();
   globalThis.__cronosPerformance = {};
+  globalThis.__cronosPreviousNotes = {};
   vi.mocked(queueAndSync).mockClear();
   // jsdom does not implement it and `focusExercise` calls it.
   Element.prototype.scrollIntoView = vi.fn();

@@ -40,6 +40,7 @@ import type { OverloadTarget } from "../../lib/overload";
 import type { BarType } from "../../lib/workout/weightUtils";
 import type { SetEntry } from "../../lib/workout/types";
 import { WeightStepper } from "./WeightStepper";
+import { SetNoteField } from "./SetNoteField";
 import { RecordBadge, type RecordNotice } from "../hub/RecordBadge";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import {
@@ -93,6 +94,15 @@ export interface SetTableProps {
   /** Progressive-overload target, applied to the opening set only. */
   suggestion?: OverloadTarget | null;
   barType?: BarType;
+  /**
+   * The previous session's note for each set, by index, read-only.
+   *
+   * Shown as a grey reminder inside a set's note field when that set
+   * has no note yet -- the "what did I write about this set last time"
+   * answer, without making the athlete open anything. Absent or null
+   * entries render nothing.
+   */
+  previousNotes?: readonly (string | null)[];
   onChange: (index: number, entry: SetEntry) => void;
   onRemove: (index: number) => void;
   onDuplicate: (index: number) => void;
@@ -118,6 +128,7 @@ export function SetTable({
   formatWeight,
   suggestion,
   barType,
+  previousNotes,
   onChange,
   onRemove,
   onDuplicate,
@@ -241,6 +252,15 @@ export function SetTable({
               />
 
               <div style={{ flex: 1 }} />
+
+              <SetNoteField
+                index={index}
+                note={entry.notes ?? null}
+                previousNote={previousNotes?.[index] ?? null}
+                onChange={(note) =>
+                  onChange(index, { ...entry, notes: note })
+                }
+              />
 
               <GhostIcon
                 onClick={() => onDuplicate(index)}

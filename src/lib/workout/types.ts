@@ -36,4 +36,16 @@ export interface SetEntry {
    */
   kind: SetKind;
   completed: boolean;
+  /**
+   * The athlete's own prose about this set, or null when there is none.
+   *
+   * Optional and nullable so a draft saved before the field existed --
+   * a whole object in the `drafts` store -- reads the same as a set the
+   * athlete never annotated: `undefined` and `null` are both "no note",
+   * and neither rewrites history. `''` never appears: the normaliser in
+   * `setNotes.ts` collapses an emptied field to `null` on purpose, because
+   * the `completed_sets` column distinguishes the two and the sync payload
+   * only ever carries `null`.
+   */
+  notes?: string | null;
 }

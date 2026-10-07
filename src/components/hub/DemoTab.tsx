@@ -32,6 +32,7 @@ import { warmupSets, WARMUP_RAMP } from "@/lib/workout/weightUtils";
 import { type SessionMetrics } from "@/lib/exercise/exerciseMetrics";
 import type { ExerciseSession } from "@/lib/exercise/exerciseHistory";
 import { MuscleReadonlyMap, countMuscleSets } from "@/components/MuscleReadonlyMap";
+import { TechniqueTips } from "@/components/hub/TechniqueTips";
 import { MUSCLE_DEFINITIONS, muscleDefinition } from "@/lib/muscleMap";
 import { BODY_PART_LABELS, EQUIPMENT_LABELS, HUB_DEMO_LABELS } from "@/lib/i18n";
 import { DIAGRAM, GLASS, MOTION, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
@@ -76,6 +77,8 @@ export function DemoTab({
       <Media exercise={exercise} />
 
       <MusclePanel exercise={exercise} sessions={sessions} loading={loading} error={error} />
+
+      <TechniqueTips exercise={exercise} />
 
       <WarmupPanel
         exerciseName={exercise.name}

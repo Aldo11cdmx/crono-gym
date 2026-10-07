@@ -14,7 +14,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, act, fireEvent, render } from "@testing-library/react";
 
 vi.mock("@/lib/audio", () => ({
-  playBeep: vi.fn(),
+  playBeep: vi.fn(() => true),
+  markRecordBeep: vi.fn(),
   resetAudioContext: vi.fn(),
 }));
 
@@ -22,7 +23,7 @@ vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => mockReducedMotion,
 }));
 
-import { playBeep } from "@/lib/audio";
+import { markRecordBeep, playBeep } from "@/lib/audio";
 import { RecordBadge, type RecordNotice } from "@/components/hub/RecordBadge";
 import { HUB_RECORDS_LABELS } from "@/lib/i18n";
 
@@ -60,6 +61,29 @@ describe("RecordBadge", () => {
     mockReducedMotion = false;
     renderBadge(TEST_NOTICE);
     expect(playBeep).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks the speaker so the rest timer yields to the record", () => {
+    // A record fires the moment a set completes -- the same
+    // moment a rest starts. The mark is what tells the rest
+    // timer's end-of-rest beep to stay quiet.
+    mockReducedMotion = false;
+    renderBadge(TEST_NOTICE);
+    expect(markRecordBeep).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not mark the speaker under reduced motion", () => {
+    mockReducedMotion = true;
+    renderBadge(TEST_NOTICE);
+    expect(markRecordBeep).not.toHaveBeenCalled();
+  });
+
+  it("does not mark the speaker when no sound could be played", () => {
+    // A beep that never played is not a beep to yield to.
+    mockReducedMotion = false;
+    vi.mocked(playBeep).mockReturnValueOnce(false);
+    renderBadge(TEST_NOTICE);
+    expect(markRecordBeep).not.toHaveBeenCalled();
   });
 
   it("does not play a beep when reduced motion is on", () => {

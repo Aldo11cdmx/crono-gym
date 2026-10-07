@@ -29,7 +29,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Sparkles, X } from "lucide-react";
 import { HUB_RECORDS_LABELS } from "@/lib/i18n";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { playBeep } from "@/lib/audio";
+import { markRecordBeep, playBeep } from "@/lib/audio";
 import { GLASS, MOTION, RADIUS, SPACE, STATUS, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 export interface RecordNotice {
@@ -73,9 +73,11 @@ export function RecordBadge({ notice, autoDismissMs }: RecordBadgeProps) {
     setVisible(true);
 
     // The beep fires the moment the record arrives. Skipped under reduced-motion so
-    // the user who asked for quiet stays quiet.
-    if (!reducedMotion) {
-      playBeep();
+    // the user who asked for quiet stays quiet. A beep that could not play marks
+    // nothing: with no sound scheduled, there is nothing for the rest timer to
+    // yield to.
+    if (!reducedMotion && playBeep()) {
+      markRecordBeep();
     }
 
     const ms = autoDismissMs ?? HUB_RECORDS_LABELS.badgeAutoDismissMs;

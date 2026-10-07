@@ -8,8 +8,14 @@
  * per page lifetime (and the user-gesture tax applies to every construction).
  */
 
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { playBeep, resetAudioContext } from "@/lib/audio";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  isRecordBeepActive,
+  markRecordBeep,
+  playBeep,
+  RECORD_BEEP_PRIORITY_MS,
+  resetAudioContext,
+} from "@/lib/audio";
 
 class MockOscillator {
   type = "sine";
@@ -137,5 +143,40 @@ describe("audio singleton", () => {
     resetAudioContext();
     playBeep();
     expect(ctor).toHaveBeenCalledTimes(2);
+  });
+});
+
+/*
+ * The record-beep priority window, on fake timers: the
+ * window is a real two seconds of wall clock, so waiting
+ * it out honestly is a test that takes two seconds -- and
+ * a test that takes two seconds is a test that gets skipped.
+ *
+ * The module's state is one variable shared by the whole
+ * file, so these cases run in order: nothing has marked
+ * the speaker yet, because nothing above this line did.
+ */
+describe("record beep priority", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("reports no active record beep before any has played", () => {
+    expect(isRecordBeepActive()).toBe(false);
+  });
+
+  it("marks the speaker while the record's confirmation is being heard", () => {
+    markRecordBeep();
+    expect(isRecordBeepActive()).toBe(true);
+  });
+
+  it("lets the speaker go once the confirmation has passed", () => {
+    markRecordBeep();
+    vi.advanceTimersByTime(RECORD_BEEP_PRIORITY_MS + 1);
+    expect(isRecordBeepActive()).toBe(false);
   });
 });

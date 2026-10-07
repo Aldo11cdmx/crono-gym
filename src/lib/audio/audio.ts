@@ -80,3 +80,42 @@ export function playBeep(frequency: number = 523.25, durationMs: number = 120): 
 export function resetAudioContext(): void {
   sharedContext = null;
 }
+
+/**
+ * How long a record beep keeps the speaker reserved, in ms.
+ *
+ * A record fires the moment a set is completed -- which is also the moment
+ * the rest timer starts. If that rest is short enough to end while the
+ * record's confirmation is still the sound in the athlete's head, the rest
+ * beep would talk over it. Two confirmation sounds at once is noise, not
+ * confirmation, so the rest timer yields instead.
+ *
+ * Exported so a test can wait past the window without retyping the
+ * number here -- a retyped constant is a second value that can drift.
+ */
+export const RECORD_BEEP_PRIORITY_MS = 2000;
+
+/** When the record beep last sounded, as `Date.now()`. Zero: never. */
+let recordBeepAt = 0;
+
+/**
+ * Marks that a record's confirmation beep has just played, so another
+ * sound can yield to it. Called by the badge that plays the beep, not by
+ * the code that notices the record: the sound is what matters, and only
+ * the player knows it happened.
+ */
+export function markRecordBeep(): void {
+  recordBeepAt = Date.now();
+}
+
+/**
+ * Whether a record beep is still the sound the athlete is hearing.
+ *
+ * The rest timer's end-of-rest beep checks this and stays quiet while it
+ * is true; the record already said what needed saying.
+ */
+export function isRecordBeepActive(): boolean {
+  return (
+    recordBeepAt > 0 && Date.now() - recordBeepAt < RECORD_BEEP_PRIORITY_MS
+  );
+}

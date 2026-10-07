@@ -32,15 +32,28 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { useState } from "react";
-import { Check, Copy, Flame, Flag, Layers, Trash2, TrendingUp } from "lucide-react";
-import { SET_LOGGER_LABELS, SET_TYPE_LABELS } from "../../lib/i18n";
+import { Check, Copy, Flame, Flag, Layers, Trash2, TrendingUp, X } from "lucide-react";
+import { SET_LOGGER_LABELS, SET_TYPE_LABELS, FATIGUE_LABELS } from "../../lib/i18n";
 import { SET_KINDS, type SetKind } from "../../lib/workout/setKind";
 import { isRecordBreak } from "../../lib/workout/recordBreak";
+import {
+  FATIGUE,
+  fatigueShortfall,
+  getSetFatigue,
+  summarizeFatigue,
+  type FatigueLevel,
+} from "../../lib/workout/fatigue";
+import {
+  FALLBACK_REST_SECONDS,
+  REST_STEP_SECONDS,
+  saveRestSeconds,
+} from "../../lib/workout/restPreferences";
 import type { OverloadTarget } from "../../lib/overload";
 import type { BarType } from "../../lib/workout/weightUtils";
 import type { SetEntry } from "../../lib/workout/types";
 import { WeightStepper } from "./WeightStepper";
 import { SetNoteField } from "./SetNoteField";
+import { FatigueBadge } from "./FatigueBadge";
 import { RecordBadge, type RecordNotice } from "../hub/RecordBadge";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import {
@@ -95,6 +108,24 @@ export interface SetTableProps {
   suggestion?: OverloadTarget | null;
   barType?: BarType;
   /**
+   * The exercise's id, when the table shows a single exercise.
+   *
+   * Names the rest-length preference the fatigue summary's action
+   * writes: "30 s más" is a promise about *this* movement, not
+   * about the session, so it has to be stored under the movement
+   * it was made for. Absent means the summary's action stays
+   * silent, because there is nothing to remember.
+   */
+  exerciseId?: string;
+  /**
+   * The exercise's configured rest, in seconds.
+   *
+   * The base the fatigue summary's "30 s más" builds on: the
+   * preference stores an absolute duration, so the action needs
+   * to know what it is adding to.
+   */
+  restSeconds?: number;
+  /**
    * The previous session's note for each set, by index, read-only.
    *
    * Shown as a grey reminder inside a set's note field when that set
@@ -128,6 +159,8 @@ export function SetTable({
   formatWeight,
   suggestion,
   barType,
+  exerciseId,
+  restSeconds,
   previousNotes,
   onChange,
   onRemove,
@@ -146,6 +179,65 @@ export function SetTable({
    * the athlete's. Owning it here keeps `ActiveWorkout` out of it entirely.
    */
   const [recordNotice, setRecordNotice] = useState<RecordNotice | null>(null);
+
+  /**
+   * The fatigue verdict for one set.
+   *
+   * The target's reps are the plan for every working set of the
+   * exercise -- the engine suggests one target and the athlete
+   * repeats it -- so a completed set that fell short of it fell
+   * short of the plan. The record check reuses the badge's own
+   * rule, so "this set is a record" and "this set is tired"
+   * cannot disagree about the same set.
+   *
+   * Incomplete sets are `none` by construction: there is no
+   * result to judge yet.
+   */
+  const fatigueOf = (entry: SetEntry): { level: FatigueLevel; shortfall: number | null } => {
+    const plannedReps = suggestion?.reps ?? null;
+    if (!entry.completed) return { level: "none", shortfall: null };
+
+    const allTimeBest =
+      allTimeBestKg === null || allTimeBestKg === undefined
+        ? null
+        : { weightKg: allTimeBestKg, reps: allTimeBestReps ?? null };
+    const isRecord =
+      entry.kind !== "warmup" &&
+      allTimeBest !== null &&
+      isRecordBreak(Number.parseFloat(entry.weight), Number.parseInt(entry.reps, 10), allTimeBest);
+
+    return {
+      level: getSetFatigue(entry, { plannedReps, allTimeBest, isRecord }),
+      shortfall: fatigueShortfall(entry, plannedReps),
+    };
+  };
+
+  // Computed once, not per render pass: the summary counts the
+  // same verdicts the rows show.
+  const fatigueBySet = sets.map(fatigueOf);
+  const fatigueSummary = summarizeFatigue(fatigueBySet.map((f) => f.level));
+
+  // Session-only: dismissing an answer is not a promise never to
+  // ask again, and the next session gets a fresh question.
+  const [fatigueDismissed, setFatigueDismissed] = useState(false);
+
+  const showFatigueSummary =
+    exerciseId !== undefined &&
+    !fatigueDismissed &&
+    fatigueSummary.fatigued >= FATIGUE.SUMMARY_MIN_SETS;
+
+  /**
+   * Acts on the summary: remember a longer rest for this exercise.
+   *
+   * The preference is an absolute duration -- the configured rest
+   * plus the offered step -- so the next rest for this movement
+   * starts longer without the athlete touching any setting.
+   */
+  const applyLongerRest = () => {
+    if (!exerciseId) return;
+    saveRestSeconds(exerciseId, (restSeconds ?? FALLBACK_REST_SECONDS) + REST_STEP_SECONDS);
+    setFatigueDismissed(true);
+  };
 
   /**
    * Flips a set's completion, and notices a record on the way up.
@@ -224,6 +316,10 @@ export function SetTable({
           suggestion.decision !== "first_time" &&
           !entry.completed;
 
+        // The verdict for this row, computed once for all rows
+        // above: the summary below counts the same verdicts.
+        const fatigue = fatigueBySet[index];
+
         return (
           <div
             key={`set-${index}`}
@@ -244,6 +340,16 @@ export function SetTable({
               <span style={{ ...setNumberStyle, color: entry.completed ? STATUS.success.text : ACCENT.text }}>
                 {SET_LOGGER_LABELS.setNumber(index + 1)}
               </span>
+
+              {/*
+                The verdict rides in the header, beside the number it
+                belongs to: a badge about *this set* has to sit on
+                *this row*, and the header is the only stretch of the
+                row that is not an input.
+              */}
+              {fatigue.level !== "none" && fatigue.shortfall !== null ? (
+                <FatigueBadge shortfall={fatigue.shortfall} level={fatigue.level} />
+              ) : null}
 
               <KindChips
                 index={index}
@@ -349,6 +455,87 @@ export function SetTable({
           </div>
         );
       })}
+
+      {/*
+        The session-level verdict, under the rows it summarizes.
+
+        It only answers a question worth asking -- "did this session
+        tire me out?" -- once at least a couple of sets have said yes,
+        and it offers the one action that question implies: rest longer
+        next time, for this movement. Dismissing it costs a tap and
+        ends it for the session, which is all the finality a
+        suggestion deserves.
+      */}
+      {showFatigueSummary ? (
+        <div
+          role="status"
+          aria-label={FATIGUE_LABELS.summaryAriaLabel(
+            fatigueSummary.fatigued,
+            fatigueSummary.total,
+          )}
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: SPACE.md,
+            borderRadius: RADIUS.surface,
+            border: `1px solid ${STATUS.warning.border}`,
+            background: STATUS.warning.muted,
+            padding: `${SPACE.md} ${SPACE.lg}`,
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              flex: "1 1 100%",
+              fontSize: TYPE.body.size,
+              lineHeight: TYPE.body.lineHeight,
+              color: TEXT.primary,
+            }}
+          >
+            {FATIGUE_LABELS.summary(fatigueSummary.fatigued, fatigueSummary.total)}
+          </p>
+          {exerciseId ? (
+            <button
+              type="button"
+              onClick={applyLongerRest}
+              aria-label={FATIGUE_LABELS.restMoreAriaLabel(REST_STEP_SECONDS)}
+              style={{
+                minHeight: MOTION.minTouchTarget,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${STATUS.warning.border}`,
+                background: "transparent",
+                color: STATUS.warning.text,
+                fontSize: TYPE.label.size,
+                fontWeight: TYPE.label.weight,
+                letterSpacing: TYPE.label.tracking,
+                cursor: "pointer",
+              }}
+            >
+              {FATIGUE_LABELS.restMoreLabel}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            aria-label={FATIGUE_LABELS.dismissAriaLabel}
+            onClick={() => setFatigueDismissed(true)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: "32px",
+              minHeight: "32px",
+              borderRadius: RADIUS.sm,
+              border: `1px solid ${STATUS.warning.border}`,
+              background: "transparent",
+              color: STATUS.warning.text,
+              cursor: "pointer",
+            }}
+          >
+            <X size={14} aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
 
       <button
         type="button"

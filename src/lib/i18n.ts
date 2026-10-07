@@ -389,6 +389,59 @@ export const SET_LOGGER_LABELS = {
 } as const;
 
 /**
+ * Copy for the rest timer.
+ *
+ * Every control has a spoken label as well as a visible one,
+ * because the timer is the screen a blind athlete uses with
+ * the phone in their pocket: the countdown is announced as it
+ * changes, and each adjustment says what it does.
+ */
+export const REST_TIMER_LABELS = {
+  title: "Tiempo de descanso",
+  /** The clock face, spoken: "Quedan 42 segundos". */
+  remainingAriaLabel: (seconds: number): string =>
+    seconds === 1 ? "Queda 1 segundo" : `Quedan ${seconds} segundos`,
+  closeAriaLabel: "Cerrar el temporizador de descanso",
+  minimizeAriaLabel: "Minimizar el temporizador",
+  expandAriaLabel: "Ver el temporizador de descanso",
+  pauseAriaLabel: "Pausar el descanso",
+  resumeAriaLabel: "Reanudar el descanso",
+  pauseLabel: "Pausar",
+  resumeLabel: "Reanudar",
+  /** The shared step of the two adjustment controls, e.g. "15 s". */
+  stepLabel: "15 s",
+  subtractAriaLabel: "Quitar 15 segundos al descanso",
+  addAriaLabel: "Añadir 15 segundos al descanso",
+  skipLabel: "Saltar",
+} as const;
+
+/**
+ * Copy for the fatigue verdict.
+ *
+ * The badge names the shortfall in reps, because "tired" is not
+ * a fact and "two reps short" is. The summary counts only the
+ * sets that showed fatigue, so its sentence is a claim about
+ * the session rather than about the table.
+ */
+export const FATIGUE_LABELS = {
+  /** The chip on a fatigued set: "−2 reps". */
+  shortfallText: (shortfall: number): string => `−${shortfall} reps`,
+  badgeAriaLabel: (level: "mild" | "high", shortfall: number): string =>
+    level === "high"
+      ? `Fatiga alta: ${shortfall} repeticiones menos de lo planeado`
+      : `Fatiga: ${shortfall} repeticiones menos de lo planeado`,
+  /** The exercise-level summary: "2 de 4 series con fatiga". */
+  summary: (fatigued: number, total: number): string =>
+    `${fatigued} de ${total} series con fatiga`,
+  summaryAriaLabel: (fatigued: number, total: number): string =>
+    `${fatigued} de ${total} series quedaron por debajo de lo planeado`,
+  restMoreLabel: "Probar 30 s más",
+  restMoreAriaLabel: (seconds: number): string =>
+    `Descansar ${seconds} segundos más en este ejercicio`,
+  dismissAriaLabel: "Descartar el aviso de fatiga",
+} as const;
+
+/**
  * Copy for the gym settings panel.
  *
  * "Pares por lado" is spelled out rather than left to a bare number, because a

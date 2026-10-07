@@ -20,7 +20,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { SetTable, type SetTableProps } from "./SetTable";
-import { SET_LOGGER_LABELS, SET_TYPE_LABELS } from "../../lib/i18n";
+import { SET_LOGGER_LABELS, SET_TYPE_LABELS, FATIGUE_LABELS } from "../../lib/i18n";
+import {
+  REST_PREFERENCES_KEY,
+  REST_STEP_SECONDS,
+} from "../../lib/workout/restPreferences";
 import type { OverloadTarget } from "../../lib/overload";
 import type { SetEntry } from "../../lib/workout/types";
 import { sameColor } from "../../test-support/color";
@@ -598,5 +602,124 @@ describe("the record badge", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("the fatigue verdict", () => {
+  /** A plan to repeat: ten reps at a hundred, however heavy. */
+  const TARGET: OverloadTarget = {
+    decision: "hold",
+    weight: 100,
+    reps: 10,
+    repRange: { min: 10, max: 10 },
+    incrementKg: 2.5,
+    delta: "+0 kg",
+    reason: "mantener la carga",
+    estimateConfident: true,
+  };
+
+  /** Two sets that fell short of the plan, and one that met it. */
+  const TIRED_SESSION = [
+    set({ set_number: 1, weight: "100", reps: "8", completed: true }),
+    set({ set_number: 2, weight: "100", reps: "8", completed: true }),
+    set({ set_number: 3, weight: "100", reps: "10", completed: true }),
+  ];
+
+  it("marks a completed set that fell short of the plan", () => {
+    renderTable({ sets: [TIRED_SESSION[0]], suggestion: TARGET });
+    // The badge rides on the row it belongs to, beside the
+    // set number it is about.
+    expect(
+      within(row(1)).getByText(FATIGUE_LABELS.shortfallText(2)),
+    ).toBeTruthy();
+  });
+
+  it("never marks a warm-up, however short it is", () => {
+    renderTable({
+      sets: [
+        set({
+          set_number: 1,
+          weight: "60",
+          reps: "5",
+          kind: "warmup",
+          completed: true,
+        }),
+      ],
+      suggestion: TARGET,
+    });
+    expect(screen.queryByRole("img")).toBeNull();
+  });
+
+  it("never marks a set that met the plan", () => {
+    renderTable({
+      sets: [
+        set({ set_number: 1, weight: "100", reps: "10", completed: true }),
+      ],
+      suggestion: TARGET,
+    });
+    expect(screen.queryByRole("img")).toBeNull();
+  });
+
+  it("summarizes once two sets have fallen short", () => {
+    renderTable({
+      exerciseId: "sentadilla",
+      restSeconds: 90,
+      sets: TIRED_SESSION,
+      suggestion: TARGET,
+    });
+    expect(screen.getByText(FATIGUE_LABELS.summary(2, 3))).toBeTruthy();
+  });
+
+  it("waits for a second tired set before summarizing", () => {
+    // One tired set is a bad set; two are a session.
+    renderTable({
+      exerciseId: "sentadilla",
+      sets: [TIRED_SESSION[0], TIRED_SESSION[2]],
+      suggestion: TARGET,
+    });
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("stays silent when the table names no exercise", () => {
+    // Without an exercise id there is nowhere to remember a
+    // longer rest, so the summary would offer an action that
+    // cannot exist.
+    renderTable({ sets: TIRED_SESSION, suggestion: TARGET });
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("remembers a longer rest when the athlete asks for one", () => {
+    renderTable({
+      exerciseId: "sentadilla",
+      restSeconds: 90,
+      sets: TIRED_SESSION,
+      suggestion: TARGET,
+    });
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: FATIGUE_LABELS.restMoreAriaLabel(REST_STEP_SECONDS),
+      }),
+    );
+
+    // The preference is absolute: the rest that was running
+    // plus the offered step, stored for this exercise alone.
+    expect(window.localStorage.getItem(REST_PREFERENCES_KEY)).toBe(
+      JSON.stringify({ sentadilla: 90 + REST_STEP_SECONDS }),
+    );
+    // And the verdict is done talking: the answer is remembered,
+    // not left covering the sets.
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("lets the athlete dismiss the verdict for the session", () => {
+    renderTable({
+      exerciseId: "sentadilla",
+      sets: TIRED_SESSION,
+      suggestion: TARGET,
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: FATIGUE_LABELS.dismissAriaLabel }),
+    );
+    expect(screen.queryByRole("status")).toBeNull();
   });
 });

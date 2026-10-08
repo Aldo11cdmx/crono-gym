@@ -665,6 +665,57 @@ export const PROFILE_LABELS = {
   godVersionApp: "App",
   godVersionDb: "Base local",
   godVersionSchema: "Esquema",
+
+  /**
+   * The athlete-context form, reached from this screen.
+   *
+   * This is the one place the athlete tells the app what they are training
+   * towards and how their body is doing, and it is the data the coach reads.
+   * The labels are short and specific: the form is filled once, not browsed.
+   */
+  contextTitle: "Tu contexto",
+  contextSubtitle: "Lo que el coach IA lee antes de responder.",
+  contextLoading: "Cargando tu contexto…",
+  contextEmpty: "Aún no has guardado contexto. Rellena lo que quieras.",
+  contextError: "No se pudo guardar tu contexto. Reintenta más tarde.",
+  contextSaved: "Guardado",
+  contextGoal: "Objetivo",
+  contextGoalHint: "Toque el seleccionado lo deselecciona.",
+  contextWeight: "Peso",
+  contextWeightUnit: "kg",
+  contextWeightLb: "lb",
+  contextHeight: "Altura",
+  contextHeightUnit: "cm",
+  contextHeightFtIn: "ft in",
+  contextWeightRange: (min: number, max: number): string =>
+    `Entre ${min} y ${max} kg`,
+  contextHeightRange: (min: number, max: number): string =>
+    `Entre ${min} y ${max} cm`,
+  contextWeightInvalid: "Peso: introduce un número válido.",
+  contextHeightInvalid: "Altura: introduce un número válido.",
+  contextExperience: "Nivel",
+  contextDays: "Días por semana",
+  contextDaysHint: "1 a 7",
+  contextEquipment: "Equipo disponible",
+  contextEquipmentStatic: "Equipo de tu gimnasio (fijo)",
+  contextInjury: "Molestia actual",
+  contextInjuryHint: "Opcional. Máximo 200 caracteres.",
+  contextInjuryChars: (n: number): string => `${n}/200`,
+  contextInjuryQuick: [
+    "Hombro",
+    "Rodilla",
+    "Espalda baja",
+    "Codo",
+    "Muñeca",
+  ] as const,
+  contextClear: "Borrar mi contexto",
+  contextClearConfirm: "¿Borrar solo el contexto (días, lesiones)? El perfil central no se toca.",
+  contextClearDone: "Contexto borrado.",
+  contextConsent: "Compartir mi contexto con el coach IA",
+  contextConsentHint:
+    "Se envía objetivo, biometría, nivel, frecuencia, equipo y molestias a OpenRouter. " +
+    "Nunca se envía tu nombre, correo ni identificador. En producción pediremos tu consentimiento explícito.",
+  contextConsentProdNote: "Producción: apagado por defecto; se pedirá consentimiento explícito.",
 } as const;
 
 /** Experience levels, shared by onboarding and the profile. */

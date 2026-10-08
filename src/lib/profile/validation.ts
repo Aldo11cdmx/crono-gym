@@ -110,3 +110,90 @@ export function validateAthleteContext(input: {
     ""
   );
 }
+
+// --------------------------------------------------------------- parsers
+
+/**
+ * Parses a weight string into kg.
+ *
+ * Accepts a comma or a point as the decimal separator, because the form is
+ * filled by athletes in multiple locales and a user who typed "67,5" should
+ * not be told their weight is invalid. `NaN`, negatives and non-finite values
+ * resolve to `null` rather than throwing.
+ */
+export function parseWeightKg(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") return null;
+  const normalised = trimmed.replace(",", ".");
+  const n = Number(normalised);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return n;
+}
+
+/**
+ * Parses a height string into cm.
+ *
+ * Same contract as {@link parseWeightKg}: comma or point, negatives and
+ * non-finite resolve to `null`.
+ */
+export function parseHeightCm(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") return null;
+  const normalised = trimmed.replace(",", ".");
+  const n = Number(normalised);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return n;
+}
+
+/** True when the parsed weight is inside the human range. */
+export function isValidWeightKg(kg: number): boolean {
+  return kg >= BODY_WEIGHT_RANGE_KG.min && kg <= BODY_WEIGHT_RANGE_KG.max;
+}
+
+/** True when the parsed height is inside the human range. */
+export function isValidHeightCm(cm: number): boolean {
+  return cm >= HEIGHT_RANGE_CM.min && cm <= HEIGHT_RANGE_CM.max;
+}
+
+// ----------------------------------------------------------- free text
+
+/**
+ * Sanitises a free-text field before it reaches a prompt.
+ *
+ * The injury note is the one place a user can type arbitrary text, and it is
+ * the one place where injection matters. This function does three things:
+ *
+ *   1. Trims and collapses whitespace, removing control characters and line
+ *      breaks so a multi-line paste cannot smuggle a new instruction.
+ *   2. Neutralises the sequences that would let a user close the
+ *      `<datosUsuario>` delimiter the preamble wraps their text in, or inject
+ *      a fake system message: literal `<` and `>`, backticks, and the phrase
+ *      "ignora las instrucciones" case-insensitively.
+ *   3. Truncates to a hard cap, so a paste of a medical record cannot bloat
+ *      the prompt.
+ *
+ * It does not try to guess intent. A validator that rewrites what the user
+ * typed teaches them to write around it.
+ */
+export const FREE_TEXT_MAX_CHARS = 200;
+
+const FREE_TEXT_NEUTRALISE: { from: RegExp; to: string }[] = [
+  { from: /ignora las instrucciones/gi, to: "[ignora las instrucciones]" },
+  { from: /system:/gi, to: "[system]" },
+  { from: /###/g, to: "[###]" },
+];
+
+export function sanitizeFreeText(raw: string): string {
+  let out = raw.trim();
+  // Strip control characters and line breaks; collapse runs of whitespace.
+  out = out.replace(/[\x00-\x1F\x7F]+/g, " ");
+  out = out.replace(/\s+/g, " ");
+  // Neutralise angle brackets and backticks so the user cannot close the
+  // `<datosUsuario>` delimiter or open a code block.
+  out = out.replace(/[<>`]/g, " ");
+  for (const { from, to } of FREE_TEXT_NEUTRALISE) {
+    out = out.replace(from, to);
+  }
+  if (out.length > FREE_TEXT_MAX_CHARS) out = out.slice(0, FREE_TEXT_MAX_CHARS);
+  return out.trim();
+}

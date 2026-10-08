@@ -17,7 +17,7 @@
  * reader between them.
  */
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { ACCENT, GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 
 export interface GoalOption {
@@ -125,7 +125,7 @@ export function GoalChips({ options, selected, onSelect, labelledBy, disabled }:
       aria-labelledby={labelledBy}
       style={{ display: "flex", flexWrap: "wrap", gap: SPACE.xs }}
     >
-      {options.map((option, index) => (
+      {options.map((option) => (
         <GoalChip
           key={option.value}
           option={option}

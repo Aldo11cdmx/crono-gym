@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ACCENT, GLASS, MOTION, RADIUS, SPACE, SOLID, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, MOTION, RADIUS, SPACE, SOLID, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { sanitizeFreeText, INJURY_MAX_CHARS } from "@/lib/profile/validation";
 import { PROFILE_LABELS } from "@/lib/i18n";
 
@@ -64,7 +64,7 @@ export function InjuryField({ value, onChange, disabled }: InjuryFieldProps) {
         style={{
           width: "100%",
           minHeight: MOTION.minTouchTarget,
-          padding: "8px 12px",
+          padding: `${SPACE.sm} ${SPACE.md}`,
           borderRadius: RADIUS.control,
           borderWidth: "1px",
           borderStyle: "solid",
@@ -81,7 +81,7 @@ export function InjuryField({ value, onChange, disabled }: InjuryFieldProps) {
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: TYPE.caption.size, color: TEXT.tertiary }}
       >
         <span>{PROFILE_LABELS.contextInjuryHint}</span>
-        <span style={{ color: value.length >= INJURY_MAX_CHARS ? ACCENT.text : undefined }}>
+        <span style={{ color: value.length >= INJURY_MAX_CHARS ? STATUS.error.text : undefined }}>
           {PROFILE_LABELS.contextInjuryChars(value.length)}
         </span>
       </div>
@@ -93,7 +93,7 @@ export function InjuryField({ value, onChange, disabled }: InjuryFieldProps) {
             disabled={disabled}
             onClick={() => insertChip(chip)}
             style={{
-              minHeight: 32,
+              minHeight: MOTION.minTouchTarget,
               padding: `0 ${SPACE.sm}`,
               borderRadius: RADIUS.pill,
               borderWidth: "1px",

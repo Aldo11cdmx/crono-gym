@@ -2,24 +2,19 @@
 
 import { useState } from "react";
 import {
-  ACCENT,
-  GLASS,
   MOTION,
   RADIUS,
   SPACE,
   SOLID,
+  STATUS,
   TEXT,
   TYPE,
 } from "@/design/tokens";
 import {
   parseWeightKg,
   parseHeightCm,
-  isValidWeightKg,
-  isValidHeightCm,
-  BODY_WEIGHT_RANGE_KG,
-  HEIGHT_RANGE_CM,
 } from "@/lib/profile/validation";
-import { kgToLb, lbToKg, cmToIn, inToCm, toDisplayUnits } from "@/lib/profile";
+import { kgToLb, lbToKg, cmToIn, inToCm } from "@/lib/profile";
 import type { UnitSystem } from "@/lib/profile";
 
 export interface BiometricsInputsProps {
@@ -82,18 +77,18 @@ export function BiometricsInputs({
           style={{
             width: "100%",
             minHeight: MOTION.minTouchTarget,
-            padding: "8px 12px",
+            padding: `${SPACE.sm} ${SPACE.md}`,
             borderRadius: RADIUS.control,
             borderWidth: "1px",
             borderStyle: "solid",
-            borderColor: weightError ? ACCENT.base : SOLID.borderStrong,
+            borderColor: weightError ? STATUS.error.base : SOLID.borderStrong,
             background: "transparent",
             color: TEXT.primary,
             fontSize: TYPE.body.size,
           }}
         />
         {weightError && (
-          <span id="weight-error" style={{ display: "block", marginTop: 4, fontSize: TYPE.caption.size, color: ACCENT.text }}>
+          <span id="weight-error" style={{ display: "block", marginTop: SPACE.xs, fontSize: TYPE.caption.size, color: STATUS.error.text }}>
             {weightError}
           </span>
         )}
@@ -120,18 +115,18 @@ export function BiometricsInputs({
           style={{
             width: "100%",
             minHeight: MOTION.minTouchTarget,
-            padding: "8px 12px",
+            padding: `${SPACE.sm} ${SPACE.md}`,
             borderRadius: RADIUS.control,
             borderWidth: "1px",
             borderStyle: "solid",
-            borderColor: heightError ? ACCENT.base : SOLID.borderStrong,
+            borderColor: heightError ? STATUS.error.base : SOLID.borderStrong,
             background: "transparent",
             color: TEXT.primary,
             fontSize: TYPE.body.size,
           }}
         />
         {heightError && (
-          <span id="height-error" style={{ display: "block", marginTop: 4, fontSize: TYPE.caption.size, color: ACCENT.text }}>
+          <span id="height-error" style={{ display: "block", marginTop: SPACE.xs, fontSize: TYPE.caption.size, color: STATUS.error.text }}>
             {heightError}
           </span>
         )}

@@ -818,6 +818,8 @@ function sseFromText(text: string, tokensUsed: number | null): ReadableStream<Ui
     },
   });
 }
+/**
+ * The messages sent upstream.
  *
  * The system prompt is loaded rather than inlined: the reviewed copy lives in
  * `src/lib/ai/coachPrompt.ts`, which a Deno runtime cannot import. That leaves three

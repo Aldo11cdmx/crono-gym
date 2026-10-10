@@ -7,7 +7,8 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ACCENT, GLASS, MOTION, RADIUS, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { ACCENT, GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 export interface QuickActionItem {
   id: string;
@@ -20,16 +21,30 @@ export interface QuickActionButtonProps {
   icon?: string;
   actions: QuickActionItem[];
   loading?: boolean;
+  /**
+   * Anchoring strategy for the FAB.
+   *
+   * Defaults to `fixed` against the viewport. When `true`, the button is `absolute` in
+   * its nearest positioned ancestor (the dashboard sheet) and its inset reads off the
+   * shared layout gap -- SPACE.lg below the `md` breakpoint, SPACE.xl at/above it -- so
+   * it never overlaps the metrics grid and tracks the shell's own spacing tokens.
+   */
+  anchored?: boolean;
 }
 
 export function QuickActionButton({
   icon = "▶",
   actions,
   loading = false,
+  anchored = false,
 }: QuickActionButtonProps) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const isWide = useMediaQuery("(min-width: 900px)");
+  const fabOffset = isWide ? SPACE.xl : SPACE.lg;
+  const fabPosition = anchored ? "absolute" : "fixed";
 
   const toggle = () => setOpen((v) => !v);
   const close = () => setOpen(false);
@@ -67,9 +82,9 @@ export function QuickActionButton({
     return (
       <div
         style={{
-          position: "fixed",
-          bottom: "24px",
-          right: "24px",
+          position: fabPosition,
+          bottom: fabOffset,
+          right: fabOffset,
           zIndex: Z_INDEX.fab,
         }}
       >
@@ -89,9 +104,9 @@ export function QuickActionButton({
   return (
     <div
       style={{
-        position: "fixed",
-        bottom: "24px",
-        right: "24px",
+        position: fabPosition,
+        bottom: fabOffset,
+        right: fabOffset,
         zIndex: Z_INDEX.fab,
       }}
     >

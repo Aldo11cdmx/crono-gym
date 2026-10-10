@@ -11,12 +11,15 @@ import { DashboardCard } from "./DashboardCard";
 import { formatDateRelative, formatOneRepMax } from "@/lib/dashboard/formatters";
 import type { RecentPR } from "@/lib/dashboard/dashboardMetrics";
 import { ACCENT, GLASS, STATUS, TEXT, TYPE } from "@/design/tokens";
+import type { Exercise } from "@/types/supabase";
 
 export interface PRHighlightsCardProps {
   loading?: boolean;
   prs: RecentPR[];
   locale?: string;
   unit?: "metric" | "imperial";
+  exercisesById?: Map<string, Exercise>;
+  onExerciseClick?: (exercise: Exercise | null) => void;
 }
 
 export function PRHighlightsCard({
@@ -24,6 +27,8 @@ export function PRHighlightsCard({
   prs,
   locale = "es-ES",
   unit = "metric",
+  exercisesById,
+  onExerciseClick,
 }: PRHighlightsCardProps) {
   if (loading) {
     return (
@@ -56,17 +61,34 @@ export function PRHighlightsCard({
           gap: "8px",
         }}
       >
-        {prs.map((pr) => (
-          <div
-            key={`${pr.exerciseName}-${pr.achievedAt}`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "8px 0",
-              borderBottom: `1px solid ${GLASS.fill}`,
-            }}
-          >
+          {prs.map((pr) => {
+            const openDetail = () =>
+              onExerciseClick?.(exercisesById?.get(pr.exerciseName.toLowerCase()) ?? null);
+            return (
+              <div
+                key={`${pr.exerciseName}-${pr.achievedAt}`}
+                role={onExerciseClick ? "button" : undefined}
+                tabIndex={onExerciseClick ? 0 : undefined}
+                onClick={onExerciseClick ? openDetail : undefined}
+                onKeyDown={
+                  onExerciseClick
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          openDetail();
+                        }
+                      }
+                    : undefined
+                }
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "8px 0",
+                  borderBottom: `1px solid ${GLASS.fill}`,
+                  cursor: onExerciseClick ? "pointer" : undefined,
+                }}
+              >
             <div
               style={{
                 display: "flex",
@@ -116,7 +138,8 @@ export function PRHighlightsCard({
               </span>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </DashboardCard>
   );

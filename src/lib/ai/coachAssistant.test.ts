@@ -19,21 +19,26 @@ import {
   parseCoachAction,
 } from "./coachAssistant";
 import { CoachRequestError, type AssistantContext, type CoachRequest } from "./types";
+import type { LocalStateRow } from "@/lib/profile/localState";
 
 /*
- * The Supabase client is behind a dynamic import inside `coachAssistant`, so this is
- * the seam that intercepts it. Mocked for the whole file rather than per test because
- * `vi.mock` is hoisted and a file cannot mix mocked and unmocked imports of the same
- * module.
+ * The Supabase client and the local-state store sit behind dynamic imports inside
+ * `coachAssistant`, so these are the seams that intercept them. Mocked for the whole
+ * file rather than per test, because `vi.mock` is hoisted and a file cannot mix mocked
+ * and unmocked imports of the same module.
  */
-const { authMock } = vi.hoisted(() => ({
+const { authMock, localStateMock } = vi.hoisted(() => ({
   authMock: {
     getSession: vi.fn(),
     refreshSession: vi.fn(),
   },
+  localStateMock: {
+    loadLocalState: vi.fn(),
+  },
 }));
 
 vi.mock("@/lib/supabase", () => ({ supabase: { auth: authMock } }));
+vi.mock("@/lib/profile/localState", () => ({ loadLocalState: localStateMock.loadLocalState }));
 
 const CONTEXT: AssistantContext = {
   currentGoal: "volume",
@@ -86,6 +91,7 @@ beforeEach(() => {
     data: { session: { access_token: "refreshed-token" } },
     error: null,
   });
+  localStateMock.loadLocalState.mockReset().mockResolvedValue(null);
 });
 
 // ------------------------------------------------------------- parseAction
@@ -704,5 +710,77 @@ describe("askCoach failure classification", () => {
     // A distinguishable "the key is missing" from "your request was malformed" is
     // free reconnaissance for anyone holding a token.
     expect(JSON.stringify(error)).not.toContain("OPENROUTER");
+  });
+});
+
+describe("local state gating", () => {
+  const localFetch = () => {
+    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) =>
+      sseResponse([frame("ok"), "data: [DONE]\n\n"]),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+  };
+
+  it("authorizes the context when consent is stored locally", async () => {
+    localStateMock.loadLocalState.mockResolvedValue({
+      flags: { aiEnabled: true },
+      consent: { shareAiContext: true },
+    } as LocalStateRow);
+    const fetchMock = localFetch();
+
+    await askCoach(request(), () => undefined);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string) as {
+      context: AssistantContext;
+    };
+    // With consent, the body carries the athlete's stored weight.
+    expect(body.context.bodyWeightKg).toBe(CONTEXT.bodyWeightKg);
+  });
+
+  it("throws AI_DISABLED and never fetches when the flag is off", async () => {
+    localStateMock.loadLocalState.mockResolvedValue({
+      flags: { aiEnabled: false },
+      consent: { shareAiContext: true },
+    } as LocalStateRow);
+    const fetchMock = localFetch();
+
+    await expect(askCoach(request(), () => undefined)).rejects.toMatchObject({
+      detail: { code: "AI_DISABLED" },
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("falls back to DEV consent when local state cannot be read", async () => {
+    // An offline box or a wiped store is not a failure to render: local state must not
+    // throw, and in DEV the request still goes through without stored consent.
+    localStateMock.loadLocalState.mockRejectedValue(new Error("idb unavailable"));
+    const fetchMock = localFetch();
+
+    await askCoach(request(), () => undefined);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("strips sensitive context in production without consent", async () => {
+    vi.stubEnv("DEV", false);
+    localStateMock.loadLocalState.mockResolvedValue({
+      flags: { aiEnabled: true },
+      consent: { shareAiContext: false },
+    } as LocalStateRow);
+    const fetchMock = localFetch();
+
+    await askCoach(request(), () => undefined);
+
+    // Consent is denied, so none of the sensitive fields may reach the wire body.
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string) as {
+      context: Record<string, unknown>;
+    };
+    expect(body.context).not.toHaveProperty("bodyWeightKg");
+    expect(body.context).not.toHaveProperty("heightCm");
+    expect(body.context).not.toHaveProperty("injuries");
+    expect(body.context).not.toHaveProperty("daysPerWeek");
+    expect(body.context).not.toHaveProperty("goal");
   });
 });

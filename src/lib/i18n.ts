@@ -1233,6 +1233,8 @@ export const COACH_LABELS = {
     AUTH_ERROR: "Tu sesión ha caducado. Vuelve a entrar.",
     INPUT_TOO_LONG: "Tu pregunta es demasiado larga.",
     SERVICE_UNAVAILABLE: "El Coach no está disponible ahora mismo.",
+    INVALID_REQUEST: "La solicitud no es válida.",
+    AI_DISABLED: "El asistente de IA está deshabilitado en este dispositivo.",
   } as Record<string, string>,
 
   /** A structured recommendation, by `CoachAction["type"]`. */

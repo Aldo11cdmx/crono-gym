@@ -118,6 +118,18 @@ export interface AssistantContext {
   bodyWeightKg?: number;
   /** Muscle slug to its Spanish rank label. */
   currentMuscleRanks?: Record<string, string>;
+  /**
+   * Sensitive profile fields, only attached when consent is given.
+   *
+   * Kept on the same object so a denied session can strip them in one desctructuring
+   * pass rather than hunting across the request shape. They are populated elsewhere and
+   * are intentionally optional here: the coach learns about the athlete from PRs and
+   * volume, not from a profile form the user never touched.
+   */
+  goal?: string;
+  heightCm?: number;
+  injuries?: string;
+  daysPerWeek?: number;
 }
 
 /** The prior turns sent with a question. Capped by the client before sending. */
@@ -152,7 +164,9 @@ export type CoachError =
   | { code: "NETWORK_ERROR"; message: string }
   | { code: "AUTH_ERROR" }
   | { code: "INPUT_TOO_LONG" }
-  | { code: "SERVICE_UNAVAILABLE" };
+  | { code: "SERVICE_UNAVAILABLE" }
+  | { code: "INVALID_REQUEST" }
+  | { code: "AI_DISABLED" };
 
 /** Thrown by `askCoach`. Named so a caller cannot catch it as a bare `Error`. */
 export class CoachRequestError extends Error {

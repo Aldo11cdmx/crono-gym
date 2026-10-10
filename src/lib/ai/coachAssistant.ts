@@ -20,10 +20,13 @@ import { buildSystemContent } from "./coachPrompt";
 import {
   CoachRequestError,
   isCoachAction,
+  type AssistantContext,
   type CoachRequest,
   type CoachResponse,
   type CoachAction,
 } from "./types";
+import { hasValidConsent } from "@/lib/profile/consent";
+import { loadLocalState } from "@/lib/profile/localState";
 
 export interface ToolCall {
   id: string;
@@ -263,6 +266,31 @@ export async function askCoach(
     throw new CoachRequestError({ code: "INPUT_TOO_LONG" });
   }
 
+  /*
+   * Local device state is consulted before any network: the flags are what turn the
+   * assistant off locally, and consent is what authorises sending the context. A failure
+   * to read local state is treated as "no state" rather than as a crash -- an offline box
+   * or a wiped store should fall back to defaults and keep working.
+   */
+  let localState: Awaited<ReturnType<typeof loadLocalState>> = null;
+  try {
+    localState = await loadLocalState();
+  } catch {
+    localState = null;
+  }
+  if (localState?.flags?.aiEnabled === false) {
+    throw new CoachRequestError({ code: "AI_DISABLED" });
+  }
+  const consented = hasValidConsent(localState?.consent, import.meta.env.DEV);
+
+  // Sensitive fields live on the same context object; a denied session strips them in one
+  // pass so the wire body can never leak what the user did not authorize.
+  const contextToSend: AssistantContext = consented
+    ? request.context
+    : (({ bodyWeightKg: _bw, heightCm: _h, injuries: _i, daysPerWeek: _d, goal: _g, ...rest }) => rest)(
+        request.context,
+      );
+
   if (shouldUseDevMock()) return mockAnswer(message, onChunk, signal);
 
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/coach-assistant`;
@@ -278,9 +306,9 @@ export async function askCoach(
         ...(origin ? { Origin: origin } : {}),
       },
        body: JSON.stringify({
-        userMessage: message,
-        context: request.context,
-        conversationHistory: request.conversationHistory.slice(-MAX_HISTORY_TURNS * 2),
+          userMessage: message,
+          context: contextToSend,
+          conversationHistory: request.conversationHistory.slice(-MAX_HISTORY_TURNS * 2),
         ...(request.tools ? { tools: request.tools } : {}),
         ...(request.tool_choice ? { tool_choice: request.tool_choice } : {}),
       }),

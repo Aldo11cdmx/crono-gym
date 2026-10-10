@@ -15,18 +15,16 @@ export function useMediaQuery(query: string): boolean {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
 
     const list = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
     setMatches(list.matches);
 
     if (typeof list.addEventListener === "function") {
-      list.addEventListener("change", (event: MediaQueryListEvent) => setMatches(event.matches));
-      return () => list.removeEventListener("change", () => setMatches(list.matches));
+      list.addEventListener("change", onChange);
+      return () => list.removeEventListener("change", onChange);
     }
 
-    if (typeof list.addListener === "function") {
-      list.addListener((event: MediaQueryListEvent) => setMatches(event.matches));
-      return () => list.removeListener(() => setMatches(list.matches));
-    }
-    return undefined;
+    list.addListener(onChange);
+    return () => list.removeListener(onChange);
   }, [query]);
 
   return matches;

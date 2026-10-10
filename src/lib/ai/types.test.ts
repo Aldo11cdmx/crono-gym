@@ -38,6 +38,8 @@ const TRAINED: CoachContext = {
     activityLevel: "moderate",
     goal: "gain_muscle",
     unitSystem: "metric",
+    injuries: "Dolor lumbar leve en sentadilla",
+    daysPerWeek: 4,
   },
   bodyweight: { latestKg: 61.4, changeLast30Days: -1.2, seriesCount: 9 },
   volume: {
@@ -171,6 +173,93 @@ describe("toAssistantContext with full data", () => {
     // `upper-back` is unranked. Reporting `"Sin rango"` would read to a model as a
     // tier the athlete had been placed in.
     expect(wire.currentMuscleRanks?.["upper-back"]).toBeUndefined();
+  });
+});
+
+describe("profile extras projection", () => {
+  it("projects valid profile extras onto the wire context", () => {
+    const wire = toAssistantContext(TRAINED, GYM);
+    expect(wire.goal).toBe("gain_muscle");
+    expect(wire.heightCm).toBe(168);
+    expect(wire.injuries).toBe("Dolor lumbar leve en sentadilla");
+    expect(wire.daysPerWeek).toBe(4);
+  });
+
+  it("omits extras when the profile is absent", () => {
+    const wire = toAssistantContext(EMPTY, GYM);
+    expect(wire.goal).toBeUndefined();
+    expect(wire.heightCm).toBeUndefined();
+    expect(wire.injuries).toBeUndefined();
+    expect(wire.daysPerWeek).toBeUndefined();
+  });
+
+  it("omits extras when profile fields are absent", () => {
+    const noExtras: CoachContext = {
+      ...TRAINED,
+      profile: { ...TRAINED.profile!, injuries: undefined, daysPerWeek: undefined },
+    };
+    const wire = toAssistantContext(noExtras, GYM);
+    expect(wire.goal).toBe("gain_muscle");
+    expect(wire.heightCm).toBe(168);
+    expect(wire.injuries).toBeUndefined();
+    expect(wire.daysPerWeek).toBeUndefined();
+  });
+
+  it("trims injuries to 200 characters", () => {
+    const long = "a".repeat(250);
+    const wire = toAssistantContext(
+      {
+        ...TRAINED,
+        profile: { ...TRAINED.profile!, injuries: long, daysPerWeek: 3 },
+      },
+      GYM,
+    );
+    expect(wire.injuries).toHaveLength(200);
+  });
+
+  it("omits heightCm when below 100 or above 250", () => {
+    const low = toAssistantContext(
+      { ...TRAINED, profile: { ...TRAINED.profile!, heightCm: 95 } },
+      GYM,
+    );
+    expect(low.heightCm).toBeUndefined();
+
+    const high = toAssistantContext(
+      { ...TRAINED, profile: { ...TRAINED.profile!, heightCm: 300 } },
+      GYM,
+    );
+    expect(high.heightCm).toBeUndefined();
+  });
+
+  it("omits daysPerWeek when not a finite integer in 1-7", () => {
+    const fractional = toAssistantContext(
+      { ...TRAINED, profile: { ...TRAINED.profile!, daysPerWeek: 3.5 } },
+      GYM,
+    );
+    expect(fractional.daysPerWeek).toBeUndefined();
+
+    const zero = toAssistantContext(
+      { ...TRAINED, profile: { ...TRAINED.profile!, daysPerWeek: 0 } },
+      GYM,
+    );
+    expect(zero.daysPerWeek).toBeUndefined();
+
+    const over = toAssistantContext(
+      { ...TRAINED, profile: { ...TRAINED.profile!, daysPerWeek: 8 } },
+      GYM,
+    );
+    expect(over.daysPerWeek).toBeUndefined();
+  });
+
+  it("omits goal when the profile has no goal value", () => {
+    const wire = toAssistantContext(
+      {
+        ...TRAINED,
+        profile: { ...TRAINED.profile!, goal: "maintain" },
+      },
+      GYM,
+    );
+    expect(wire.goal).toBe("maintain");
   });
 });
 

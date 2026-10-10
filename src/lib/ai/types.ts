@@ -249,11 +249,45 @@ export function toAssistantContext(
   // Strongest first, so a truncated prompt still describes the lifts that matter.
   recentPRs.sort((a, b) => b.weightKg - a.weightKg);
 
+  const profile = context.profile;
+
+  // Sensitive profile extras, included only when present and valid. Consent gating
+  // happens upstream in coachAssistant.ts; this mapper decides nothing about
+  // authorisation, only about whether a value is structurally sound to send.
+  //
+  // Each field is projected independently so one invalid value cannot drop the rest:
+  // a malformed daysPerWeek must not also hide an injury note.
+  const profileExtras: Partial<
+    Pick<AssistantContext, "goal" | "heightCm" | "injuries" | "daysPerWeek">
+  > = {};
+
+  if (profile?.goal) {
+    profileExtras.goal = profile.goal;
+  }
+
+  if (profile?.heightCm !== null && profile?.heightCm !== undefined) {
+    const h = profile.heightCm;
+    if (Number.isFinite(h) && h >= 100 && h <= 250) {
+      profileExtras.heightCm = h;
+    }
+  }
+
+  if (profile?.injuries) {
+    profileExtras.injuries = profile.injuries.slice(0, 200);
+  }
+
+  if (profile?.daysPerWeek !== null && profile?.daysPerWeek !== undefined) {
+    const d = profile.daysPerWeek;
+    if (Number.isInteger(d) && d >= 1 && d <= 7) {
+      profileExtras.daysPerWeek = d;
+    }
+  }
+
   return {
-    currentGoal: context.profile
-      ? GOAL_MAP[context.profile.goal] ?? "maintenance"
+    currentGoal: profile
+      ? GOAL_MAP[profile.goal] ?? "maintenance"
       : "maintenance",
-    experienceLevel: context.profile?.experienceLevel ?? "beginner",
+    experienceLevel: profile?.experienceLevel ?? "beginner",
     recentPRs,
     weeklyVolume,
     // Sorted so the model sees a clean scale and so two runs over the same rack
@@ -272,5 +306,6 @@ export function toAssistantContext(
       ? {}
       : { bodyWeightKg: context.bodyweight.latestKg }),
     currentMuscleRanks,
+    ...profileExtras,
   };
 }

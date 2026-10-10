@@ -204,13 +204,14 @@ export function useCoachContext(userId: string | null): CoachContextState {
     profile,
     energy,
     stats,
-    map,
-    latestWeight,
-    changeLast30Days,
-    weights.length,
-    localRow?.context?.injuries,
-    localRow?.context?.daysPerWeek,
-  ]);
+     map,
+     latestWeight,
+     changeLast30Days,
+     weights.length,
+     localRow?.context?.injuries,
+     localRow?.context?.daysPerWeek,
+     localRow?.consent?.shareAiContext,
+   ]);
 
   return { context, loading, error };
 }

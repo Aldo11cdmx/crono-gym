@@ -61,6 +61,10 @@ export interface CoachProfileFact {
   activityLevel: string;
   goal: "lose_weight" | "maintain" | "gain_muscle" | "strength" | "endurance";
   unitSystem: "metric" | "imperial";
+  /** Injury note from local state, sanitised and capped at 200 chars. */
+  injuries?: string;
+  /** Days-per-week training frequency from local state. */
+  daysPerWeek?: number;
 }
 
 /** Bodyweight and its recent direction, which is what a bulk or a cut turns on. */

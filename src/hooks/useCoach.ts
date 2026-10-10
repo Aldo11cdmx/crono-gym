@@ -29,6 +29,9 @@ import type {
 import { useBodyMetrics, useProfile } from "./useProfile";
 import { useProgress } from "./useGymData";
 import { useMuscleRanks } from "./useMuscleRanks";
+import { useAthleteContext } from "./useAthleteContext";
+import { hasValidConsent } from "@/lib/profile/consent";
+import type { LocalStateRow } from "@/lib/profile/localState";
 
 // ---------------------------------------------------------------- ids
 
@@ -120,6 +123,35 @@ export interface CoachContextState {
 }
 
 /**
+ * Resolves local-state-derived fields for the coach context, gated on consent.
+ *
+ * Returns `injuries` and `daysPerWeek` only when the athlete has consented to
+ * sharing AI context. When consent is absent or denied, both are undefined so
+ * the CoachContext never carries them into a prompt. The wire-level strip in
+ * `coachAssistant.ts` is a second layer; this is the first.
+ */
+export function resolveConsentedLocalContext(
+  row: LocalStateRow | null,
+  isDev: boolean,
+): { injuries?: string; daysPerWeek?: number } {
+  if (!row || !hasValidConsent(row.consent, isDev)) {
+    return {};
+  }
+  const result: { injuries?: string; daysPerWeek?: number } = {};
+  if (row.context.injuries) {
+    result.injuries = row.context.injuries;
+  }
+  if (
+    row.context.daysPerWeek !== null &&
+    row.context.daysPerWeek !== undefined &&
+    Number.isInteger(row.context.daysPerWeek)
+  ) {
+    result.daysPerWeek = row.context.daysPerWeek;
+  }
+  return result;
+}
+
+/**
  * The assembled training context, derived from the four existing data hooks.
  *
  * Returns `null` until every source has settled, which is the contract the hub relies
@@ -136,9 +168,12 @@ export function useCoachContext(userId: string | null): CoachContextState {
   } = useBodyMetrics(userId);
   const { stats, loading: progressLoading, error: progressError } = useProgress(userId);
   const { map, loading: ranksLoading, error: ranksError } = useMuscleRanks(userId);
+  const { row: localRow } = useAthleteContext();
 
-  const loading =
-    profileLoading || bodyLoading || progressLoading || ranksLoading;
+  // Local state is advisory: a failed or slow read must not block the context.
+  // Consent-gated extras are resolved separately so an offline box still surfaces
+  // a usable briefing.
+  const loading = profileLoading || bodyLoading || progressLoading || ranksLoading;
 
   const error = profileError ?? bodyError ?? progressError ?? ranksError ?? null;
 
@@ -149,6 +184,9 @@ export function useCoachContext(userId: string | null): CoachContextState {
    */
   const context = useMemo(() => {
     if (loading) return null;
+
+    const localExtras = resolveConsentedLocalContext(localRow, import.meta.env?.DEV ?? false);
+
     return buildCoachContext({
       profile,
       energy,
@@ -159,8 +197,20 @@ export function useCoachContext(userId: string | null): CoachContextState {
         changeLast30Days,
         seriesCount: weights.length,
       },
+      ...localExtras,
     });
-  }, [loading, profile, energy, stats, map, latestWeight, changeLast30Days, weights.length]);
+  }, [
+    loading,
+    profile,
+    energy,
+    stats,
+    map,
+    latestWeight,
+    changeLast30Days,
+    weights.length,
+    localRow?.context?.injuries,
+    localRow?.context?.daysPerWeek,
+  ]);
 
   return { context, loading, error };
 }

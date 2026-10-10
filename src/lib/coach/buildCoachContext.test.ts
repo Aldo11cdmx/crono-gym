@@ -22,6 +22,7 @@ import { buildRankMap } from "../ranks/buildRankMap";
 import type { ExerciseRow, SetRow } from "../ranks/muscleScore";
 import { computeEnergyTargets, type Profile } from "../profile";
 import type { ProgressStats } from "../../hooks/useGymData";
+import { resolveConsentedLocalContext } from "@/hooks/useCoach";
 
 const NOW = new Date("2026-06-01T12:00:00.000Z");
 
@@ -216,6 +217,38 @@ describe("buildCoachContext", () => {
   });
 });
 
+describe("local context projection", () => {
+  it("carries injuries and daysPerWeek onto the profile fact when provided", () => {
+    const context = buildCoachContext({
+      profile: PROFILE,
+      energy: computeEnergyTargets(PROFILE, NOW),
+      progress: PROGRESS,
+      ranks: ranksFor(chestSets(), 62),
+      bodyweight: { latestKg: 62, changeLast30Days: 0, seriesCount: 3 },
+      injuries: "Dolor en el hombro al hacer press",
+      daysPerWeek: 4,
+      now: NOW,
+    });
+
+    expect(context.profile?.injuries).toBe("Dolor en el hombro al hacer press");
+    expect(context.profile?.daysPerWeek).toBe(4);
+  });
+
+  it("omits injuries and daysPerWeek when not provided", () => {
+    const context = buildCoachContext({
+      profile: PROFILE,
+      energy: computeEnergyTargets(PROFILE, NOW),
+      progress: PROGRESS,
+      ranks: ranksFor(chestSets(), 62),
+      bodyweight: { latestKg: 62, changeLast30Days: 0, seriesCount: 3 },
+      now: NOW,
+    });
+
+    expect(context.profile?.injuries).toBeUndefined();
+    expect(context.profile?.daysPerWeek).toBeUndefined();
+  });
+});
+
 describe("toCoachPromptPayload", () => {
   const SMALL: CoachContext = {
     generatedAt: "2026-06-01T12:00:00.000Z",
@@ -300,5 +333,52 @@ describe("toCoachPromptPayload", () => {
     expect(payload.context.bodyweight.latestKg).toBe(62);
     expect(payload.context.energy?.proteinGrams).toBe(130);
     expect(payload.context.dataGaps).toEqual(["no_readiness_checkins"]);
+  });
+});
+
+describe("resolveConsentedLocalContext", () => {
+  const ROW_WITH_CONTEXT = {
+    consent: { shareAiContext: true },
+    context: { injuries: "Dolor lumbar", daysPerWeek: 4 },
+  };
+
+  it("includes both fields when consent is granted", () => {
+    const result = resolveConsentedLocalContext(ROW_WITH_CONTEXT as never, false);
+    expect(result.injuries).toBe("Dolor lumbar");
+    expect(result.daysPerWeek).toBe(4);
+  });
+
+  it("omits both fields when consent is denied", () => {
+    const denied = {
+      consent: { shareAiContext: false },
+      context: { injuries: "Dolor lumbar", daysPerWeek: 4 },
+    };
+    const result = resolveConsentedLocalContext(denied as never, false);
+    expect(result).not.toHaveProperty("injuries");
+    expect(result).not.toHaveProperty("daysPerWeek");
+  });
+
+  it("falls back to DEV consent when no row exists", () => {
+    expect(resolveConsentedLocalContext(null, true)).toEqual({});
+    expect(resolveConsentedLocalContext(null, false)).toEqual({});
+  });
+
+  it("returns empty when consent row is missing but DEV is true", () => {
+    const noConsent = { consent: undefined, context: { injuries: "hi", daysPerWeek: 3 } };
+    expect(resolveConsentedLocalContext(noConsent as never, true)).toEqual({
+      injuries: "hi",
+      daysPerWeek: 3,
+    });
+    expect(resolveConsentedLocalContext(noConsent as never, false)).toEqual({});
+  });
+
+  it("ignores daysPerWeek when null or non-integer", () => {
+    const row = {
+      consent: { shareAiContext: true },
+      context: { injuries: "ok", daysPerWeek: null },
+    };
+    const result = resolveConsentedLocalContext(row as never, false);
+    expect(result.injuries).toBe("ok");
+    expect(result).not.toHaveProperty("daysPerWeek");
   });
 });

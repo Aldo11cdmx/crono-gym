@@ -54,6 +54,15 @@ export interface CoachContextInput {
    * the question bodyweight is asked for.
    */
   bodyweight?: CoachBodyweightFact | null;
+  /**
+   * Local-state extras the coach prompt carries when the athlete opts in.
+   *
+   * These are not stored on the profile row -- injuries and frequency live in
+   * `localState` -- but they travel with the profile fact so the wire mapper can
+   * project them onto `AssistantContext` in one place.
+   */
+  injuries?: string;
+  daysPerWeek?: number;
   /** Injectable so a test can pin it and a caller can label the snapshot. */
   now?: Date;
 }
@@ -127,17 +136,19 @@ export function buildCoachContext(input: CoachContextInput): CoachContext {
 
   return {
     generatedAt: now.toISOString(),
-    profile: profile
-      ? {
-          sex: profile.sex,
-          weightKg: latestWeightKg,
-          heightCm: profile.height_cm,
-          experienceLevel: profile.experience_level,
-          activityLevel: profile.activity_level,
-          goal: profile.goal,
-          unitSystem: profile.unit_system,
-        }
-      : null,
+     profile: profile
+       ? {
+           sex: profile.sex,
+           weightKg: latestWeightKg,
+           heightCm: profile.height_cm,
+           experienceLevel: profile.experience_level,
+           activityLevel: profile.activity_level,
+           goal: profile.goal,
+           unitSystem: profile.unit_system,
+           ...(input.injuries !== undefined ? { injuries: input.injuries } : {}),
+           ...(input.daysPerWeek !== undefined ? { daysPerWeek: input.daysPerWeek } : {}),
+         }
+       : null,
     bodyweight: {
       latestKg: latestWeightKg,
       changeLast30Days: input.bodyweight?.changeLast30Days ?? null,

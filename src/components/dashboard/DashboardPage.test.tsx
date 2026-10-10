@@ -223,7 +223,9 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Entrenamiento")).toBeTruthy();
+     // Loading state: hero shows a skeleton (no real greeting text).
+    expect(screen.queryByText("Crear rutina")).toBeFalsy();
+    expect(screen.queryByText("Empezar entrenamiento")).toBeFalsy();
   });
 
   it("renders the dashboard with data from all hooks", () => {
@@ -233,7 +235,7 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Full Body")).toBeTruthy();
+    expect(screen.getByText(/Full Body/)).toBeTruthy();
     expect(screen.getByText("Racha")).toBeTruthy();
     expect(screen.getByText("Esta semana")).toBeTruthy();
     expect(screen.getByText("Récords recientes")).toBeTruthy();
@@ -247,7 +249,7 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByText("Empezar"));
+    fireEvent.click(screen.getByText("Empezar entrenamiento"));
     expect(mockStart).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/entrenar");
   });
@@ -266,9 +268,9 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText(/Entrenamiento en curso/)).toBeTruthy();
-    expect(screen.getByText("Continuar")).toBeTruthy();
-    expect(screen.queryByText("Empezar")).toBeNull();
+    expect(screen.getByText("EN CURSO")).toBeTruthy();
+    expect(screen.getByText("Continuar entrenamiento")).toBeTruthy();
+    expect(screen.queryByText("Empezar entrenamiento")).toBeFalsy();
   });
 
   it("renders QuickActionButton with actions", () => {

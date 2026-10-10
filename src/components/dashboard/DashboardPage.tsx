@@ -7,7 +7,7 @@
  * button tucked in the bottom-right corner.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useProfile } from "@/hooks/useProfile";
@@ -15,7 +15,10 @@ import { useRoutines, type PlannedExercise } from "@/hooks/useGymData";
 import { useDashboardSessions } from "@/hooks/useDashboardSessions";
 import { useAthletePRs, type AthletePR } from "@/hooks/useAthletePRs";
 import { ROUTINES_PATH, TRAIN_PATH } from "@/components/shell/navItems";
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
+import { ExerciseDetailSheet } from "@/components/ExerciseDetailSheet";
+import { SPACE } from "@/design/tokens";
+import type { Exercise } from "@/types/supabase";
+import { loadExercises } from "@/services/seedExercises";
 import {
   getNextSuggestedRoutine,
   getRecentPRs,
@@ -75,6 +78,20 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const unitSystem: UnitSystem = profile?.unit_system ?? "metric";
   const now = useMemo(() => Date.now(), []);
 
+  const [catalog, setCatalog] = useState<Exercise[] | null>(null);
+  const [detailExercise, setDetailExercise] = useState<Exercise | null>(null);
+
+  useEffect(() => {
+    void loadExercises().then(setCatalog).catch(() => setCatalog([]));
+  }, []);
+
+  const exercisesById = useMemo(() => {
+    if (!catalog) return null;
+    const map = new Map<string, Exercise>();
+    catalog.forEach((e) => map.set(e.name.toLowerCase(), e));
+    return map;
+  }, [catalog]);
+
   const loading = profileLoading || sessionsLoading || prsLoading;
   void routinesLoading;
 
@@ -112,31 +129,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     navigate(TRAIN_PATH);
   };
 
-  // Active-session banner shown inside the hero card when a workout is running.
-  const activeContent = isActive ? (
-    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-      <span style={{ fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
-        Entrenamiento en curso: {activeSession?.title ?? "Sesión"}
-      </span>
-      <button
-        type="button"
-        onClick={() => navigate(TRAIN_PATH)}
-        style={{
-          padding: "8px 16px",
-          borderRadius: "8px",
-          border: "none",
-          background: ACCENT.base,
-          color: TEXT.onAccent,
-          fontSize: TYPE.subhead.size,
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
-      >
-        Continuar
-      </button>
-    </div>
-  ) : undefined;
-
+  // Active-session state shown inside the hero card via HeroWorkoutCard.
   const quickActions: QuickActionItem[] = [
     {
       id: "routine",
@@ -156,28 +149,31 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   ];
 
   return (
-    <div
+    <>
+      <div
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "24px",
+        gap: `${SPACE.xl}px`,
         maxWidth: "1200px",
         margin: "0 auto",
+        position: "relative",
+        minHeight: "100%",
       }}
     >
-      {/* Hero — suggested routine or active-session banner */}
+       {/* Hero — suggested routine or active-session banner */}
       <HeroWorkoutCard
         loading={loading}
-        suggestedRoutine={
-          suggestedRoutine
+        suggestedRoutine={suggestedRoutine ?? null}
+        activeSession={
+          isActive && activeSession
             ? {
-                title: suggestedRoutine.title,
-                exerciseCount: suggestedRoutine.exerciseCount,
-                estimatedDurationMin: suggestedRoutine.estimatedDurationMin,
+                startedAt: activeSession.startedAt,
+                title: activeSession.title,
+                routine: suggestedRoutine ?? null,
               }
             : null
         }
-        activeContent={activeContent}
         onPrimary={handleStart}
       />
 
@@ -186,7 +182,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "24px",
+          gap: `${SPACE.xl}px`,
         }}
       >
         <StreakAndVolumeWidget
@@ -205,11 +201,22 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           loading={loading}
           prs={displayPRs}
           unit={unitSystem}
+          exercisesById={exercisesById ?? undefined}
+          onExerciseClick={setDetailExercise}
         />
       </div>
 
-      {/* Floating action button */}
-      <QuickActionButton actions={quickActions} loading={loading} />
+      {/* Floating action button — anchored to the dashboard container so it
+          never overlaps the metrics grid or the recent-PRs column. */}
+      <QuickActionButton actions={quickActions} loading={loading} anchored />
     </div>
+
+    <ExerciseDetailSheet
+      exercise={detailExercise}
+      isOpen={detailExercise !== null}
+      onClose={() => setDetailExercise(null)}
+    />
+  </>
   );
 }
+

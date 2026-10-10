@@ -245,7 +245,7 @@ export function ExerciseBrowser({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Busqueda por nombre..."
-              className="w-full rounded-lg border border-white/10 bg-neutral-950/60 py-2 pl-9 pr-3 text-sm outline-none focus:border-accent"
+              className="w-full rounded-lg border border-white/10 bg-neutral-950/60 py-2 pl-9 pr-3 text-sm"
             />
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -528,7 +528,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+        className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
       >
         {options.map((o) => (
           <option key={o} value={o}>

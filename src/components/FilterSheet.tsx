@@ -47,7 +47,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm text-neutral-200 outline-none focus:border-accent"
+        className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm text-neutral-200"
       >
         {options.map((opt) => (
           <option key={opt} value={opt}>
@@ -121,7 +121,7 @@ export function FilterSheet({
                 type="checkbox"
                 checked={filters.onlyMyGym}
                 onChange={(e) => onChange({ ...filters, onlyMyGym: e.target.checked })}
-                className="h-4 w-4 cursor-pointer rounded border-white/20 bg-neutral-800 text-accent focus:ring-accent"
+                className="h-4 w-4 cursor-pointer rounded border-white/20 bg-neutral-800 text-accent"
               />
               <span className="text-neutral-300">Solo mi gym</span>
             </label>

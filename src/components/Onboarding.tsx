@@ -400,7 +400,7 @@ function StepAbout({
           value={birthDate}
           max={new Date().toISOString().slice(0, 10)}
           onChange={(e) => onChange({ birthDate: e.target.value })}
-          className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+          className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
         />
         {age !== null && age < 13 && (
           <p className="mt-1.5 text-xs text-red-400">
@@ -695,7 +695,7 @@ function NumberField({
         const raw = e.target.value;
         onChange(raw === "" ? null : Number.parseFloat(raw));
       }}
-      className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+      className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
     />
   );
 }

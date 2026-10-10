@@ -123,7 +123,7 @@ export function ExercisePicker({
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
             placeholder="Buscar ejercicio (p. ej. press de banca, fondos)…"
-            className={`w-full rounded-lg border bg-neutral-950/60 py-2 pl-9 pr-3 text-sm text-neutral-100 outline-none ${
+            className={`w-full rounded-lg border bg-neutral-950/60 py-2 pl-9 pr-3 text-sm text-neutral-100 ${
               searchFocused ? "border-accent" : "border-white/10"
             }`}
           />

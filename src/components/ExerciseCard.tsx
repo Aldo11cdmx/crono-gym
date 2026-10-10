@@ -134,7 +134,7 @@ export function ExerciseCard({
       <button
         type="button"
         onClick={onOpenDetail}
-        className="absolute inset-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent"
+        className="absolute inset-0 rounded-xl"
         aria-label="Ver detalles"
       />
     </div>

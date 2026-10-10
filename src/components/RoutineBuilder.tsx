@@ -284,7 +284,7 @@ function RoutineForm({
             value={draft.title}
             onChange={(e) => onPatch({ title: e.target.value })}
             placeholder="Push Day"
-            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
           />
         </label>
         <label className="block">
@@ -294,7 +294,7 @@ function RoutineForm({
             value={draft.description}
             onChange={(e) => onPatch({ description: e.target.value })}
             placeholder="Opcional"
-            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
           />
         </label>
       </div>

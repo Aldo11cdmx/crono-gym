@@ -849,7 +849,7 @@ const overlayStyle: CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   padding: SPACE.lg,
-  zIndex: Z_INDEX.popover,
+  zIndex: Z_INDEX.modal,
   backgroundColor: SCRIM.modal,
   backdropFilter: "blur(8px)",
   WebkitBackdropFilter: "blur(8px)",

@@ -40,7 +40,7 @@ export function GymSettingsModal({ onClose }: GymSettingsModalProps) {
         // `popover`, not `modal`: the navigation sits at 60 and a settings
         // dialog that the rail can steal focus from is not a dialog. Below the
         // simulator (100), which has to tint everything.
-        zIndex: Z_INDEX.popover,
+        zIndex: Z_INDEX.modal,
         backgroundColor: SCRIM.modal,
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",

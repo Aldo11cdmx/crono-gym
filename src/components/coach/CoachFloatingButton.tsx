@@ -47,7 +47,7 @@ const WORKOUT_PATH = "/entrenar";
  * (`popover`, 70). Derived rather than typed so a change to the scale moves it with
  * everything else instead of leaving one hardcoded 65 behind.
  */
-export const FAB_Z_INDEX = Z_INDEX.modal + 5;
+export const FAB_Z_INDEX = Z_INDEX.fab;
 
 export interface CoachFloatingButtonProps {
   /**

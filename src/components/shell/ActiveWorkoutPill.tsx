@@ -17,7 +17,7 @@ import { Zap } from "lucide-react";
 import { useActiveSession, type ActiveSession } from "@/context/ActiveSessionContext";
 import { useElapsedMs, formatElapsed } from "@/hooks/useElapsedMs";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { ACCENT, GLASS, MOTION, RADIUS, TEXT } from "@/design/tokens";
+import { ACCENT, GLASS, MOTION, RADIUS, TEXT, Z_INDEX } from "@/design/tokens";
 import { SHELL_LABELS } from "@/lib/i18n";
 import { TRAIN_PATH } from "./navItems";
 import { NAV_CONTENT_HEIGHT, PILL_GAP } from "./AppShell";
@@ -116,7 +116,7 @@ const elapsed = formatElapsed(elapsedMs);
           left: "50%",
           transform: `translateX(-50%) translateY(${phase === "enter" && !reducedMotion ? 8 : 0}px)`,
           bottom: `calc(${NAV_CONTENT_HEIGHT}px + env(safe-area-inset-bottom, 0px) + ${PILL_GAP}px)`,
-          zIndex: 55,
+          zIndex: Z_INDEX.pill,
           display: "flex",
           alignItems: "center",
           gap: 8,

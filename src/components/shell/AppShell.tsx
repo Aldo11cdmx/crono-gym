@@ -16,6 +16,7 @@
 import type { CSSProperties } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { SURFACE } from "@/design/tokens";
+import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BottomNav } from "./BottomNav";
 import { ActiveWorkoutPill } from "./ActiveWorkoutPill";
@@ -49,6 +50,15 @@ export const PILL_GAP = 8;
 export function AppShell() {
   const { pathname } = useLocation();
   const reducedMotion = useReducedMotion();
+  const { isActive } = useActiveSession();
+  /*
+    The bottom dock (FAB always on mobile; pill when a session runs) floats over the
+    bottom bar. The *amount* of space to reserve is a layout question the stylesheet
+    can answer from a single flag, so the breakpoint lives in `index.css` rather than
+    here: an inline `style` always beats a media query, so asking React for the width
+    would fight the stylesheet instead of cooperating with it. The component only
+    signals "a session is running" via a class.
+  */
   /*
     Owned here, not inside `SideNav`, because the shell pads the content by the width
     the nav is actually occupying. If the nav kept its own copy the two would disagree
@@ -59,7 +69,7 @@ export function AppShell() {
 
   return (
     <div
-      className="cronos-shell"
+      className={`cronos-shell${isActive ? " cronos-dock--active" : ""}`}
       style={
         {
           backgroundColor: SURFACE.base,

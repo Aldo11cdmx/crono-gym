@@ -195,7 +195,7 @@ export function SymmetryBottomSheet({
   return (
     <div
       className={reducedMotion ? "symmetry-overlay" : "symmetry-overlay symmetry-overlay--animate"}
-      style={{ zIndex: Z_INDEX.popover }}
+      style={{ zIndex: Z_INDEX.sheet }}
       // A click on the backdrop, not on the panel. The panel stops propagation itself, so
       // this only fires for the backdrop without a hit-test on coordinates that would go
       // wrong the moment the layout moved.

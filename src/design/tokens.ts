@@ -162,6 +162,18 @@ export const TEXT = {
   onAccent: "#000000",
   /** The redesign's name for {@link onAccent}. An alias, for the same reason. */
   inverse: "#000000",
+  /**
+   * Neutral focus ring colour, at 56% of {@link TEXT.primary}'s white.
+   *
+   * The ring is a visibility affordance for keyboard/switch users and not a brand
+   * statement, so it borrows the primary text hue rather than the accent: a ring that
+   * wore the product's red would read as "this control is dangerous / the action"
+   * instead of "this control is focused". 56% is the lightest alpha that still clears
+   * the 3:1 non-text floor against the black canvas (measured ~6.5:1) and survives
+   * over the glass recipe's translucent fill. It is painted only on `:focus-visible`
+   * in {@link stateRules}.
+   */
+  focus: "rgba(255, 255, 255, 0.56)",
 } as const;
 
 // ----------------------------------------------------------------- accents
@@ -264,13 +276,19 @@ export const COPPER = {
  * other measurements are: a ring that is 2px on one control and 1px on another stops
  * being a consistent signal and becomes decoration again.
  *
- * The value is an alias of {@link ACCENT.text} and not a second orange. The accent already
- * means "this is interactive and it is the thing you are on", and a focus ring that
- * borrowed a different hue would be claiming a meaning the product does not have.
- */
+   * The value is a neutral drawn from {@link TEXT.focus}. The ring is a visibility
+   * affordance for keyboard and switch users, not a re-statement of the brand accent:
+   * a ring that borrowed the product's red would read as "this control is the action /
+   * this is dangerous" rather than "this control is focused", so it deliberately does
+   * not alias {@link ACCENT.text} or any saturated hue. One colour, one place, and here
+   * it is.
+   */
 export const FOCUS = {
-  /** The ring itself. An alias: one orange, not two. */
-  ring: ACCENT.text,
+  /**
+   * The ring itself. A neutral from {@link TEXT.focus} so focus never reads as a second
+   * use of the accent.
+   */
+  ring: TEXT.focus,
   /** Ring thickness. 2px survives being drawn on top of a 1px border. */
   width: "2px",
   /** Gap between the control and the ring, so the ring reads as separate from the shape. */
@@ -931,10 +949,13 @@ export const Z_INDEX = {
   sticky: 40,
   /** The bottom bar and the side nav. Above content, below every summoned surface. */
   nav: 45,
-  /** A floating action button. Above the nav, so it clears the bar it sits over. */
-  fab: 46,
-  sheet: 50,
-  modal: 60,
+  /** The active-session pill. Below the FAB, above the nav. */
+  pill: 50,
+  /** A floating action button. Above the pill, below sheets and modals. */
+  fab: 55,
+  sheet: 60,
+  /** A modal surface: full-bleed sheets, settings, wizards. Above every FAB. */
+  modal: 65,
   popover: 70,
   toast: 80,
   /** The dev-only colour-blindness simulator, which must tint everything. */
@@ -1043,7 +1064,11 @@ export function cssVars(): string {
     .map(([name, value]) => `  --cronos-${name}: ${value};`)
     .join("\n");
 
-  return `:root {\n${lines}\n}`;
+  const zIndexLines = Object.entries(Z_INDEX)
+    .map(([name, value]) => `  --cronos-z-${name}: ${value};`)
+    .join("\n");
+
+  return `:root {\n${lines}\n${zIndexLines}\n}`;
 }
 
 /**

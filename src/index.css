@@ -5,6 +5,13 @@
 @layer base {
   :root {
     color-scheme: dark;
+    /* Dock surface geometry, derived so the shell padding never restates a
+       measurement. FAB_SIZE matches `.symmetry-fab` (56px = icon 24 + 16px pad each
+       side). FAB_CLEARANCE is the FAB's buffer over the bottom nav (SPACE.lg + SPACE.sm).
+       PILL_GAP mirrors the PILL_GAP constant exported by AppShell. */
+    --cronos-fab-size: 56px;
+    --cronos-fab-clearance: 24px;
+    --cronos-pill-gap: 8px;
   }
 
   html {
@@ -382,14 +389,20 @@ background: radial-gradient(
    * the rail width arrive as custom properties from `AppShell`, which is the only
    * place either number is decided.
    *
-   * Bottom padding is *extra space below the content*, not an inset, so the last
-   * item scrolls under the navigation instead of stopping short of it.
+   * Bottom padding is reserved for the fixed chrome: the bottom bar + the floating dock
+   * (FAB on mobile, pill when a session runs), so the last item never scrolls under a
+   * touch target. `--cronos-dock-height` is authored in CSS (breakpoint + a `.cronos-dock--active`
+   * flag from AppShell), never inline, because inline style always wins over a media query.
    */
   .cronos-shell {
     min-height: 100vh;
     padding-top: env(safe-area-inset-top, 0px);
+    /* Mobile: the FAB floats over the fixed bottom bar. Its full height above the
+       nav edge is clearance + fab-size (= the FAB's bottom edge from the viewport
+       bottom), which is the lowest point the content may reach. */
+    --cronos-dock-height: calc(var(--cronos-fab-clearance, 24px) + var(--cronos-fab-size, 56px));
     padding-bottom: calc(
-      var(--cronos-nav-height, 56px) + env(safe-area-inset-bottom, 0px)
+      var(--cronos-nav-height, 56px) + var(--cronos-dock-height, 0px) + env(safe-area-inset-bottom, 0px)
     );
   }
 
@@ -415,11 +428,22 @@ background: radial-gradient(
      * leave a 176px column of dead space the moment someone collapsed the rail, which is
      * precisely when they wanted the space back.
      */
-    .cronos-shell {
-      padding-bottom: 0;
-      padding-left: calc(
-        var(--cronos-nav-width, 240px) + env(safe-area-inset-left, 0px)
-      );
+      .cronos-shell {
+       /* Desktop: the bottom bar is gone and the FAB moves beside the side rail (no
+          scroll clash). Only the pill, when a session is running, floats over the
+          content -- signalled by `AppShell` as `.cronos-dock--active`. */
+       --cronos-dock-height: 0px;
+       padding-bottom: var(--cronos-dock-height, 0px);
+       padding-left: calc(
+         var(--cronos-nav-width, 240px) + env(safe-area-inset-left, 0px)
+       );
+     }
+
+    /* A running session floats the pill over the content; reserve its height so the
+       last row stops cleanly beneath it instead of vanishing under it. */
+    .cronos-shell.cronos-dock--active {
+      --cronos-dock-height: calc(var(--cronos-fab-size, 56px) + var(--cronos-pill-gap, 8px));
+      padding-bottom: var(--cronos-dock-height, 0px);
     }
 
     /* Four targets along the bottom edge are unusable on a pointer. */
@@ -578,7 +602,8 @@ background: radial-gradient(
   /* Clears the bottom navigation (NAV_CONTENT_HEIGHT) plus its own half, so the circle
      sits above it rather than on it. */
   bottom: calc(16px + var(--cronos-nav-height, 56px) + 8px);
-  z-index: 65;
+  /* Driven by the token via installDesignTokens (no literal). */
+  z-index: var(--cronos-z-fab, 55);
   display: inline-flex;
   align-items: center;
   justify-content: center;

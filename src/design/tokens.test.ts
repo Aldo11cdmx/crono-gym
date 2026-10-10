@@ -1010,6 +1010,19 @@ describe("the token set", () => {
     expect(Z_INDEX.fab).toBeLessThan(Z_INDEX.sheet);
   });
 
+  it("ranks the dock layers in escalating order: nav < pill < fab < sheet < modal < popover", () => {
+    /*
+     * The FAB must clear the active-session pill (nav < pill < fab) but sit below every
+     * surface the user summoned, so opening a sheet or modal never lands on top of it
+     * (fab < sheet < modal < popover).
+     */
+    expect(Z_INDEX.nav).toBeLessThan(Z_INDEX.pill);
+    expect(Z_INDEX.pill).toBeLessThan(Z_INDEX.fab);
+    expect(Z_INDEX.fab).toBeLessThan(Z_INDEX.sheet);
+    expect(Z_INDEX.sheet).toBeLessThan(Z_INDEX.modal);
+    expect(Z_INDEX.modal).toBeLessThan(Z_INDEX.popover);
+  });
+
   it("keeps the radius vocabulary keyed to the object it is cut onto", () => {
     // `surface` and `card` are both "a card" and deliberately different radii: one sits
     // on the canvas, the other is a lit glass panel.
@@ -1309,9 +1322,9 @@ describe("every focusable control can show where it is", () => {
   });
 
   it("writes the token's value, so it cannot drift from the token", () => {
-    // The ring is interpolated from `FOCUS`, not restated. Asserted by value rather than
-    // by looking for the absence of a hex, because `FOCUS.ring` legitimately *is* a hex --
-    // it aliases `ACCENT.text` -- so "no hex" would only prove the rule reads something.
+    // The ring is interpolated from `FOCUS`, not restated. Asserted by value: the generated
+    // rule must carry exactly `FOCUS.ring`, so changing the token changes the rule in the
+    // same edit -- there is no second place a hand-written outline could drift from.
     const outline = stateRules().match(/outline:[^;]*;/);
     expect(outline, "no outline declaration in the generated rules").toBeTruthy();
     expect(outline![0]).toBe(`outline: ${FOCUS.width} solid ${FOCUS.ring};`);
@@ -1331,25 +1344,28 @@ describe("every focusable control can show where it is", () => {
     expect(css).not.toMatch(/\.gbtn:focus-visible/);
   });
 
-  it("is the accent itself, not a second colour beside it", () => {
-    // Identity is the assertion. The ring aliases `ACCENT.text` rather than restating a
-    // hue, so the accent changing changes the ring in the same edit -- and there is no
-    // second colour to drift out of step with the first.
-    expect(FOCUS.ring).toBe(ACCENT.text);
-    // The accent is red, and Block A made that deliberate: red is allowed as the accent and
-    // nowhere else. `redPolicyFor` is a *violation* predicate -- it answers "does this
-    // colour break the rule for the role it plays" -- so both directions are asserted:
-    // clean as an accent, and genuinely load-bearing, because the same red would break the
-    // rule the moment it was used anywhere else. That is the whole shape of the decision:
-    // one red, one place, and the focus ring is that place by aliasing rather than copying.
-    expect(isSaturatedRed(FOCUS.ring)).toBe(true);
+  it("is a neutral ring derived from the text hue, not the accent itself", () => {
+    // The ring used to alias ACCENT.text, which made "this control is focused" and
+    // "this is the primary action" the same colour. An athlete mid-set who tabs through
+    // a screen cannot be asked to tell those apart by hue, so the ring is now a neutral
+    // drawn from the text hue rather than a second use of the brand red.
+    expect(FOCUS.ring).toBe(TEXT.focus);
+    // `redPolicyFor` is the *violation* predicate: "does this colour break the rule for
+    // the role it plays". A neutral breaks nothing, so it must read clean for every role --
+    // it is neither an accent, a status, nor a danger, and it must stay that way.
+    expect(isSaturatedRed(FOCUS.ring)).toBe(false);
     expect(redPolicyFor(FOCUS.ring, "accent")).toBe(false);
-    expect(redPolicyFor(FOCUS.ring, "status")).toBe(true);
-    // The one thing it must not become is the warning. That is the confusion the alias
-    // exists to prevent: an amber warning and a red focus ring are both "pay attention to
-    // this control", and an athlete mid-set cannot tell which one they are looking at.
+    expect(redPolicyFor(FOCUS.ring, "status")).toBe(false);
+    expect(redPolicyFor(FOCUS.ring, "destructive")).toBe(false);
+    // The one thing it must not become is the accent or the warning. Those are the two
+    // colours an athlete reading colour alone could confuse with "pay attention here".
+    expect(FOCUS.ring).not.toBe(ACCENT.base);
+    expect(FOCUS.ring).not.toBe(ACCENT.text);
     expect(FOCUS.ring).not.toBe(STATUS.warning.base);
     expect(FOCUS.ring).not.toBe(STATUS.error.base);
+    // 3:1 is the non-text floor (WCAG 1.4.11); the ring is a control boundary and must
+    // be perceivable without reading it. White at 56% clears ~6.5:1 on the canvas.
+    expect(contrastRatio(FOCUS.ring, SURFACE.base)).toBeGreaterThanOrEqual(AA_LARGE_CONTRAST);
   });
 
   it("survives being drawn on top of a control's own border", () => {

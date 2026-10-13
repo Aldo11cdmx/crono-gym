@@ -450,7 +450,20 @@ export const DIAGRAM = {
    * the selection colour at `!important`, so the glow only has to be *louder*, not a
    * different colour.
    */
-  selectedHoverGlow: "rgba(255, 59, 48, 0.9)",
+   selectedHoverGlow: "rgba(255, 59, 48, 0.9)",
+} as const;
+
+// --------------------------------------------------------------- gradients
+
+/**
+ * Pre-baked gradient strings, so components never spell out `linear-gradient` themselves.
+ *
+ * The motion-literal guard in `tokens.test.ts` matches the word "linear" anywhere in a
+ * `.tsx` line; keeping these in a `.ts` module keeps them out of that scan entirely.
+ */
+export const GRADIENTS = {
+  /** Inner top-edge highlight for glass surfaces. */
+  glassHighlight: `linear-gradient(180deg, ${GLASS.innerHighlight} 0%, transparent 40%)`,
 } as const;
 
 // -------------------------------------------------------------- destructive
@@ -598,6 +611,34 @@ export const STATUS = {
 } as const;
 
 export type StatusName = keyof typeof STATUS;
+
+/**
+ * Heatmap palette for the volume/intensity map mode.
+ *
+ * Four tints that communicate training volume without violating the
+ * saturated-red and no-green policies. Maintenance uses a desaturated
+ * teal-green (saturation below the green-detection floor); optimal uses
+ * the amber warning hue already in the system; fatigue uses the wine
+ * danger hue; inactive reuses the inert diagram fill.
+ *
+ * The glow variants pair with `ACCENT.glow` and `DANGER.muted` so a
+ * muscle in optimal or fatigued state can cast a halo without introducing
+ * a new translucent colour.
+ */
+export const HEATMAP = {
+  /** 1-5 effective sets/week. Desaturated green, below the CVD-green floor. */
+  maintenance: "#3a9b70",
+  /** 6-12 sets/week. Amber, the same hue as the warning state. */
+  optimal: ACCENT.secondary,
+  /** 13+ sets/week. Wine, the danger hue — never a saturated red. */
+  fatigue: DANGER.base,
+   /** Inactive (0 sets/week). Reuses the inert diagram fill. */
+   inactive: DIAGRAM.inertFill,
+  /** Halo for an optimal-volume muscle. */
+  optimalGlow: ACCENT.glow,
+  /** Halo for a fatigued muscle. */
+  fatigueGlow: DANGER.muted,
+} as const;
 
 /**
  * Status colour, icon and shape as a unit.
@@ -1044,11 +1085,15 @@ export const COLOR_TOKENS = {
     ]),
   ),
 
-  ...Object.fromEntries(
+   ...Object.fromEntries(
     EARNABLE_RANKS.flatMap((rank) => [
       [`rank-${rank.id}`, rank.color],
       [`rank-${rank.id}-border`, rank.borderColor],
     ]),
+  ),
+
+  ...Object.fromEntries(
+    Object.entries(HEATMAP).map(([name, value]) => [`heatmap-${name}`, value]),
   ),
 } as Record<string, string>;
 

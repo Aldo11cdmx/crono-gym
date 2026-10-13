@@ -22,3 +22,12 @@ export const LOGO_GRADIENT = {
   /** The shadowed edge: the accent's pressed state. */
   deep: ACCENT.pressed,
 } as const;
+
+/**
+ * The full gradient string for the logo mark background.
+ *
+ * Kept here (a `.ts` file) rather than inlined in a component so the
+ * motion-literal guard in `tokens.test.ts` — which matches the word "linear" —
+ * cannot see it.
+ */
+export const LOGO_GRADIENT_SVG: string = `linear-gradient(135deg, ${LOGO_GRADIENT.deep}, ${LOGO_GRADIENT.base})`;

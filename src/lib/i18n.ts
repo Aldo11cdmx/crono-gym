@@ -162,6 +162,7 @@ export const RANK_LABELS = {
   emptyNoBodyweight:
     "Añade tu peso a tu perfil para medir tu fuerza en relación a tu peso corporal.",
   promoted: (muscle: string, rank: string): string => `¡${muscle} subió a ${rank}!`,
+  noRankFilterMatch: "No hay músculos con este rango. Prueba otro filtro.",
   confidence: "Confianza",
   legendHint: "Cada rango tiene color y símbolo, para leerlo sin depender del color.",
 
@@ -237,6 +238,100 @@ export const RANK_LABELS = {
   historyLabel: "Historial de rangos",
   historyFirst: "Primer rango registrado. Aquí verás tu evolución.",
   historyEmpty: "Aún no hay historial de rangos.",
+
+  // ---- anatomical ranks premium (AnatomicalRanksPage) ----------------------
+  bodyMapLegend: "Rango por músculo",
+  pendingMuscles: (count: number): string => `${count} músculos sin clasificar todavía`,
+  dataQuality: "Calidad de los datos",
+  dataQualityAvailable: "Evaluación disponible",
+  dataQualityPartial: "Datos parciales",
+  dataQualityNone: "Sin información suficiente",
+  sortBy: "Ordenar por",
+  sortScoreDesc: "Puntaje (mayor primero)",
+  sortScoreAsc: "Puntaje (menor primero)",
+  sortName: "Nombre",
+  sortSessions: "Sesiones",
+  sortLastActivity: "Última actividad",
+  sortChange: "Cambio de rango",
+  filterByRank: "Filtrar por rango",
+  filterAll: "Todos",
+  searchPlaceholder: "Buscar músculo...",
+  clearFilters: "Limpiar filtros",
+  noResults: "No se encontraron músculos",
+  noResultsHint: "Intenta ajustar los filtros o la búsqueda",
+  coverage: "Cobertura",
+  metricsUpdate: (date: string): string => `Actualizado ${date}`,
+  sessionsLabel: "Sesiones",
+  lastActivity: "Última actividad",
+  trendUp: "Mejora",
+  trendDown: "Declive",
+  trendFlat: "Estable",
+  newMuscle: "Nuevo",
+  deltaPoints: (points: number): string => `${points} pts`,
+  viewRange: "Rango",
+  viewScore: "Puntuación",
+  viewVolume: "Volumen",
+  viewCoverage: "Cobertura",
+  qualityLow: "Datos limitados",
+  qualityMedium: "Confianza media",
+  qualityHigh: "Confianza alta",
+  confidenceLabel: (level: string): string => {
+    const labels = { low: "Datos limitados", medium: "Confianza media", high: "Confianza alta" } as const;
+    return labels[level as "low" | "medium" | "high"] ?? level;
+  },
+  strongestHint: "Tu músculo con más margen de mejora.",
+  weakestHint: "Tu músculo más fuerte.",
+  rankDistribution: (rank: string, count: number): string => `${count} en ${rank}`,
+  improvedMuscles: (count: number): string =>
+    `${count} músculo${count === 1 ? "" : "s"} mejoraron su rango`,
+  promotionCount: (count: number): string =>
+    `${count} ${count === 1 ? "músculo subió de rango" : "músculos subieron de rango"}`,
+
+   // ---- anatomical map modes ----------------------------------------------
+  setMapMode: "Cambiar vista del mapa",
+  mapModeRank: "Rango atómico",
+  mapModeHeatmap: "Volumen semanal",
+  heatmapMaintenance: "Mantenimiento",
+  heatmapOptimal: "Hipertrofia óptima",
+  heatmapFatigue: "Límite de fatiga",
+  heatmapInactive: "Inactivo",
+  heatmapSets: (n: number): string => `${n} series esta semana`,
+  heatmapOptimalHint: "Volumen óptimo · Haz clic para ver el PR",
+  heatmapFatigueHint: "Demasiado volumen · Reduce el estímulo",
+  heatmapInactiveHint: "Sin entrenar recientemente",
+
+  // ---- symmetry radar ----------------------------------------------------
+  symmetryTitle: "Simetría de fuerza",
+  symmetryCollapse: "Colapsar simetría",
+  symmetryExpand: "Ver simetría corporal",
+  symmetryBalance: "Balance",
+  symmetryImbalance: (block: string, rank: string, comparedTo: string, compRank: string): string =>
+    `Atención: ${block} en ${rank} vs. ${comparedTo} en ${compRank}`,
+  symmetryBlockChest: "Pecho",
+  symmetryBlockBack: "Espalda",
+  symmetryBlockShoulders: "Hombros",
+  symmetryBlockArms: "Brazos",
+  symmetryBlockLegs: "Piernas",
+  symmetryBlockCore: "Core",
+
+  // ---- muscle drawer -----------------------------------------------------
+  prTitle: "Récord personal",
+  prExercise: (name: string, estimate: string): string => `${name} · 1RM ${estimate}`,
+   nearlyThere: "A un solo entrenamiento del siguiente rango.",
+   fatigueTitle: "Fatiga y carga",
+  fatigueOptimal: "Volumen óptimo",
+  fatigueLow: "Sesiones insuficientes",
+  fatigueRecovery: "En recuperación",
+  fatigueOverload: "Sobrecarga",
+  fatigueSets: (n: number): string => `${n} series efectivas esta semana`,
+  fatigueDays: (days: number): string => `${days} días sin entrenar`,
+  fatigueDecay: (percent: number): string => `Volumen al ${percent}% (inactividad)`,
+  ascentTitle: "Proyección de ascenso",
+  ascentPoints: (points: number): string => `Te faltan ${points} puntos para el siguiente rango`,
+  ascentNext: "Siguiente:",
+  recommendedTitle: "Ejercicios clave recomendados",
+  recommendedCount: (n: number): string => `Top ${n} ejercicios que más aportan`,
+  viewMuscleExercises: "Ver todos mis ejercicios",
 } as const;
 
 /**
@@ -551,6 +646,30 @@ export const PROFILE_LABELS = {
   retry: "Reintentar",
   signOut: "Cerrar sesión",
 
+  /** Hero header badges */
+  badgeAthlete: "Atleta",
+  badgePro: "CRONOS PRO",
+  badgeIntermediate: "Intermedio",
+  badgeBeginner: "Principiante",
+  badgeAdvanced: "Avanzado",
+  badgeDeveloper: "Desarrollador",
+  badgeCoach: "Coach",
+
+  /**
+   * The three-tab command center that ProfilePage renders.
+   *
+   * Each tab is a pair of `label` / `aria`: the label is what is drawn on the
+   * tab button, the `aria` names the destination for a screen reader so a tab
+   * called "Preferencias" and a heading called "Preferencias" are not the same
+   * word twice in a row in the reading order.
+   */
+  tabsAriaLabel: "Pestañas del perfil",
+  tabs: {
+    biometric: { label: "Biometría y metas", aria: "Ver biometría y metas" },
+    gym: { label: "Mi gimnasio", aria: "Ver mi gimnasio" },
+    preferences: { label: "Preferencias y sistema", aria: "Ver preferencias y sistema" },
+  } as Record<string, { label: string; aria: string }>,
+
   identityLabel: "Tus datos",
   nameLabel: "Nombre",
   namePlaceholder: "Cómo te llamamos",
@@ -578,10 +697,32 @@ export const PROFILE_LABELS = {
   energyTdee: "Gasto total",
   energyTarget: "Tu objetivo",
   energyProtein: "Proteína diaria",
-  energyPerKg: (g: number): string => `${g} g de proteína (${g} g/kg)`,
-  energyMaintenanceNote: "Sin datos corporales suficientes para calcularlo.",
-  energyFloorNote: (floor: number): string =>
-    `Ajustado al mínimo de ${floor} kcal: bajar más no es seguro.`,
+   energyPerKg: (g: number): string => `${g} g de proteína (${g} g/kg)`,
+   energyMaintenanceNote: "Sin datos corporales suficientes para calcularlo.",
+    energyFloorNote: (floor: number): string =>
+     `Ajustado al mínimo de ${floor} kcal: bajar más no es seguro.`,
+
+  energyCarbs: "Carbohidratos",
+  energyFats: "Grasas",
+  energyMacroSummary: (target: number, protein: number, carbs: number, fats: number): string =>
+    `${target} kcal · ${protein}g Prot · ${carbs}g Carb · ${fats}g Grasas`,
+  energyHudBmr: "Metabolismo basal",
+  energyHudTdee: "Gasto energético total",
+  energyHudBmi: "Índice de masa corporal",
+  bmiBandNormal: "Normal",
+  bmiBandUnderweight: "Delgada",
+  bmiBandOverweight: "Sobrepeso",
+  bmiBandObese: "Obesidad",
+
+  /**
+   * The weight-history strip on the biometría tab of ProfilePage.
+   *
+   * Shown only when the user has at least one weigh-in; the empty label is
+   * what the athlete sees when they have not logged weight yet, so it has to
+   * name the reason rather than just saying "vacío".
+   */
+  weightTrendTitle: "Tu evolución de peso",
+  weightTrendEmpty: "Aún no has registrado ningún peso.",
 
   /** The gym-settings entry point on this screen, as opposed to the logger's. */
   gymSettingsLabel: "Tu gimnasio",
@@ -660,7 +801,14 @@ export const PROFILE_LABELS = {
   godResetHint: "Borra rol, flags, contexto y consentimiento. El perfil central (peso, altura, objetivo) no se toca.",
   godResetButton: "Borrar estado local",
   godResetConfirm: "¿Borrar el estado local de esta cuenta?",
-  godResetDone: "Estado local restablecido.",
+   godResetDone: "Estado local restablecido.",
+
+  /** Export for the preferencias tab of ProfilePage. */
+  exportTitle: "Exportar tus datos",
+  exportHint:
+    "Descarga tu perfil y tu contexto local como JSON para guardarlos o importarlos después.",
+  exportButton: "Exportar datos",
+
   godVersionTitle: "Versiones",
   godVersionApp: "App",
   godVersionDb: "Base local",

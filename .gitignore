@@ -21,3 +21,5 @@ Thumbs.db
 # Deno's lockfile is committed on purpose, so a function deploy resolves the same
 # versions the tests did. `supabase/functions/deno.json` and this file are what let
 # `deno check` run at all here.
+
+originals/

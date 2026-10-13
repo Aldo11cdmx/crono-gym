@@ -113,6 +113,117 @@ export interface RoutineSummary {
   restSecondsPerExercise: number;
 }
 
+/** One day in the weekly planner strip. */
+export interface WeeklyPlanDay {
+  /** ISO date string in local time (`YYYY-M-D`). */
+  date: string;
+  /** Full weekday name, e.g. "Lunes". */
+  dayName: string;
+  /** Routine day label for this calendar day (e.g. "Pecho"), or null. */
+  dayLabel: string | null;
+  /** True when `now` falls on this calendar day. */
+  isToday: boolean;
+  /** True when the athlete completed at least one session this day. */
+  trained: boolean;
+}
+
+/** Full Spanish weekday names, Monday (index 0) through Sunday (index 6). */
+const WEEKDAY_NAME_ES = [
+  "Lunes",
+  "Martes",
+  "Miércol",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+] as const;
+
+/** Returns the 0-based weekday index (Monday = 0) for the given timestamp. */
+function weekdayIndex(now: number): number {
+  const d = new Date(now);
+  const day = d.getDay();
+  return day === 0 ? 6 : day - 1;
+}
+
+/**
+ * Resolves the day labels of a multi-day routine into an array indexed by
+ * calendar weekday. A routine with N days repeats: Monday maps to day 0,
+ * Tuesday to day 1, … and when weekday ≥ N it wraps with modulo.
+ *
+ * Returns an empty array when the routine has no day labels, which tells the
+ * caller to omit labels entirely rather than rendering blanks.
+ */
+function resolvePlanLabels(
+  routines: readonly { dayIndex: number | null | undefined; dayLabel: string | undefined }[],
+): string[] {
+  const labelByDay = new Map<number, string>();
+  for (const r of routines) {
+    if (
+      r.dayIndex !== null &&
+      r.dayIndex !== undefined &&
+      r.dayLabel &&
+      r.dayLabel.trim() !== ""
+    ) {
+      labelByDay.set(r.dayIndex, r.dayLabel);
+    }
+  }
+  if (labelByDay.size === 0) return [];
+
+  const maxDay = Math.max(...labelByDay.keys());
+  const labels: string[] = [];
+  for (let i = 0; i <= maxDay; i++) {
+    labels.push(labelByDay.get(i) ?? "");
+  }
+  return labels;
+}
+
+/**
+ * Builds the 7-day weekly plan strip.
+ *
+ * Monday (index 0) through Sunday (index 6), in local calendar order. Each day
+ * carries:
+ *   - `dayName` — full Spanish weekday name
+ *   - `dayLabel` — the routine's focus for that calendar day (e.g. "Pecho"), if
+ *     a multi-day routine is available; null otherwise
+ *   - `isToday` — whether `now` falls on this calendar day
+ *   - `trained` — whether the athlete completed a session on this day
+ *
+ * `now` is required as a parameter for testability.
+ */
+export function getWeeklyPlan(
+  sessions: readonly DashboardSession[],
+  now: number,
+  planRoutines: readonly { id: string; dayIndex: number | null | undefined; dayLabel: string | undefined }[] = [],
+): WeeklyPlanDay[] {
+  const todayIdx = weekdayIndex(now);
+  const weekStart = localWeekStart(new Date(now));
+  const planLabels = resolvePlanLabels(planRoutines);
+
+  const days: WeeklyPlanDay[] = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(weekStart);
+    day.setDate(weekStart.getDate() + i);
+    const dateKey = localDateKey(day);
+
+    const trained = sessions.some(
+      (s) => s.completedAt && localDateKey(new Date(s.startedAt)) === dateKey,
+    );
+
+    const dayLabel =
+      planLabels.length > 0 ? planLabels[i % planLabels.length] ?? null : null;
+
+    days.push({
+      date: dateKey,
+      dayName: WEEKDAY_NAME_ES[i],
+      dayLabel: dayLabel && dayLabel.trim() !== "" ? dayLabel : null,
+      isToday: i === todayIdx,
+      trained,
+    });
+  }
+
+  return days;
+}
+
 // ------------------------------------------------------------------ helpers
 
 /**

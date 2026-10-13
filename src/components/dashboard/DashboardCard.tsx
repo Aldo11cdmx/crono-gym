@@ -26,6 +26,8 @@ export interface DashboardCardProps {
   emptyLabel?: string;
   /** Extra classes for the body area. */
   bodyClass?: string;
+  /** Slightly denser glass fill, for a card lifted above the page. */
+  raised?: boolean;
 }
 
 export function DashboardCard({
@@ -36,10 +38,12 @@ export function DashboardCard({
   empty = false,
   emptyLabel = "Nada que mostrar",
   bodyClass,
+  raised = false,
 }: DashboardCardProps) {
   return (
     <GlassCard
       className={bodyClass}
+      raised={raised}
       style={{ padding: SPACE.card, width: "100%" }}
     >
       <div

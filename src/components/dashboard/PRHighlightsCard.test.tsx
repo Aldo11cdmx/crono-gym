@@ -2,8 +2,8 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { PRHighlightsCard } from "./PRHighlightsCard";
 import type { RecentPR } from "@/lib/dashboard/dashboardMetrics";
 
@@ -54,5 +54,22 @@ describe("PRHighlightsCard", () => {
 
     // 150 kg ≈ 331 lb
     expect(screen.getByText("331 lb")).toBeTruthy();
+  });
+
+  it("renders 'Ver todos los PRs' button when onViewAll provided", () => {
+    render(<PRHighlightsCard prs={PRS} onViewAll={vi.fn()} />);
+    expect(screen.getByText("Ver todos los PRs ➔")).toBeTruthy();
+  });
+
+  it("calls onViewAll when button clicked", () => {
+    const onViewAll = vi.fn();
+    render(<PRHighlightsCard prs={PRS} onViewAll={onViewAll} />);
+    fireEvent.click(screen.getByText("Ver todos los PRs ➔"));
+    expect(onViewAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not render view-all button when onViewAll not provided", () => {
+    render(<PRHighlightsCard prs={PRS} />);
+    expect(screen.queryByText("Ver todos los PRs")).toBeFalsy();
   });
 });

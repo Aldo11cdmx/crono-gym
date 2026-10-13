@@ -208,6 +208,23 @@ describe("useAthletePRs · nombres y errores", () => {
 
     expect(screen.getByTestId("error").textContent).toBe("sin permiso");
   });
+
+  it("sanitiza ids con sufijo :N antes de pasarlos al .in()", async () => {
+    // If an exercise_id from completed_sets arrives with a ":1" suffix
+    // (PostgREST embed leak), the .in() on exercises must strip it —
+    // otherwise PostgREST rejects the whole batch with a 400.
+    fixture = {
+      sets: [set("ex-banca:1", 80, "2026-10-01T10:00:00.000Z")],
+      exercises: [{ id: "ex-banca", name: "Press de banca" }],
+    };
+    await mountHook("athlete-1");
+
+    const exercisesRead = reads.find((r) => r.table === "exercises");
+    const inCall = exercisesRead?.calls.find(
+      (c: unknown[]) => c[0] === "in" && c[1] === "id",
+    ) as [string, string, string[]] | undefined;
+    expect(inCall?.[2]).toEqual(["ex-banca"]);
+  });
 });
 
 describe("reduceToRecords · la reducción", () => {

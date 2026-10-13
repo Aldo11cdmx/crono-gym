@@ -8,6 +8,7 @@ import {
   getStreakStats,
   getVolumeTrend,
   getWeeklyProgress,
+  getWeeklyPlan,
   getNextSuggestedRoutine,
   getMuscleBalance,
   estimateOneRepMax,
@@ -551,5 +552,92 @@ describe("getMuscleBalance", () => {
     const now = Date.parse("2026-10-05T12:00:00");
     const result = getMuscleBalance(sessions, now, 7);
     expect(result).toBeNull();
+  });
+});
+
+describe("getWeeklyPlan", () => {
+  // Oct 5 2026 is a Monday.
+  const MONDAY = Date.parse("2026-10-05T12:00:00");
+
+  const PLAN_ENTRIES = [
+    { id: "r1", dayIndex: 0, dayLabel: "Pecho" },
+    { id: "r1", dayIndex: 1, dayLabel: "Pierna" },
+    { id: "r1", dayIndex: 2, dayLabel: "Espalda" },
+  ];
+
+  it("returns 7 days in Monday-first order", () => {
+    const plan = getWeeklyPlan([], MONDAY, PLAN_ENTRIES);
+    expect(plan).toHaveLength(7);
+    expect(plan[0].dayName).toBe("Lunes");
+    expect(plan[6].dayName).toBe("Domingo");
+  });
+
+  it("maps day labels via modulo", () => {
+    const plan = getWeeklyPlan([], MONDAY, PLAN_ENTRIES);
+    // 3-day routine: Mon→Pecho, Tue→Pierna, Wed→Espalda, Thu→Pecho, …
+    expect(plan[0].dayLabel).toBe("Pecho");
+    expect(plan[1].dayLabel).toBe("Pierna");
+    expect(plan[2].dayLabel).toBe("Espalda");
+    expect(plan[3].dayLabel).toBe("Pecho"); // wraps
+    expect(plan[6].dayLabel).toBe("Pecho"); // wraps (6 % 3 = 0)
+  });
+
+  it("marks today correctly", () => {
+    const plan = getWeeklyPlan([], MONDAY, PLAN_ENTRIES);
+    // Monday is index 0
+    expect(plan[0].isToday).toBe(true);
+    expect(plan[1].isToday).toBe(false);
+    expect(plan[6].isToday).toBe(false);
+  });
+
+  it("marks today correctly on a different weekday", () => {
+    const saturday = Date.parse("2026-10-10T12:00:00"); // Saturday
+    const plan = getWeeklyPlan([], saturday, PLAN_ENTRIES);
+    expect(plan[5].isToday).toBe(true); // Saturday = index 5
+  });
+
+  it("marks trained days from sessions", () => {
+    const sessions = [
+      makeSession({
+        startedAt: "2026-10-06T10:00:00", // Tuesday
+        completedAt: "2026-10-06T10:30:00",
+      }),
+    ];
+    const plan = getWeeklyPlan(sessions, MONDAY, PLAN_ENTRIES);
+    // Index 0 = Monday (not trained), index 1 = Tuesday (trained)
+    expect(plan[0].trained).toBe(false);
+    expect(plan[1].trained).toBe(true);
+  });
+
+  it("marks incomplete sessions as not trained", () => {
+    const sessions = [
+      makeSession({
+        startedAt: "2026-10-06T10:00:00",
+        completedAt: null,
+      }),
+    ];
+    const plan = getWeeklyPlan(sessions, MONDAY, PLAN_ENTRIES);
+    expect(plan[1].trained).toBe(false);
+  });
+
+  it("returns null dayLabel when no plan routines", () => {
+    const plan = getWeeklyPlan([], MONDAY, []);
+    expect(plan[0].dayLabel).toBeNull();
+  });
+
+  it("returns null dayLabel when entries have no day labels", () => {
+    const plan = getWeeklyPlan([], MONDAY, [
+      { id: "r1", dayIndex: null, dayLabel: "" },
+    ]);
+    expect(plan[0].dayLabel).toBeNull();
+  });
+
+  it("handles empty day labels gracefully", () => {
+    const plan = getWeeklyPlan([], MONDAY, [
+      { id: "r1", dayIndex: 0, dayLabel: "" },
+      { id: "r1", dayIndex: 1, dayLabel: "" },
+    ]);
+    expect(plan[0].dayLabel).toBeNull();
+    expect(plan[1].dayLabel).toBeNull();
   });
 });

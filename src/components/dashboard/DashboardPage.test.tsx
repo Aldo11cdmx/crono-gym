@@ -7,12 +7,14 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import type { Profile } from "@/lib/profile";
 import type { DashboardSession } from "@/lib/dashboard/dashboardMetrics";
-import type { AthletePR } from "@/hooks/useAthletePRs";
+import type { RoutineWithExercises } from "@/hooks/useGymData";
 import { DashboardPage } from "./DashboardPage";
 
 const mockStart = vi.fn();
 const mockNavigate = vi.fn();
 const mockEnd = vi.fn();
+
+const FIXED_NOW = new Date("2026-10-05T12:00:00").getTime();
 
 const mockState = vi.hoisted(() => {
   const profile: Profile = {
@@ -30,17 +32,31 @@ const mockState = vi.hoisted(() => {
     onboarding_completed_at: "2026-01-01T00:00:00Z",
   };
 
-  const routine = {
+  const routine: RoutineWithExercises = {
     id: "r-1",
     title: "Full Body",
     exercises: [
-      { exercise: { id: "e-1", name: "Squat" }, target_sets: 3, rest_seconds: 90 },
+      {
+        exercise: {
+          id: "e-1",
+          name: "Squat",
+          body_part: "quads",
+          target: "quadriceps",
+          equipment: "barbell",
+          gif_url: "",
+          instructions: ["stand", "squat"],
+        },
+        target_sets: 3,
+        rest_seconds: 90,
+        dayIndex: 0,
+        dayLabel: "Pecho",
+      },
     ],
     is_favorite: false,
     user_id: "user-1",
     description: null,
     created_at: "2026-01-01T00:00:00Z",
-    source: "manual",
+    source: "user",
     authored_by_coach: null,
   };
 
@@ -63,23 +79,16 @@ const mockState = vi.hoisted(() => {
     ],
   };
 
-  const pr: AthletePR = {
-    exerciseId: "e-1",
-    exerciseName: "Squat",
-    weightKg: 150,
-    reps: 5,
-    achievedAt: "2026-10-01T10:00:00",
-  };
-
   return {
     profile: profile as Profile | null,
     profileLoading: false,
-    routines: [routine] as typeof routine[],
+    profileError: null as string | null,
+    routines: [routine] as RoutineWithExercises[],
     routinesLoading: false,
+    routinesError: null as string | null,
     sessions: [session] as DashboardSession[],
     sessionsLoading: false,
-    athletePRs: [pr] as AthletePR[],
-    prsLoading: false,
+    sessionsError: null as string | null,
     isActive: false,
     session: null as null | { routineId: string; title: string; startedAt: string },
   };
@@ -91,7 +100,7 @@ vi.mock("@/hooks/useProfile", () => ({
     energy: null,
     loading: mockState.profileLoading,
     saving: false,
-    error: null,
+    error: mockState.profileError,
     refresh: vi.fn(),
     update: vi.fn(),
   }),
@@ -101,7 +110,7 @@ vi.mock("@/hooks/useGymData", () => ({
   useRoutines: () => ({
     routines: mockState.routines,
     loading: mockState.routinesLoading,
-    error: null,
+    error: mockState.routinesError,
     refresh: vi.fn(),
     toggleFavorite: vi.fn(),
     pendingIds: new Set(),
@@ -112,16 +121,8 @@ vi.mock("@/hooks/useDashboardSessions", () => ({
   useDashboardSessions: () => ({
     sessions: mockState.sessions,
     loading: mockState.sessionsLoading,
-    error: null,
+    error: mockState.sessionsError,
     refresh: vi.fn(),
-  }),
-}));
-
-vi.mock("@/hooks/useAthletePRs", () => ({
-  useAthletePRs: () => ({
-    prs: mockState.athletePRs,
-    loading: mockState.prsLoading,
-    error: null,
   }),
 }));
 
@@ -146,6 +147,7 @@ afterEach(() => cleanup());
 
 describe("DashboardPage", () => {
   beforeEach(() => {
+    vi.useFakeTimers({ now: FIXED_NOW });
     mockState.profile = {
       user_id: "user-1",
       display_name: "Test",
@@ -161,22 +163,38 @@ describe("DashboardPage", () => {
       onboarding_completed_at: "2026-01-01T00:00:00Z",
     };
     mockState.profileLoading = false;
+    mockState.profileError = null;
     mockState.routines = [
       {
         id: "r-1",
         title: "Full Body",
         exercises: [
-          { exercise: { id: "e-1", name: "Squat" }, target_sets: 3, rest_seconds: 90 },
+          {
+            exercise: {
+          id: "e-1",
+          name: "Squat",
+          body_part: "quads",
+          target: "quadriceps",
+          equipment: "barbell",
+          gif_url: "",
+          instructions: ["stand", "squat"],
+        },
+            target_sets: 3,
+            rest_seconds: 90,
+            dayIndex: 0,
+            dayLabel: "Pecho",
+          },
         ],
         is_favorite: false,
         user_id: "user-1",
         description: null,
         created_at: "2026-01-01T00:00:00Z",
-        source: "manual",
+        source: "user",
         authored_by_coach: null,
       },
     ];
     mockState.routinesLoading = false;
+    mockState.routinesError = null;
     mockState.sessions = [
       {
         id: "s-1",
@@ -198,20 +216,16 @@ describe("DashboardPage", () => {
       },
     ];
     mockState.sessionsLoading = false;
-    mockState.athletePRs = [
-      {
-        exerciseId: "e-1",
-        exerciseName: "Squat",
-        weightKg: 150,
-        reps: 5,
-        achievedAt: "2026-10-01T10:00:00",
-      },
-    ];
-    mockState.prsLoading = false;
+    mockState.sessionsError = null;
     mockState.isActive = false;
     mockState.session = null;
     mockStart.mockClear();
     mockNavigate.mockClear();
+    mockEnd.mockClear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("renders loading skeleton when any data source is loading", () => {
@@ -223,9 +237,8 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-     // Loading state: hero shows a skeleton (no real greeting text).
-    expect(screen.queryByText("Crear rutina")).toBeFalsy();
-    expect(screen.queryByText("Empezar entrenamiento")).toBeFalsy();
+    expect(screen.queryByText("Iniciar Sesión")).toBeFalsy();
+    expect(screen.queryByText("Full Body")).toBeFalsy();
   });
 
   it("renders the dashboard with data from all hooks", () => {
@@ -236,10 +249,11 @@ describe("DashboardPage", () => {
     );
 
     expect(screen.getByText(/Full Body/)).toBeTruthy();
-    expect(screen.getByText("Racha")).toBeTruthy();
+    expect(screen.getByText("Consistencia")).toBeTruthy();
     expect(screen.getByText("Esta semana")).toBeTruthy();
     expect(screen.getByText("Récords recientes")).toBeTruthy();
-    expect(screen.getAllByRole("button").length).toBeGreaterThan(0);
+    expect(screen.getByText("Iniciar Sesión")).toBeTruthy();
+    expect(screen.getByText("HOY")).toBeTruthy();
   });
 
   it("starts a session and navigates when primary button is clicked", () => {
@@ -249,12 +263,12 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByText("Empezar entrenamiento"));
+    fireEvent.click(screen.getByText("Iniciar Sesión"));
     expect(mockStart).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/entrenar");
   });
 
-  it("shows active session banner when a session is active", () => {
+  it("shows EN CURSO badge when a session is active", () => {
     mockState.isActive = true;
     mockState.session = {
       routineId: "r-1",
@@ -269,21 +283,19 @@ describe("DashboardPage", () => {
     );
 
     expect(screen.getByText("EN CURSO")).toBeTruthy();
-    expect(screen.getByText("Continuar entrenamiento")).toBeTruthy();
-    expect(screen.queryByText("Empezar entrenamiento")).toBeFalsy();
+    expect(screen.getByText("Iniciar Sesión")).toBeTruthy();
   });
 
-  it("renders QuickActionButton with actions", () => {
+  it("shows Rutina del día when no routine is suggested", () => {
+    mockState.routines = [];
+
     render(
       <MemoryRouter>
         <DashboardPage userId="user-1" />
       </MemoryRouter>,
     );
 
-    const fab = screen.getByRole("button", { name: "▶" });
-    fireEvent.click(fab);
-
-    expect(screen.getByText("Nueva rutina")).toBeTruthy();
-    expect(screen.getByText("Registro rápido")).toBeTruthy();
+    expect(screen.getByText("Rutina del día")).toBeTruthy();
+    expect(screen.getByText("Crea tu primera rutina para empezar")).toBeTruthy();
   });
 });

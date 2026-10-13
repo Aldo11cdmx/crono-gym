@@ -1,11 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@lib/supabase";
+import { sanitizeIds } from "@lib/supabaseUtils";
 import type { Exercise, Routine, RoutineExercise, WorkoutLog } from "@/types/supabase";
 
 export interface PlannedExercise {
   exercise: Exercise;
   target_sets: number;
   rest_seconds: number;
+  /**
+   * Which day of the routine this belongs to. Zero-based.
+   *
+   * Read from `routine_exercises.day_index`. Nullable for rows written before
+   * the column existed — callers fall back to treating everything as day one.
+   */
+  dayIndex: number | null;
+  /**
+   * The coach's own name for the day — "Pecho y espalda", not "Day 1".
+   *
+   * Read from `routine_exercises.day_label`. Empty string when unnamed.
+   */
+  dayLabel: string;
 }
 
 export interface RoutineWithExercises extends Routine {
@@ -127,6 +141,8 @@ export function useRoutines(userId: string | null) {
         exercise,
         target_sets: link.target_sets,
         rest_seconds: link.rest_seconds,
+        dayIndex: link.day_index ?? null,
+        dayLabel: link.day_label ?? "",
       });
       byRoutine.set(link.routine_id, list);
     }
@@ -290,7 +306,7 @@ export function useProgress(userId: string | null) {
         .select("log_id,weight,reps,is_warmup")
         .in(
           "log_id",
-          [...ids],
+          sanitizeIds([...ids]),
         );
       for (const row of (setData ?? []) as {
         log_id: string;

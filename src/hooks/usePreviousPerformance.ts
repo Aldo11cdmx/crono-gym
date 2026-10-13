@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@lib/supabase";
+import { sanitizeIds } from "@lib/supabaseUtils";
 import {
   bestWorkingSet,
   topWorkingRpe,
@@ -68,7 +69,7 @@ export function usePreviousPerformance(userId: string | null, exerciseIds: strin
   const key = exerciseIds.join("|");
 
   useEffect(() => {
-    const ids = key.length > 0 ? key.split("|") : [];
+    const ids = sanitizeIds(key.length > 0 ? key.split("|") : []);
     // Arrow function (not a hoisted declaration) so the `uid` narrowing below
     // survives into the closure.
     const load = async () => {
@@ -107,10 +108,7 @@ export function usePreviousPerformance(userId: string | null, exerciseIds: strin
           .select(
             "log_id, exercise_id, set_number, weight, reps, rpe, is_warmup, notes",
           )
-          .in(
-            "log_id",
-            logs.map((l) => l.id),
-          )
+          .in("log_id", sanitizeIds(logs.map((l) => l.id)))
           .in("exercise_id", ids);
         if (setErr) throw setErr;
 

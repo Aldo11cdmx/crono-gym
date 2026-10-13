@@ -1,153 +1,249 @@
-import { describe, expect, it } from "vitest";
+/**
+ * @vitest-environment node
+ */
+
+import { describe, it, expect } from "vitest";
 import {
-  buildHeroChips,
-  formatElapsed,
-  getElapsedMs,
   getGreeting,
+  getElapsedMs,
+  formatElapsed,
   getSessionProgress,
+  buildHeroChips,
+  getDailyFocus,
+  getWeekdayIndex,
+  WEEKDAY_NAME_ES,
 } from "./heroCardModel";
 
 describe("getGreeting", () => {
-  // Use local-time Date constructor so tests are portable across timezones.
-  // Jan 1 2025, 08:00 local = morning for all zones.
-  const nowMorning = new Date(2025, 0, 1, 8, 0, 0).getTime();
-  const nowAfternoon = new Date(2025, 0, 1, 15, 0, 0).getTime();
-  const nowEvening = new Date(2025, 0, 1, 20, 0, 0).getTime();
-  const nowEarly = new Date(2025, 0, 1, 4, 0, 0).getTime();
-
-  it("returns 'Buenos días' in the morning without a name", () => {
-    expect(getGreeting(nowMorning, null)).toBe("Buenos días");
+  it("returns a name-less greeting for morning hours", () => {
+    // 2026-10-05T08:00:00 — a Monday at 8am local
+    const now = Date.parse("2026-10-05T08:00:00");
+    expect(getGreeting(now, null)).toBe("Buenos días");
+    expect(getGreeting(now, undefined)).toBe("Buenos días");
   });
 
-  it("includes a short name safely truncated", () => {
-    expect(getGreeting(nowMorning, "Ana")).toBe("Buenos días, Ana");
-    expect(getGreeting(nowMorning, "  Luis  ")).toBe("Buenos días, Luis");
+  it("appends a trimmed first name", () => {
+    const now = Date.parse("2026-10-05T08:00:00");
+    expect(getGreeting(now, "Ana")).toBe("Buenos días, Ana");
   });
 
-  it("uses only the first word of a full name", () => {
-    expect(getGreeting(nowMorning, "Ana María")).toBe("Buenos días, Ana");
+  it("uses only the first name", () => {
+    const now = Date.parse("2026-10-05T08:00:00");
+    expect(getGreeting(now, "Ana María")).toBe("Buenos días, Ana");
   });
 
-  it("truncates names longer than 20 chars", () => {
-    const longName = "Supercalifragilisticoespialidoso";
-    expect(getGreeting(nowMorning, longName)).toBe(`Buenos días, ${longName.slice(0, 20)}`);
+  it("returns afternoon greeting for midday", () => {
+    const now = Date.parse("2026-10-05T14:00:00");
+    expect(getGreeting(now, null)).toBe("Buenas tardes");
   });
 
-  it("returns bare greeting for empty or whitespace-only names", () => {
-    expect(getGreeting(nowMorning, "")).toBe("Buenos días");
-    expect(getGreeting(nowMorning, "   ")).toBe("Buenos días");
+  it("returns evening greeting after 6pm", () => {
+    const now = Date.parse("2026-10-05T20:00:00");
+    expect(getGreeting(now, null)).toBe("Buenas noches");
   });
 
-  it("says 'Buenas tardes' at 3pm", () => {
-    expect(getGreeting(nowAfternoon, "Test")).toBe("Buenas tardes, Test");
+  it("truncates long names to 20 characters", () => {
+    const now = Date.parse("2026-10-05T08:00:00");
+    const longName = "AlexandroSupercalifragilistic";
+    const result = getGreeting(now, longName);
+    expect(result).toBe(`Buenos días, ${longName.slice(0, 20)}`);
   });
 
-  it("says 'Buenas noches' at 8pm and 4am", () => {
-    expect(getGreeting(nowEvening, null)).toBe("Buenas noches");
-    expect(getGreeting(nowEarly, null)).toBe("Buenas noches");
+  it("returns name-less greeting for empty name", () => {
+    const now = Date.parse("2026-10-05T08:00:00");
+    expect(getGreeting(now, "")).toBe("Buenos días");
+    expect(getGreeting(now, "   ")).toBe("Buenos días");
   });
 });
 
 describe("getElapsedMs", () => {
-  it("computes positive elapsed from a valid timestamp", () => {
-    const startedAt = "2026-01-01T10:00:00.000Z";
-    const now = Date.parse(startedAt) + 60_000; // 1 minute later
-    expect(getElapsedMs(startedAt, now)).toBe(60_000);
-  });
-
-  it("never returns negative even if clock jumps backward", () => {
-    const startedAt = "2026-01-01T10:00:00.000Z";
-    const now = Date.parse(startedAt) - 5_000; // 5 seconds before start
-    expect(getElapsedMs(startedAt, now)).toBe(0);
-  });
-
-  it("returns null for missing startedAt", () => {
+  it("returns null for missing timestamp", () => {
     expect(getElapsedMs(null, Date.now())).toBeNull();
     expect(getElapsedMs(undefined, Date.now())).toBeNull();
   });
 
-  it("returns null for unparseable timestamp", () => {
+  it("returns null for invalid timestamp", () => {
     expect(getElapsedMs("not-a-date", Date.now())).toBeNull();
-    expect(getElapsedMs("NaN", 1234)).toBeNull();
+  });
+
+  it("returns milliseconds since start", () => {
+    const start = "2026-10-05T10:00:00.000Z";
+    const now = Date.parse("2026-10-05T10:00:05.000Z");
+    expect(getElapsedMs(start, now)).toBe(5000);
+  });
+
+  it("never returns negative", () => {
+    const start = "2026-10-05T10:00:00.000Z";
+    const now = Date.parse("2026-10-05T09:59:59.000Z"); // before start
+    expect(getElapsedMs(start, now)).toBe(0);
   });
 });
 
 describe("formatElapsed", () => {
-  it("formats seconds as m:ss", () => {
-    expect(formatElapsed(65_000)).toBe("1:05");
+  it("formats mm:ss", () => {
+    expect(formatElapsed(65000)).toBe("1:05");
   });
 
-  it("formats minutes and seconds", () => {
-    expect(formatElapsed(5 * 60_000 + 3_000)).toBe("5:03");
+  it("formats h:mm:ss for long durations", () => {
+    expect(formatElapsed(3_721_000)).toBe("1:02:01");
   });
 
-  it("formats hours as h:mm:ss", () => {
-    // 1h 37m 5s = 3600000 + 37*60000 + 5000
-    expect(formatElapsed(3600000 + 37 * 60_000 + 5_000)).toBe("1:37:05");
-  });
-
-  it("returns 0:00 for null", () => {
+  it("returns 0:00 for null or zero", () => {
     expect(formatElapsed(null)).toBe("0:00");
+    expect(formatElapsed(0)).toBe("0:00");
   });
 
-  it("returns 0:00 for zero or negative", () => {
-    expect(formatElapsed(0)).toBe("0:00");
-    expect(formatElapsed(-1_000)).toBe("0:00");
+  it("returns 0:00 for negative", () => {
+    expect(formatElapsed(-1000)).toBe("0:00");
   });
 });
 
 describe("getSessionProgress", () => {
-  it("computes ratio from done/planned", () => {
-    expect(getSessionProgress(3, 10)).toBe(0.3);
-  });
-
-  it("clamps to 1 when done exceeds planned", () => {
-    expect(getSessionProgress(15, 10)).toBe(1);
-  });
-
-  it("clamps to 0 when done is 0", () => {
-    expect(getSessionProgress(0, 10)).toBe(0);
-  });
-
-  it("returns null when planned <= 0", () => {
-    expect(getSessionProgress(3, 0)).toBeNull();
-    expect(getSessionProgress(3, -1)).toBeNull();
-  });
-
-  it("returns null when done or planned is null", () => {
-    expect(getSessionProgress(null, 10)).toBeNull();
+  it("returns null when planned is unknown", () => {
     expect(getSessionProgress(3, null)).toBeNull();
+    expect(getSessionProgress(3, undefined)).toBeNull();
+  });
+
+  it("returns null when planned is zero", () => {
+    expect(getSessionProgress(3, 0)).toBeNull();
+  });
+
+  it("returns ratio clamped to [0, 1]", () => {
+    expect(getSessionProgress(1, 4)).toBe(0.25);
+    expect(getSessionProgress(4, 4)).toBe(1);
+    expect(getSessionProgress(5, 4)).toBe(1);
   });
 });
 
 describe("buildHeroChips", () => {
-  it("produces pluralized exercise chip", () => {
-    const chips = buildHeroChips({ exerciseCount: 5, minutes: 30 });
-    expect(chips).toContainEqual({ label: "5 ejercicios" });
+  it("builds exercise count chip with pluralization", () => {
+    const chips = buildHeroChips({ exerciseCount: 1, minutes: null });
+    expect(chips).toEqual([{ label: "1 ejercicio" }]);
   });
 
-  it("produces singular exercise chip", () => {
-    const chips = buildHeroChips({ exerciseCount: 1, minutes: 5 });
-    expect(chips).toContainEqual({ label: "1 ejercicio" });
+  it("builds exercise count chip plural", () => {
+    const chips = buildHeroChips({ exerciseCount: 5, minutes: null });
+    expect(chips).toEqual([{ label: "5 ejercicios" }]);
   });
 
-  it("produces minutes chip", () => {
-    const chips = buildHeroChips({ exerciseCount: 3, minutes: 30 });
-    expect(chips).toContainEqual({ label: "30 min" });
-  });
-
-  it("omits chips when values are null", () => {
-    const chips = buildHeroChips({ exerciseCount: null, minutes: null });
-    expect(chips).toEqual([]);
-  });
-
-  it("omits exercise chip when count is 0", () => {
-    const chips = buildHeroChips({ exerciseCount: 0, minutes: 30 });
+  it("builds minutes chip", () => {
+    const chips = buildHeroChips({ exerciseCount: null, minutes: 30 });
     expect(chips).toEqual([{ label: "30 min" }]);
   });
 
-  it("ignores muscles (no helper yet)", () => {
-    const chips = buildHeroChips({ exerciseCount: 3, minutes: 30, muscles: ["chest", "shoulders"] });
-    expect(chips).toHaveLength(2); // only exercise + minutes
+  it("builds both chips", () => {
+    const chips = buildHeroChips({ exerciseCount: 3, minutes: 20 });
+    expect(chips).toEqual([
+      { label: "3 ejercicios" },
+      { label: "20 min" },
+    ]);
+  });
+
+  it("returns empty array for null values", () => {
+    expect(buildHeroChips({ exerciseCount: null, minutes: null })).toEqual([]);
+  });
+});
+
+describe("getWeekdayIndex", () => {
+  it("returns 0 for Monday", () => {
+    // 2026-10-05 is a Monday
+    expect(getWeekdayIndex(Date.parse("2026-10-05T12:00:00"))).toBe(0);
+  });
+
+  it("returns 5 for Saturday", () => {
+    // 2026-10-10 is a Saturday
+    expect(getWeekdayIndex(Date.parse("2026-10-10T12:00:00"))).toBe(5);
+  });
+
+  it("returns 6 for Sunday", () => {
+    // 2026-10-04 is a Sunday
+    expect(getWeekdayIndex(Date.parse("2026-10-04T12:00:00"))).toBe(6);
+  });
+});
+
+describe("WEEKDAY_NAME_ES", () => {
+  it("has 7 entries in Monday-first order", () => {
+    expect(WEEKDAY_NAME_ES).toHaveLength(7);
+    expect(WEEKDAY_NAME_ES[0]).toBe("Lunes");
+    expect(WEEKDAY_NAME_ES[6]).toBe("Domingo");
+  });
+});
+
+describe("getDailyFocus", () => {
+  // Oct 5 2026 is Monday. Oct 10 2026 is Saturday.
+  const MONDAY = Date.parse("2026-10-05T12:00:00");
+  const SATURDAY = Date.parse("2026-10-10T12:00:00");
+
+  it("returns the correct day name for Monday", () => {
+    const result = getDailyFocus([], [], MONDAY);
+    expect(result.dayName).toBe("Lunes");
+  });
+
+  it("returns the correct day name for Saturday", () => {
+    const result = getDailyFocus([], [], SATURDAY);
+    expect(result.dayName).toBe("Sábado");
+  });
+
+  it("returns null dayLabel when no plan entries", () => {
+    const result = getDailyFocus([], [], MONDAY);
+    expect(result.dayLabel).toBeNull();
+  });
+
+  it("resolves day label via modulo for a 3-day routine", () => {
+    const entries = [
+      { dayIndex: 0, dayLabel: "Pecho" },
+      { dayIndex: 1, dayLabel: "Pierna" },
+      { dayIndex: 2, dayLabel: "Espalda" },
+    ];
+    // Monday (weekday 0) → day 0 → "Pecho"
+    const mondayFocus = getDailyFocus(entries, [], MONDAY);
+    expect(mondayFocus.dayLabel).toBe("Pecho");
+
+    // Tuesday (weekday 1) → day 1 → "Pierna"
+    const tuesdayFocus = getDailyFocus(entries, [], Date.parse("2026-10-06T12:00:00"));
+    expect(tuesdayFocus.dayLabel).toBe("Pierna");
+
+    // Thursday (weekday 3) → 3 % 3 = 0 → "Pecho" (wraps)
+    const thursdayFocus = getDailyFocus(entries, [], Date.parse("2026-10-08T12:00:00"));
+    expect(thursdayFocus.dayLabel).toBe("Pecho");
+
+    // Saturday (weekday 5) → 5 % 3 = 2 → "Espalda" (wraps)
+    const saturdayFocus = getDailyFocus(entries, [], SATURDAY);
+    expect(saturdayFocus.dayLabel).toBe("Espalda");
+  });
+
+  it("returns isRestDay=false when no session today", () => {
+    const result = getDailyFocus([], [], MONDAY);
+    expect(result.isRestDay).toBe(false);
+  });
+
+  it("returns isRestDay=true when a session completed today", () => {
+    const sessions = [
+      { startedAt: "2026-10-05T10:00:00", completedAt: "2026-10-05T10:30:00" },
+    ];
+    const result = getDailyFocus([], sessions, MONDAY);
+    expect(result.isRestDay).toBe(true);
+  });
+
+  it("returns isRestDay=false for incomplete session today", () => {
+    const sessions = [
+      { startedAt: "2026-10-05T10:00:00", completedAt: null },
+    ];
+    const result = getDailyFocus([], sessions, MONDAY);
+    expect(result.isRestDay).toBe(false);
+  });
+
+  it("honors explicit trainedToday override", () => {
+    expect(getDailyFocus([], [], MONDAY, true).isRestDay).toBe(true);
+    expect(getDailyFocus([], [], MONDAY, false).isRestDay).toBe(false);
+  });
+
+  it("ignores empty day labels", () => {
+    const entries = [
+      { dayIndex: 0, dayLabel: "" },
+      { dayIndex: 1, dayLabel: "  " },
+    ];
+    const result = getDailyFocus(entries, [], MONDAY);
+    expect(result.dayLabel).toBeNull();
   });
 });

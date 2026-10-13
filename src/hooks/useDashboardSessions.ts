@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@lib/supabase";
+import { sanitizeIds } from "@lib/supabaseUtils";
 import type { WorkoutLog } from "@/types/supabase";
 import type { DashboardSession } from "../lib/dashboard/dashboardMetrics";
 
@@ -121,7 +122,7 @@ export function useDashboardSessions(
       return;
     }
 
-    const logIds = logs.map((l) => l.id);
+    const logIds = sanitizeIds(logs.map((l) => l.id));
     const { data: setData, error: setErr } = await supabase
       .from("completed_sets")
       .select(

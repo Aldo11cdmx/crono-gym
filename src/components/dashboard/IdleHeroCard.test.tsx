@@ -47,28 +47,28 @@ describe("IdleHeroCard", () => {
     expect(screen.getAllByText(/30 min/).length).toBeGreaterThan(0);
   });
 
-  it("renders 'Empezar entrenamiento' button when routine provided", () => {
+  it("renders INICIAR ENTRENAMIENTO button when routine provided", () => {
     renderCard();
-    expect(screen.getByText("Empezar entrenamiento")).toBeTruthy();
+    expect(screen.getByText("INICIAR ENTRENAMIENTO")).toBeTruthy();
   });
 
   it("calls onStart when start button clicked", () => {
     const onStart = vi.fn();
     renderCard({ onStart });
-    fireEvent.click(screen.getByText("Empezar entrenamiento"));
+    fireEvent.click(screen.getByText("INICIAR ENTRENAMIENTO"));
     expect(onStart).toHaveBeenCalledTimes(1);
   });
 
-  it("renders 'Crear rutina' button when no routine", () => {
+  it("renders INICIAR ENTRENAMIENTO button when no routine", () => {
     renderCard({ routine: null });
-    expect(screen.getByText("Crear rutina")).toBeTruthy();
+    expect(screen.getByText("INICIAR ENTRENAMIENTO")).toBeTruthy();
   });
 
-  it("calls onCreate when create button clicked", () => {
-    const onCreate = vi.fn();
-    renderCard({ routine: null, onCreate });
-    fireEvent.click(screen.getByText("Crear rutina"));
-    expect(onCreate).toHaveBeenCalledTimes(1);
+  it("calls onStart when INICIAR clicked with no routine", () => {
+    const onStart = vi.fn();
+    renderCard({ routine: null, onStart });
+    fireEvent.click(screen.getByText("INICIAR ENTRENAMIENTO"));
+    expect(onStart).toHaveBeenCalledTimes(1);
   });
 
   it("shows welcome message when no routine", () => {
@@ -83,7 +83,7 @@ describe("IdleHeroCard", () => {
 
   it("renders skeleton when loading", () => {
     renderCard({ loading: true });
-    expect(screen.queryByText("Empezar entrenamiento")).toBeFalsy();
+    expect(screen.queryByText("INICIAR ENTRENAMIENTO")).toBeFalsy();
     expect(screen.queryByText("Crear rutina")).toBeFalsy();
   });
 
@@ -92,5 +92,43 @@ describe("IdleHeroCard", () => {
     // No chip text should appear
     expect(screen.queryByText("5 ejercicios")).toBeFalsy();
     expect(screen.queryByText("30 min")).toBeFalsy();
+  });
+
+  it("renders day name in the HOY badge when provided", () => {
+    renderCard({ dayName: "Sábado", dayLabel: null });
+    expect(screen.getByText(/HOY/)).toBeTruthy();
+    expect(screen.getByText(/Sábado/)).toBeTruthy();
+  });
+
+  it("renders day name badge and muscle focus together", () => {
+    renderCard({ dayName: "Sábado", dayLabel: "Pecho" });
+    expect(screen.getByText(/HOY/)).toBeTruthy();
+    expect(screen.getByText("Enfoque: Pecho")).toBeTruthy();
+  });
+
+  it("shows INICIAR ENTRENAMIENTO instead of Empezar entrenamiento", () => {
+    renderCard();
+    expect(screen.getByText("INICIAR ENTRENAMIENTO")).toBeTruthy();
+    expect(screen.queryByText("Empezar entrenamiento")).toBeFalsy();
+  });
+
+  it("renders rest-day state when restDay is true", () => {
+    renderCard({ restDay: true });
+    expect(screen.getByText("Día de Recuperación")).toBeTruthy();
+    expect(screen.getByText(/Ya entrenaste hoy/)).toBeTruthy();
+  });
+
+  it("renders Ver progreso button when restDay is true", () => {
+    const onStart = vi.fn();
+    renderCard({ restDay: true, onStart });
+    expect(screen.getByText("Ver progreso")).toBeTruthy();
+    fireEvent.click(screen.getByText("Ver progreso"));
+    expect(onStart).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not show routine details in rest-day state", () => {
+    renderCard({ restDay: true });
+    expect(screen.queryByText(/Full Body/)).toBeFalsy();
+    expect(screen.queryByText(/ejercicios/)).toBeFalsy();
   });
 });

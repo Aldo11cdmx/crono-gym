@@ -20,6 +20,10 @@ export interface PRHighlightsCardProps {
   unit?: "metric" | "imperial";
   exercisesById?: Map<string, Exercise>;
   onExerciseClick?: (exercise: Exercise | null) => void;
+  /** Optional callback for the "Ver todos mis PRs" link. */
+  onViewAll?: () => void;
+  /** Optional maximum number of PRs to display. Defaults to 3. */
+  max?: number;
 }
 
 export function PRHighlightsCard({
@@ -29,6 +33,8 @@ export function PRHighlightsCard({
   unit = "metric",
   exercisesById,
   onExerciseClick,
+  onViewAll,
+  max = 3,
 }: PRHighlightsCardProps) {
   if (loading) {
     return (
@@ -39,8 +45,9 @@ export function PRHighlightsCard({
   }
 
   const now = Date.now();
+  const displayPRs = max > 0 ? prs.slice(0, max) : prs;
 
-  if (prs.length === 0) {
+  if (displayPRs.length === 0) {
     return (
       <DashboardCard
         title="Récords recientes"
@@ -61,7 +68,7 @@ export function PRHighlightsCard({
           gap: "8px",
         }}
       >
-          {prs.map((pr) => {
+          {displayPRs.map((pr) => {
             const openDetail = () =>
               onExerciseClick?.(exercisesById?.get(pr.exerciseName.toLowerCase()) ?? null);
             return (
@@ -70,16 +77,6 @@ export function PRHighlightsCard({
                 role={onExerciseClick ? "button" : undefined}
                 tabIndex={onExerciseClick ? 0 : undefined}
                 onClick={onExerciseClick ? openDetail : undefined}
-                onKeyDown={
-                  onExerciseClick
-                    ? (e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          openDetail();
-                        }
-                      }
-                    : undefined
-                }
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -111,7 +108,7 @@ export function PRHighlightsCard({
               >
                 ★
               </span>
-              <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>
+              <span style={{ fontSize: TYPE.body.size, color: TEXT.primary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
                 {pr.exerciseName}
               </span>
               <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
@@ -140,6 +137,25 @@ export function PRHighlightsCard({
           </div>
           );
         })}
+        {onViewAll && (
+          <button
+            type="button"
+            onClick={onViewAll}
+            style={{
+              marginTop: "8px",
+              alignSelf: "flex-start",
+              fontSize: TYPE.caption.size,
+              fontWeight: TYPE.caption.weight,
+              color: ACCENT.base,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            Ver todos los PRs ➔
+          </button>
+        )}
       </div>
     </DashboardCard>
   );

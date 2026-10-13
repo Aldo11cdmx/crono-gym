@@ -44,8 +44,14 @@ export interface HeroWorkoutCardProps {
   activeSession?: HeroSession | null;
   /** Shown as the body when a session is already running (legacy override). */
   activeContent?: ReactNode;
-  /** Called when "Empezar" / "Continuar" is pressed. */
+  /** Called when "INICIAR" / "Continuar" is pressed. */
   onPrimary: () => void;
+  /** Calendar day name for the hero subtitle, e.g. "Sábado". */
+  dayName?: string;
+  /** Routine day focus label, e.g. "Pecho". */
+  dayLabel?: string | null;
+  /** When true, renders the rest-day state ("Día de Recuperación"). */
+  restDay?: boolean;
 }
 
 export function HeroWorkoutCard({
@@ -55,12 +61,15 @@ export function HeroWorkoutCard({
   activeSession = null,
   activeContent,
   onPrimary,
+  dayName,
+  dayLabel,
+  restDay = false,
 }: HeroWorkoutCardProps) {
   const now = useMemo(() => Date.now(), []);
 
   if (activeContent) {
     return (
-      <DashboardCard title="Entrenamiento" loading={loading} bodyClass="hero-body">
+      <DashboardCard title="Entrenamiento" loading={loading} bodyClass="hero-body" raised>
         {activeContent}
       </DashboardCard>
     );
@@ -72,7 +81,7 @@ export function HeroWorkoutCard({
 
     return (
       <div style={{ position: "relative", width: "100%" }}>
-        <DashboardCard title={greeting} loading={loading} bodyClass="hero-body">
+        <DashboardCard title={greeting} loading={loading} bodyClass="hero-body" raised>
           <LiveSessionBanner
             startedAt={activeSession.startedAt}
             routineName={activeSession.title}
@@ -97,13 +106,16 @@ export function HeroWorkoutCard({
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
-      <DashboardCard title={greeting} loading={loading} bodyClass="hero-body">
+      <DashboardCard title={greeting} loading={loading} bodyClass="hero-body" raised>
         <IdleHeroCard
           greeting={greeting}
           routine={routine}
           chips={chips}
           onStart={onPrimary}
           onCreate={onPrimary}
+          dayName={dayName}
+          dayLabel={dayLabel}
+          restDay={restDay}
         />
       </DashboardCard>
       <HeroGlow />

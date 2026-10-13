@@ -5,7 +5,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { WeeklyGoalCard } from "./WeeklyGoalCard";
-import type { WeeklyProgress } from "@/lib/dashboard/dashboardMetrics";
+import type { WeeklyProgress, WeeklyPlanDay } from "@/lib/dashboard/dashboardMetrics";
 
 const PROGRESS: WeeklyProgress = {
   completed: 2,
@@ -74,5 +74,21 @@ describe("WeeklyGoalCard", () => {
 
     expect(screen.getByText("Mon")).toBeTruthy();
     expect(screen.getByText("Sun")).toBeTruthy();
+  });
+
+  it("renders day labels as tooltips when planDays provided", () => {
+    const planDays: WeeklyPlanDay[] = [
+      { date: "2026-10-5", dayName: "Lunes", dayLabel: "Pecho", isToday: true, trained: false },
+      { date: "2026-10-6", dayName: "Martes", dayLabel: "Pierna", isToday: false, trained: true },
+      { date: "2026-10-7", dayName: "Miércol", dayLabel: null, isToday: false, trained: false },
+      { date: "2026-10-8", dayName: "Jueves", dayLabel: null, isToday: false, trained: false },
+      { date: "2026-10-9", dayName: "Viernes", dayLabel: null, isToday: false, trained: false },
+      { date: "2026-10-10", dayName: "Sábado", dayLabel: null, isToday: false, trained: false },
+      { date: "2026-10-11", dayName: "Domingo", dayLabel: null, isToday: false, trained: false },
+    ];
+    const { container } = render(<WeeklyGoalCard progress={PROGRESS} planDays={planDays} />);
+
+    expect(container.querySelector('[title="Pecho"]')).toBeTruthy();
+    expect(container.querySelector('[title="Pierna"]')).toBeTruthy();
   });
 });

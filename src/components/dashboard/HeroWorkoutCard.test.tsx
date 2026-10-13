@@ -32,10 +32,10 @@ describe("HeroWorkoutCard", () => {
 
     expect(screen.getByText(/Full Body/)).toBeTruthy();
     expect(screen.getAllByText(/5 ejercicios/).length).toBeGreaterThan(0);
-    expect(screen.getByText("Empezar entrenamiento")).toBeTruthy();
+    expect(screen.getByText("INICIAR ENTRENAMIENTO")).toBeTruthy();
   });
 
-  it("calls onPrimary when the create button is clicked", () => {
+  it("calls onPrimary when INICIAR clicked with no routine", () => {
     const onPrimary = vi.fn();
     render(
       <HeroWorkoutCard
@@ -45,7 +45,7 @@ describe("HeroWorkoutCard", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Crear rutina"));
+    fireEvent.click(screen.getByText("INICIAR ENTRENAMIENTO"));
     expect(onPrimary).toHaveBeenCalledTimes(1);
   });
 
@@ -58,7 +58,7 @@ describe("HeroWorkoutCard", () => {
       />,
     );
 
-    expect(screen.getByText("Empezar entrenamiento")).toBeTruthy();
+    expect(screen.getByText("INICIAR ENTRENAMIENTO")).toBeTruthy();
   });
 
   it("calls onPrimary when start button clicked", () => {
@@ -71,7 +71,7 @@ describe("HeroWorkoutCard", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Empezar entrenamiento"));
+    fireEvent.click(screen.getByText("INICIAR ENTRENAMIENTO"));
     expect(onPrimary).toHaveBeenCalledTimes(1);
   });
 
@@ -79,7 +79,7 @@ describe("HeroWorkoutCard", () => {
     render(<HeroWorkoutCard suggestedRoutine={null} name={null} onPrimary={vi.fn()} />);
 
     expect(screen.getByText(/primera rutina/)).toBeTruthy();
-    expect(screen.getByText("Crear rutina")).toBeTruthy();
+    expect(screen.getByText("INICIAR ENTRENAMIENTO")).toBeTruthy();
   });
 
   it("renders activeContent when provided (session active)", () => {
@@ -118,7 +118,6 @@ describe("HeroWorkoutCard", () => {
     render(<HeroWorkoutCard suggestedRoutine={null} name={null} onPrimary={vi.fn()} loading />);
 
     // Skeleton renders placeholder — no real content.
-    expect(screen.queryByText("Crear rutina")).toBeNull();
-    expect(screen.queryByText("Empezar entrenamiento")).toBeNull();
+    expect(screen.queryByText("INICIAR ENTRENAMIENTO")).toBeNull();
   });
 });

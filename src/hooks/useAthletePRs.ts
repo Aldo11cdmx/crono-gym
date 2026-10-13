@@ -34,6 +34,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@lib/supabase";
+import { sanitizeIds } from "@lib/supabaseUtils";
 import type { Exercise } from "@/types/supabase";
 
 /**
@@ -140,19 +141,23 @@ export function useAthletePRs(userId: string | null): AthletePRsState {
      * `exercises` either: one `in()` over the distinct ids keeps it to two round trips
      * whatever the athlete's catalog coverage looks like.
      */
-    const exerciseIds = [...new Set(rows.map((row) => row.exercise_id))];
+    const exerciseIds = sanitizeIds([...new Set(rows.map((row) => row.exercise_id))]);
     const names = new Map<string, string>();
 
     if (exerciseIds.length > 0) {
-      const { data: catalog } = await supabase
-        .from("exercises")
-        .select("id,name")
-        .in("id", exerciseIds);
+      try {
+        const { data: catalog } = await supabase
+          .from("exercises")
+          .select("id,name")
+          .in("id", exerciseIds);
 
-      if (!mounted.current) return;
+        if (!mounted.current) return;
 
-      for (const exercise of (catalog ?? []) as Pick<Exercise, "id" | "name">[]) {
-        if (exercise.name) names.set(exercise.id, exercise.name);
+        for (const exercise of (catalog ?? []) as Pick<Exercise, "id" | "name">[]) {
+          if (exercise.name) names.set(exercise.id, exercise.name);
+        }
+      } catch {
+        if (!mounted.current) return;
       }
     }
 

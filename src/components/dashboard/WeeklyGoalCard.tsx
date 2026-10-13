@@ -3,17 +3,23 @@
  *
  * Shows a 7-day bar strip (Mon–Sun, local time), a progress count against the
  * session goal, and a delta when the week is ahead of or behind schedule.
+ *
+ * When `planDays` is provided, each day in the strip also renders the routine's
+ * day label (e.g. "Pecho") — syncing the plan with the routine library. Today is
+ * highlighted; rest days (where the athlete trained) read as completed.
  */
 
 import { DashboardCard } from "./DashboardCard";
-import type { WeeklyProgress } from "@/lib/dashboard/dashboardMetrics";
-import { ACCENT, GLASS, MOTION, STATUS, TEXT, TYPE } from "@/design/tokens";
+import type { WeeklyProgress, WeeklyPlanDay } from "@/lib/dashboard/dashboardMetrics";
+import { ACCENT, GLASS, MOTION, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 
 export interface WeeklyGoalCardProps {
   loading?: boolean;
   progress: WeeklyProgress | null;
   /** Day labels in local calendar order (Mon first). */
   dayLabels?: [string, string, string, string, string, string, string];
+  /** Optional daily plan info for syncing routine day labels. */
+  planDays?: WeeklyPlanDay[] | null;
 }
 
 const DEFAULT_DAYS: [string, string, string, string, string, string, string] = [
@@ -24,6 +30,7 @@ export function WeeklyGoalCard({
   loading = false,
   progress,
   dayLabels = DEFAULT_DAYS,
+  planDays,
 }: WeeklyGoalCardProps) {
   if (loading || !progress) {
     return (
@@ -109,46 +116,55 @@ export function WeeklyGoalCard({
           </div>
         )}
 
-        {/* Day strip */}
+        {/* Day strip — compact pills with tooltip labels */}
         <div
           style={{
             display: "flex",
-            alignItems: "flex-end",
-            gap: "4px",
-            height: "60px",
+            gap: SPACE.sm,
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginTop: SPACE.sm,
           }}
         >
-          {daysTrained.map((trained, i) => {
-            const height = trained ? "60%" : "12%";
+          {dayLabels.map((letter, i) => {
+            const planDay = planDays?.[i];
+            const isToday = planDay?.isToday ?? false;
+            const dayLabel = planDay?.dayLabel ?? null;
+            const trained = daysTrained[i];
+
+            const bg = isToday
+              ? ACCENT.base
+              : trained
+                ? GLASS.fillRaised
+                : GLASS.fill;
+            const border = isToday ? ACCENT.border : GLASS.border;
+            const color = isToday
+              ? TEXT.inverse
+              : trained
+                ? TEXT.primary
+                : TEXT.tertiary;
+
             return (
-              <div
-                key={dayLabels[i]}
+              <span
+                key={letter}
+                title={dayLabel ?? undefined}
                 style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
+                  display: "inline-flex",
                   alignItems: "center",
-                  gap: "4px",
+                  justifyContent: "center",
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: RADIUS.round,
+                  fontSize: TYPE.caption.size,
+                  fontWeight: isToday ? TYPE.caption.weight : undefined,
+                  color,
+                  background: bg,
+                  border: `1px solid ${border}`,
+                  boxShadow: isToday ? ACCENT.ring : undefined,
                 }}
               >
-                <div
-                  style={{
-                    width: "100%",
-                    height,
-                    borderRadius: "4px 4px 0 0",
-                    background: trained ? ACCENT.base : GLASS.fill,
-                    transition: `height ${MOTION.normal} ${MOTION.easeOut}`,
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: TYPE.caption.size,
-                    color: trained ? TEXT.primary : TEXT.tertiary,
-                  }}
-                >
-                  {dayLabels[i]}
-                </span>
-              </div>
+                {letter}
+              </span>
             );
           })}
         </div>

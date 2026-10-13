@@ -30,7 +30,7 @@ import {
   RoutinesView,
   TrainView,
 } from "@/App";
-import { ProfilePage } from "@/components/profile/ProfilePage";
+import { ProfileView } from "@/components/profile/ProfileView";
 import { CoachPortal } from "@/components/coach/portal/CoachPortal";
 import { HubSkeleton } from "@/components/hub/HubSkeleton";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
@@ -145,7 +145,7 @@ export const router = createBrowserRouter([
           // reload and so the pill's destination is a real screen.
           { path: "/entrenar", element: <TrainView /> },
           { path: "/rangos", element: <RangosView /> },
-          { path: PROFILE_PATH, element: <ProfilePage /> },
+          { path: PROFILE_PATH, element: <ProfileView /> },
           /*
            * The AI coach's workspace: the context briefing, the chat, the notes and the
            * pending recommendations.

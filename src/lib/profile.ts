@@ -319,6 +319,8 @@ export interface EnergyReport {
   weeklyRate: number;
   expectedChangePercent: number | null;
   proteinGrams: number | null;
+  carbsGrams: number | null;
+  fatGrams: number | null;
   age: number | null;
   isMinor: boolean;
   /** False when Mifflin-St Jeor is not applicable, e.g. a minor. */
@@ -358,6 +360,20 @@ export function computeEnergyTargets(
     on,
   });
 
+  const proteinGrams = proteinTarget(profile.weight_kg, profile.goal);
+
+  // Fat: 25% of target calories, 9 kcal/g. Null when no valid target.
+  const fatGrams =
+    target > 0 && proteinGrams !== null
+      ? Math.round((target * 0.25) / 9)
+      : null;
+
+  // Carbs: remaining calories after protein and fat, 4 kcal/g.
+  const carbsGrams =
+    target > 0 && proteinGrams !== null && fatGrams !== null
+      ? Math.round((target - proteinGrams * 4 - fatGrams * 9) / 4)
+      : null;
+
   return {
     bmr,
     tdee,
@@ -367,7 +383,9 @@ export function computeEnergyTargets(
     clampedByFloor,
     weeklyRate: weeklyRate(target, maintenance),
     expectedChangePercent: expectedChangePercent(target, maintenance, profile.weight_kg),
-    proteinGrams: proteinTarget(profile.weight_kg, profile.goal),
+    proteinGrams,
+    carbsGrams,
+    fatGrams,
     age,
     isMinor: minor,
     // The equation is validated for adults only, so minors fall back to a

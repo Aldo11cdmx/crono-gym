@@ -141,7 +141,7 @@ describe("MuscleRankDetail", () => {
     render(<MuscleRankDetail entry={entry} history={[]} onClose={() => undefined} />);
 
     expect(screen.getByText(String(entry.score))).toBeTruthy();
-    expect(screen.getByText(entry.rank.label)).toBeTruthy();
+    expect(screen.getAllByText(entry.rank.label).length).toBeGreaterThan(0);
     expect(screen.getByText(/Fuerza/)).toBeTruthy();
     expect(screen.getByText(/Volumen/)).toBeTruthy();
     // The scorer's own contributions, not a hand-written summary. Now also named

@@ -74,7 +74,7 @@ export interface MuscleReadonlyMapProps {
 export function MuscleReadonlyMap({
   counts,
   side = "front",
-  aspectRatio = 3 / 2,
+  aspectRatio = 2 / 3,
   className = "",
   label,
 }: MuscleReadonlyMapProps) {

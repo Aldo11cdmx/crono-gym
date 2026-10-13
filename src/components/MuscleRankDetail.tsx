@@ -3,7 +3,9 @@
  *
  * A rank the user cannot interrogate is a rank they will not trust, so this shows
  * the whole derivation: the score, the split between strength and volume, the
- * exercises that produced it, and what is missing when the muscle is unranked.
+ * exercises that produced it, what is missing when the muscle is unranked, and
+ * now -- the volume fatigue signal and an ascent projection that names what
+ * stands between the current score and the next rank.
  *
  * Accessibility
  * -------------
@@ -16,9 +18,11 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ArrowUpRight, Dumbbell, TrendingDown, X } from "lucide-react";
 import type { MuscleRank } from "../lib/ranks/buildRankMap";
+import { bucketForEntry } from "../lib/ranks/heatmapColors";
 import type { MuscleScoreResult } from "../lib/ranks/muscleScore";
 import type { RankHistoryRecord } from "../lib/ranks/rankHistory";
 import { CONFIDENCE_LABELS, RANKS, VOLUME_RULES } from "../lib/ranks/rankConfig";
+import { HEATMAP } from "../design/tokens";
 import { RANK_LABELS as T, UNRANKED_REASONS } from "../lib/i18n";
 
 interface MuscleRankDetailProps {
@@ -142,6 +146,8 @@ export function MuscleRankDetail({
 
             <ProgressBar entry={entry} />
 
+            <AscentProjection entry={entry} />
+
             <div className="mt-4 grid grid-cols-2 gap-3">
               {detail.strength && (
                 <Stat
@@ -164,15 +170,11 @@ export function MuscleRankDetail({
 
             <OneRepMax entry={entry} />
 
+            <FatigueBar entry={entry} />
+
             <DecayNotice volume={detail.volume} />
 
             <Sparkline history={history} color={entry.rank.borderColor} />
-
-            <p className="mt-4 text-xs text-neutral-500">
-              {entry.progress.next
-                ? T.pointsToNext(entry.progress.pointsToNext, entry.progress.next.label)
-                : T.atTopRank}
-            </p>
           </>
         )}
 
@@ -221,6 +223,7 @@ export function MuscleRankDetail({
   );
 }
 
+/** The progress bar from the current rank toward the next one. */
 function ProgressBar({ entry }: { entry: MuscleRank }) {
   const { progress } = entry;
   const percent = Math.round(progress.percent * 100);
@@ -247,6 +250,159 @@ function ProgressBar({ entry }: { entry: MuscleRank }) {
         <span>{progress.next?.label ?? T.atMaxLabel}</span>
       </div>
     </div>
+  );
+}
+
+/**
+ * Ascent projection: the gap to the next rank, stated as points and a bar,
+ * plus a highlight when a single session can plausibly close it.
+ */
+function AscentProjection({ entry }: { entry: MuscleRank }) {
+  const { progress } = entry;
+
+  if (!progress.next) {
+    return (
+      <p className="mt-3 text-[11px] text-neutral-500">{T.atTopRank}</p>
+    );
+  }
+
+  const points = progress.pointsToNext;
+  const label = progress.next.label;
+  const percent = Math.round(progress.percent * 100);
+  const nearlyThere = progress.nearlyThere;
+
+  return (
+    <section className="mt-4 rounded-xl border border-white/10 bg-neutral-950/40 p-3">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        {T.ascentTitle}
+      </h3>
+
+      <div className="mt-2 flex items-baseline justify-between gap-2">
+        <p className="text-lg font-semibold tabular-nums">
+          {T.ascentPoints(points)}
+        </p>
+        <p className="text-[11px] text-neutral-500">
+          {T.ascentNext} {label}
+        </p>
+      </div>
+
+      <div className="mt-2">
+        <div
+          className="h-1.5 overflow-hidden rounded-full bg-white/10"
+        >
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${percent}%`,
+              backgroundColor: entry.rank.borderColor,
+            }}
+          />
+        </div>
+        <div className="mt-1 flex justify-between text-[10px] text-neutral-600">
+          <span>{progress.current.label}</span>
+          <span>{label}</span>
+        </div>
+      </div>
+
+      {nearlyThere && (
+        <p className="mt-2 text-[11px] text-amber-300/90">
+          <TrendingDown className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+          {T.nearlyThere}
+        </p>
+      )}
+    </section>
+  );
+}
+
+/**
+ * Fatigue and load state: a one-bar verdict on the volume half.
+ *
+ * Shows the weekly-set bucket, the raw set count, how long the muscle has been
+ * idle, and the inactivity decay multiplier, all so "your score includes decay" is
+ * actionable rather than a statement.
+ */
+function FatigueBar({ entry }: { entry: MuscleRank }) {
+  const { volume } = entry.detail;
+  const bucket = bucketForEntry(entry);
+
+  const volumeColor = useMemo(() => {
+    switch (bucket) {
+      case "optimal":
+        return HEATMAP.optimal;
+      case "fatigue":
+        return HEATMAP.fatigue;
+      case "maintenance":
+        return HEATMAP.maintenance;
+      case "inactive":
+        return HEATMAP.inactive;
+    }
+  }, [bucket]);
+
+  const setsPerWeek = Math.round(volume.setsPerWeek);
+  const daysSince = volume.daysSinceLastSet;
+  const decayPct = Math.round(volume.decayFactor * 100);
+
+  let statusLabel: string;
+  let statusHint: string;
+  if (setsPerWeek === 0) {
+    statusLabel = T.fatigueLow;
+    statusHint = T.heatmapInactiveHint;
+  } else if (bucket === "optimal") {
+    statusLabel = T.fatigueOptimal;
+    statusHint = T.heatmapOptimalHint;
+  } else if (bucket === "fatigue") {
+    statusLabel = T.fatigueOverload;
+    statusHint = T.heatmapFatigueHint;
+  } else {
+    statusLabel = T.fatigueRecovery;
+    statusHint = T.heatmapInactiveHint;
+  }
+
+  return (
+    <section className="mt-4 rounded-xl border border-white/10 bg-neutral-950/40 p-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          {T.fatigueTitle}
+        </h3>
+        <span
+          className="text-[10px] font-medium"
+          style={{ color: volumeColor }}
+        >
+          {statusLabel}
+        </span>
+      </div>
+
+      <div className="mt-2">
+        <div
+          className="h-2 overflow-hidden rounded-full bg-white/10"
+          role="img"
+          aria-label={T.fatigueSets(setsPerWeek)}
+        >
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${Math.min(100, (setsPerWeek / 14) * 100)}%`,
+              backgroundColor: volumeColor,
+            }}
+          />
+        </div>
+        <div className="mt-1 flex justify-between text-[10px] text-neutral-600">
+          <span>{T.fatigueSets(setsPerWeek)}</span>
+          <span>{statusHint}</span>
+        </div>
+      </div>
+
+      <div className="mt-2 flex justify-between gap-2 text-[11px]">
+        <span className="text-neutral-500">
+          {daysSince !== null ? T.fatigueDays(daysSince) : T.decayNever}
+        </span>
+        {volume.decayFactor < 1 && daysSince !== null && (
+          <span className="text-neutral-500">
+            {T.fatigueDecay(decayPct)}
+          </span>
+        )}
+      </div>
+    </section>
   );
 }
 

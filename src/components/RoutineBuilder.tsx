@@ -18,13 +18,9 @@ interface Draft {
   title: string;
   description: string;
   items: PlanItem[];
-  /** Label for the routine's day — e.g. "Pecho", "Espalda", "Descanso". */
-  dayLabel: string;
-  /** Which day of the routine this is (0-based). */
-  dayIndex: number;
 }
 
-const EMPTY_DRAFT: Draft = { id: null, title: "", description: "", items: [], dayLabel: "", dayIndex: 0 };
+const EMPTY_DRAFT: Draft = { id: null, title: "", description: "", items: [] };
 
 interface RoutineBuilderProps {
   userId: string;
@@ -55,14 +51,11 @@ export function RoutineBuilder({
   }
 
   function startEdit(routine: RoutineWithExercises) {
-    const first = routine.exercises[0];
     setDraft({
       id: routine.id,
       title: routine.title,
       description: routine.description ?? "",
       items: routine.exercises.map((e) => ({ ...e })),
-      dayLabel: first?.dayLabel ?? "",
-      dayIndex: first?.dayIndex ?? 0,
     });
     setEditing(true);
     setError(null);
@@ -72,23 +65,18 @@ export function RoutineBuilder({
     setDraft((prev) => ({ ...prev, ...changes }));
   }
 
-  function addExercises(exercises: Exercise[]) {
-    setDraft((prev) => {
-      const existingIds = new Set(prev.items.map((i) => i.exercise.id));
-      const toAdd = exercises.filter((ex) => !existingIds.has(ex.id));
-      if (toAdd.length === 0) return prev;
-      return {
-        ...prev,
-        items: [
-          ...prev.items,
-          ...toAdd.map((exercise) => ({
-            exercise,
-            target_sets: 3,
-            rest_seconds: DEFAULT_REST,
-          })),
-        ],
-      };
-    });
+  function addExercise(exercise: Exercise) {
+    setDraft((prev) =>
+      prev.items.some((i) => i.exercise.id === exercise.id)
+        ? prev
+        : {
+            ...prev,
+            items: [
+              ...prev.items,
+              { exercise, target_sets: 3, rest_seconds: DEFAULT_REST },
+            ],
+          },
+    );
   }
 
   function updateItem(index: number, changes: Partial<PlanItem>) {
@@ -148,8 +136,6 @@ export function RoutineBuilder({
             target_sets: item.target_sets,
             rest_seconds: item.rest_seconds,
             order_index: index,
-            day_index: draft.dayIndex,
-            day_label: draft.dayLabel,
           })),
         );
         if (insertError) throw insertError;
@@ -257,8 +243,8 @@ export function RoutineBuilder({
 
       {browsing && (
         <ExerciseBrowser
-          onAdd={(exercises) => {
-            addExercises(exercises);
+          onSelect={(ex) => {
+            addExercise(ex);
             setBrowsing(false);
           }}
           onClose={() => setBrowsing(false)}
@@ -308,33 +294,6 @@ function RoutineForm({
             value={draft.description}
             onChange={(e) => onPatch({ description: e.target.value })}
             placeholder="Opcional"
-            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
-          />
-        </label>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 text-xs text-neutral-400">Día (planificador semanal)</span>
-          <select
-            value={draft.dayIndex ?? 0}
-            onChange={(e) => onPatch({ dayIndex: Number(e.target.value) })}
-            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm text-neutral-200"
-          >
-            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-              <option key={i} value={i}>
-                Día {i + 1}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="mb-1 text-xs text-neutral-400">Etiqueta del día</span>
-          <input
-            type="text"
-            value={draft.dayLabel ?? ""}
-            onChange={(e) => onPatch({ dayLabel: e.target.value })}
-            placeholder="Ej: Pecho, Espalda, Pierna, Descanso"
             className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
           />
         </label>
@@ -462,9 +421,7 @@ function RoutineCard({
         <div className="min-w-0">
           <h3 className="truncate text-sm font-semibold">{routine.title}</h3>
           <p className="mt-0.5 truncate text-xs text-neutral-500">
-            {routine.exercises[0]?.dayLabel
-              ? `${routine.exercises[0].dayLabel}`
-              : routine.description ?? `${routine.exercises.length} ejercicios`}
+            {routine.description ?? `${routine.exercises.length} ejercicios`}
           </p>
         </div>
         <button

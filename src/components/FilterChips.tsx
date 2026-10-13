@@ -16,7 +16,6 @@ export interface FilterChipsProps {
   onClearBodyPart: () => void;
   onClearEquipment: () => void;
   onClearTarget: () => void;
-  onClearMyGym: () => void;
   onClearMuscle: () => void;
   onClearAll: () => void;
 }
@@ -32,7 +31,6 @@ export function FilterChips({
   onClearBodyPart,
   onClearEquipment,
   onClearTarget,
-  onClearMyGym,
   onClearMuscle,
   onClearAll,
 }: FilterChipsProps) {
@@ -46,9 +44,6 @@ export function FilterChips({
   }
   if (filters.target !== "all") {
     chips.push({ label: filters.target, onClear: onClearTarget });
-  }
-  if (filters.onlyMyGym) {
-    chips.push({ label: "Solo mi gym", onClear: onClearMyGym });
   }
   if (selectedMuscle) {
     const def = muscleDefinition(selectedMuscle);

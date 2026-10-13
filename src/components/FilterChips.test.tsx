@@ -18,7 +18,6 @@ describe("FilterChips", () => {
     onClearBodyPart: vi.fn(),
     onClearEquipment: vi.fn(),
     onClearTarget: vi.fn(),
-    onClearMyGym: vi.fn(),
     onClearMuscle: vi.fn(),
     onClearAll: vi.fn(),
   };
@@ -34,12 +33,6 @@ describe("FilterChips", () => {
     const filters: PickerFilters = { ...EMPTY_FILTERS, bodyPart: "chest" };
     render(<FilterChips filters={filters} selectedMuscle={null} {...baseProps} />);
     expect(screen.getByText("chest")).toBeTruthy();
-  });
-
-  it("renders a chip for Mi Gym filter", () => {
-    const filters: PickerFilters = { ...EMPTY_FILTERS, onlyMyGym: true };
-    render(<FilterChips filters={filters} selectedMuscle={null} {...baseProps} />);
-    expect(screen.getByText("Solo mi gym")).toBeTruthy();
   });
 
   it("renders 'Limpiar todo' only when more than one chip is active", () => {

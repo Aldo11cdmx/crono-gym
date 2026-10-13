@@ -55,23 +55,6 @@ describe("FilterSheet", () => {
     });
   });
 
-  it("shows Mi Gym checkbox", () => {
-    renderSheet();
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).toBeTruthy();
-    expect(screen.getByText("Solo mi gym")).toBeTruthy();
-  });
-
-  it("toggles Mi Gym checkbox and calls onChange", () => {
-    const onChange = vi.fn();
-    renderSheet({ onChange });
-    const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
-    fireEvent.click(checkbox);
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ onlyMyGym: true }),
-    );
-  });
-
   it("calls onClose when Aplicar button is clicked", () => {
     const onClose = vi.fn();
     renderSheet({ onClose });

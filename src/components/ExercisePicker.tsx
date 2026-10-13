@@ -6,7 +6,7 @@
  * or any other data source; this component only decides how they are shown.
  *
  * Filter state is owned by this component (query, body_part, equipment, target,
- * Mi Gym, muscle slugs). The muscle-map filter reuses `filterByMuscles` from
+ * muscle slugs). The muscle-map filter reuses `filterByMuscles` from
  * `muscleFilter.ts` because that function needs the `MatchLevel` type from
  * `react-muscle-highlighter`.
  */
@@ -28,7 +28,6 @@ import {
   type SortKey,
 } from "@/lib/picker/pickerHelpers";
 import { filterByMuscles } from "@/lib/muscleFilter";
-import { MY_GYM_EQUIPMENT_TAGS } from "@/data/myGymEquipment";
 
 import { ExerciseCard } from "./ExerciseCard";
 import { FilterChips } from "./FilterChips";
@@ -84,7 +83,7 @@ export function ExercisePicker({
 
   const filtered = useMemo(() => {
     const searched = searchExercises(exercises, query);
-    const attrFiltered = filterExercises(searched, filters, MY_GYM_EQUIPMENT_TAGS);
+    const attrFiltered = filterExercises(searched, filters);
     const muscleFiltered = selectedMuscle
       ? filterByMuscles(attrFiltered, muscleSlugs).results
       : attrFiltered;
@@ -107,7 +106,6 @@ export function ExercisePicker({
     (filters.bodyPart !== "all" ? 1 : 0) +
     (filters.equipment !== "all" ? 1 : 0) +
     (filters.target !== "all" ? 1 : 0) +
-    (filters.onlyMyGym ? 1 : 0) +
     (selectedMuscle ? 1 : 0);
 
   return (
@@ -176,7 +174,6 @@ export function ExercisePicker({
             onClearBodyPart={() => setFilters({ ...filters, bodyPart: "all" })}
             onClearEquipment={() => setFilters({ ...filters, equipment: "all" })}
             onClearTarget={() => setFilters({ ...filters, target: "all" })}
-            onClearMyGym={() => setFilters({ ...filters, onlyMyGym: false })}
             onClearMuscle={() => setSelectedMuscle(null)}
             onClearAll={() => {
               setFilters(EMPTY_FILTERS);

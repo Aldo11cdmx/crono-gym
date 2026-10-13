@@ -25,8 +25,6 @@ export interface PickerFilters {
   equipment: string;
   /** Selected target values ("all" means none). */
   target: string;
-  /** Only exercises whose equipment is in the user's gym. */
-  onlyMyGym: boolean;
 }
 
 export const EMPTY_FILTERS: PickerFilters = {
@@ -34,7 +32,6 @@ export const EMPTY_FILTERS: PickerFilters = {
   bodyPart: "all",
   equipment: "all",
   target: "all",
-  onlyMyGym: false,
 };
 
 export type SortKey = "name" | "popularity";
@@ -146,17 +143,7 @@ export function searchExercises(exercises: Exercise[], query: string): Exercise[
 }
 
 /**
- * Checks whether an exercise's equipment is available in "Mi Gym".
- *
- * Extracted as a standalone predicate so the picker can accept an optional
- * equipment matcher rather than depending on the import of the gym data.
- */
-export function isMyGymEquipment(equipment: string, myGymTags: ReadonlySet<string>): boolean {
-  return myGymTags.has(equipment);
-}
-
-/**
- * Applies attribute filters (body part, equipment, target, Mi Gym) to a list.
+ * Applies attribute filters (body part, equipment, target) to a list.
  * Does NOT apply muscle-anatomy filtering — that is handled separately by
  * `filterByMuscles` in `muscleFilter.ts`, because muscle matching requires the
  * MatchLevel type that depends on `react-muscle-highlighter`.
@@ -166,13 +153,11 @@ export function isMyGymEquipment(equipment: string, myGymTags: ReadonlySet<strin
 export function filterExercises(
   exercises: Exercise[],
   filters: PickerFilters,
-  myGymTags?: ReadonlySet<string>,
 ): Exercise[] {
   return exercises.filter((e) => {
     if (filters.bodyPart !== "all" && e.body_part !== filters.bodyPart) return false;
     if (filters.equipment !== "all" && e.equipment !== filters.equipment) return false;
     if (filters.target !== "all" && e.target !== filters.target) return false;
-    if (filters.onlyMyGym && myGymTags && !myGymTags.has(e.equipment)) return false;
     return true;
   });
 }

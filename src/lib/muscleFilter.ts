@@ -30,7 +30,6 @@ export interface BaseFilters {
   bodyPart: string;
   equipment: string;
   target: string;
-  onlyMyGym: boolean;
 }
 
 export const EMPTY_BASE_FILTERS: BaseFilters = {
@@ -38,7 +37,6 @@ export const EMPTY_BASE_FILTERS: BaseFilters = {
   bodyPart: "all",
   equipment: "all",
   target: "all",
-  onlyMyGym: false,
 };
 
 /**
@@ -58,36 +56,17 @@ export interface EmptyCause {
   action: string;
 }
 
-/**
- * Decides whether a piece of equipment counts for "Solo mi gym".
- *
- * Supplied by the caller rather than imported, so this module stays free of the
- * gym's equipment dataset and a pure filter stays a pure function. Defaults to
- * allowing everything, which is the correct behaviour when the caller does not
- * care about the gym filter at all.
- */
-export type EquipmentMatcher = (equipment: string) => boolean;
-
-const ALLOW_ANY_EQUIPMENT: EquipmentMatcher = () => true;
-
-export interface BaseFilterOptions {
-  isMyGymEquipment?: EquipmentMatcher;
-}
-
-/** Applies the non-anatomy filters. */
+/** Parses the URL fragment used to persist the selection across navigation. */
 export function applyBaseFilters<T extends FilterableExercise>(
   exercises: T[],
   filters: BaseFilters,
-  options: BaseFilterOptions = {},
 ): T[] {
   const q = filters.query.trim().toLowerCase();
-  const matcher = options.isMyGymEquipment ?? ALLOW_ANY_EQUIPMENT;
   return exercises.filter((e) => {
     if (q && !e.name.toLowerCase().includes(q)) return false;
     if (filters.bodyPart !== "all" && e.body_part !== filters.bodyPart) return false;
     if (filters.equipment !== "all" && e.equipment !== filters.equipment) return false;
     if (filters.target !== "all" && e.target !== filters.target) return false;
-    if (filters.onlyMyGym && !matcher(e.equipment)) return false;
     return true;
   });
 }
@@ -200,7 +179,6 @@ export function explainEmpty<T extends FilterableExercise>(
   selection: Slug[],
   filters: BaseFilters,
   labels: EmptyStateLabels,
-  options: BaseFilterOptions = {},
 ): EmptyCause | null {
   if (baseFiltered.length > 0) {
     // Only the anatomy filter can be at fault here.
@@ -214,7 +192,7 @@ export function explainEmpty<T extends FilterableExercise>(
   // Nothing survives the base filters. Bisect one attribute at a time: the
   // cheapest way to find the culprit without rendering every combination.
   const without = (patch: Partial<BaseFilters>): boolean =>
-    applyBaseFilters(allExercises, { ...filters, ...patch }, options).length > 0;
+    applyBaseFilters(allExercises, { ...filters, ...patch }).length > 0;
 
   const q = filters.query.trim();
   if (q !== "" && without({ query: "" })) {
@@ -238,13 +216,6 @@ export function explainEmpty<T extends FilterableExercise>(
     return {
       message: `Sin ejercicios de ${filters.bodyPart}.`,
       label: filters.bodyPart,
-      action: labels.suggestDropEverything,
-    };
-  }
-  if (filters.onlyMyGym && without({ onlyMyGym: false })) {
-    return {
-      message: "Sin ejercicios con el equipamiento de tu gym.",
-      label: "Solo mi gym",
       action: labels.suggestDropEverything,
     };
   }

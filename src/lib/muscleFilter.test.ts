@@ -46,8 +46,6 @@ const EXERCISES: FilterableExercise[] = [
   { id: "e13", name: "Caminata en cinta", body_part: "cardio", target: "cardiovascular system", equipment: "machine" },
 ];
 
-const DUMBBELL_ONLY = (equipment: string) => equipment === "dumbbell";
-
 function ids(list: FilterableExercise[]): string[] {
   return list.map((e) => e.id);
 }
@@ -191,22 +189,6 @@ describe("combination with base filters", () => {
     const { results } = filterByMuscles(base, ["chest"]);
     // e1 is the only barbell chest press in the fixture.
     expect(ids(results)).toEqual(["e1"]);
-  });
-
-  it("respects the gym filter with an injected matcher", () => {
-    const base = applyBaseFilters(
-      EXERCISES,
-      { ...EMPTY_BASE_FILTERS, onlyMyGym: true },
-      { isMyGymEquipment: DUMBBELL_ONLY },
-    );
-    const { results } = filterByMuscles(base, ["chest"]);
-    // e2 is the only dumbbell chest exercise in the fixture.
-    expect(ids(results)).toEqual(["e2"]);
-  });
-
-  it("does nothing for onlyMyGym when no matcher is supplied", () => {
-    const base = applyBaseFilters(EXERCISES, { ...EMPTY_BASE_FILTERS, onlyMyGym: true });
-    expect(base.length).toBe(EXERCISES.length);
   });
 
   it("ignores a warm-up-only distinction (not a filter concern)", () => {
@@ -368,15 +350,6 @@ describe("explainEmpty", () => {
   });
 
   
-
-  it("blames the gym filter when it is the culprit", () => {
-    const filters: BaseFilters = { ...EMPTY_BASE_FILTERS, onlyMyGym: true };
-    const base = applyBaseFilters(EXERCISES, filters, { isMyGymEquipment: () => false });
-    const cause = explainEmpty(base, EXERCISES, [], filters, MUSCLE_FILTER_LABELS, {
-      isMyGymEquipment: () => false,
-    });
-    expect(cause?.label).toBe("Solo mi gym");
-  });
 
   it("returns null when nothing is active, so the UI can stay generic", () => {
     const cause = explainEmpty([], [], [], EMPTY_BASE_FILTERS, MUSCLE_FILTER_LABELS);

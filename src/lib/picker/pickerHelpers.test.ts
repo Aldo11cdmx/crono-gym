@@ -152,19 +152,6 @@ describe("filterExercises", () => {
     expect(results[0].name).toBe("Parallel Bar Dips");
   });
 
-  it("filters by Mi Gym equipment tags", () => {
-    const myGymTags = new Set<string>(["barbell", "body weight"]);
-    const results = filterExercises(SAMPLE_EXERCISES, { ...EMPTY_FILTERS, onlyMyGym: true }, myGymTags);
-    expect(results.every((e) => myGymTags.has(e.equipment))).toBe(true);
-    expect(results).toHaveLength(4);
-  });
-
-  it("does not filter by Mi Gym when onlyMyGym is false", () => {
-    const myGymTags = new Set<string>(["barbell"]);
-    const results = filterExercises(SAMPLE_EXERCISES, EMPTY_FILTERS, myGymTags);
-    expect(results).toHaveLength(SAMPLE_EXERCISES.length);
-  });
-
   it("combines multiple filters", () => {
     const results = filterExercises(SAMPLE_EXERCISES, {
       ...EMPTY_FILTERS,

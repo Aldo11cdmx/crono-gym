@@ -1,6 +1,6 @@
 /**
  * FilterSheet.tsx — a bottom sheet with dropdown selectors for the attribute
- * filters (body part, equipment, target) and a toggle for "Mi Gym".
+ * filters (body part, equipment, target).
  *
  * Replaces the three inline `<select>` elements from ExerciseBrowser with
  * native-styled dropdowns that include the "all" option correctly labeled
@@ -14,7 +14,6 @@ import {
   translateTarget,
   translateEquipment,
 } from "@/lib/i18n";
-import { MY_GYM_EQUIPMENT_TAGS } from "@/data/myGymEquipment";
 
 export interface FilterSheetProps {
   isOpen: boolean;
@@ -114,21 +113,6 @@ export function FilterSheet({
             translate={translateTarget}
             onChange={(v) => onChange({ ...filters, target: v })}
           />
-
-          <div className="mb-4">
-            <label className="mb-1 flex cursor-pointer items-center gap-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
-              <input
-                type="checkbox"
-                checked={filters.onlyMyGym}
-                onChange={(e) => onChange({ ...filters, onlyMyGym: e.target.checked })}
-                className="h-4 w-4 cursor-pointer rounded border-white/20 bg-neutral-800 text-accent"
-              />
-              <span className="text-neutral-300">Solo mi gym</span>
-            </label>
-            <p className="mt-1 text-[11px] text-neutral-600">
-              Equipamiento disponible: {MY_GYM_EQUIPMENT_TAGS.size} categorías
-            </p>
-          </div>
         </div>
 
         <button

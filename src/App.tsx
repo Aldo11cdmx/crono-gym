@@ -9,11 +9,11 @@ import { BrandLockup } from "./components/shell/BrandLockup";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { Onboarding } from "./components/Onboarding";
 import { ProgressDashboard } from "./components/ProgressDashboard";
-import { AnatomicalRanksView } from "./components/AnatomicalRanksView";
+import { AnatomicalRanksPage } from "./components/ranks/AnatomicalRanksPage";
 import { CoachHub } from "./components/coach/CoachHub";
-import { RoutineBuilder } from "./components/RoutineBuilder";
+import { RoutinesPage } from "./components/dashboard/RoutinesPage";
 import { useActiveSession } from "./context/ActiveSessionContext";
-import { HOME_PATH, NAV_DESTINATIONS, TRAIN_PATH } from "./components/shell/navItems";
+import { HOME_PATH, NAV_DESTINATIONS } from "./components/shell/navItems";
 import { MUSCLE_PARAM } from "./lib/muscleFilter";
 import {
   useProgress,
@@ -414,23 +414,7 @@ const [libraryLoaded, setLibraryLoaded] = useState(false);
 
 export function RoutinesView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
-  const { start } = useActiveSession();
-  const navigate = useNavigate();
-  const { routines, loading, refresh } = useRoutines(userId);
-  return (
-    <RoutineBuilder
-      userId={userId}
-      routines={routines}
-      loading={loading}
-      onChanged={() => void refresh()}
-      // Starting from the library has to reach the same screen as starting from
-      // home, or the session runs behind a route the user never navigated to.
-      onStart={(routine) => {
-        start(routine);
-        navigate(TRAIN_PATH);
-      }}
-    />
-  );
+  return <RoutinesPage userId={userId} />;
 }
 
 export function ProgressView() {
@@ -498,7 +482,7 @@ export function RangosView() {
           ejercicios de este músculo.
         </p>
       )}
-      <AnatomicalRanksView userId={userId} onBrowseMuscle={browseMuscle} />
+      <AnatomicalRanksPage userId={userId} onBrowseMuscle={browseMuscle} />
     </>
   );
 }

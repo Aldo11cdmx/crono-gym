@@ -92,7 +92,7 @@ function exercise(id: string, name: string): Exercise {
 const SQUAT = exercise("squat", "Sentadilla trasera");
 
 function planned(items: PlannedExercise[] | null = null, targetSets = 3): PlannedExercise[] {
-  return items ?? [{ exercise: SQUAT, target_sets: targetSets, rest_seconds: 90 }];
+  return items ?? [{ exercise: SQUAT, target_sets: targetSets, rest_seconds: 90, dayIndex: null, dayLabel: "" }];
 }
 
 /**

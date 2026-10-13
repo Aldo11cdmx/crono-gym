@@ -829,9 +829,13 @@ export function ActiveWorkout({
 
       {browsing && (
         <ExerciseBrowser
-          onSelect={(ex) => {
-            if (browsingFor) replaceExercise(browsingFor, ex);
-            else addExercise(ex);
+          onAdd={(exercises) => {
+            if (browsingFor) {
+              const toReplace = exercises.find((e) => e.id === browsingFor) ?? exercises[0];
+              if (toReplace) replaceExercise(browsingFor, toReplace);
+            } else {
+              exercises.forEach((ex) => addExercise(ex));
+            }
             setBrowsing(false);
             setBrowsingFor(null);
           }}

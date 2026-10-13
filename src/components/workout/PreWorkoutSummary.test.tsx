@@ -48,7 +48,7 @@ function plan(target: string, target_sets: number, body_part = "cardio"): Planne
     gif_url: "",
     instructions: [],
   };
-  return { exercise, target_sets, rest_seconds: 120 };
+  return { exercise, target_sets, rest_seconds: 120, dayIndex: null, dayLabel: "" };
 }
 
 function renderSummary(over: Partial<Parameters<typeof PreWorkoutSummary>[0]> = {}) {

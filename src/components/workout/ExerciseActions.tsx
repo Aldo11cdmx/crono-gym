@@ -1,25 +1,10 @@
 /**
- * ExerciseActions.tsx ‚Äî the five things you can do to the exercise in front of you.
+ * ExerciseActions.tsx ó the five things you can do to the exercise in front of you.
  *
  * A pill row, and every chip is the same size and weight. That is deliberate: these are
  * not a primary action plus some secondary ones, they are one verb each at the same
  * level, so any of them being visually louder would claim an importance the product has
  * not decided on.
- *
- * The red is not spent here
- * -------------------------
- * The accent means "the action this screen is offering", and on this screen that is
- * completing a set. So every chip is glass with a hairline. A row of red pills would say
- * the screen offers five equally primary things, which is the same failure as a form
- * with five primary buttons: the athlete cannot tell which one the screen wants, so they
- * have to read all five.
- *
- * Which of these do anything yet
- * ------------------------------
- * Four were already implemented in this screen and are wired to it: `Nota` opens the
- * session journal, `Cambiar` swaps the exercise through the browser, `Ajustar` opens the
- * gym settings, and `Avance` moves to the next exercise. Only `Demo` is a stub, because
- * a demo needs an exercise video and there is not one to play yet.
  *
  * They were deliberately *not* all left as inert chips that log to the console. A pill
  * that does nothing is a promise the screen breaks on tap, and this is the screen where
@@ -28,7 +13,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { Film, Gauge, NotebookPen, Repeat2, SlidersHorizontal } from "lucide-react";
+import { Activity, Cog, Film, Gauge, NotebookPen, Repeat2, SlidersHorizontal } from "lucide-react";
 import { GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 
 /**
@@ -43,12 +28,13 @@ export const EXERCISE_ACTIONS = [
   { id: "nota", label: "Nota", Icon: NotebookPen },
   { id: "cambiar", label: "Cambiar", Icon: Repeat2 },
   { id: "ajustar", label: "Ajustar", Icon: SlidersHorizontal },
+  { id: "maquina", label: "M·quina / Equipo", Icon: Activity },
+  { id: "maneral", label: "Maneral / Accesorio", Icon: Cog },
 ] as const;
-
 export type ExerciseActionId = (typeof EXERCISE_ACTIONS)[number]["id"];
 
 /** Said by a chip that has no handler yet, so its tap is not a mystery. */
-export const ACTION_PENDING_TEXT = "Todav√≠a no disponible";
+export const ACTION_PENDING_TEXT = "TodavÌa no disponible";
 
 export interface ExerciseActionsProps {
   /**
@@ -114,8 +100,8 @@ export function ExerciseActions({
               // Loud on purpose. If this line is ever reached in a shipped build it should
               // be findable rather than silently swallowed.
               console.warn(
-                `[cronos] ExerciseActions: "${id}" todav√≠a no est√° conectado. ` +
-                  "Se conectar√° con el Hub.",
+                `[cronos] ExerciseActions: "${id}" todavÌa no est· conectado. ` +
+                  "Se conectar· con el Hub.",
               );
             }}
             style={{
@@ -138,7 +124,7 @@ export function ExerciseActions({
             <Icon size={15} aria-hidden="true" />
             {text}
             {!handler && (
-              // Visually hidden rather than a visible "pr√≥ximamente" badge: five badges
+              // Visually hidden rather than a visible "prÛximamente" badge: five badges
               // across the row would bury the four chips that do work.
               <span id={pendingId} style={visuallyHidden}>
                 {ACTION_PENDING_TEXT}

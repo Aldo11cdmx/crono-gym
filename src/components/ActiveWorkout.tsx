@@ -62,7 +62,12 @@ import {
 } from "@/design/tokens";
 import type { Exercise } from "@/types/supabase";
 import type { PlannedExercise } from "../hooks/useGymData";
+import { EquipmentModal } from "@/components/EquipmentModal";
+import { GripPopover } from "@/components/GripPopover";
+import { getEquipmentIdByName } from "@/lib/equipmentHelpers";
+import { getGripForExercise } from "@/data/gripMap";
 
+import type { Grip } from "@/data/gripMap";
 const DEFAULT_REST = 90;
 /** Debounce for persisting the draft, so typing in the journal is not chatty. */
 const PERSIST_DEBOUNCE_MS = 400;
@@ -120,6 +125,10 @@ export function ActiveWorkout({
   const [started, setStarted] = useState(false);
   const [gearOpen, setGearOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+   const [equipmentModalOpen, setEquipmentModalOpen] = useState(false);
+   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
+   const [gripPopoverOpen, setGripPopoverOpen] = useState(false);
+   const [selectedGrip, setSelectedGrip] = useState<Grip | null>(null);
   const [recovered, setRecovered] = useState<SessionDraft | null>(null);
   // The single recoverable deletion, or null. See `removeSet`.
   const [pendingRemoval, setPendingRemoval] = useState<{
@@ -577,7 +586,7 @@ export function ActiveWorkout({
     avance: advance,
     nota: () => {
       journalRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setNotice("Tus notas de la sesiÃ³n estÃ¡n aquÃ­ abajo.");
+      setNotice("Tus notas de la sesión están aquí abajo.");
     },
     cambiar: () => {
       if (!selected) return;
@@ -585,6 +594,25 @@ export function ActiveWorkout({
       setBrowsing(true);
     },
     ajustar: () => setGearOpen(true),
+    maquina: () => {
+      const equipName = selected?.exercise.equipment ?? "";
+      const equipId = getEquipmentIdByName(equipName);
+      if (equipId) {
+        setSelectedEquipmentId(equipId);
+        setEquipmentModalOpen(true);
+      } else {
+        setNotice("Este ejercicio no tiene equipo asignado.");
+      }
+    },
+    maneral: () => {
+      const grip = getGripForExercise(selected?.exercise.id ?? "");
+      if (grip) {
+        setSelectedGrip(grip);
+        setGripPopoverOpen(true);
+      } else {
+        setNotice("No se tiene información de agarre para este ejercicio.");
+      }
+    },
   };
 
   return (
@@ -852,6 +880,8 @@ export function ActiveWorkout({
       {rest && (
         <RestTimer key={rest.id} seconds={rest.seconds} onClose={closeRest} onFinished={closeRest} />
       )}
+      {equipmentModalOpen && <EquipmentModal equipmentId={selectedEquipmentId} onClose={() => setEquipmentModalOpen(false)} />}
+      {gripPopoverOpen && <GripPopover grip={selectedGrip} anchorEl={document.activeElement} onClose={() => setGripPopoverOpen(false)} />}
     </div>
   );
 }
@@ -1091,3 +1121,5 @@ function toNumber(value: string): number | null {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
+
+

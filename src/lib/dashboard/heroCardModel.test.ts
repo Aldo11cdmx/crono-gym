@@ -5,10 +5,6 @@
 import { describe, it, expect } from "vitest";
 import {
   getGreeting,
-  getElapsedMs,
-  formatElapsed,
-  getSessionProgress,
-  buildHeroChips,
   getDailyFocus,
   getWeekdayIndex,
   WEEKDAY_NAME_ES,
@@ -53,94 +49,6 @@ describe("getGreeting", () => {
     const now = Date.parse("2026-10-05T08:00:00");
     expect(getGreeting(now, "")).toBe("Buenos días");
     expect(getGreeting(now, "   ")).toBe("Buenos días");
-  });
-});
-
-describe("getElapsedMs", () => {
-  it("returns null for missing timestamp", () => {
-    expect(getElapsedMs(null, Date.now())).toBeNull();
-    expect(getElapsedMs(undefined, Date.now())).toBeNull();
-  });
-
-  it("returns null for invalid timestamp", () => {
-    expect(getElapsedMs("not-a-date", Date.now())).toBeNull();
-  });
-
-  it("returns milliseconds since start", () => {
-    const start = "2026-10-05T10:00:00.000Z";
-    const now = Date.parse("2026-10-05T10:00:05.000Z");
-    expect(getElapsedMs(start, now)).toBe(5000);
-  });
-
-  it("never returns negative", () => {
-    const start = "2026-10-05T10:00:00.000Z";
-    const now = Date.parse("2026-10-05T09:59:59.000Z"); // before start
-    expect(getElapsedMs(start, now)).toBe(0);
-  });
-});
-
-describe("formatElapsed", () => {
-  it("formats mm:ss", () => {
-    expect(formatElapsed(65000)).toBe("1:05");
-  });
-
-  it("formats h:mm:ss for long durations", () => {
-    expect(formatElapsed(3_721_000)).toBe("1:02:01");
-  });
-
-  it("returns 0:00 for null or zero", () => {
-    expect(formatElapsed(null)).toBe("0:00");
-    expect(formatElapsed(0)).toBe("0:00");
-  });
-
-  it("returns 0:00 for negative", () => {
-    expect(formatElapsed(-1000)).toBe("0:00");
-  });
-});
-
-describe("getSessionProgress", () => {
-  it("returns null when planned is unknown", () => {
-    expect(getSessionProgress(3, null)).toBeNull();
-    expect(getSessionProgress(3, undefined)).toBeNull();
-  });
-
-  it("returns null when planned is zero", () => {
-    expect(getSessionProgress(3, 0)).toBeNull();
-  });
-
-  it("returns ratio clamped to [0, 1]", () => {
-    expect(getSessionProgress(1, 4)).toBe(0.25);
-    expect(getSessionProgress(4, 4)).toBe(1);
-    expect(getSessionProgress(5, 4)).toBe(1);
-  });
-});
-
-describe("buildHeroChips", () => {
-  it("builds exercise count chip with pluralization", () => {
-    const chips = buildHeroChips({ exerciseCount: 1, minutes: null });
-    expect(chips).toEqual([{ label: "1 ejercicio" }]);
-  });
-
-  it("builds exercise count chip plural", () => {
-    const chips = buildHeroChips({ exerciseCount: 5, minutes: null });
-    expect(chips).toEqual([{ label: "5 ejercicios" }]);
-  });
-
-  it("builds minutes chip", () => {
-    const chips = buildHeroChips({ exerciseCount: null, minutes: 30 });
-    expect(chips).toEqual([{ label: "30 min" }]);
-  });
-
-  it("builds both chips", () => {
-    const chips = buildHeroChips({ exerciseCount: 3, minutes: 20 });
-    expect(chips).toEqual([
-      { label: "3 ejercicios" },
-      { label: "20 min" },
-    ]);
-  });
-
-  it("returns empty array for null values", () => {
-    expect(buildHeroChips({ exerciseCount: null, minutes: null })).toEqual([]);
   });
 });
 

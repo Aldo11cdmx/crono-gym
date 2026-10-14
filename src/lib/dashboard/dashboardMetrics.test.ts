@@ -10,6 +10,7 @@ import {
   getWeeklyProgress,
   getWeeklyPlan,
   getNextSuggestedRoutine,
+  getCompletedSessionSummary,
   getMuscleBalance,
   estimateOneRepMax,
   EXERCISE_METRICS,
@@ -639,5 +640,90 @@ describe("getWeeklyPlan", () => {
     ]);
     expect(plan[0].dayLabel).toBeNull();
     expect(plan[1].dayLabel).toBeNull();
+  });
+});
+
+describe("getCompletedSessionSummary", () => {
+  it("summarizes the most recent session completed today", () => {
+    const now = new Date("2026-10-05T12:00:00").getTime();
+    const sessions = [
+      makeSession({
+        id: "s-old",
+        startedAt: "2026-10-03T10:00:00",
+        completedAt: "2026-10-03T10:45:00",
+        routineId: "r-1",
+        routineTitle: "Full Body",
+        sets: [{ exerciseId: "e-1", isWarmup: false }],
+      }),
+      makeSession({
+        id: "s-today",
+        startedAt: "2026-10-05T10:00:00",
+        completedAt: "2026-10-05T10:45:00",
+        routineId: "r-1",
+        routineTitle: "Full Body",
+        sets: [
+          { exerciseId: "e-1", isWarmup: false },
+          { exerciseId: "e-1", isWarmup: false },
+          { exerciseId: "e-2", isWarmup: false },
+          { exerciseId: "e-1", isWarmup: true },
+        ],
+      }),
+    ];
+
+    const summary = getCompletedSessionSummary(sessions, now);
+    expect(summary).toEqual({
+      title: "Full Body",
+      durationMin: 45,
+      exerciseCount: 2,
+      setCount: 3,
+    });
+  });
+
+  it("returns null when no session was completed today", () => {
+    const now = new Date("2026-10-05T12:00:00").getTime();
+    const sessions = [
+      makeSession({
+        startedAt: "2026-10-03T10:00:00",
+        completedAt: "2026-10-03T10:45:00",
+      }),
+    ];
+    expect(getCompletedSessionSummary(sessions, now)).toBeNull();
+  });
+
+  it("ignores a session still in progress", () => {
+    const now = new Date("2026-10-05T12:00:00").getTime();
+    const sessions = [
+      makeSession({
+        startedAt: "2026-10-05T10:00:00",
+        completedAt: null,
+      }),
+    ];
+    expect(getCompletedSessionSummary(sessions, now)).toBeNull();
+  });
+
+  it("falls back to Sesión libre and counts only working sets", () => {
+    const now = new Date("2026-10-05T12:00:00").getTime();
+    const sessions = [
+      makeSession({
+        routineId: null,
+        routineTitle: null,
+        startedAt: "2026-10-05T09:00:00",
+        completedAt: "2026-10-05T09:05:30",
+        sets: [
+          { exerciseId: "e-1", isWarmup: true },
+          { exerciseId: "e-1", isWarmup: false },
+        ],
+      }),
+    ];
+    expect(getCompletedSessionSummary(sessions, now)).toEqual({
+      title: "Sesión libre",
+      durationMin: 6,
+      exerciseCount: 1,
+      setCount: 1,
+    });
+  });
+
+  it("returns null for an empty history", () => {
+    expect(getCompletedSessionSummary([], Date.now())).toBeNull();
   });
 });

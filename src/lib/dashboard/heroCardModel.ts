@@ -1,5 +1,5 @@
 /**
- * heroCardModel.ts — pure helpers for the HeroWorkoutCard.
+ * heroCardModel.ts — pure helpers for the dashboard hero.
  *
  * No Date.now() inside: every function that needs a timestamp receives `now`
  * as an explicit argument, so time is testable and deterministic.
@@ -188,87 +188,4 @@ export function getGreeting(now: number, name: string | null | undefined): strin
     : firstName;
 
   return `${part}, ${displayName}`;
-}
-
-/**
- * Elapsed milliseconds since `startedAt`.
- *
- * `startedAt` is an ISO 8601 timestamp string. Returns `null` when the value
- * is missing or unparseable, so callers can skip rendering rather than
- * printing "NaN". Never negative: if the clock jumped backward we floor to 0.
- *
- * Limitation: does not account for pauses / session resumption. That state
- * lives in ActiveWorkout, which is out of scope for this model.
- */
-export function getElapsedMs(
-  startedAt: string | null | undefined,
-  now: number,
-): number | null {
-  if (!startedAt) return null;
-  const start = Date.parse(startedAt);
-  if (Number.isNaN(start)) return null;
-  return Math.max(0, Math.floor(now - start));
-}
-
-/**
- * Formats elapsed milliseconds as m:ss or h:mm:ss. Never returns NaN.
- * Returns "0:00" for zero or negative input.
- */
-export function formatElapsed(ms: number | null): string {
-  if (ms === null || ms <= 0) return "0:00";
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  }
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
-
-/**
- * Completion ratio 0..1. Returns `null` when planned is unknown or <= 0,
- * which lets the caller omit the progress bar entirely. Never NaN, never > 1.
- */
-export function getSessionProgress(
-  done: number | null | undefined,
-  planned: number | null | undefined,
-): number | null {
-  if (done == null || planned == null || planned <= 0) return null;
-  return Math.min(1, Math.max(0, done / planned));
-}
-
-/**
- * Builds display chips for the hero card.
- *
- * Each entry is `{ label }` and is included only when its data is valid.
- * Pluralization is handled for exercises: "1 ejercicio" / "N ejercicios".
- *
- * Muscles are intentionally omitted until a helper exists to derive them
- * from a routine; `muscles` is accepted for future use but not rendered.
- */
-export function buildHeroChips({
-  exerciseCount,
-  minutes,
-  muscles: _muscles,
-}: {
-  exerciseCount: number | null;
-  minutes: number | null;
-  muscles?: string[];
-}): { label: string }[] {
-  const chips: { label: string }[] = [];
-
-  if (exerciseCount != null && exerciseCount > 0) {
-    chips.push({
-      label: `${exerciseCount} ${exerciseCount === 1 ? "ejercicio" : "ejercicios"}`,
-    });
-  }
-
-  if (minutes != null && minutes > 0) {
-    chips.push({ label: `${minutes} min` });
-  }
-
-  // Muscles omitted — no helper to resolve slugs to labels here.
-  return chips;
 }

@@ -33,7 +33,7 @@ export function stripIdSuffix(id: string): string {
  * Cleans an array of ids for use in a Supabase `.in()` call.
  *
  * 1. Strips any `:N` suffix from each id.
- * 2. Drops ids that are empty after stripping or are not strings.
+ * 2. Trims whitespace and drops ids that are empty after stripping or are not strings.
  * 3. De-duplicates (PostgREST sends redundant values in the URL and Postgres
  *    still scans them, so there is nothing to gain and something to lose from
  *    duplicates).
@@ -45,7 +45,8 @@ export function sanitizeIds(ids: readonly string[]): string[] {
   const out: string[] = [];
   for (const raw of ids) {
     if (typeof raw !== "string") continue;
-    const clean = stripIdSuffix(raw);
+    let clean = stripIdSuffix(raw);
+    clean = clean.trim();
     if (clean.length === 0) continue;
     if (seen.has(clean)) continue;
     seen.add(clean);

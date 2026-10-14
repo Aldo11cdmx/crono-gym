@@ -86,11 +86,6 @@ export function formatOneRepMax(kg: number, unitSystem: UnitSystem): string {
   return formatWeight(kg, unitSystem);
 }
 
-/** Format a number with thousands separators, e.g. `12500` → `"12,500"`. */
-export function formatNumber(value: number): string {
-  return new Intl.NumberFormat("en-US").format(value);
-}
-
 /**
  * Format a duration in seconds to `mm:ss` or `h:mm:ss` for longer sets.
  */

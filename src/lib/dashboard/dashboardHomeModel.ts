@@ -26,12 +26,14 @@ import {
   getVolumeTrend,
   getRecentPRs,
   getNextSuggestedRoutine,
+  getCompletedSessionSummary,
   type WeeklyPlanDay,
   type WeeklyProgress,
   type StreakStats,
   type VolumeTrendResult,
   type RecentPR,
   type SuggestedRoutine,
+  type CompletedSessionSummary,
   type RoutineSummary as MetricsRoutineSummary,
 } from "@/lib/dashboard/dashboardMetrics";
 
@@ -78,6 +80,8 @@ export interface DashboardHomeData {
   activeSession: ActiveSession | null;
   /** True when a workout is currently in progress. */
   isSessionActive: boolean;
+  /** Summary of today's most recent completed session, or null. */
+  completedToday: CompletedSessionSummary | null;
   /** Start a new workout session with an optional routine. */
   startSession: (routine: { id: string; title: string } | null) => void;
   /** End the current workout session (idempotent). */
@@ -221,6 +225,12 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     [planSummary, sessions, now],
   );
 
+  // ---- Today's completed session (hero "completed" state) ----
+  const completedToday = useMemo(
+    () => getCompletedSessionSummary(sessions, now),
+    [sessions, now],
+  );
+
   // ---- Muscle counts for the suggested routine ----
   const muscleCounts = useMemo(() => {
     if (!suggestedRoutine) return null;
@@ -284,6 +294,7 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     muscleCounts,
     activeSession: activeSessionValue.session,
     isSessionActive: activeSessionValue.isActive,
+    completedToday,
     startSession: activeSessionValue.start,
     endSession: activeSessionValue.end,
     weeklyPlan,

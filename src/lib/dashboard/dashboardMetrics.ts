@@ -224,6 +224,72 @@ export function getWeeklyPlan(
   return days;
 }
 
+/**
+ * Summary of the athlete's most recent completed session today.
+ *
+ * Powers the hero's "session completed" state: the title of the routine
+ * (or "Sesión libre" for a free session), the wall-clock duration, the
+ * number of distinct exercises trained and the number of working sets.
+ *
+ * Returns null when no session was completed today — the hero then falls
+ * back to its scheduled/idle state. A session still in progress
+ * (`completedAt === null`) never counts: the hero must not claim a
+ * session is finished before it has been persisted as finished.
+ *
+ * `now` is required as a parameter for testability.
+ */
+export interface CompletedSessionSummary {
+  /** Routine title, or "Sesión libre" when the session had no routine. */
+  title: string;
+  /** Wall-clock duration in whole minutes, minimum 1. */
+  durationMin: number;
+  /** Distinct exercises with at least one working set. */
+  exerciseCount: number;
+  /** Working (non-warm-up) sets completed. */
+  setCount: number;
+}
+
+export function getCompletedSessionSummary(
+  sessions: readonly DashboardSession[],
+  now: number,
+): CompletedSessionSummary | null {
+  const todayKey = localDateKey(new Date(now));
+  let latest: DashboardSession | null = null;
+  for (const session of sessions) {
+    if (!session.completedAt) continue;
+    if (localDateKey(new Date(session.startedAt)) !== todayKey) continue;
+    if (
+      !latest ||
+      Date.parse(session.startedAt) > Date.parse(latest.startedAt)
+    ) {
+      latest = session;
+    }
+  }
+  if (!latest || !latest.completedAt) return null;
+
+  const durationMin = Math.max(
+    1,
+    Math.round(
+      (Date.parse(latest.completedAt) - Date.parse(latest.startedAt)) / 60000,
+    ),
+  );
+
+  const exercises = new Set<string>();
+  let setCount = 0;
+  for (const set of latest.sets) {
+    if (set.isWarmup) continue;
+    exercises.add(set.exerciseId);
+    setCount += 1;
+  }
+
+  return {
+    title: latest.routineTitle ?? "Sesión libre",
+    durationMin,
+    exerciseCount: exercises.size,
+    setCount,
+  };
+}
+
 // ------------------------------------------------------------------ helpers
 
 /**

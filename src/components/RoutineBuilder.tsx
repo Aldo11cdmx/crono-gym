@@ -65,18 +65,23 @@ export function RoutineBuilder({
     setDraft((prev) => ({ ...prev, ...changes }));
   }
 
-  function addExercise(exercise: Exercise) {
-    setDraft((prev) =>
-      prev.items.some((i) => i.exercise.id === exercise.id)
-        ? prev
-        : {
-            ...prev,
-            items: [
-              ...prev.items,
-              { exercise, target_sets: 3, rest_seconds: DEFAULT_REST },
-            ],
-          },
-    );
+  function addExercises(exercises: Exercise[]) {
+    setDraft((prev) => {
+      const existing = new Set(prev.items.map((i) => i.exercise.id));
+      const fresh = exercises.filter((e) => !existing.has(e.id));
+      if (fresh.length === 0) return prev;
+      return {
+        ...prev,
+        items: [
+          ...prev.items,
+          ...fresh.map((exercise) => ({
+            exercise,
+            target_sets: 3,
+            rest_seconds: DEFAULT_REST,
+          })),
+        ],
+      };
+    });
   }
 
   function updateItem(index: number, changes: Partial<PlanItem>) {
@@ -243,8 +248,8 @@ export function RoutineBuilder({
 
       {browsing && (
         <ExerciseBrowser
-          onSelect={(ex) => {
-            addExercise(ex);
+          onAdd={(selected) => {
+            addExercises(selected);
             setBrowsing(false);
           }}
           onClose={() => setBrowsing(false)}

@@ -69,6 +69,17 @@ export interface MuscleReadonlyMapProps {
   className?: string;
   /** Names the figure for a screen reader. */
   label: string;
+  /**
+   * Invitation rendered in place of the distribution caption when no muscle
+   * has sets -- the full-body graphite state.
+   *
+   * Optional because the two other call sites (the pre-workout summary and the
+   * exercise hub demo) always have a routine in hand; only the dashboard hero
+   * renders the figure before a routine exists. A caption rather than a control:
+   * the hero already owns the "start" action, and a second button here would
+   * repeat it.
+   */
+  idleHint?: string;
 }
 
 export function MuscleReadonlyMap({
@@ -77,6 +88,7 @@ export function MuscleReadonlyMap({
   aspectRatio = 2 / 3,
   className = "",
   label,
+  idleHint,
 }: MuscleReadonlyMapProps) {
   const scopeId = useId().replace(/[^a-zA-Z0-9]/g, "");
 
@@ -206,7 +218,12 @@ export function MuscleReadonlyMap({
         </div>
       </div>
 
-      {description && (
+      {/*
+       * The caption: the distribution sentence when muscles have sets, the
+       * invitation when none do. The two never share a render, because a
+       * hint under a lit figure would talk over it.
+       */}
+      {description ? (
         <p
           style={{
             margin: 0,
@@ -218,7 +235,19 @@ export function MuscleReadonlyMap({
         >
           {description}
         </p>
-      )}
+      ) : idleHint ? (
+        <p
+          style={{
+            margin: 0,
+            fontSize: "12px",
+            lineHeight: "16px",
+            color: "inherit",
+            textAlign: "center",
+          }}
+        >
+          {idleHint}
+        </p>
+      ) : null}
     </div>
   );
 }

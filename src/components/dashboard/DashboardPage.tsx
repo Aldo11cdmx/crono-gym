@@ -22,20 +22,34 @@ import {
   Trophy,
   RefreshCw,
   AlertTriangle,
+  History,
+  Plus,
+  CheckCircle2,
 } from "lucide-react";
 import type { Slug } from "react-muscle-highlighter";
 
 import { useDashboardHome } from "@/lib/dashboard/dashboardHomeModel";
 import { WEEKDAY_SHORT_ES } from "@/lib/dashboard/heroCardModel";
+import type {
+  CompletedSessionSummary,
+  VolumeTrendResult,
+} from "@/lib/dashboard/dashboardMetrics";
 import {
   formatOneRepMax,
   formatDateRelative,
   formatWeight,
+  formatDelta,
 } from "@/lib/dashboard/formatters";
-import { TRAIN_PATH } from "@/components/shell/navItems";
+import { PROGRESS_PATH, ROUTINES_PATH, TRAIN_PATH } from "@/components/shell/navItems";
 import { MuscleReadonlyMap } from "@/components/MuscleReadonlyMap";
+import { VolumeSparkline } from "@/components/ui/VolumeSparkline";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useElapsedMs, formatElapsed } from "@/hooks/useElapsedMs";
+import {
+  useActiveSetProgress,
+  type ActiveSetProgress,
+} from "@/hooks/useActiveSetProgress";
 
 import {
   ACCENT,
@@ -43,6 +57,7 @@ import {
   GRADIENTS,
   DIAGRAM,
   STATUS,
+  SOLID,
   SURFACE_ROLE,
   TEXT,
   TYPE,
@@ -56,6 +71,17 @@ import type { CSSProperties, ReactNode } from "react";
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
+
+/**
+ * A stable empty muscle distribution, so the hero's anatomy renders the
+ * full-body graphite state without giving the diagram's memo a new map
+ * reference on every render.
+ */
+const EMPTY_MUSCLE_COUNTS = new Map<Slug, number>();
+
+/** Invitation shown under the anatomy when no routine is selected. */
+const ANATOMY_IDLE_HINT =
+  "Elige una rutina para ver los músculos que trabajará";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -215,7 +241,11 @@ function TrainingCockpit({
   dayLabel,
   isRestDay,
   muscleCounts,
+  completedSession,
+  activeStartedAt,
+  setProgress,
   onPrimary,
+  onCreateRoutine,
   sessionState,
 }: {
   loading: boolean;
@@ -230,31 +260,68 @@ function TrainingCockpit({
   dayLabel: string | null;
   isRestDay: boolean;
   muscleCounts: Map<Slug, number> | null;
+  completedSession: CompletedSessionSummary | null;
+  /** ISO start of the running session, or null. Feeds the elapsed clock. */
+  activeStartedAt: string | null;
+  /** Completed/planned sets of the running session, from its persisted draft. */
+  setProgress: ActiveSetProgress;
   onPrimary: () => void;
-  sessionState: "idle" | "scheduled" | "in-progress";
+  /** Secondary action in the no-routine state: go build a routine. */
+  onCreateRoutine: () => void;
+  sessionState: "idle" | "scheduled" | "in-progress" | "completed";
 }) {
+  const reduced = useReducedMotion();
+  // The one clock in the app. A null start — no session, or a session that
+  // has already ended — reads as zero and runs no interval, so a finished
+  // session never keeps ticking here.
+  const elapsedMs = useElapsedMs(activeStartedAt);
   const badgeText =
     sessionState === "in-progress"
       ? "EN CURSO"
-      : sessionState === "scheduled"
-        ? "SESIÓN PROGRAMADA"
-        : "PREPARADO";
+      : sessionState === "completed"
+        ? "COMPLETADA"
+        : sessionState === "scheduled"
+          ? "SESIÓN PROGRAMADA"
+          : "PREPARADO";
 
   const badgeColor =
     sessionState === "in-progress"
       ? ACCENT.text
-      : sessionState === "scheduled"
-        ? STATUS.progression.text
-        : TEXT.tertiary;
+      : sessionState === "completed"
+        ? STATUS.success.text
+        : sessionState === "scheduled"
+          ? STATUS.progression.text
+          : TEXT.tertiary;
 
-  const title = routineTitle ?? "Sesión libre";
+  const title =
+    sessionState === "completed" && completedSession
+      ? completedSession.title
+      : (routineTitle ?? "Sesión libre");
+
+  const cta =
+    sessionState === "completed"
+      ? { label: "Ver historial", icon: <History size={16} /> }
+      : sessionState === "in-progress"
+        ? { label: "Continuar entrenamiento", icon: <Play size={16} /> }
+        : { label: "Comenzar entrenamiento", icon: <Play size={16} /> };
+
+  /**
+   * The hero's anatomy renders in every state: the muscle distribution
+   * when a routine is planned, the full-body graphite figure with its
+   * invitation when none is. A single column layout would leave the
+   * hero half-empty, so the figure keeps its place on the right.
+   */
+  const anatomyCounts =
+    muscleCounts && muscleCounts.size > 0
+      ? muscleCounts
+      : EMPTY_MUSCLE_COUNTS;
+  const anatomyIdleHint =
+    muscleCounts && muscleCounts.size > 0 ? undefined : ANATOMY_IDLE_HINT;
 
   return (
     <GlassSurface
       raised
-      className={muscleCounts && muscleCounts.size > 0
-        ? "grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-6 md:gap-[32px]"
-        : "grid grid-cols-1 items-center gap-6"}
+      className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-6 md:gap-[32px]"
       style={{
         minHeight: "280px",
         padding: SPACE.card,
@@ -337,6 +404,48 @@ function TrainingCockpit({
           </span>
         </div>
 
+        {/*
+         * Elapsed time — the running session's vital sign. Rendered only
+         * while a session is actually in progress: the clock is derived
+         * from `startedAt` via the app's single clock, and a session that
+         * has ended (its context entry is gone) reads as zero and runs no
+         * interval, so a completed workout never keeps ticking here.
+         */}
+        {sessionState === "in-progress" && !loading && (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "baseline",
+              gap: SPACE.xs,
+              alignSelf: "flex-start",
+            }}
+          >
+            <span
+              aria-live="polite"
+              aria-label={`Tiempo transcurrido: ${formatElapsed(elapsedMs)}`}
+              style={{
+                fontFamily: TYPE.mono.font,
+                fontVariantNumeric: "tabular-nums",
+                fontSize: TYPE.headline.size,
+                fontWeight: TYPE.headline.weight,
+                color: TEXT.primary,
+              }}
+            >
+              {formatElapsed(elapsedMs)}
+            </span>
+            <span
+              style={{
+                fontSize: TYPE.caption.size,
+                color: TEXT.tertiary,
+                textTransform: "uppercase",
+                letterSpacing: TYPE.caption.tracking,
+              }}
+            >
+              transcurrido
+            </span>
+          </div>
+        )}
+
         {/* Greeting + Title */}
         <div
           style={{
@@ -365,7 +474,7 @@ function TrainingCockpit({
                 }}
               />
             </>
-          ) : routine ? (
+          ) : routine || completedSession ? (
             <>
               <p
                 style={{
@@ -386,17 +495,32 @@ function TrainingCockpit({
               >
                 {title}
               </h1>
-              {dayLabel && !isRestDay && (
+              {sessionState === "completed" && completedSession ? (
                 <p
                   style={{
                     fontSize: TYPE.body.size,
                     lineHeight: TYPE.body.lineHeight,
-                    color: TEXT.secondary,
+                    color: STATUS.success.text,
                     margin: 0,
                   }}
                 >
-                  {dayLabel}
+                  Sesión completada hoy · {completedSession.durationMin} min ·{" "}
+                  {completedSession.setCount} series de trabajo
                 </p>
+              ) : (
+                dayLabel &&
+                !isRestDay && (
+                  <p
+                    style={{
+                      fontSize: TYPE.body.size,
+                      lineHeight: TYPE.body.lineHeight,
+                      color: TEXT.secondary,
+                      margin: 0,
+                    }}
+                  >
+                    {dayLabel}
+                  </p>
+                )
               )}
             </>
           ) : (
@@ -455,20 +579,94 @@ function TrainingCockpit({
           </div>
         ) : (
           <div style={{ display: "flex", gap: SPACE.xs, flexWrap: "wrap" }}>
-            {routine && (
-              <InstrumentationChip
-                icon={<Dumbbell size={14} />}
-                value={`${routine.exerciseCount} ej`}
-              />
-            )}
-            {routine && routine.estimatedDurationMin > 0 && (
-              <InstrumentationChip
-                icon={<Clock size={14} />}
-                value={`${routine.estimatedDurationMin} min`}
-              />
+            {sessionState === "completed" && completedSession ? (
+              <>
+                <InstrumentationChip
+                  icon={<Dumbbell size={14} />}
+                  value={`${completedSession.exerciseCount} ej`}
+                />
+                <InstrumentationChip
+                  icon={<Clock size={14} />}
+                  value={`${completedSession.durationMin} min`}
+                />
+                <InstrumentationChip
+                  icon={<Trophy size={14} />}
+                  value={`${completedSession.setCount} series`}
+                />
+              </>
+            ) : (
+              <>
+                {routine && (
+                  <InstrumentationChip
+                    icon={<Dumbbell size={14} />}
+                    value={`${routine.exerciseCount} ej`}
+                  />
+                )}
+                {routine && routine.estimatedDurationMin > 0 && (
+                  <InstrumentationChip
+                    icon={<Clock size={14} />}
+                    value={`${routine.estimatedDurationMin} min`}
+                  />
+                )}
+                {/*
+                 * Sets completed vs planned, read from the session's own
+                 * persisted draft. Shown only while a session is running and
+                 * only when the plan has sets to count: a zero-set plan has
+                 * no progress to express, and an idle or completed session
+                 * has no running count to show.
+                 */}
+                {sessionState === "in-progress" &&
+                  setProgress.plannedSets > 0 && (
+                    <InstrumentationChip
+                      icon={<CheckCircle2 size={14} />}
+                      value={`${setProgress.doneSets}/${setProgress.plannedSets} series`}
+                    />
+                  )}
+              </>
             )}
           </div>
         )}
+
+        {/*
+         * Set progress bar — the same completed/planned pair as the chip,
+         * as a bar. Real data only: both numbers come from the draft the
+         * workout screen writes, so nothing here is invented to fill space.
+         */}
+        {sessionState === "in-progress" &&
+          !loading &&
+          setProgress.plannedSets > 0 && (
+            <div
+              role="progressbar"
+              aria-valuenow={setProgress.doneSets}
+              aria-valuemin={0}
+              aria-valuemax={setProgress.plannedSets}
+              aria-label={`Series completadas: ${setProgress.doneSets} de ${setProgress.plannedSets}`}
+              style={{
+                height: 4,
+                borderRadius: RADIUS.sm,
+                background: SOLID.card,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: `${
+                    Math.min(
+                      1,
+                      setProgress.plannedSets > 0
+                        ? setProgress.doneSets / setProgress.plannedSets
+                        : 0,
+                    ) * 100
+                  }%`,
+                  height: "100%",
+                  background: ACCENT.base,
+                  transition: reduced
+                    ? undefined
+                    : `width ${MOTION.fast} ${MOTION.standard}`,
+                }}
+              />
+            </div>
+          )}
 
         {/* Single CTA — full width on mobile for thumb-friendly tap */}
         <div style={{ marginTop: SPACE.sm }}>
@@ -482,42 +680,70 @@ function TrainingCockpit({
               }}
             />
           ) : (
-            <GlassButton
-              variant="primary"
-              block
-              icon={<Play size={16} />}
-              onClick={onPrimary}
-              style={{
-                minHeight: SPACE["3xl"],
-                boxShadow: ACCENT.ring,
-                fontSize: TYPE.subhead.size,
-                gap: SPACE.xs,
-              }}
-            >
-              Iniciar Sesión
-            </GlassButton>
+            <>
+              <GlassButton
+                variant="primary"
+                block
+                icon={cta.icon}
+                onClick={onPrimary}
+                style={{
+                  minHeight: SPACE["3xl"],
+                  boxShadow: ACCENT.ring,
+                  fontSize: TYPE.subhead.size,
+                  gap: SPACE.xs,
+                }}
+              >
+                {cta.label}
+              </GlassButton>
+              {/*
+               * Secondary action, only when there is no routine to start.
+               * The primary stays "Comenzar entrenamiento" (a free session);
+               * this is the path to building the plan itself. Hidden once a
+               * routine exists or a session is running or done, where a
+               * second action would only duplicate what the state offers.
+               */}
+              {routine === null &&
+                (sessionState === "idle" || sessionState === "scheduled") && (
+                  <GlassButton
+                    variant="secondary"
+                    block
+                    icon={<Plus size={16} />}
+                    onClick={onCreateRoutine}
+                    style={{ marginTop: SPACE.xs }}
+                  >
+                    Crear rutina
+                  </GlassButton>
+                )}
+            </>
           )}
         </div>
       </div>
 
-      {/* Right: anatomical visualization — only when muscle data exists */}
-      {muscleCounts && muscleCounts.size > 0 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ width: "120px", height: "192px" }}>
-            <MuscleReadonlyMap
-              counts={muscleCounts}
-              label="Torso anatómico"
-              aspectRatio={120 / 192}
-            />
-          </div>
+      {/*
+       * Right: anatomical visualization — always present.
+       *
+       * The brief's rule: the diagram never disappears for lack of
+       * information. Without a routine it renders the complete figure
+       * in graphite (every region at the inert fill) with the
+       * invitation as its caption. The start action itself lives in
+       * the hero's CTA, so the caption is text, not a second button.
+       */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ width: "120px", height: "192px" }}>
+          <MuscleReadonlyMap
+            counts={anatomyCounts}
+            idleHint={anatomyIdleHint}
+            label="Torso anatómico"
+            aspectRatio={120 / 192}
+          />
         </div>
-      )}
+      </div>
     </GlassSurface>
   );
 }
@@ -532,7 +758,7 @@ function ConsistencyRing({
   goal,
   currentDays,
   longestWeeks,
-  totalVolume,
+  volumeTrend,
   unitSystem,
 }: {
   loading: boolean;
@@ -540,10 +766,16 @@ function ConsistencyRing({
   goal: number;
   currentDays: number;
   longestWeeks: number;
-  totalVolume: number | null;
+  /** The trailing week's volume, day by day, plus its delta. */
+  volumeTrend: VolumeTrendResult | null;
   unitSystem: "metric" | "imperial";
 }) {
   const reduced = useReducedMotion();
+  // The aggregate the ring's card has always reported; the
+  // trend below it is the same numbers, day by day.
+  const totalVolume = volumeTrend
+    ? volumeTrend.points.reduce((sum, point) => sum + point.volumeKg, 0)
+    : null;
   const radius = 48;
   const strokeWidth = 6;
   const circumference = (2 * Math.PI * radius) / 2;
@@ -691,8 +923,15 @@ function ConsistencyRing({
                   Récord semanal
                 </div>
               </div>
-              {totalVolume !== null && totalVolume > 0 && (
-                <div>
+              {volumeTrend && totalVolume !== null && totalVolume > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: SPACE.xs,
+                  }}
+                >
                   <div
                     style={{
                       fontSize: TYPE.mono.size,
@@ -710,6 +949,36 @@ function ConsistencyRing({
                     }}
                   >
                     Volumen (7d)
+                  </div>
+                  {/*
+                   * The shape and the direction of that
+                   * volume: the sparkline is the trailing
+                   * week, day by day, and the delta is the
+                   * same week against the one before it.
+                   * Both are the real numbers — a week with
+                   * no volume hides the whole stat rather
+                   * than drawing a graph with nothing in it.
+                   * The delta keeps a neutral colour: a down
+                   * week is a deload or a rest, not an error,
+                   * and the sign already says which way it went.
+                   */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: SPACE.xs,
+                    }}
+                  >
+                    <VolumeSparkline points={volumeTrend.points} />
+                    <span
+                      style={{
+                        fontSize: TYPE.caption.size,
+                        color: TEXT.secondary,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {formatDelta(volumeTrend.deltaPct)}
+                    </span>
                   </div>
                 </div>
               )}
@@ -739,6 +1008,13 @@ function WeeklyRhythm({
   }[];
   progress: { completed: number; goal: number } | null;
 }) {
+  /**
+   * The strip keeps its seven day labels and its baseline even with no
+   * history -- a week that has not started is not an error state -- but
+   * it says so, so the empty strip reads as deliberate rather than broken.
+   */
+  const weekIsEmpty = progress !== null && progress.completed === 0;
+
   return (
     <GlassSurface raised>
       <div
@@ -861,6 +1137,37 @@ function WeeklyRhythm({
             })}
           </div>
         )}
+
+        {weekIsEmpty && !loading && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: SPACE.xs,
+            }}
+          >
+            <p
+              style={{
+                ...TYPE.subhead,
+                color: TEXT.secondary,
+                margin: 0,
+              }}
+            >
+              Tu semana comienza hoy
+            </p>
+            <p
+              style={{
+                fontSize: TYPE.caption.size,
+                lineHeight: TYPE.caption.lineHeight,
+                color: TEXT.tertiary,
+                margin: 0,
+              }}
+            >
+              Cuando registres tus entrenamientos, aquí podrás ver tu
+              constancia semanal.
+            </p>
+          </div>
+        )}
       </div>
     </GlassSurface>
   );
@@ -874,10 +1181,13 @@ function PersonalRecords({
   loading,
   prs,
   unit,
+  onStart,
 }: {
   loading: boolean;
   prs: readonly { exerciseName: string; estimated1RM: number; achievedAt: string }[];
   unit: "metric" | "imperial";
+  /** Navigation to the workout start, offered in the empty state. */
+  onStart?: () => void;
 }) {
   return (
     <GlassSurface raised>
@@ -923,14 +1233,43 @@ function PersonalRecords({
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: `${SPACE.xl}px 0`,
-              color: TEXT.tertiary,
-              fontSize: TYPE.body.size,
+              flexDirection: "column",
+              gap: SPACE.sm,
+              padding: `${SPACE.sm}px 0`,
             }}
           >
-            Sin récords registrados esta semana
+            <p
+              style={{
+                ...TYPE.subhead,
+                color: TEXT.primary,
+                margin: 0,
+              }}
+            >
+              Cada progreso tiene un comienzo
+            </p>
+            <p
+              style={{
+                fontSize: TYPE.body.size,
+                lineHeight: TYPE.body.lineHeight,
+                color: TEXT.secondary,
+                margin: 0,
+              }}
+            >
+              Registra una sesión para empezar a construir tu historial.
+              Tus mejores cargas y repeticiones aparecerán aquí al
+              completar entrenamientos.
+            </p>
+            {onStart && (
+              <div style={{ marginTop: SPACE.xs }}>
+                <GlassButton
+                  variant="ghost"
+                  icon={<Play size={16} />}
+                  onClick={onStart}
+                >
+                  Comenzar entrenamiento
+                </GlassButton>
+              </div>
+            )}
           </div>
         ) : (
           <div
@@ -1035,19 +1374,23 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
   const sessionState = data.isSessionActive
     ? "in-progress"
-    : data.dailyFocus.isRestDay
-      ? "scheduled"
-      : "idle";
+    : data.completedToday
+      ? "completed"
+      : data.dailyFocus.isRestDay
+        ? "scheduled"
+        : "idle";
 
   const muscleCounts = useMemo(() => {
     if (!data.suggestedRoutine) return null;
     return data.muscleCounts;
   }, [data.muscleCounts, data.suggestedRoutine]);
 
-  const totalVolume = useMemo(() => {
-    if (!data.volumeTrend) return null;
-    return data.volumeTrend.points.reduce((sum, p) => sum + p.volumeKg, 0);
-  }, [data.volumeTrend]);
+  // The running session's set progress, read from the draft the workout
+  // screen persists. Zeros unless a session is actually active, and it
+  // only ever counts sets from the draft whose startedAt matches the
+  // running session — a stale draft is another workout, not this one.
+  const setProgress = useActiveSetProgress(userId, data.activeSession);
+  const activeStartedAt = data.activeSession?.startedAt ?? null;
 
   const firstError = useMemo(() => {
     for (const value of Object.values(data.errors)) {
@@ -1056,7 +1399,13 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     return null;
   }, [data.errors]);
 
-  const handlePrimary = () => {
+  /**
+   * The start-training action, shared by the hero and the empty
+   * records card. Always starts (when a routine is suggested) and
+   * always lands on the workout screen -- unlike the hero's primary,
+   * which diverts to the history view once today's session is done.
+   */
+  const handleStartTraining = () => {
     if (!data.activeSession && data.suggestedRoutine) {
       data.startSession({
         id: data.suggestedRoutine.id,
@@ -1066,8 +1415,25 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     navigate(TRAIN_PATH);
   };
 
+  const handlePrimary = () => {
+    if (sessionState === "completed") {
+      navigate(PROGRESS_PATH);
+      return;
+    }
+    handleStartTraining();
+  };
+
   const handleRefresh = () => {
     void data.refreshAll();
+  };
+
+  /**
+   * The no-routine state's secondary action. `/rutinas` is the screen
+   * that owns routine creation (its "Nueva rutina" form lives there);
+   * there is no deeper route to aim at, so this is the real destination.
+   */
+  const handleCreateRoutine = () => {
+    navigate(ROUTINES_PATH);
   };
 
   return (
@@ -1134,7 +1500,11 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         dayLabel={data.dailyFocus.dayLabel}
         isRestDay={data.dailyFocus.isRestDay}
         muscleCounts={muscleCounts}
+        completedSession={data.completedToday}
+        activeStartedAt={activeStartedAt}
+        setProgress={setProgress}
         onPrimary={handlePrimary}
+        onCreateRoutine={handleCreateRoutine}
         sessionState={sessionState}
       />
 
@@ -1156,7 +1526,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             goal={data.weeklyProgress.goal}
             currentDays={data.streakStats?.currentDays ?? 0}
             longestWeeks={data.streakStats?.longestWeeks ?? 0}
-            totalVolume={totalVolume}
+            volumeTrend={data.volumeTrend}
             unitSystem={data.unitSystem}
           />
         </div>
@@ -1165,6 +1535,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             loading={data.loading}
             prs={data.recentPRs}
             unit={data.unitSystem}
+            onStart={handleStartTraining}
           />
         </div>
       </div>

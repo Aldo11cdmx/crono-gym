@@ -506,3 +506,60 @@ describe("layout", () => {
     expect(container.innerHTML).not.toBe(front);
   });
 });
+
+describe("the idle hint", () => {
+  it("replaces the caption when no muscle has sets", () => {
+    render(
+      <MuscleReadonlyMap
+        counts={EMPTY}
+        label="Distribución"
+        idleHint="Elige una rutina"
+      />,
+    );
+    // The invitation is the point of the graphite state: without it the
+    // figure reads as a loading placeholder that never resolves.
+    expect(screen.getByText("Elige una rutina")).toBeTruthy();
+  });
+
+  it("stays silent when the distribution has something to say", () => {
+    render(
+      <MuscleReadonlyMap
+        counts={counts(["chest", 4])}
+        label="Distribución"
+        idleHint="Elige una rutina"
+      />,
+    );
+    // A hint under a lit figure would talk over the distribution it
+    // replaces, so the two captions must never share a render.
+    expect(screen.queryByText("Elige una rutina")).toBeFalsy();
+  });
+
+  it("renders no caption at all without sets or a hint", () => {
+    const { container } = render(
+      <MuscleReadonlyMap counts={EMPTY} label="Distribución" />,
+    );
+    // The pre-workout summary and the exercise hub never pass a hint and
+    // always have a routine; this pins the default so it cannot start
+    // announcing an invitation they did not ask for.
+    expect(container.textContent).not.toContain("Elige una rutina");
+  });
+
+  it("keeps the full-body graphite figure when idle", () => {
+    render(
+      <MuscleReadonlyMap
+        counts={EMPTY}
+        label="Distribución"
+        idleHint="Elige una rutina"
+      />,
+    );
+    // Every region keeps the inert fill, exactly as the empty-session
+    // state: the invitation changes the caption, never the figure. The
+    // aggregate check is the same one the lighting tests use, because
+    // not every region the model knows is a path the library writes an
+    // id on.
+    const fills = [...allFills().values()];
+    expect(fills.length).toBeGreaterThan(0);
+    expect(new Set(fills).size).toBe(1);
+    expect(fills[0]).toBe(DIAGRAM.inert);
+  });
+});

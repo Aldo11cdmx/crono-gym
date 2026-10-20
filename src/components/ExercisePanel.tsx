@@ -6,10 +6,10 @@
  * between 5 seconds and a walk to another screen mid-set.
  */
 
-import { useState } from "react";
 import { BookOpen, Dumbbell, RefreshCcw, X } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
-import { resolveMediaUrl, mediaKey } from "@/lib/media/mediaResolver";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 
 interface ExercisePanelProps {
   exercise: Exercise;
@@ -26,7 +26,8 @@ export function ExercisePanel({
   onReplace,
   onClose,
 }: ExercisePanelProps) {
-  const [imgError, setImgError] = useState(false);
+  const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/60 shadow-glass">
@@ -48,13 +49,14 @@ export function ExercisePanel({
       </div>
 
       <div className="relative aspect-video w-full bg-neutral-950">
-        {!imgError && exercise.gif_url ? (
+        {!failed && media.url ? (
           <img
-            key={mediaKey("exercise-gif", exercise.id)}
-            src={resolveMediaUrl(exercise.gif_url)}
+            key={media.key}
+            src={src}
             alt={`Animación de ${exercise.name}`}
             className="h-full w-full object-contain"
-            onError={() => setImgError(true)}
+            onLoad={onLoad}
+            onError={onError}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-neutral-600">

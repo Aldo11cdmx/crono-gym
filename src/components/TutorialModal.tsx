@@ -7,7 +7,8 @@
 
 import { X } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
-import { resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 
 interface TutorialModalProps {
   exercise: Exercise;
@@ -16,6 +17,9 @@ interface TutorialModalProps {
 
 export function TutorialModal({ exercise, onClose }: TutorialModalProps) {
   const steps = exercise.instructions ?? [];
+  const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
+
 
   return (
     <div
@@ -47,11 +51,13 @@ export function TutorialModal({ exercise, onClose }: TutorialModalProps) {
         </div>
 
         <div className="mb-4 aspect-video w-full overflow-hidden rounded-xl bg-neutral-950">
-          {exercise.gif_url && (
+          {media.url && !failed && (
             <img
-              src={resolveMediaUrl(exercise.gif_url)}
+              src={src}
               alt={`Animación de ${exercise.name}`}
               className="h-full w-full object-contain"
+              onLoad={onLoad}
+              onError={onError}
             />
           )}
         </div>

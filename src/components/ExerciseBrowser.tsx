@@ -17,7 +17,8 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { loadExercises } from "@services/seedExercises";
 import type { Exercise } from "../types/supabase";
-import { resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import {
   Search,
   Dumbbell,
@@ -711,7 +712,8 @@ function BrowserExerciseCard({
   alreadyAdded,
   onOpenDetail,
 }: BrowserExerciseCardProps) {
-  const [imgError, setImgError] = useState(false);
+  const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
 
   return (
     <div
@@ -724,12 +726,13 @@ function BrowserExerciseCard({
     >
       {/* GIF thumbnail */}
       <div className="relative aspect-video">
-        {!imgError && exercise.gif_url ? (
+        {!failed && media.url ? (
           <img
-            src={resolveMediaUrl(exercise.gif_url)}
+            src={src}
             alt={`Animación de ${exercise.name}`}
             loading="lazy"
-            onError={() => setImgError(true)}
+            onLoad={onLoad}
+            onError={onError}
             className="h-full w-full object-contain"
           />
         ) : (

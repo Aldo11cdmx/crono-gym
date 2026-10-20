@@ -85,7 +85,8 @@ import { SupersetBadge } from "./workout/SupersetBadge";
 import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
-import { resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { resolveMedia, resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 
 const DEFAULT_REST = 90;
 const PERSIST_DEBOUNCE_MS = 400;
@@ -720,7 +721,9 @@ function ExerciseStage({
    onAdvance,
    onChangeExercise,
    onAdjustEquipment,
- }: ExerciseStageProps) {
+  }: ExerciseStageProps) {
+  const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
 
   return (
     <section
@@ -746,10 +749,12 @@ function ExerciseStage({
           position: "relative",
         }}
       >
-        {exercise.gif_url ? (
+        {media.url && !failed ? (
           <img
-            src={resolveMediaUrl(exercise.gif_url)}
+            src={src}
             alt={`Demo de ${exercise.name}`}
+            onLoad={onLoad}
+            onError={onError}
             style={{
               maxHeight: "100%",
               width: "auto",

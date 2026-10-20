@@ -30,8 +30,9 @@ export const DB_NAME = "cronos-offline";
  * v4: `exerciseNotes` (per-set notes, queued for sync alongside the set)
  * v5: `localState` (one row: role, feature flags, athlete context, consent)
  * v6: `catalog` (the exercise catalog, compressed, for offline use)
+ * v7: `media` (the exercise animations and photos, for offline use)
  */
-export const DB_VERSION = 6;
+export const DB_VERSION = 7;
 
 export const DRAFT_STORE = "drafts";
 export const QUEUE_STORE = "queue";
@@ -41,6 +42,7 @@ export const COACH_CHATS_STORE = "coachChats";
 export const EXERCISE_NOTES_STORE = "exerciseNotes";
 export const LOCAL_STATE_STORE = "localState";
 export const CATALOG_STORE = "catalog";
+export const MEDIA_STORE = "media";
 
 /**
  * Every store in the database, with the index each one needs.
@@ -103,6 +105,15 @@ export const STORES: readonly {
    * else, so existing drafts, notes and rank history are untouched.
    */
   { name: CATALOG_STORE, keyPath: "id" },
+  /*
+   * `media` holds the exercise animations and photos, as blobs.
+   *
+   * Keyed by the *media key* -- what the medium depicts -- so a change of
+   * URL does not invalidate it, and indexed by `url` so the service worker
+   * can find a medium from the request it is answering, and by `lastUsed`
+   * so the oldest can be evicted first when the quota is exceeded.
+   */
+  { name: MEDIA_STORE, keyPath: "id", indexes: ["url", "lastUsed"] },
 ];
 
 let dbPromise: Promise<IDBDatabase | null> | null = null;

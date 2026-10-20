@@ -32,6 +32,10 @@ export interface ResolvedMedia {
   key: string;
   /** Absolute URL to render. Empty when there is no medium. */
   url: string;
+  /** What kind of medium it is. Decides what the cache evicts first. */
+  kind: MediaKind;
+  /** What it depicts: the exercise, the machine. */
+  id: string;
 }
 
 const ABSOLUTE_URL = /^(?:[a-z][a-z0-9+.-]*:)?\/\//i;
@@ -51,9 +55,12 @@ export function isAbsoluteMediaUrl(path: string): boolean {
  * - `videos/…` and `images/…` are the dataset's own media, and become
  *   absolute GitHub raw URLs;
  * - anything else is treated as an asset of the app itself.
+ *
+ * A missing path is not an error: it is a medium that is not there, and the
+ * caller draws a placeholder.
  */
-export function resolveMediaUrl(path: string): string {
-  const trimmed = path.trim();
+export function resolveMediaUrl(path: string | null | undefined): string {
+  const trimmed = (path ?? "").trim();
   if (trimmed === "") return "";
   if (isAbsoluteMediaUrl(trimmed)) return trimmed;
   if (trimmed.startsWith("public/")) return `/${trimmed.slice("public/".length)}`;
@@ -70,6 +77,10 @@ export function mediaKey(kind: MediaKind, id: string): string {
 }
 
 /** Resolves a medium into the pair the UI needs: its identity and its URL. */
-export function resolveMedia(kind: MediaKind, id: string, path: string): ResolvedMedia {
-  return { key: mediaKey(kind, id), url: resolveMediaUrl(path) };
+export function resolveMedia(
+  kind: MediaKind,
+  id: string,
+  path: string | null | undefined,
+): ResolvedMedia {
+  return { key: mediaKey(kind, id), url: resolveMediaUrl(path), kind, id };
 }

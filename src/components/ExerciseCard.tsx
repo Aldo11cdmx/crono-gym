@@ -6,7 +6,6 @@
  * tapping the star toggles favorite status.
  */
 
-import { useState } from "react";
 import { Dumbbell, Star, Check } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
 import {
@@ -15,7 +14,8 @@ import {
   translateEquipment,
 } from "@/lib/i18n";
 import { ACCENT, GLASS, SOLID, SURFACE_ROLE, TEXT } from "@/design/tokens";
-import { resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 
 export interface ExerciseCardProps {
   exercise: Exercise;
@@ -40,7 +40,8 @@ export function ExerciseCard({
   onOpenDetail,
   view = "grid",
 }: ExerciseCardProps) {
-  const [imgError, setImgError] = useState(false);
+  const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
 
   return (
     <div
@@ -58,12 +59,13 @@ export function ExerciseCard({
           view === "list" ? "h-16 w-28 flex-shrink-0" : "aspect-video w-full"
         }`}
       >
-        {!imgError && exercise.gif_url ? (
+        {!failed && media.url ? (
           <img
-            src={resolveMediaUrl(exercise.gif_url)}
+            src={src}
             alt={`Animación de ${exercise.name}`}
             loading="lazy"
-            onError={() => setImgError(true)}
+            onLoad={onLoad}
+            onError={onError}
             className="h-full w-full object-contain"
           />
         ) : (

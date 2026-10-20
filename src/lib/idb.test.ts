@@ -23,6 +23,7 @@ import rankHistorySource from "./ranks/rankHistory.ts?raw";
 import {
   CATALOG_STORE,
   COACH_CHATS_STORE,
+  MEDIA_STORE,
   DRAFT_STORE,
   DB_NAME,
   DB_VERSION,
@@ -51,7 +52,7 @@ describe("the cronos-offline schema", () => {
     // installed clients about what their upgrade will find, so it has to be stated. A
     // derived number would bump itself every time a store is added and stop meaning
     // anything.
-    expect(DB_VERSION).toBe(6);
+    expect(DB_VERSION).toBe(7);
   });
 
   it("declares every store exactly once", () => {
@@ -84,6 +85,9 @@ describe("the cronos-offline schema", () => {
     // One row for the one catalog the app ships, replaced wholesale rather
     // than appended to.
     expect(storeByName(CATALOG_STORE)?.keyPath).toBe("id");
+    // Keyed by the media key -- what the medium depicts -- so a change of URL
+    // does not invalidate it.
+    expect(storeByName(MEDIA_STORE)?.keyPath).toBe("id");
   });
 
   it("indexes the notes store by exercise, so the hub's read is the local shape too", () => {
@@ -91,6 +95,13 @@ describe("the cronos-offline schema", () => {
     // the local store were not indexed the same way, a note written offline would be read
     // back by different code than one that synced.
     expect(storeByName(EXERCISE_NOTES_STORE)?.indexes).toContain("exercise_id");
+  });
+
+  it("indexes the media store by url and by age", () => {
+    // The service worker answers a request from the media store by URL, and the
+    // eviction policy needs the oldest entries without reading the whole store.
+    expect(storeByName(MEDIA_STORE)?.indexes).toContain("url");
+    expect(storeByName(MEDIA_STORE)?.indexes).toContain("lastUsed");
   });
 
   it("declares the indexes the queries actually use", () => {

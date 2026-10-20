@@ -5,10 +5,10 @@
  * from the bottom and supports swipe-to-dismiss via a drag handle.
  */
 
-import { useState } from "react";
 import { X, Dumbbell } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
-import { resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import {
   translateBodyPart,
   translateTarget,
@@ -34,7 +34,8 @@ export function ExerciseDetailSheet({
   isOpen,
   onClose,
 }: ExerciseDetailSheetProps) {
-  const [imgError, setImgError] = useState(false);
+  const media = resolveMedia("exercise-gif", exercise?.id ?? "", exercise?.gif_url ?? "");
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
   if (!exercise || !isOpen) return null;
 
   return (
@@ -79,12 +80,13 @@ export function ExerciseDetailSheet({
           className="relative mb-4 aspect-video w-full overflow-hidden rounded-xl"
           style={{ backgroundColor: SURFACE_ROLE.well }}
         >
-          {!imgError && exercise.gif_url ? (
+          {!failed && media.url ? (
             <img
-              src={resolveMediaUrl(exercise.gif_url)}
+              src={src}
               alt={`Animación de ${exercise.name}`}
               className="h-full w-full object-contain"
-              onError={() => setImgError(true)}
+              onLoad={onLoad}
+              onError={onError}
             />
           ) : (
             <div

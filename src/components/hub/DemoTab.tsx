@@ -38,7 +38,8 @@ import { BODY_PART_LABELS, EQUIPMENT_LABELS, HUB_DEMO_LABELS } from "@/lib/i18n"
 import { DIAGRAM, GLASS, MOTION, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import type { Slug } from "react-muscle-highlighter";
 import type { Exercise } from "@/types/supabase";
-import { resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 
 export interface DemoTabProps {
   exercise: Exercise;
@@ -99,21 +100,25 @@ export function DemoTab({
  */
 function Media({ exercise }: { exercise: Exercise }) {
   const gif = typeof exercise.gif_url === "string" ? exercise.gif_url.trim() : "";
+  const media = resolveMedia("exercise-gif", exercise.id, gif);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
 
   return (
     <div style={mediaFrame}>
-      {gif === "" ? (
+      {gif === "" || failed ? (
         <div style={placeholder}>
           <span>{`Sin demostración para ${exercise.name}`}</span>
         </div>
       ) : (
         <img
-          src={resolveMediaUrl(gif)}
+          src={src}
           alt={`Demostración de ${exercise.name}`}
           loading="eager"
           decoding="async"
           width={640}
           height={360}
+          onLoad={onLoad}
+          onError={onError}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
       )}

@@ -348,6 +348,77 @@ describe("the type of every set", () => {
   });
 });
 
+describe("the execution identities of the session", () => {
+  it("survive the trip through storage", async () => {
+    const instanceId = "11111111-1111-4111-8111-111111111111";
+    const setInstanceId = "22222222-2222-4222-8222-222222222222";
+
+    await saveDraft(
+      draft({
+        items: [
+          {
+            key: "squat",
+            exercise: { ...EXERCISE },
+            restSeconds: 90,
+            instanceId,
+            groupId: "superset-1",
+            sets: [
+              {
+                set_number: 1,
+                weight: "100",
+                reps: "5",
+                rpe: "8",
+                kind: "normal",
+                completed: false,
+                instanceId: setInstanceId,
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const loaded = await loadRecoverableDraft("user-1");
+
+    // The identities are what tell this run's set from the same set in
+    // another run, so a reload has to bring them back: a reloaded session is
+    // the same execution, not a new one.
+    expect(loaded?.items[0]?.instanceId).toBe(instanceId);
+    expect(loaded?.items[0]?.sets[0]?.instanceId).toBe(setInstanceId);
+  });
+
+  it("keeps the superset an exercise belongs to", async () => {
+    await saveDraft(
+      draft({
+        items: [
+          {
+            key: "squat",
+            exercise: { ...EXERCISE },
+            restSeconds: 90,
+            groupId: "superset-1",
+            sets: [
+              {
+                set_number: 1,
+                weight: "100",
+                reps: "5",
+                rpe: "8",
+                kind: "normal",
+                completed: false,
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const loaded = await loadRecoverableDraft("user-1");
+
+    // The grouping is a relationship between the exercises of the session,
+    // and it has to survive the reload with them.
+    expect(loaded?.items[0]?.groupId).toBe("superset-1");
+  });
+});
+
 describe("a draft written before v2", () => {
   it("opens without losing a single series", async () => {
     const legacy = {

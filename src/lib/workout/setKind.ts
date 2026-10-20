@@ -97,5 +97,12 @@ export function normalizeSetEntry(raw: unknown, index: number): SetEntry {
      * had a note identical to the shape it had before the field existed.
      */
     notes: typeof source.notes === "string" ? source.notes : undefined,
+    /*
+     * The identity of the attempt survives the trip through storage.
+     *
+     * It is the one thing about a set that says which attempt it was: the set
+     * number is a position, and it moves when a set above it is deleted.
+     */
+    instanceId: typeof source.instanceId === "string" ? source.instanceId : undefined,
   };
 }

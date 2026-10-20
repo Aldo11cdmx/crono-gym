@@ -18,12 +18,30 @@
 import type { Exercise } from "@/types/supabase";
 import type { SetEntry } from "./workout/types";
 import { normalizeSetEntry } from "./workout/setKind";
+import { newInstanceId } from "./workout/instanceId";
 import { DRAFT_STORE, QUEUE_STORE, openDb, tx } from "./idb";
 
 export interface DraftExercise {
   key: string;
   exercise: Exercise;
   restSeconds: number;
+  /**
+   * The identity of this exercise within this session.
+   *
+   * The key is the catalog id and is shared by every session that runs the
+   * exercise; this is the id of *this* execution of it, and it is what the
+   * tracker follows from the first tap to the last. It travels with the draft
+   * so that a reloaded session is still the same execution and not a new one.
+   */
+  instanceId?: string;
+  /**
+   * The superset this exercise belongs to, or null when it stands alone.
+   *
+   * Optional and nullable because both are real answers: a draft written
+   * before supersets existed has no grouping to carry, and an exercise that
+   * is not in a group says so with null rather than by being absent.
+   */
+  groupId?: string | null;
   /**
    * The sets of this exercise, each one carrying its own type.
    *
@@ -259,23 +277,10 @@ export async function queueLength(): Promise<number> {
 /**
  * Session UUID, generated locally so the identifier exists offline.
  *
- * `crypto.randomUUID` needs a secure context; the fallback keeps the app
- * usable over plain http on a LAN.
+ * The one implementation lives in `workout/instanceId`, because a session's
+ * draft id and a session's execution ids are the same kind of thing: an
+ * identity that exists before the server has heard of it.
  */
 export function newSessionId(): string {
-  const c = globalThis.crypto;
-  if (c && typeof c.randomUUID === "function") return c.randomUUID();
-
-  const bytes = new Uint8Array(16);
-  if (c && typeof c.getRandomValues === "function") {
-    c.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < 16; i += 1) bytes[i] = Math.floor(Math.random() * 256);
-  }
-  // Version 4, variant 1.
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-  const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return newInstanceId();
 }

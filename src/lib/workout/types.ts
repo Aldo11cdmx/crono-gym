@@ -48,4 +48,17 @@ export interface SetEntry {
    * only ever carries `null`.
    */
   notes?: string | null;
+  /**
+   * The identity of this attempt within the session that logged it.
+   *
+   * Set number is a position, not an identity: it changes when a set above it
+   * is deleted, and it is the same in two different runs of the same routine.
+   * This is the id that says "this attempt, in this run", and it stays with the
+   * set while the set is edited -- the weight, the reps, the kind, the note.
+   *
+   * Optional because a set is not always born in a session: the ones the
+   * athlete adds mid-workout and the ones a draft written before the field
+   * existed have none, and neither is an error.
+   */
+  instanceId?: string;
 }

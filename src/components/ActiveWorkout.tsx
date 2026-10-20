@@ -69,6 +69,14 @@ import { useGymSettings } from "../context/GymSettingsContext";
 import { RestTimer } from "./RestTimer";
 import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
 import { toWarmupColumn } from "../lib/workout/setKind";
+import { newInstanceId } from "../lib/workout/instanceId";
+import {
+  cloneRoutineToSession,
+  newSessionExercise,
+  newSessionSet,
+  templateFromPlanned,
+  workingTemplateSets,
+} from "../lib/workout/routineCloner";
 import { kgToLb } from "../lib/profile";
 import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
@@ -82,21 +90,6 @@ function shortName(name: string): string {
   const cleaned = name.replace(/^(barbell|dumbbell|cable|kettlebell|weighted)\s+/i, "");
   const withoutSuffix = cleaned.replace(/\s+-\s+.*$/, "");
   return withoutSuffix.length > 0 ? withoutSuffix : cleaned;
-}
-
-function buildSets(count: number): SetEntry[] {
-  return Array.from({ length: Math.max(count, 1) }, (_, i) => emptySet(i));
-}
-
-function emptySet(index: number): SetEntry {
-  return {
-    set_number: index + 1,
-    weight: "",
-    reps: "",
-    rpe: "",
-    kind: "normal",
-    completed: false,
-  };
 }
 
 function toNumber(value: string): number | null {
@@ -1392,12 +1385,19 @@ export function ActiveWorkout({
   const startedAt = session?.startedAt ?? fallbackStartedAt;
 
   const [items, setItems] = useState<DraftExercise[]>(() =>
-    planned.map((p) => ({
-      key: p.exercise.id,
-      exercise: p.exercise,
-      restSeconds: p.rest_seconds,
-      sets: buildSets(p.target_sets),
-    })),
+    /*
+     * The session is a run of the routine, not the routine itself.
+     *
+     * Cloning it here means the sets the athlete logs belong to this run and
+     * to nothing else: the routine keeps being a prescription, and running it
+     * again starts from the prescription rather than from the last run's
+     * guesses. Every item and every set also comes with an identity of its
+     * own, which is what lets the tracker tell this attempt from the same
+     * attempt in another run.
+     */
+    cloneRoutineToSession(
+      templateFromPlanned(planned, { id: routineId, title: routineTitle }),
+    ).items,
   );
   const [notes, setNotes] = useState("");
   const [rest, setRest] = useState<{ id: number; seconds: number; endsAt: number } | null>(
@@ -1494,12 +1494,17 @@ export function ActiveWorkout({
       }
       return [
         ...prev,
-        {
-          key: exercise.id,
+        /*
+         * An exercise added mid-session is a new execution of a movement, so
+         * it arrives with its own identity and its own sets -- never a copy of
+         * the exercise it was added next to.
+         */
+        newSessionExercise({
           exercise: loggerExercise,
           restSeconds: DEFAULT_REST,
-          sets: buildSets(3),
-        },
+          groupId: null,
+          sets: workingTemplateSets(3),
+        }),
       ];
     });
     setSelectedKey(exercise.id);
@@ -1714,7 +1719,9 @@ export function ActiveWorkout({
       prev.map((item) =>
         item.key !== itemKey
           ? item
-          : { ...item, sets: [...item.sets, emptySet(item.sets.length)] },
+          : // A set the athlete adds is a new attempt, so it gets its own
+            // identity rather than inheriting the one above it.
+            { ...item, sets: [...item.sets, newSessionSet({ kind: "normal" }, item.sets.length)] },
       ),
     );
   }
@@ -1728,11 +1735,12 @@ export function ActiveWorkout({
       if (index === -1) return prev;
 
       const item = prev[index];
-      const warmupEntries: DraftExercise["sets"] = pending.weights.map((weight, position) => ({
-        ...emptySet(item.sets.length + position),
-        weight: String(weight),
-        kind: "warmup",
-      }));
+      const warmupEntries: DraftExercise["sets"] = pending.weights.map((weight, position) =>
+        newSessionSet(
+          { kind: "warmup", weight: String(weight) },
+          item.sets.length + position,
+        ),
+      );
 
       return prev.map((entry, at) =>
         at === index ? { ...entry, sets: [...warmupEntries, ...entry.sets] } : entry,
@@ -1778,10 +1786,16 @@ export function ActiveWorkout({
         const source = item.sets[setIndex];
         if (!source) return item;
         const sets = [...item.sets];
+        /*
+         * The copy is a different attempt, so it gets a different identity.
+         * Copying the source's id would leave two rows in the tracker with
+         * the same name, and the second would look like the first.
+         */
         sets.splice(setIndex + 1, 0, {
           ...source,
           completed: false,
           set_number: source.set_number + 1,
+          instanceId: newInstanceId(),
         });
         return { ...item, sets };
       }),

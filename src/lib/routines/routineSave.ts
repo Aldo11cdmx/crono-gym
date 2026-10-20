@@ -76,6 +76,15 @@ export async function saveRoutine(
       return false;
     }
 
+    /*
+     * The rows are listed field by field on purpose.
+     *
+     * Spreading the draft item instead would send whatever the client model
+     * carries, and the client model already knows about `groupId` -- a column
+     * the table does not have yet. PostgREST rejects the whole insert when it
+     * is handed a column it cannot find, so a routine would stop saving
+     * entirely. The grouping is written when the column lands.
+     */
     const rows = draft.items.map((item) => ({
       routine_id: routineId as string,
       exercise_id: item.exercise.id,

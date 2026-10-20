@@ -20,6 +20,16 @@ export interface PlannedExercise {
    * Read from `routine_exercises.day_label`. Empty string when unnamed.
    */
   dayLabel: string;
+  /**
+   * The superset this exercise belongs to, when it is in one.
+   *
+   * Read from `routine_exercises.group_id`, the column that arrives with the
+   * superset migration. Until then every row reads as "no group", which is the
+   * truth: nothing has ever grouped two of these exercises. The field is
+   * optional so a routine written before the grouping existed is still a
+   * routine rather than a broken one.
+   */
+  groupId?: string | null;
 }
 
 export interface RoutineWithExercises extends Routine {
@@ -128,7 +138,14 @@ export function useRoutines(userId: string | null) {
     }
 
     const rows = (routineRes.data ?? []) as Routine[];
-    const links = (linkRes.data ?? []) as RoutineExercise[];
+    /*
+     * `group_id` is read through a widened row type on purpose: the column
+     * arrives with the superset migration, and the read has to work both
+     * before and after it without a second code path. `select("*")` returns
+     * whatever the table has, so the moment the column exists this reads it
+     * and the day before it reads nothing.
+     */
+    const links = (linkRes.data ?? []) as (RoutineExercise & { group_id?: string | null })[];
     const catalog = new Map<string, Exercise>(
       ((exerciseRes.data ?? []) as Exercise[]).map((e) => [e.id, e]),
     );
@@ -143,6 +160,7 @@ export function useRoutines(userId: string | null) {
         rest_seconds: link.rest_seconds,
         dayIndex: link.day_index ?? null,
         dayLabel: link.day_label ?? "",
+        groupId: link.group_id ?? null,
       });
       byRoutine.set(link.routine_id, list);
     }

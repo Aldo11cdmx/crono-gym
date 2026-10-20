@@ -241,6 +241,10 @@ const TAILWIND_COLOR_UTILITIES =
   /\b(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(\d{2,3})\b/g;
 
 beforeEach(() => {
+  // Every test starts on the real clock, whatever the previous one left
+  // behind. Testing Library's `waitFor` polls with the global `setTimeout`,
+  // so a test that inherits fake timers waits on a clock that never ticks.
+  vi.useRealTimers();
   window.localStorage.clear();
   globalThis.__cronosPerformance = {};
   globalThis.__cronosPreviousNotes = {};
@@ -250,8 +254,16 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  cleanup();
-  vi.useRealTimers();
+  try {
+    cleanup();
+  } finally {
+    // The real clock goes back whatever the unmount did.
+    //
+    // A test that left fake timers installed would make the next one's
+    // `waitFor` poll a clock that never ticks, and the wait would hang
+    // instead of failing -- taking the rest of the file with it.
+    vi.useRealTimers();
+  }
 });
 
 // ---------------------------------------------------------------------- rows
@@ -490,6 +502,18 @@ describe("ActiveWorkout rest clock", () => {
 
 // ----------------------------------------------------------------- drafts
 
+/**
+ * How long the recovery tests are allowed to take.
+ *
+ * Each of them renders the whole tree and waits for the provider to find the
+ * draft on the device: a render, a lookup and a round of React work. The
+ * default five seconds is comfortable on a quiet machine and not on a busy
+ * one, where the suite is the only thing running and the timings say nothing
+ * about the behaviour being asserted. A timeout here is a statement about the
+ * clock, never about the correctness of the assertion.
+ */
+const RECOVERY_TIMEOUT = 20_000;
+
 describe("ActiveWorkout draft persistence", () => {
   it("writes the draft even when the screen keeps re-rendering", () => {
     vi.useFakeTimers();
@@ -569,7 +593,7 @@ describe("ActiveWorkout draft persistence", () => {
     // the server and on the device, and no orphan left behind.
     expect(vi.mocked(queueAndSync).mock.calls[0]?.[0]?.logId).toBe("log-draft");
     expect(vi.mocked(saveDraft).mock.calls.at(-1)?.[0]?.logId).toBe("log-draft");
-  });
+  }, RECOVERY_TIMEOUT);
 
   it("resumes the rest that was running when the session was interrupted", async () => {
     vi.mocked(loadRecoverableDraft).mockResolvedValue(
@@ -600,7 +624,7 @@ describe("ActiveWorkout draft persistence", () => {
     // deadline it was counting down to is the same moment.
     const dialog = screen.getByRole("dialog", { name: REST_TIMER_LABELS.title });
     expect(within(dialog).getByText("00:30")).toBeTruthy();
-  });
+  }, RECOVERY_TIMEOUT);
 
   it("does not resume a rest that ended while the app was closed", async () => {
     vi.mocked(loadRecoverableDraft).mockResolvedValue(
@@ -630,7 +654,7 @@ describe("ActiveWorkout draft persistence", () => {
     // A rest that expired is over. A timer that starts at zero is a timer that
     // never got to be a timer.
     expect(screen.queryByRole("dialog", { name: REST_TIMER_LABELS.title })).toBeNull();
-  });
+  }, RECOVERY_TIMEOUT);
 
   it("puts the athlete back in front of the exercise they were on", async () => {
     const bench = exercise("bench", "Press de banca");
@@ -700,6 +724,62 @@ describe("ActiveWorkout draft persistence", () => {
     // lands in the same place again.
     await waitFor(() => expect(vi.mocked(saveDraft)).toHaveBeenCalled());
     expect(vi.mocked(saveDraft).mock.calls.at(-1)?.[0]?.selectedKey).toBe(bench.id);
+  }, RECOVERY_TIMEOUT);
+});
+
+// --------------------------------------------------------------- separation
+describe("ActiveWorkout routine separation", () => {
+  it("runs the routine on its own objects, so the routine stays a prescription", () => {
+    vi.useFakeTimers();
+    const items = planned();
+    renderWorkout(items);
+    fireEvent.change(weightField(1), { target: { value: "100" } });
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+
+    const saved = vi.mocked(saveDraft).mock.calls.at(-1)?.[0];
+
+    // The session holds its own copy of the exercise. The routine's row is a
+    // catalog entry that every session that runs it shares, and a session
+    // that edited it would be editing the routine for everybody.
+    expect(saved?.items[0]?.exercise).not.toBe(items[0]?.exercise);
+    expect(saved?.items[0]?.exercise.name).toBe(items[0]?.exercise.name);
+  });
+
+  it("gives every item and set of the session an identity of its own", () => {
+    vi.useFakeTimers();
+    renderWorkout();
+    fireEvent.change(weightField(1), { target: { value: "100" } });
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+
+    const saved = vi.mocked(saveDraft).mock.calls.at(-1)?.[0];
+
+    // What tells this run's third set from another run's third set. The set
+    // number is a position and moves when a set above it is deleted; this
+    // does not.
+    expect(saved?.items[0]?.instanceId).toBeTruthy();
+    expect(saved?.items[0]?.sets[0]?.instanceId).toBeTruthy();
+    expect(saved?.items[0]?.sets[0]?.instanceId).not.toBe(
+      saved?.items[0]?.sets[1]?.instanceId,
+    );
+  });
+
+  it("leaves the routine it was started from untouched", () => {
+    const items = planned();
+    renderWorkout(items);
+    fireEvent.change(weightField(1), { target: { value: "100" } });
+    fireEvent.click(kindChip(1, SET_TYPE_LABELS.drop));
+
+    // The routine is a prescription: three sets of a squat, and nothing
+    // about what this session did with them.
+    expect(items[0]?.target_sets).toBe(3);
+    expect(items[0]?.rest_seconds).toBe(90);
+    expect(items[0]?.exercise.name).toBe("Sentadilla trasera");
   });
 });
 

@@ -24,6 +24,18 @@ export interface DraftExercise {
   order_index: number;
   target_reps_min: number | null;
   target_reps_max: number | null;
+  /**
+   * The superset this movement belongs to, when it is in one.
+   *
+   * Two movements that share a group id are performed back to back, the way
+   * Hevy and Symmetry write a superset. Optional and nullable because both
+   * are real answers: a routine written before supersets existed has no
+   * grouping to carry, and a movement that stands alone is not in one.
+   *
+   * The column it belongs to arrives with the superset migration, so the save
+   * path does not write it yet -- see `routineSave.ts`.
+   */
+  groupId?: string | null;
 }
 
 /**

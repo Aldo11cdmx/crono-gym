@@ -248,7 +248,9 @@ describe("missing media", () => {
     const { container } = renderStrip([item("s", "Sentadilla", 0, 3, "demo.gif")], "s");
 
     const img = container.querySelector("[data-key='s'] img") as HTMLImageElement;
-    expect(img.getAttribute("src")).toBe("demo.gif");
+    // The path is resolved by the shared media resolver, so it is served from
+    // the root instead of from whatever route happens to be open.
+    expect(img.getAttribute("src")).toBe("/demo.gif");
     // Decorative: the tab's accessible name already carries the exercise.
     expect(img.getAttribute("alt")).toBe("");
   });

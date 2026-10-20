@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { X, Dumbbell } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 import {
   translateBodyPart,
   translateTarget,
@@ -80,7 +81,7 @@ export function ExerciseDetailSheet({
         >
           {!imgError && exercise.gif_url ? (
             <img
-              src={exercise.gif_url}
+              src={resolveMediaUrl(exercise.gif_url)}
               alt={`Animación de ${exercise.name}`}
               className="h-full w-full object-contain"
               onError={() => setImgError(true)}

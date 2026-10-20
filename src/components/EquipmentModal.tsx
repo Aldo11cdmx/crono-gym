@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { equipmentMap } from "@/data/equipmentMap";
 import { ACCENT, GLASS, RADIUS, SCRIM, SOLID, SURFACE_ROLE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 export interface EquipmentModalProps {
   equipmentId: string | null;
@@ -79,7 +80,7 @@ export function EquipmentModal({ equipmentId, onClose }: EquipmentModalProps) {
         >
           {equipment.views[viewIndex] ? (
             <img
-              src={equipment.views[viewIndex].src}
+              src={resolveMediaUrl(equipment.views[viewIndex].src)}
               alt={`${equipment.name} vista ${equipment.views[viewIndex].id}`}
               className="h-full w-full object-contain"
               loading="lazy"

@@ -85,6 +85,7 @@ import { SupersetBadge } from "./workout/SupersetBadge";
 import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 const DEFAULT_REST = 90;
 const PERSIST_DEBOUNCE_MS = 400;
@@ -747,7 +748,7 @@ function ExerciseStage({
       >
         {exercise.gif_url ? (
           <img
-            src={exercise.gif_url}
+            src={resolveMediaUrl(exercise.gif_url)}
             alt={`Demo de ${exercise.name}`}
             style={{
               maxHeight: "100%",
@@ -817,7 +818,7 @@ function ExerciseStage({
       >
         {equipment?.views?.[0] ? (
           <img
-            src={equipment.views[0].src}
+            src={resolveMediaUrl(equipment.views[0].src)}
             alt={`Miniatura ${equipment.name}`}
             style={{
               width: 32,
@@ -1151,7 +1152,7 @@ function EquipmentInspectionSheet({
                 }}
               >
                 <img
-                  src={view.src}
+                  src={resolveMediaUrl(view.src)}
                   alt={`Vista ${view.id} de ${selected.name}`}
                   style={{
                     width: "100%",
@@ -1281,7 +1282,7 @@ function EquipmentInspectionSheet({
                     >
                       {e.views?.[0] && (
                         <img
-                          src={e.views[0].src}
+                          src={resolveMediaUrl(e.views[0].src)}
                           alt={e.name}
                           style={{
                             width: 32,

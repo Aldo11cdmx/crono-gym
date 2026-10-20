@@ -17,6 +17,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { loadExercises } from "@services/seedExercises";
 import type { Exercise } from "../types/supabase";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 import {
   Search,
   Dumbbell,
@@ -725,7 +726,7 @@ function BrowserExerciseCard({
       <div className="relative aspect-video">
         {!imgError && exercise.gif_url ? (
           <img
-            src={exercise.gif_url}
+            src={resolveMediaUrl(exercise.gif_url)}
             alt={`Animación de ${exercise.name}`}
             loading="lazy"
             onError={() => setImgError(true)}

@@ -14,11 +14,11 @@
  * bypass RLS.
  *
  * The dataset stores media as RELATIVE paths (e.g. "videos/0001-2gPfomN.gif").
- * This module prefixes them with the raw GitHub base URL before caching,
- * so downstream consumers always receive a usable absolute URL.
+ * The shared media resolver prefixes them with the raw GitHub base URL before
+ * caching, so downstream consumers always receive a usable absolute URL.
  */
 
-const RAW_BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 export interface SeedExercise {
   id: string;
@@ -54,9 +54,7 @@ export function normalizeRecord(raw: RawRecord): SeedExercise | null {
     body_part: raw.body_part,
     target: raw.target,
     equipment: raw.equipment,
-    gif_url: raw.gif_url.startsWith("http")
-      ? raw.gif_url
-      : `${RAW_BASE}/${raw.gif_url}`,
+    gif_url: resolveMediaUrl(raw.gif_url),
     instructions: steps,
   };
 }

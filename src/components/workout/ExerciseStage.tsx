@@ -31,6 +31,7 @@ import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { DANGER, DIAGRAM, GLASS, MOTION, RADIUS, SPACE, SURFACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { TARGET_LABELS, BODY_PART_LABELS, EQUIPMENT_LABELS } from "../../lib/i18n";
 import type { Exercise } from "@/types/supabase";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 export interface ExerciseStageProps {
   exercise: Exercise;
@@ -266,7 +267,7 @@ function ExerciseMedia({ exercise }: { exercise: Exercise }) {
     <div style={mediaFrame}>
       {hasGif ? (
         <img
-          src={gif}
+          src={resolveMediaUrl(gif)}
           alt={`Demostración de ${exercise.name}`}
           // `eager` rather than `lazy`: this is above the fold and above the set table,
           // and a lazy image that has not loaded when the athlete looks up is a blank

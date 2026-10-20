@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { BookOpen, Dumbbell, RefreshCcw, X } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
+import { resolveMediaUrl, mediaKey } from "@/lib/media/mediaResolver";
 
 interface ExercisePanelProps {
   exercise: Exercise;
@@ -49,8 +50,8 @@ export function ExercisePanel({
       <div className="relative aspect-video w-full bg-neutral-950">
         {!imgError && exercise.gif_url ? (
           <img
-            key={exercise.gif_url}
-            src={exercise.gif_url}
+            key={mediaKey("exercise-gif", exercise.id)}
+            src={resolveMediaUrl(exercise.gif_url)}
             alt={`Animación de ${exercise.name}`}
             className="h-full w-full object-contain"
             onError={() => setImgError(true)}

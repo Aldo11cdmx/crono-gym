@@ -38,6 +38,7 @@ import { BODY_PART_LABELS, EQUIPMENT_LABELS, HUB_DEMO_LABELS } from "@/lib/i18n"
 import { DIAGRAM, GLASS, MOTION, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import type { Slug } from "react-muscle-highlighter";
 import type { Exercise } from "@/types/supabase";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 export interface DemoTabProps {
   exercise: Exercise;
@@ -107,7 +108,7 @@ function Media({ exercise }: { exercise: Exercise }) {
         </div>
       ) : (
         <img
-          src={gif}
+          src={resolveMediaUrl(gif)}
           alt={`Demostración de ${exercise.name}`}
           loading="eager"
           decoding="async"

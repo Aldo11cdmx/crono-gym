@@ -15,6 +15,7 @@ import {
   translateEquipment,
 } from "@/lib/i18n";
 import { ACCENT, GLASS, SOLID, SURFACE_ROLE, TEXT } from "@/design/tokens";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 export interface ExerciseCardProps {
   exercise: Exercise;
@@ -59,7 +60,7 @@ export function ExerciseCard({
       >
         {!imgError && exercise.gif_url ? (
           <img
-            src={exercise.gif_url}
+            src={resolveMediaUrl(exercise.gif_url)}
             alt={`Animación de ${exercise.name}`}
             loading="lazy"
             onError={() => setImgError(true)}

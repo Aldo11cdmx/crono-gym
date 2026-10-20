@@ -7,6 +7,7 @@
 
 import { X } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 interface TutorialModalProps {
   exercise: Exercise;
@@ -48,7 +49,7 @@ export function TutorialModal({ exercise, onClose }: TutorialModalProps) {
         <div className="mb-4 aspect-video w-full overflow-hidden rounded-xl bg-neutral-950">
           {exercise.gif_url && (
             <img
-              src={exercise.gif_url}
+              src={resolveMediaUrl(exercise.gif_url)}
               alt={`Animación de ${exercise.name}`}
               className="h-full w-full object-contain"
             />

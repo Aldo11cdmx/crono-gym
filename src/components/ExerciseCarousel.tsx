@@ -49,6 +49,7 @@ import {
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SUPERSET_LABELS } from "@/lib/i18n";
 import { getSupersetInfo } from "@/lib/workout/supersetUtils";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { SupersetBadge } from "./workout/SupersetBadge";
 import { SupersetBar } from "./workout/SupersetBar";
 
@@ -481,7 +482,7 @@ function borderFor(selected: boolean, complete: boolean): string {
 
 /** The demo URL, or `""` when there isn't one. See the note at the call site. */
 function exerciseGif(exercise: Exercise): string {
-  return typeof exercise.gif_url === "string" ? exercise.gif_url.trim() : "";
+  return typeof exercise.gif_url === "string" ? resolveMediaUrl(exercise.gif_url) : "";
 }
 
 /**

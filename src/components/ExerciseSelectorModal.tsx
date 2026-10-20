@@ -21,6 +21,7 @@ import { X, Search, Dumbbell, Loader2 } from "lucide-react";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import type { CatalogExercise } from "@/lib/catalog/types";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { translateBodyPart } from "@/lib/i18n";
 import {
   ACCENT,
@@ -44,10 +45,6 @@ export interface ExerciseSelectorModalProps {
 
 const ITEM_HEIGHT = 112;
 const THUMB_SIZE = 48;
-
-function resolveImageSrc(src: string): string {
-  return src.replace(/^public\//, "/");
-}
 
 function ExerciseSelectorModal({
   open,
@@ -403,7 +400,7 @@ function ExerciseSelectorModal({
                       >
                         {ex.gif_url ? (
                           <img
-                            src={resolveImageSrc(ex.gif_url)}
+                            src={resolveMediaUrl(ex.gif_url)}
                             alt={`Animación de ${ex.name}`}
                             style={{
                               width: "100%",
@@ -479,7 +476,7 @@ function ExerciseSelectorModal({
                           >
                             {machineImg ? (
                               <img
-                                src={resolveImageSrc(machineImg)}
+                                src={resolveMediaUrl(machineImg)}
                                 alt={`Foto de ${primary.name}`}
                                 style={{
                                   width: "100%",

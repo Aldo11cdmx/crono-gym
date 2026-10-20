@@ -47,6 +47,10 @@ import {
   TYPE,
 } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { SUPERSET_LABELS } from "@/lib/i18n";
+import { getSupersetInfo } from "@/lib/workout/supersetUtils";
+import { SupersetBadge } from "./workout/SupersetBadge";
+import { SupersetBar } from "./workout/SupersetBar";
 
 export interface CarouselItem {
   key: string;
@@ -54,6 +58,14 @@ export interface CarouselItem {
   /** Completed sets / total sets for this exercise. */
   done: number;
   total: number;
+  /**
+   * The superset this exercise belongs to, or null when it stands alone.
+   *
+   * Optional and nullable because both answers are real: a session written
+   * before supersets existed has no grouping to carry, and an exercise that is
+   * not in a group says so with null rather than by being absent.
+   */
+  groupId?: string | null;
 }
 
 interface ExerciseCarouselProps {
@@ -106,6 +118,17 @@ export function ExerciseCarousel({
 
   if (items.length === 0) return null;
 
+  /*
+   * The group of the exercise on screen.
+   *
+   * The strip marks the whole group, not just the bubble that happens to be
+   * selected: "these two go together" is a fact about the pair, and dimming
+   * the partner while the first one is on screen would say the opposite.
+   */
+  const selectedIndex = items.findIndex((item) => item.key === selectedKey);
+  const activeGroupId =
+    selectedIndex === -1 ? null : items[selectedIndex].groupId ?? null;
+
   return (
     // In-flow strip, centred by its parent (ActiveWorkout). It lives between the
     // Transparent strip centred by its parent. Floats cleanly over the black canvas,
@@ -143,6 +166,12 @@ export function ExerciseCarousel({
           const selected = item.key === selectedKey;
           const complete = item.total > 0 && item.done >= item.total;
           const ratio = item.total > 0 ? Math.min(item.done / item.total, 1) : 0;
+          /*
+           * Where this exercise sits in its superset, if it is in one. Null for
+           * an exercise that stands alone, which is the answer that keeps the
+           * ordinary bubble ordinary.
+           */
+          const superset = getSupersetInfo(items, index);
 
           return (
             <button
@@ -154,7 +183,15 @@ export function ExerciseCarousel({
               // The accessible name carries the position as well as the count. "Sentadilla,
               // 2 de 4 series" says how far in; adding "ejercicio 3 de 6" is what lets
               // someone navigate the strip without seeing it.
-              aria-label={`${item.exercise.name}, ${index + 1} de ${items.length}, ${item.done} de ${item.total} series`}
+              //
+              // A grouped exercise adds its place in the group, because "sentadilla, 1 de
+              // 6" does not say that it is the first of two exercises that are performed
+              // together, and that is exactly what the athlete needs to know mid-set.
+              aria-label={`${item.exercise.name}, ${index + 1} de ${items.length}, ${item.done} de ${item.total} series${
+                superset
+                  ? `, ${SUPERSET_LABELS.tabAriaLabel(superset.label, superset.position, superset.total)}`
+                  : ""
+              }`}
               onClick={() => onSelect(item.key)}
               onClickCapture={onReorder ? (e) => {
                 // Prevent the select handler from firing when starting a drag.
@@ -194,6 +231,9 @@ export function ExerciseCarousel({
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 6,
+                // The anchor for the group's strip, which hangs off the left edge of
+                // this bubble.
+                position: "relative",
                 // Decorative wrapper: the label below is the tab's name.
                 background: "none",
                 border: "none",
@@ -324,6 +364,21 @@ export function ExerciseCarousel({
                 )}
               </span>
 
+              {/*
+                The group's strip, down the left edge of the bubble.
+
+                It is decorative: the badge below says the same thing in words, and
+                the bubble's own accessible name carries it for a screen reader.
+              */}
+              {superset && (
+                <SupersetBar
+                  tone={superset.tone}
+                  isFirst={superset.isFirst}
+                  isLast={superset.isLast}
+                  active={superset.groupId === activeGroupId}
+                />
+              )}
+
               <span
                 style={{
                   width: "100%",
@@ -339,6 +394,20 @@ export function ExerciseCarousel({
               >
                 {shortName(item.exercise.name)}
               </span>
+
+              {/*
+                The chip that names the group. It is the half of the grouping that
+                survives a monochrome screen: the strip says "these go together" and
+                the chip says which group and where this one sits in it.
+              */}
+              {superset && (
+                <SupersetBadge
+                  label={superset.label}
+                  position={superset.position}
+                  total={superset.total}
+                  tone={superset.tone}
+                />
+              )}
             </button>
           );
         })}

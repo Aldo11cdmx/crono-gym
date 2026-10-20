@@ -261,6 +261,58 @@ export const COPPER = {
   muted: "rgba(196, 122, 74, 0.14)",
 } as const;
 
+// --------------------------------------------------------------- supersets
+
+/**
+ * One colour of a superset: the fill, the ink and the tints that go with it.
+ *
+ * A group of exercises is painted in a single colour so the athlete can see at a
+ * glance which bubbles belong together, without reading a label.
+ */
+export interface SupersetTone {
+  /** The colour the group is painted in. */
+  base: string;
+  /** The ink for a label on a dark surface. */
+  text: string;
+  /** The tinted fill behind a badge. */
+  muted: string;
+  /** The hairline around a badge. */
+  border: string;
+}
+
+/**
+ * The palette a superset is painted from.
+ *
+ * Pastel-neon rather than the accent, and deliberately *not* red: a saturated red
+ * is the accent, and a second red on the strip would read as "this is the action"
+ * instead of "these two go together".
+ *
+ * Two rules the palette is built to satisfy, both asserted in `supersetUtils.test.ts`:
+ *
+ * - Every hue stays clear of the green band. The product refuses a saturated green
+ *   (`tokens.test.ts` enforces it across the whole token set), and a mint that
+ *   reads as green under deuteranopia would put a superset chip next to the
+ *   success chip and make the two collapse.
+ * - Every colour is a light tint on true black, so it clears AA as *text* rather
+ *   than only as a graphic. The badge is a label, not a decoration.
+ *
+ * The order is the order the colours are handed out in, and it alternates warm
+ * and cool on purpose: two groups that end up side by side in the strip should
+ * not be neighbours in the palette.
+ */
+export const SUPERSET = {
+  palette: [
+    { base: "#5EEAD4", text: "#5EEAD4", muted: "rgba(94, 234, 212, 0.16)", border: "rgba(94, 234, 212, 0.45)" },
+    { base: "#7DD3FC", text: "#7DD3FC", muted: "rgba(125, 211, 252, 0.16)", border: "rgba(125, 211, 252, 0.45)" },
+    { base: "#C4B5FD", text: "#C4B5FD", muted: "rgba(196, 181, 253, 0.16)", border: "rgba(196, 181, 253, 0.45)" },
+    { base: "#F9A8D4", text: "#F9A8D4", muted: "rgba(249, 168, 212, 0.16)", border: "rgba(249, 168, 212, 0.45)" },
+    { base: "#FDBA74", text: "#FDBA74", muted: "rgba(253, 186, 116, 0.16)", border: "rgba(253, 186, 116, 0.45)" },
+    { base: "#FDE68A", text: "#FDE68A", muted: "rgba(253, 230, 138, 0.16)", border: "rgba(253, 230, 138, 0.45)" },
+    { base: "#67E8F9", text: "#67E8F9", muted: "rgba(103, 232, 249, 0.16)", border: "rgba(103, 232, 249, 0.45)" },
+    { base: "#BEF264", text: "#BEF264", muted: "rgba(190, 242, 100, 0.16)", border: "rgba(190, 242, 100, 0.45)" },
+  ] as const satisfies readonly SupersetTone[],
+} as const;
+
 // ------------------------------------------------------------------- focus
 
 /**
@@ -1073,6 +1125,10 @@ export const COLOR_TOKENS = {
   "copper-text": COPPER.text,
   "copper-border": COPPER.border,
   "copper-muted": COPPER.muted,
+
+  ...Object.fromEntries(
+    SUPERSET.palette.map((tone, index) => [`superset-${index}`, tone.base]),
+  ),
 
   "danger-base": DANGER.base,
   "danger-text": DANGER.text,

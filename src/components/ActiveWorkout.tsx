@@ -78,6 +78,9 @@ import {
   workingTemplateSets,
 } from "../lib/workout/routineCloner";
 import { kgToLb } from "../lib/profile";
+import { getNextSupersetTargetIndex, getSupersetInfo } from "../lib/workout/supersetUtils";
+import type { SupersetInfo } from "../lib/workout/supersetUtils";
+import { SupersetBadge } from "./workout/SupersetBadge";
 import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
@@ -174,12 +177,21 @@ function PreWorkoutGate({
 
 interface SessionHeaderProps {
   exerciseLabel: string;
+  /**
+   * The group the exercise on screen belongs to, when it is in one.
+   *
+   * The strip at the top of the session says the same thing, but the strip is
+   * a strip: the athlete's eyes are on the set table, and the header is the
+   * one line of chrome that is always on screen.
+   */
+  superset?: SupersetInfo | null;
   startedAt: string | null;
   onGear: () => void;
 }
 
 function SessionHeader({
   exerciseLabel,
+  superset,
   startedAt,
   onGear,
 }: SessionHeaderProps) {
@@ -203,19 +215,29 @@ function SessionHeader({
       }}
     >
       <div style={{ minWidth: 0 }}>
-        {exerciseLabel && (
-          <div
-            style={{
-              fontSize: TYPE.caption.size,
-              color: TEXT.tertiary,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {exerciseLabel}
-          </div>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
+          {exerciseLabel && (
+            <div
+              style={{
+                fontSize: TYPE.caption.size,
+                color: TEXT.tertiary,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {exerciseLabel}
+            </div>
+          )}
+          {superset && (
+            <SupersetBadge
+              label={superset.label}
+              position={superset.position}
+              total={superset.total}
+              tone={superset.tone}
+            />
+          )}
+        </div>
         {startedAt && (
           <div
             style={{
@@ -1439,6 +1461,20 @@ export function ActiveWorkout({
 
   const equipmentForSelected = equipmentSuggestion.primary;
 
+  /**
+   * Where the exercise on screen sits inside its superset, if it is in one.
+   *
+   * Null for an exercise that stands alone, which is the answer that keeps the
+   * header ordinary for the exercise that has no partner.
+   */
+  const selectedSuperset = useMemo(() => {
+    if (!selected) return null;
+    return getSupersetInfo(
+      items,
+      items.findIndex((item) => item.key === selected.key),
+    );
+  }, [items, selected]);
+
   const carouselItems = useMemo(
     () =>
       items.map((item) => ({
@@ -1446,6 +1482,10 @@ export function ActiveWorkout({
         exercise: item.exercise,
         done: item.sets.filter((s) => s.completed).length,
         total: item.sets.length,
+        // The grouping travels with the exercise into the strip, so the bubbles
+        // of a superset are drawn as one group rather than as two exercises
+        // that happen to sit next to each other.
+        groupId: item.groupId ?? null,
       })),
     [items],
   );
@@ -1712,6 +1752,39 @@ export function ActiveWorkout({
       items.find((i) => i.key === itemKey)?.restSeconds ?? DEFAULT_REST,
     );
     startRest(restSeconds);
+    advanceToSupersetPartner(itemKey);
+  }
+
+  /**
+   * Moves the session on to the next exercise of the same superset.
+   *
+   * A superset is performed back to back -- A, then B, then A again -- so the
+   * set the athlete has just finished is not the end of their work; it is the
+   * moment the strip moves on by itself. Without this the athlete has to look
+   * up, find the partner and tap it, in the middle of the rest that is already
+   * running, which is exactly the moment they are least likely to.
+   *
+   * Two conditions, and both matter:
+   *
+   * - The partner has to be in the same group. An exercise that stands alone
+   *   has no partner, and the session stays where it is.
+   * - The partner has to have work left. A group whose exercises are all
+   *   finished is a group that is over, and moving to it would send the athlete
+   *   back to an exercise they have already done.
+   */
+  function advanceToSupersetPartner(itemKey: string) {
+    const current = itemsRef.current;
+    const index = current.findIndex((item) => item.key === itemKey);
+    if (index === -1) return;
+
+    const target = getNextSupersetTargetIndex(current, index);
+    if (target === -1) return;
+
+    const partner = current[target];
+    if (!partner) return;
+    if (!partner.sets.some((set) => !set.completed)) return;
+
+    setSelectedKey(partner.key);
   }
 
   function addSet(itemKey: string) {
@@ -2073,6 +2146,7 @@ export function ActiveWorkout({
                   )}`
                 : ""
             }
+            superset={selectedSuperset}
             startedAt={session?.startedAt ?? null}
             onGear={() => setGearOpen(true)}
           />

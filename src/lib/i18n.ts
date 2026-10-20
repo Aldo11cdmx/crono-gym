@@ -541,6 +541,26 @@ export const FATIGUE_LABELS = {
 } as const;
 
 /**
+ * Copy for the superset badges.
+ *
+ * The visible chip says three things at once -- which group, which exercise of
+ * it, and how many there are -- because the athlete reads it mid-set and has
+ * one glance to spend. The spoken label says the same thing in words, since the
+ * bullet between them is punctuation a screen reader has to guess at.
+ */
+export const SUPERSET_LABELS = {
+  /** The chip under the bubble: "SUPERSET A • 1/2". */
+  badgeText: (label: string, position: number, total: number): string =>
+    `SUPERSET ${label} • ${position}/${total}`,
+  /** The same, read out: "Superset A: ejercicio 1 de 2". */
+  badgeAriaLabel: (label: string, position: number, total: number): string =>
+    `Superset ${label}: ejercicio ${position} de ${total}`,
+  /** What the bubble's accessible name adds when the exercise is in a group. */
+  tabAriaLabel: (label: string, position: number, total: number): string =>
+    `superset ${label}, ${position} de ${total}`,
+} as const;
+
+/**
  * Copy for the gym settings panel.
  *
  * "Pares por lado" is spelled out rather than left to a bare number, because a

@@ -892,3 +892,109 @@ describe("ActiveWorkout colour hygiene", () => {
     }
   });
 });
+
+// ------------------------------------------------------------------ supersets
+
+/**
+ * The session moving on by itself.
+ *
+ * A superset is performed back to back -- A, then B, then A again -- so the
+ * set the athlete has just finished is not the end of their work. The session
+ * moves to the partner without being asked, which is the difference between a
+ * superset and two exercises that happen to sit next to each other.
+ */
+describe("ActiveWorkout supersets", () => {
+  const BENCH = exercise("bench", "Press banca");
+
+  /** Two exercises performed together. */
+  function superset(targetSets = 2, partnerSets = 2): PlannedExercise[] {
+    return [
+      {
+        exercise: SQUAT,
+        target_sets: targetSets,
+        rest_seconds: 90,
+        dayIndex: null,
+        dayLabel: "",
+        groupId: "superset-1",
+      },
+      {
+        exercise: BENCH,
+        target_sets: partnerSets,
+        rest_seconds: 90,
+        dayIndex: null,
+        dayLabel: "",
+        groupId: "superset-1",
+      },
+    ];
+  }
+
+  it("moves on to the partner when a set is completed", () => {
+    renderWorkout(superset());
+    expect(screen.getByText("1/2 Sentadilla trasera")).toBeTruthy();
+
+    fireEvent.click(completeButton(1));
+
+    // The strip moves by itself: looking up the partner is work the athlete
+    // should not have to do in the middle of a rest.
+    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+  });
+
+  it("comes back around to the first exercise of the group", () => {
+    renderWorkout(superset());
+
+    fireEvent.click(completeButton(1));
+    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+
+    // A superset is a rotation, and the rotation is what makes the two
+    // exercises alternate instead of run one after the other.
+    fireEvent.click(completeButton(1));
+    expect(screen.getByText("1/2 Sentadilla trasera")).toBeTruthy();
+  });
+
+  it("stays put when the partner has no work left", () => {
+    renderWorkout(superset(1, 1));
+
+    fireEvent.click(completeButton(1));
+    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+
+    // The first exercise is finished, so the rotation has nowhere left to go:
+    // moving on would send the athlete back to an exercise they completed.
+    fireEvent.click(completeButton(1));
+    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+  });
+
+  it("stays put when the exercise is not in a group", () => {
+    renderWorkout([
+      { exercise: SQUAT, target_sets: 2, rest_seconds: 90, dayIndex: null, dayLabel: "" },
+      { exercise: BENCH, target_sets: 2, rest_seconds: 90, dayIndex: null, dayLabel: "" },
+    ]);
+
+    fireEvent.click(completeButton(1));
+
+    // Nothing here says "these two go together", so the session does not
+    // pretend that they do.
+    expect(screen.getByText("1/2 Sentadilla trasera")).toBeTruthy();
+  });
+
+  it("names the group in the header, where the athlete is looking", () => {
+    renderWorkout(superset());
+
+    // The strip says it too, but the strip is a strip: the header is the one
+    // line of chrome that is always on screen above the set table.
+    expect(screen.getByText("SUPERSET A • 1/2")).toBeTruthy();
+  });
+
+  it("moves the header's position along with the exercise", () => {
+    renderWorkout(superset());
+
+    fireEvent.click(completeButton(1));
+
+    expect(screen.getByText("SUPERSET A • 2/2")).toBeTruthy();
+  });
+
+  it("says nothing about a group for an exercise that stands alone", () => {
+    renderWorkout(planned());
+
+    expect(screen.queryByText(/SUPERSET/)).toBeNull();
+  });
+});

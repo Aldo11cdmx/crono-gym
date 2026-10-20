@@ -14,7 +14,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { ExerciseCarousel, type CarouselItem } from "./ExerciseCarousel";
 import { borderColor, sameColor } from "../test-support/color";
-import { ACCENT, DIAGRAM, GLASS, STATUS, SURFACE, TEXT } from "@/design/tokens";
+import { ACCENT, DIAGRAM, GLASS, STATUS, SUPERSET, SURFACE, TEXT } from "@/design/tokens";
+import { getSupersetInfo } from "@/lib/workout/supersetUtils";
 import type { Exercise } from "@/types/supabase";
 
 afterEach(cleanup);
@@ -45,8 +46,15 @@ function exercise(id: string, name: string, gif = ""): Exercise {
   } as Exercise;
 }
 
-function item(id: string, name: string, done: number, total: number, gif = ""): CarouselItem {
-  return { key: id, exercise: exercise(id, name, gif), done, total };
+function item(
+  id: string,
+  name: string,
+  done: number,
+  total: number,
+  gif = "",
+  groupId: string | null = null,
+): CarouselItem {
+  return { key: id, exercise: exercise(id, name, gif), done, total, groupId };
 }
 
 const SQUAT = item("squat", "Sentadilla trasera", 0, 3);
@@ -351,6 +359,9 @@ describe("colour discipline", () => {
       SURFACE.raised,
       SURFACE.base,
       DIAGRAM.inert,
+      // The superset palette: the only colours on the strip that are allowed
+      // to change hue, and they come from the token table like the rest.
+      ...SUPERSET.palette.flatMap((tone) => [tone.base, tone.text, tone.muted, tone.border]),
     ];
 
     for (const literal of html.match(/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)/g) ?? []) {
@@ -378,5 +389,108 @@ describe("colour discipline", () => {
     renderStrip();
     const label = within(bubble("Remo con barra")).getAllByText(/Remo/)[0] as HTMLElement;
     expect(sameColor(label.style.color, TEXT.tertiary)).toBe(true);
+  });
+});
+
+/**
+ * The superset group.
+ *
+ * Two claims are being made at once on the strip: which bubbles belong
+ * together, and where the athlete is inside the group. The first is carried by
+ * the colour, the second by the badge -- and both have to survive a screen
+ * that cannot show the colour at all, which is why the badge says the same
+ * thing in words.
+ */
+describe("supersets", () => {
+  const SQUAT_A = item("squat", "Sentadilla trasera", 0, 3, "", "superset-1");
+  const BENCH_A = item("bench", "Press banca", 3, 3, "", "superset-1");
+  const CURL_B = item("curl", "Curl con barra", 0, 3, "", "superset-2");
+  const ROW = item("row", "Remo con barra", 1, 4);
+
+  const SESSION = [SQUAT_A, BENCH_A, CURL_B, ROW];
+
+  it("names the group on the bubble", () => {
+    renderStrip(SESSION, "squat");
+
+    const badge = within(bubble("Sentadilla trasera")).getByTestId("superset-badge");
+
+    // The letter says which group, the fraction says where this exercise sits
+    // in it. Both are read in the same glance, mid-set.
+    expect(badge.textContent).toContain("SUPERSET A");
+    expect(badge.textContent).toContain("1/2");
+  });
+
+  it("counts the second exercise of the group as the second", () => {
+    renderStrip(SESSION, "squat");
+
+    const badge = within(bubble("Press banca")).getByTestId("superset-badge");
+    expect(badge.textContent).toContain("2/2");
+  });
+
+  it("labels the second group B", () => {
+    renderStrip(SESSION, "squat");
+
+    const badge = within(bubble("Curl con barra")).getByTestId("superset-badge");
+    expect(badge.textContent).toContain("SUPERSET B");
+  });
+
+  it("leaves an exercise that stands alone without a badge", () => {
+    renderStrip(SESSION, "squat");
+
+    // "No group" is an answer, not an omission: an ordinary bubble stays an
+    // ordinary bubble.
+    expect(within(bubble("Remo con barra")).queryByTestId("superset-badge")).toBeNull();
+  });
+
+  it("says the group in the bubble's accessible name", () => {
+    renderStrip(SESSION, "squat");
+
+    // The visible chip is not read by a screen reader, so the name has to say
+    // it too: the strip is a tablist and its tabs are navigated by name.
+    expect(
+      screen.getByRole("tab", {
+        name: /^Sentadilla trasera, 1 de 4, 0 de 3 series, superset A, 1 de 2$/,
+      }),
+    ).toBeTruthy();
+  });
+
+  it("leaves the accessible name of an ungrouped exercise alone", () => {
+    renderStrip(SESSION, "squat");
+
+    expect(
+      screen.getByRole("tab", { name: /^Remo con barra, 4 de 4, 1 de 4 series$/ }),
+    ).toBeTruthy();
+  });
+
+  it("paints the group's colour down the side of its bubbles", () => {
+    const { container } = renderStrip(SESSION, "squat");
+
+    const bars = [...container.querySelectorAll("[data-testid='superset-bar']")];
+    // One strip per grouped bubble, and none for the exercise that stands alone.
+    expect(bars).toHaveLength(3);
+
+    const tone = getSupersetInfo(SESSION, 0)?.tone;
+    expect(tone).toBeTruthy();
+
+    // The strip is painted in the group's own colour, not in a colour of its
+    // own: the two bubbles of a group have to match.
+    expect(sameColor((bars[0] as HTMLElement).style.background, tone!.base)).toBe(true);
+    expect(sameColor((bars[1] as HTMLElement).style.background, tone!.base)).toBe(true);
+  });
+
+  it("lights the whole group while one of its exercises is on screen", () => {
+    const { container } = renderStrip(SESSION, "bench");
+
+    const bars = [...container.querySelectorAll("[data-testid='superset-bar']")];
+    const tone = getSupersetInfo(SESSION, 0)?.tone;
+    const other = getSupersetInfo(SESSION, 2)?.tone;
+
+    // "These two go together" is a fact about the pair, so the partner is lit
+    // too: dimming it would say the opposite.
+    expect(sameColor((bars[0] as HTMLElement).style.background, tone!.base)).toBe(true);
+    expect(sameColor((bars[1] as HTMLElement).style.background, tone!.base)).toBe(true);
+
+    // The group that is not on screen is dimmed, but it is still a group.
+    expect(sameColor((bars[2] as HTMLElement).style.background, other!.border)).toBe(true);
   });
 });

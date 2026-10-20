@@ -180,6 +180,146 @@ describe("ActiveSessionProvider rehydration", () => {
   });
 });
 
+describe("ActiveSessionProvider rest deadline", () => {
+  it("resumes the rest that was still running", async () => {
+    const endsAt = Date.now() + 30_000;
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(draft({ restEndsAt: endsAt }));
+    renderProvider("user-1");
+    await settle();
+
+    // The deadline is a moment, so the countdown that comes back is the one
+    // the athlete was in, not a fresh one.
+    expect(latest?.pendingRestEndsAt).toBe(endsAt);
+  });
+
+  it("does not resume a rest that has already ended", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(
+      draft({ restEndsAt: Date.now() - 1_000 }),
+    );
+    renderProvider("user-1");
+    await settle();
+
+    // A rest that expired while the app was closed is over, not something
+    // to count down.
+    expect(latest?.pendingRestEndsAt).toBeNull();
+  });
+
+  it("has no rest to resume when the draft carries no deadline", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(draft());
+    renderProvider("user-1");
+    await settle();
+
+    expect(latest?.pendingRestEndsAt).toBeNull();
+  });
+
+  it("forgets the deadline when the session is thrown away", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(
+      draft({ restEndsAt: Date.now() + 30_000 }),
+    );
+    renderProvider("user-1");
+    await settle();
+
+    act(() => {
+      latest?.discardDraft();
+    });
+
+    expect(latest?.pendingRestEndsAt).toBeNull();
+  });
+
+  it("keeps the deadline when the session is continued", async () => {
+    const endsAt = Date.now() + 30_000;
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(draft({ restEndsAt: endsAt }));
+    renderProvider("user-1");
+    await settle();
+
+    act(() => {
+      latest?.restoreDraft();
+    });
+
+    // Continuing the session is not throwing it away: the rest that was
+    // running is still running, and the countdown it restores is the one the
+    // athlete was in.
+    expect(latest?.pendingRestEndsAt).toBe(endsAt);
+  });
+
+  it("forgets the deadline when another session starts", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(
+      draft({ restEndsAt: Date.now() + 30_000 }),
+    );
+    renderProvider("user-1");
+    await settle();
+
+    act(() => {
+      latest?.start({ id: "routine-2", title: " otra " });
+    });
+
+    // The deadline belonged to the interrupted session. A new one starts with
+    // no rest running.
+    expect(latest?.pendingRestEndsAt).toBeNull();
+  });
+});
+
+describe("ActiveSessionProvider selected exercise", () => {
+  it("keeps the exercise that was on screen", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(draft({ selectedKey: "squat" }));
+    renderProvider("user-1");
+    await settle();
+
+    // The selection is what the athlete was looking at, so a reload puts
+    // them back in front of it rather than at the top of the plan.
+    expect(latest?.recoverableDraft?.selectedKey).toBe("squat");
+  });
+
+  it("has no exercise to restore when the draft names none", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(draft({ selectedKey: null }));
+    renderProvider("user-1");
+    await settle();
+
+    expect(latest?.recoverableDraft?.selectedKey).toBeNull();
+  });
+});
+
+describe("ActiveSessionProvider set kinds", () => {
+  it("keeps the kind of every set through the rehydration", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(
+      draft({
+        items: [
+          {
+            key: "squat",
+            exercise: {
+              id: "squat",
+              name: "Sentadilla trasera",
+              body_part: "upper legs",
+              target: "quadriceps",
+              equipment: "barbell",
+              gif_url: "",
+              instructions: [],
+            },
+            restSeconds: 90,
+            sets: [
+              { set_number: 1, weight: "60", reps: "10", rpe: "", kind: "warmup", completed: true },
+              { set_number: 2, weight: "100", reps: "5", rpe: "8", kind: "drop", completed: true },
+              { set_number: 3, weight: "100", reps: "5", rpe: "9", kind: "failure", completed: true },
+              { set_number: 4, weight: "100", reps: "5", rpe: "", kind: "normal", completed: false },
+            ],
+          },
+        ],
+      }),
+    );
+    renderProvider("user-1");
+    await settle();
+
+    // The kind is the difference between a warm-up and a drop set, and the
+    // athlete's work only counts if it survives the trip through storage.
+    expect(latest?.recoverableDraft?.items[0]?.sets.map((s) => s.kind)).toEqual([
+      "warmup",
+      "drop",
+      "failure",
+      "normal",
+    ]);
+  });
+});
+
 describe("ActiveSessionProvider recovery", () => {
   it("keeps the interrupted session under its own id", async () => {
     vi.mocked(loadRecoverableDraft).mockResolvedValue(draft());

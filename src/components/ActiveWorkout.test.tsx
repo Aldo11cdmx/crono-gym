@@ -111,7 +111,7 @@ function exercise(id: string, name: string): Exercise {
 const SQUAT = exercise("squat", "Sentadilla trasera");
 
 /** An interrupted session, as the provider finds it on the device. */
-function recoverableDraft(): SessionDraft {
+function recoverableDraft(overrides: Partial<SessionDraft> = {}): SessionDraft {
   return {
     logId: "log-draft",
     userId: "user-1",
@@ -138,6 +138,7 @@ function recoverableDraft(): SessionDraft {
     notes: "",
     finalized: false,
     updatedAt: 1,
+    ...overrides,
   };
 }
 
@@ -507,6 +508,35 @@ describe("ActiveWorkout draft persistence", () => {
     expect(vi.mocked(saveDraft)).toHaveBeenCalled();
   });
 
+  it("writes the deadline of the rest that is running", () => {
+    vi.useFakeTimers();
+    renderWorkout();
+    fireEvent.click(completeButton(1));
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+
+    // A deadline, not a count: the rest ends at a moment, and a moment is
+    // the only thing a reload can still honour.
+    const saved = vi.mocked(saveDraft).mock.calls.at(-1)?.[0];
+    const remaining = (saved?.restEndsAt ?? 0) - Date.now();
+    expect(remaining).toBeGreaterThan(89_000);
+    expect(remaining).toBeLessThanOrEqual(90_000);
+  });
+
+  it("writes the exercise that is on screen", () => {
+    vi.useFakeTimers();
+    renderWorkout();
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+
+    const saved = vi.mocked(saveDraft).mock.calls.at(-1)?.[0];
+    expect(saved?.selectedKey).toBe(SQUAT.id);
+  });
+
   it("keeps the draft under the id the interrupted session already had", async () => {
     const draft = recoverableDraft();
     vi.mocked(loadRecoverableDraft).mockResolvedValue(draft);
@@ -540,10 +570,142 @@ describe("ActiveWorkout draft persistence", () => {
     expect(vi.mocked(queueAndSync).mock.calls[0]?.[0]?.logId).toBe("log-draft");
     expect(vi.mocked(saveDraft).mock.calls.at(-1)?.[0]?.logId).toBe("log-draft");
   });
+
+  it("resumes the rest that was running when the session was interrupted", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(
+      recoverableDraft({ restEndsAt: Date.now() + 30_000 }),
+    );
+
+    render(
+      <ActiveSessionProvider>
+        <GymSettingsProvider>
+          <RecoverHarness />
+          <ActiveWorkout
+            userId="user-1"
+            routineId={null}
+            routineTitle="Fuerza"
+            planned={planned()}
+            onFinished={vi.fn()}
+          />
+        </GymSettingsProvider>
+      </ActiveSessionProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(/Encontramos una sesión sin terminar/)).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByText("Recuperar"));
+
+    // The countdown comes back with the time it had left, because the
+    // deadline it was counting down to is the same moment.
+    const dialog = screen.getByRole("dialog", { name: REST_TIMER_LABELS.title });
+    expect(within(dialog).getByText("00:30")).toBeTruthy();
+  });
+
+  it("does not resume a rest that ended while the app was closed", async () => {
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(
+      recoverableDraft({ restEndsAt: Date.now() - 1_000 }),
+    );
+
+    render(
+      <ActiveSessionProvider>
+        <GymSettingsProvider>
+          <RecoverHarness />
+          <ActiveWorkout
+            userId="user-1"
+            routineId={null}
+            routineTitle="Fuerza"
+            planned={planned()}
+            onFinished={vi.fn()}
+          />
+        </GymSettingsProvider>
+      </ActiveSessionProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(/Encontramos una sesión sin terminar/)).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByText("Recuperar"));
+
+    // A rest that expired is over. A timer that starts at zero is a timer that
+    // never got to be a timer.
+    expect(screen.queryByRole("dialog", { name: REST_TIMER_LABELS.title })).toBeNull();
+  });
+
+  it("puts the athlete back in front of the exercise they were on", async () => {
+    const bench = exercise("bench", "Press de banca");
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(
+      recoverableDraft({
+        selectedKey: bench.id,
+        items: [
+          {
+            key: SQUAT.id,
+            exercise: SQUAT,
+            restSeconds: 90,
+            sets: [
+              {
+                set_number: 1,
+                weight: "100",
+                reps: "5",
+                rpe: "8",
+                kind: "normal",
+                completed: true,
+              },
+            ],
+          },
+          {
+            key: bench.id,
+            exercise: bench,
+            restSeconds: 90,
+            sets: [
+              {
+                set_number: 1,
+                weight: "60",
+                reps: "10",
+                rpe: "7",
+                kind: "normal",
+                completed: false,
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    render(
+      <ActiveSessionProvider>
+        <GymSettingsProvider>
+          <RecoverHarness />
+          <ActiveWorkout
+            userId="user-1"
+            routineId={null}
+            routineTitle="Fuerza"
+            planned={planned()}
+            onFinished={vi.fn()}
+          />
+        </GymSettingsProvider>
+      </ActiveSessionProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(/Encontramos una sesión sin terminar/)).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByText("Recuperar"));
+
+    // The second exercise of the plan, not the first: a reload puts the
+    // athlete back where they were, not back at the top.
+    expect(screen.getByText(/2\/2 Press de banca/)).toBeTruthy();
+
+    // And the selection is what the next draft carries, so the next reload
+    // lands in the same place again.
+    await waitFor(() => expect(vi.mocked(saveDraft)).toHaveBeenCalled());
+    expect(vi.mocked(saveDraft).mock.calls.at(-1)?.[0]?.selectedKey).toBe(bench.id);
+  });
 });
 
 // ------------------------------------------------------------------- previous
-describe("ActiveWorkout previous session", () => {  /** A strong previous set, as the engine would report it. */
+describe("ActiveWorkout previous session", () => {
+  /** A strong previous set, as the engine would report it. */
   const trained = {
     squat: { ...EMPTY_PERFORMANCE, bestSet: { weight: 95, reps: 5, rpe: 8, is_warmup: false } },
   };

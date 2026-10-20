@@ -83,5 +83,19 @@ export function normalizeSetEntry(raw: unknown, index: number): SetEntry {
     rpe: typeof source.rpe === "string" ? source.rpe : "",
     kind,
     completed: source.completed === true,
+    /*
+     * The note travels with the set it belongs to.
+     *
+     * It used to be dropped here, and the draft was where that showed: a set
+     * written with a note came back out of storage without it, so the session
+     * the athlete could recover was not the session they had left. A note is
+     * prose about one attempt at one weight -- "the grip gave out at rep 7" --
+     * and there is no other place for it to live.
+     *
+     * `undefined` rather than `null` when there is none: the two mean the same
+     * thing to the reader, and `undefined` leaves the shape of a set that never
+     * had a note identical to the shape it had before the field existed.
+     */
+    notes: typeof source.notes === "string" ? source.notes : undefined,
   };
 }

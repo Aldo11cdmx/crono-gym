@@ -29,8 +29,9 @@ export const DB_NAME = "cronos-offline";
  * v3: `coachChats` (the assistant's daily conversation log)
  * v4: `exerciseNotes` (per-set notes, queued for sync alongside the set)
  * v5: `localState` (one row: role, feature flags, athlete context, consent)
+ * v6: `catalog` (the exercise catalog, compressed, for offline use)
  */
-export const DB_VERSION = 5;
+export const DB_VERSION = 6;
 
 export const DRAFT_STORE = "drafts";
 export const QUEUE_STORE = "queue";
@@ -39,6 +40,7 @@ export const LAST_RANKS_STORE = "lastRanks";
 export const COACH_CHATS_STORE = "coachChats";
 export const EXERCISE_NOTES_STORE = "exerciseNotes";
 export const LOCAL_STATE_STORE = "localState";
+export const CATALOG_STORE = "catalog";
 
 /**
  * Every store in the database, with the index each one needs.
@@ -88,6 +90,19 @@ export const STORES: readonly {
    * upgrade because the handler skips stores that already exist.
    */
   { name: LOCAL_STATE_STORE, keyPath: "key" },
+  /*
+   * `catalog` holds one row: the exercise catalog, compressed.
+   *
+   * Keyed by a constant `id` because there is exactly one catalog: the app
+   * ships one dataset and it is replaced wholesale, never appended to. The
+   * payload is the catalog JSON run through the browser's `CompressionStream`
+   * -- 16.3 MB of JSON becomes roughly 2.3 MB, which is the difference
+   * between a cache that fits in the quota and one that does not.
+   *
+   * Additive only: the v5->v6 upgrade creates a store and touches nothing
+   * else, so existing drafts, notes and rank history are untouched.
+   */
+  { name: CATALOG_STORE, keyPath: "id" },
 ];
 
 let dbPromise: Promise<IDBDatabase | null> | null = null;

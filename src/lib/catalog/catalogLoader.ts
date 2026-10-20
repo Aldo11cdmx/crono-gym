@@ -11,15 +11,21 @@
  *
  * The JSON now ships as its own asset and is fetched the first time something
  * asks for it. The loader keeps one in-flight request and one memory cache, so
- * opening the picker twice does not download or parse it twice.
+ * opening the picker twice does not download or parse it twice, and the
+ * downloaded copy is written to IndexedDB so the next start is local.
  *
  * The URL is overridable with `VITE_EXERCISES_CATALOG_URL` so the catalog can
- * later be served compressed from a CDN, or from the IndexedDB cache, without
+ * later be served compressed from a CDN, or from the device cache, without
  * touching the code that reads it.
  */
 
 import catalogAssetUrl from "@/data/exercisesCatalog.json?url";
-import type { CatalogExercise } from "./types";
+import {
+  indexedDbCatalogCache,
+  type CatalogCache,
+  type CachedCatalog,
+} from "./catalogCache";
+import { isCatalogExercise, type CatalogExercise } from "./types";
 
 const DEFAULT_CATALOG_URL = import.meta.env.VITE_EXERCISES_CATALOG_URL ?? catalogAssetUrl;
 
@@ -35,22 +41,8 @@ export interface LoadCatalogOptions {
   url?: string;
   /** Injection seam for tests; defaults to the global `fetch`. */
   fetchImpl?: typeof fetch;
-}
-
-/**
- * A catalog row is only usable if it can be identified and rendered: a name
- * to show and an id to key the list on. Rows missing those are dropped instead
- * of crashing the picker.
- */
-export function isCatalogExercise(value: unknown): value is CatalogExercise {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Partial<CatalogExercise>;
-  return (
-    typeof row.id === "string" &&
-    row.id.length > 0 &&
-    typeof row.name === "string" &&
-    typeof row.gif_url === "string"
-  );
+  /** Where the catalog is kept between starts. Defaults to IndexedDB. */
+  cache?: CatalogCache;
 }
 
 let cache: CatalogExercise[] | null = null;
@@ -59,8 +51,13 @@ let inFlight: Promise<CatalogExercise[]> | null = null;
 /**
  * Reads the catalog once and keeps it in memory.
  *
- * Rejects with a `CatalogLoadError` when the file cannot be fetched or does
- * not contain a usable catalog, so the caller can offer a retry.
+ * The device cache comes first: a stored catalog younger than its TTL is
+ * served without touching the network. A stored catalog that has gone stale is
+ * refreshed from the network, and is used as it is if the network is not
+ * there — a day-old catalog is better than no catalog.
+ *
+ * Rejects with a `CatalogLoadError` when the file cannot be fetched and there
+ * is nothing stored, so the caller can offer a retry.
  */
 export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<CatalogExercise[]> {
   if (cache) return cache;
@@ -68,22 +65,29 @@ export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<Cat
 
   const url = options.url ?? DEFAULT_CATALOG_URL;
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  const store = options.cache ?? indexedDbCatalogCache;
 
   inFlight = (async () => {
-    const res = await fetchImpl(url);
-    if (!res.ok) {
-      throw new CatalogLoadError(`HTTP ${res.status} al cargar el catálogo`);
+    const stored = await readStored(store);
+    if (stored?.fresh) {
+      cache = stored.rows;
+      return stored.rows;
     }
-    const payload: unknown = await res.json();
-    if (!Array.isArray(payload)) {
-      throw new CatalogLoadError("El catálogo no es una lista de ejercicios");
+
+    try {
+      const rows = await fetchCatalog(url, fetchImpl);
+      cache = rows;
+      // The write must not delay the picker: it happens in the background and
+      // a failure to store is not a failure to show the catalog.
+      void store.write(rows).catch(() => undefined);
+      return rows;
+    } catch (err) {
+      if (stored) {
+        cache = stored.rows;
+        return stored.rows;
+      }
+      throw err;
     }
-    const rows = payload.filter(isCatalogExercise);
-    if (rows.length === 0) {
-      throw new CatalogLoadError("El catálogo no contiene ejercicios utilizables");
-    }
-    cache = rows;
-    return rows;
   })();
 
   try {
@@ -93,7 +97,36 @@ export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<Cat
   }
 }
 
+/** Reads the device cache. A broken cache is an empty cache, never a failure. */
+async function readStored(store: CatalogCache): Promise<CachedCatalog | null> {
+  try {
+    return await store.read();
+  } catch {
+    return null;
+  }
+}
+
+/** Downloads the catalog and keeps the rows that can be rendered. */
+async function fetchCatalog(url: string, fetchImpl: typeof fetch): Promise<CatalogExercise[]> {
+  const res = await fetchImpl(url);
+  if (!res.ok) {
+    throw new CatalogLoadError(`HTTP ${res.status} al cargar el catálogo`);
+  }
+  const payload: unknown = JSON.parse(await res.text());
+  if (!Array.isArray(payload)) {
+    throw new CatalogLoadError("El catálogo no es una lista de ejercicios");
+  }
+  const rows = payload.filter(isCatalogExercise);
+  if (rows.length === 0) {
+    throw new CatalogLoadError("El catálogo no contiene ejercicios utilizables");
+  }
+  return rows;
+}
+
 /** Drops the memory cache. Used by the tests and by an explicit refresh. */
 export function resetCatalogCache(): void {
   cache = null;
 }
+
+export { isCatalogExercise };
+export type { CachedCatalog };

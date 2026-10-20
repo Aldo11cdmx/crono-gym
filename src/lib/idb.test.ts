@@ -21,6 +21,7 @@ import { describe, expect, it } from "vitest";
 import offlineStoreSource from "./offlineStore.ts?raw";
 import rankHistorySource from "./ranks/rankHistory.ts?raw";
 import {
+  CATALOG_STORE,
   COACH_CHATS_STORE,
   DRAFT_STORE,
   DB_NAME,
@@ -50,7 +51,7 @@ describe("the cronos-offline schema", () => {
     // installed clients about what their upgrade will find, so it has to be stated. A
     // derived number would bump itself every time a store is added and stop meaning
     // anything.
-    expect(DB_VERSION).toBe(5);
+    expect(DB_VERSION).toBe(6);
   });
 
   it("declares every store exactly once", () => {
@@ -80,6 +81,9 @@ describe("the cronos-offline schema", () => {
     // writer both agree on. Not keyed by user_id: this is device state, and a second
     // device is a second row, which is the intended behaviour.
     expect(storeByName(LOCAL_STATE_STORE)?.keyPath).toBe("key");
+    // One row for the one catalog the app ships, replaced wholesale rather
+    // than appended to.
+    expect(storeByName(CATALOG_STORE)?.keyPath).toBe("id");
   });
 
   it("indexes the notes store by exercise, so the hub's read is the local shape too", () => {

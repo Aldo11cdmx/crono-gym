@@ -29,3 +29,19 @@ export interface CatalogExercise {
   created_at: string;
   attribution: string | null;
 }
+
+/**
+ * A catalog row is only usable if it can be identified and rendered: a name to
+ * show and an id to key the list on. Rows missing those are dropped instead of
+ * crashing the picker.
+ */
+export function isCatalogExercise(value: unknown): value is CatalogExercise {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Partial<CatalogExercise>;
+  return (
+    typeof row.id === "string" &&
+    row.id.length > 0 &&
+    typeof row.name === "string" &&
+    typeof row.gif_url === "string"
+  );
+}

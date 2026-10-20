@@ -1,10 +1,10 @@
 /**
- * catalogLoader.test.ts — the catalog is downloaded once, and only when asked.
+ * catalogLoader.test.ts — the catalog is downloaded once, kept, and reused.
  *
  * The point of the loader is that a 16.3 MB file is not part of the entry
  * bundle, so the assertions that matter are about *when* and *how many times*
- * the file is fetched: a second caller must not start a second download, and a
- * failed download must not poison the cache.
+ * the file is fetched, and about what happens when there is no network: a
+ * device that already has the catalog must still show it.
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,6 +14,7 @@ import {
   loadCatalog,
   resetCatalogCache,
 } from "./catalogLoader";
+import type { CatalogCache, CachedCatalog } from "./catalogCache";
 import type { CatalogExercise } from "./types";
 
 function row(id: string, name: string): CatalogExercise {
@@ -41,8 +42,20 @@ function okResponse(payload: unknown): Response {
   return {
     ok: true,
     status: 200,
-    json: async () => payload,
+    text: async () => JSON.stringify(payload),
   } as unknown as Response;
+}
+
+/** A store that keeps what it is given, so the tests can inspect it. */
+function fakeStore(initial: CachedCatalog | null = null) {
+  let stored = initial;
+  const cache: CatalogCache = {
+    read: async () => stored,
+    write: async (rows) => {
+      stored = { rows, storedAt: Date.now(), fresh: true };
+    },
+  };
+  return { cache, read: () => stored };
 }
 
 beforeEach(() => {
@@ -81,7 +94,7 @@ describe("loadCatalog", () => {
         ({
           ok: true,
           status: 200,
-          json: () => json,
+          text: () => json.then((value) => JSON.stringify(value)),
         }) as unknown as Response,
     );
 
@@ -150,6 +163,59 @@ describe("loadCatalog", () => {
     await loadCatalog({ url: "/catalog.json", fetchImpl });
 
     expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("loadCatalog con el catálogo guardado en el dispositivo", () => {
+  it("sirve el catálogo guardado sin tocar la red", async () => {
+    const fetchImpl = vi.fn(async () => okResponse([row("9", "De la red")]));
+    const store = fakeStore({ rows: [row("1", "Guardado")], storedAt: Date.now(), fresh: true });
+
+    const rows = await loadCatalog({ url: "/catalog.json", fetchImpl, cache: store.cache });
+
+    expect(rows[0].name).toBe("Guardado");
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("refresca un catálogo guardado que ya está viejo", async () => {
+    const fetchImpl = vi.fn(async () => okResponse([row("9", "De la red")]));
+    const store = fakeStore({ rows: [row("1", "Guardado")], storedAt: 0, fresh: false });
+
+    const rows = await loadCatalog({ url: "/catalog.json", fetchImpl, cache: store.cache });
+
+    expect(rows[0].name).toBe("De la red");
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("usa el catálogo guardado cuando no hay red", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error("offline");
+    });
+    const store = fakeStore({ rows: [row("1", "Guardado")], storedAt: 0, fresh: false });
+
+    const rows = await loadCatalog({ url: "/catalog.json", fetchImpl, cache: store.cache });
+
+    expect(rows[0].name).toBe("Guardado");
+  });
+
+  it("falla si no hay red y tampoco hay catálogo guardado", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error("offline");
+    });
+    const store = fakeStore(null);
+
+    await expect(
+      loadCatalog({ url: "/catalog.json", fetchImpl, cache: store.cache }),
+    ).rejects.toThrow("offline");
+  });
+
+  it("guarda el catálogo descargado para el siguiente arranque", async () => {
+    const fetchImpl = vi.fn(async () => okResponse([row("1", "Sentadilla")]));
+    const store = fakeStore();
+
+    await loadCatalog({ url: "/catalog.json", fetchImpl, cache: store.cache });
+
+    expect(store.read()?.rows[0].name).toBe("Sentadilla");
   });
 });
 

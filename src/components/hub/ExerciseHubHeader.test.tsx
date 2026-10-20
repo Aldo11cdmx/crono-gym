@@ -25,6 +25,12 @@ const NO_SESSION = {
   warmups: [],
   enqueueWarmup: vi.fn(),
   resolveWarmup: vi.fn(),
+  recoverableDraft: null,
+  rehydrating: false,
+  rehydrate: vi.fn(),
+  restoreDraft: vi.fn(),
+  discardDraft: vi.fn(),
+  recoveredLogId: null,
 };
 
 const SESSION = {
@@ -35,6 +41,12 @@ const SESSION = {
   warmups: [],
   enqueueWarmup: vi.fn(),
   resolveWarmup: vi.fn(),
+  recoverableDraft: null,
+  rehydrating: false,
+  rehydrate: vi.fn(),
+  restoreDraft: vi.fn(),
+  discardDraft: vi.fn(),
+  recoveredLogId: null,
 };
 
 describe("ExerciseHubHeader", () => {

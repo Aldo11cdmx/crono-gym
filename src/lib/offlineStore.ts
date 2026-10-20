@@ -24,10 +24,39 @@ export interface DraftExercise {
   key: string;
   exercise: Exercise;
   restSeconds: number;
+  /**
+   * The sets of this exercise, each one carrying its own type.
+   *
+   * The type of a set -- `normal`, `warmup`, `failure` or `drop` -- travels in
+   * `SetEntry.kind`, which is the single source of truth for it across the
+   * whole app: the chip row renders it, the tonnage counts on it, and the
+   * sync payload derives the database's warm-up flag from it. A second copy of
+   * it on the draft would be a second answer to the same question, and the two
+   * would disagree the first time a set was edited.
+   *
+   * A draft written before the kind chips shipped carries only the legacy
+   * `is_warmup` flag; `normalizeSetEntry` maps that shape onto `kind` on read,
+   * so the old draft is migrated rather than lost.
+   */
   sets: SetEntry[];
 }
 
-/** A full in-progress or just-finished session, persisted locally. */
+/**
+ * A full in-progress or just-finished session, persisted locally.
+ *
+ * v2 adds the two things a reload needs to put the athlete back exactly
+ * where they were: the deadline of the rest that was running, and the
+ * exercise that was on screen. Both are optional, because a draft written
+ * before v2 is still a valid draft and has to keep working -- the
+ * normaliser in `normalizeDraft` simply leaves them out.
+ *
+ * The type of each set does not live here either: it travels inside
+ * `SetEntry.kind` -- `normal` | `warmup` | `failure` | `drop` -- which is the
+ * single source of truth for it, and it is normalised on read by
+ * `normalizeSetEntry`. A draft written before the kind chips shipped carries
+ * `is_warmup: boolean` instead, and is mapped onto the current shape rather
+ * than lost.
+ */
 export interface SessionDraft {
   /** Client-generated; also used as the Supabase `workout_logs.id`. */
   logId: string;
@@ -40,6 +69,24 @@ export interface SessionDraft {
   /** Set once the user finishes; still synced until the queue drains. */
   finalized: boolean;
   updatedAt: number;
+  /**
+   * When the rest that was running ends, in epoch milliseconds.
+   *
+   * A deadline rather than a remaining count, because a count is only true
+   * at the moment it was written: the tab may be throttled, asleep or
+   * closed, and a rest ends at a moment, not after a number of ticks. It is
+   * the same reason the timer itself reads the wall clock.
+   *
+   * Absent when no rest was running.
+   */
+  restEndsAt?: number;
+  /**
+   * The exercise that was on screen, as the item key in `items`.
+   *
+   * Absent in a draft written before v2; `null` when there is no selection
+   * to speak of.
+   */
+  selectedKey?: string | null;
 }
 
 /** One completed set, shaped to match the `completed_sets` columns. */
@@ -114,10 +161,21 @@ export async function saveDraft(draft: SessionDraft): Promise<void> {
  * sits in IndexedDB with `is_warmup: boolean` and no `kind`, and it will be
  * offered back for recovery the next time the app opens. `normalizeSetEntry`
  * maps that shape onto the current one, including the legacy warm-up flag.
+ *
+ * The v2 fields are normalised rather than trusted. IndexedDB is durable, so
+ * a value written by an older build -- or half-written by a session that died
+ * mid-save -- has to survive the trip to the timer: a rest deadline that is
+ * not a number is no rest at all, and a selection that is not a string is no
+ * selection.
  */
 function normalizeDraft(draft: SessionDraft): SessionDraft {
   return {
     ...draft,
+    restEndsAt:
+      typeof draft.restEndsAt === "number" && Number.isFinite(draft.restEndsAt)
+        ? draft.restEndsAt
+        : undefined,
+    selectedKey: typeof draft.selectedKey === "string" ? draft.selectedKey : null,
     items: (draft.items ?? []).map((item) => ({
       ...item,
       sets: (item.sets ?? []).map((set, index) => normalizeSetEntry(set, index)),

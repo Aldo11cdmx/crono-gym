@@ -139,6 +139,26 @@ describe("normalizeSetEntry", () => {
     expect(normalizeSetEntry({ ...LEGACY_NORMAL, completed: "yes" }, 0).completed).toBe(false);
     expect(normalizeSetEntry({ ...LEGACY_NORMAL, completed: true }, 0).completed).toBe(true);
   });
+
+  it("keeps the note attached to the set it was written on", () => {
+    // The note is prose about one attempt at one weight -- "la rodilla
+    // protestó" -- and there is no other place for it to live. Dropping it
+    // here meant a draft came back without the note the athlete had written.
+    expect(normalizeSetEntry({ ...LEGACY_NORMAL, notes: "la rodilla protestó" }, 0).notes).toBe(
+      "la rodilla protestó",
+    );
+  });
+
+  it("leaves a set with no note as it was", () => {
+    // `undefined` rather than `null`: the two mean the same thing to the
+    // reader, and this keeps the shape of a set that never had a note
+    // identical to the shape it had before the field existed.
+    expect(normalizeSetEntry(LEGACY_NORMAL, 0).notes).toBeUndefined();
+  });
+
+  it("drops a note that is not prose", () => {
+    expect(normalizeSetEntry({ ...LEGACY_NORMAL, notes: 42 }, 0).notes).toBeUndefined();
+  });
 });
 
 describe("the SetEntry contract", () => {

@@ -31,6 +31,7 @@ const NO_SESSION = {
   restoreDraft: vi.fn(),
   discardDraft: vi.fn(),
   recoveredLogId: null,
+  pendingRestEndsAt: null,
 };
 
 const SESSION = {
@@ -47,6 +48,7 @@ const SESSION = {
   restoreDraft: vi.fn(),
   discardDraft: vi.fn(),
   recoveredLogId: null,
+  pendingRestEndsAt: null,
 };
 
 describe("ExerciseHubHeader", () => {

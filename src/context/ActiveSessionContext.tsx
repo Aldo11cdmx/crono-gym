@@ -103,6 +103,15 @@ export interface ActiveSessionValue {
   discardDraft: () => void;
   /** The id a recovered session writes under; null before the recovery. */
   recoveredLogId: string | null;
+  /**
+   * When the rest that was running when the session was interrupted ends.
+   *
+   * `null` when there was no rest, and also when the rest has already ended:
+   * a rest that expired while the app was closed is not a rest to resume,
+   * it is a rest that is over. The deadline is a moment, not a count, so
+   * the countdown it restores is the one the athlete was actually in.
+   */
+  pendingRestEndsAt: number | null;
 }
 
 /**
@@ -128,6 +137,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
   const [warmups, setWarmups] = useState<readonly WarmupRequest[]>([]);
   const [recoverableDraft, setRecoverableDraft] = useState<SessionDraft | null>(null);
   const [recoveredLogId, setRecoveredLogId] = useState<string | null>(null);
+  const [pendingRestEndsAt, setPendingRestEndsAt] = useState<number | null>(null);
   const [rehydrating, setRehydrating] = useState(true);
   /** The user the lookup is for. `null` until somebody asks for one. */
   const [rehydrateFor, setRehydrateFor] = useState<string | null>(null);
@@ -156,6 +166,14 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       // it would put two sessions in the same app.
       if (sessionRef.current) return;
       setRecoverableDraft(draft);
+      // The rest that was running is resumed where it was, if it is still
+      // running: the deadline is a moment, so a rest that expired while the
+      // app was closed is over, not something to count down.
+      setPendingRestEndsAt(
+        typeof draft.restEndsAt === "number" && draft.restEndsAt > Date.now()
+          ? draft.restEndsAt
+          : null,
+      );
       // The session is created from the draft, so the clock starts when the
       // interrupted session started -- not now, and not on a second screen.
       setSession({
@@ -187,6 +205,8 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     if (!draft) return;
     void deleteDraft(draft.logId);
     setRecoverableDraft(null);
+    // A discarded session has no rest to resume.
+    setPendingRestEndsAt(null);
     // The session that was recovered is not happening, so its clock goes
     // back to now: the pill must not count a discarded session as running.
     setSession((current) =>
@@ -208,6 +228,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     // offered while this session runs.
     setRecoveredLogId(null);
     setRecoverableDraft(null);
+    setPendingRestEndsAt(null);
   }, []);
 
   const end = useCallback(() => {
@@ -248,6 +269,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       restoreDraft,
       discardDraft,
       recoveredLogId,
+      pendingRestEndsAt,
     }),
     [
       session,
@@ -262,6 +284,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       restoreDraft,
       discardDraft,
       recoveredLogId,
+      pendingRestEndsAt,
     ],
   );
 

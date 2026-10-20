@@ -1361,6 +1361,7 @@ export function ActiveWorkout({
     restoreDraft,
     discardDraft,
     recoveredLogId,
+    pendingRestEndsAt,
   } = useActiveSession();
 
   /**
@@ -1512,14 +1513,21 @@ export function ActiveWorkout({
    * than as a new one that looks like it. The draft on the device is then
    * overwritten by the next write, under the same id, so nothing is left
    * behind as an orphan.
+   *
+   * The rest that was running is resumed where it was. It is the same
+   * deadline the timer had before the reload, so the athlete comes back to
+   * the countdown they were in and not to a fresh one.
    */
   function restoreRecovered() {
     if (!recoverableDraft) return;
     setItems(recoverableDraft.items);
     setNotes(recoverableDraft.notes);
+    // The exercise that was on screen goes back on screen.
+    if (recoverableDraft.selectedKey) setSelectedKey(recoverableDraft.selectedKey);
     restoreDraft();
     setStarted(true);
     setNotice("Sesión recuperada. Continúa donde lo dejaste.");
+    if (pendingRestEndsAt) startRestUntil(pendingRestEndsAt);
   }
 
   /**
@@ -1545,6 +1553,12 @@ export function ActiveWorkout({
         notes: nextNotes,
         finalized,
         updatedAt: Date.now(),
+        // The v2 fields: where the athlete was, so a reload puts them back
+        // there. Read through refs, never through state: `persist` has to
+        // keep the same identity across renders, or the debounce that
+        // writes the draft restarts with it and never fires.
+        restEndsAt: restRef.current?.endsAt,
+        selectedKey: selectedKeyRef.current,
       });
     },
     [activeLogId, userId, routineId, routineTitle, startedAt],
@@ -1554,6 +1568,19 @@ export function ActiveWorkout({
   const notesRef = useRef(notes);
   itemsRef.current = items;
   notesRef.current = notes;
+  /** The rest that is running, if any. Read by `persist` without subscribing to it. */
+  const restRef = useRef(rest);
+  restRef.current = rest;
+  /**
+   * The exercise that is on screen.
+   *
+   * The *effective* selection rather than the raw state: `selectedKey` is
+   * null until the athlete taps the carousel, but the first exercise of the
+   * plan is on screen all the same. What the draft has to remember is what
+   * the athlete was looking at.
+   */
+  const selectedKeyRef = useRef<string | null>(null);
+  selectedKeyRef.current = selected?.key ?? null;
 
   /**
    * True once the session has been sent to the server.
@@ -1591,21 +1618,37 @@ export function ActiveWorkout({
   }, [items, performance]);
 
   /**
-   * Starts a rest, anchored to the moment it ends.
+   * Starts a rest that ends at a given moment.
    *
    * The deadline is captured here, once, and handed to `RestTimer`: the clock
    * then reads the wall clock instead of counting down, so a background tab
    * whose timers are throttled cannot make the rest last longer than the
    * athlete asked for.
    */
-  function startRest(seconds: number) {
-    const total = Math.max(seconds, 15);
-    const now = Date.now();
+  function startRestUntil(endsAt: number) {
+    const remainingMs = endsAt - Date.now();
+    // A rest that has already ended is not a rest to start. The countdown it
+    // would show is zero, and a timer that starts at zero is a timer that
+    // never had a chance to be a timer.
+    if (remainingMs <= 0) return;
+    const total = Math.max(Math.ceil(remainingMs / 1000), 1);
     // A counter rather than the clock: two rests started in the same
     // millisecond would otherwise share a key, and the second one would
     // reuse the first one's deadline.
     restIdRef.current += 1;
-    setRest({ id: restIdRef.current, seconds: total, endsAt: now + total * 1000 });
+    setRest({ id: restIdRef.current, seconds: total, endsAt });
+  }
+
+  /**
+   * Starts a rest of a given length.
+   *
+   * The length is turned into a deadline on the spot, so that both a rest
+   * started now and a rest resumed from a draft are the same thing: a moment
+   * the clock reads.
+   */
+  function startRest(seconds: number) {
+    const total = Math.max(seconds, 15);
+    startRestUntil(Date.now() + total * 1000);
   }
 
   const closeRest = useCallback(() => setRest(null), []);

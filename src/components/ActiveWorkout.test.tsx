@@ -13,17 +13,28 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { useEffect } from "react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { ActiveWorkout, UNDO_WINDOW_MS } from "./ActiveWorkout";
-import { ActiveSessionProvider } from "../context/ActiveSessionContext";
+import { ActiveSessionProvider, useActiveSession } from "../context/ActiveSessionContext";
 import { GymSettingsProvider } from "../context/GymSettingsContext";
 import type { Exercise } from "@/types/supabase";
 import type { PlannedExercise } from "../hooks/useGymData";
 import { EMPTY_PERFORMANCE } from "../hooks/usePreviousPerformance";
 import type { PreviousPerformance } from "../lib/overload";
 import { queueAndSync } from "../lib/sessionSync";
-import { SET_TYPE_LABELS, GYM_LABELS } from "../lib/i18n";
+import { SET_TYPE_LABELS, GYM_LABELS, REST_TIMER_LABELS } from "../lib/i18n";
+import { TICK_MS } from "../lib/workout/restTimer";
 import { GYM_SETTINGS_KEY } from "../context/GymSettingsContext";
+import { loadRecoverableDraft, saveDraft, type SessionDraft } from "../lib/offlineStore";
 
 // --------------------------------------------------------------------- mocks
 
@@ -63,12 +74,20 @@ vi.mock("../hooks/usePreviousPerformance", async (importOriginal) => {
 
 // Overlays and the carousel pull in routing and media queries; they are not what
 // this file is about.
+//
+// `RestTimer` is deliberately NOT mocked: it is the component the workout now
+// uses, and a test that mocks it proves nothing about the rest clock. The
+// audio module is mocked instead, as in `RestTimer.test.tsx`: what matters
+// here is *when* the timer asks for a sound, not the Web Audio API inside
+// jsdom.
 vi.mock("./ExerciseBrowser", () => ({ ExerciseBrowser: () => null }));
 vi.mock("./TutorialModal", () => ({ TutorialModal: () => null }));
-vi.mock("./RestTimer", () => ({ RestTimer: () => null }));
 vi.mock("./NotionJournal", () => ({ NotionJournal: () => null }));
-vi.mock("./ExercisePanel", () => ({ ExercisePanel: () => null }));
 vi.mock("./ExerciseCarousel", () => ({ ExerciseCarousel: () => null }));
+vi.mock("../lib/audio", () => ({
+  playBeep: vi.fn(() => true),
+  isRecordBeepActive: vi.fn(() => false),
+}));
 
 // ------------------------------------------------------------------ fixtures
 
@@ -91,6 +110,37 @@ function exercise(id: string, name: string): Exercise {
 
 const SQUAT = exercise("squat", "Sentadilla trasera");
 
+/** An interrupted session, as the provider finds it on the device. */
+function recoverableDraft(): SessionDraft {
+  return {
+    logId: "log-draft",
+    userId: "user-1",
+    routineId: null,
+    routineTitle: "Fuerza",
+    startedAt: "2026-10-20T08:00:00.000Z",
+    items: [
+      {
+        key: SQUAT.id,
+        exercise: SQUAT,
+        restSeconds: 90,
+        sets: [
+          {
+            set_number: 1,
+            weight: "100",
+            reps: "5",
+            rpe: "8",
+            kind: "normal",
+            completed: true,
+          },
+        ],
+      },
+    ],
+    notes: "",
+    finalized: false,
+    updatedAt: 1,
+  };
+}
+
 function planned(items: PlannedExercise[] | null = null, targetSets = 3): PlannedExercise[] {
   return items ?? [{ exercise: SQUAT, target_sets: targetSets, rest_seconds: 90, dayIndex: null, dayLabel: "" }];
 }
@@ -103,9 +153,8 @@ function planned(items: PlannedExercise[] | null = null, targetSets = 3): Planne
  * the default walks through it -- and doing so here rather than in each test means a
  * test that breaks can only be about the logger, not about a missing gate tap.
  */
-function renderWorkout(items: PlannedExercise[] = planned(), start = true) {
-  const onFinished = vi.fn();
-  const view = render(
+function workoutTree(items: PlannedExercise[], onFinished: () => void) {
+  return (
     <ActiveSessionProvider>
       <GymSettingsProvider>
         <ActiveWorkout
@@ -116,10 +165,39 @@ function renderWorkout(items: PlannedExercise[] = planned(), start = true) {
           onFinished={onFinished}
         />
       </GymSettingsProvider>
-    </ActiveSessionProvider>,
+    </ActiveSessionProvider>
   );
+}
+
+function renderWorkout(items: PlannedExercise[] = planned(), start = true) {
+  const onFinished = vi.fn();
+  const view = render(workoutTree(items, onFinished));
   if (start) tapStart();
-  return { ...view, onFinished };
+  return {
+    ...view,
+    onFinished,
+    /**
+     * Re-renders the same tree: a render that changes no data at all.
+     *
+     * The one thing a re-render must not do is restart the draft's debounce,
+     * so the test needs a re-render that is not a data change.
+     */
+    rerenderWorkout: () => view.rerender(workoutTree(items, onFinished)),
+  };
+}
+
+/**
+ * Asks the session provider to look for an unfinished session.
+ *
+ * The provider owns the lookup; this is the same call the auth gate makes
+ * once it knows who is signed in.
+ */
+function RecoverHarness() {
+  const { rehydrate } = useActiveSession();
+  useEffect(() => {
+    rehydrate("user-1");
+  }, [rehydrate]);
+  return null;
 }
 
 /** Through the pre-workout gate and into the logger. */
@@ -379,10 +457,93 @@ describe("ActiveWorkout set kind at the persistence boundary", () => {
   });
 });
 
-// ------------------------------------------------------------------- previous
+// --------------------------------------------------------------- rest clock
 
-describe("ActiveWorkout previous session", () => {
-  /** A strong previous set, as the engine would report it. */
+describe("ActiveWorkout rest clock", () => {
+  it("uses the canonical timer, not a counter of its own", () => {
+    renderWorkout();
+    fireEvent.click(completeButton(1));
+    // The real `RestTimer`, which is a dialog and not a bare counter.
+    expect(screen.getByRole("dialog", { name: REST_TIMER_LABELS.title })).toBeTruthy();
+  });
+
+  it("is anchored to an instant, so a throttled tab cannot stretch it", () => {
+    vi.useFakeTimers();
+    renderWorkout();
+    fireEvent.click(completeButton(1));
+
+    // The clock jumps two minutes: the tab was in the background and its
+    // timers never got to run.
+    act(() => {
+      vi.setSystemTime(Date.now() + 120_000);
+    });
+    act(() => {
+      vi.advanceTimersByTime(TICK_MS);
+    });
+
+    // A deadline that was read late still names the same moment, so the
+    // rest is over. A counter would still be counting.
+    expect(screen.queryByRole("dialog", { name: REST_TIMER_LABELS.title })).toBeNull();
+  });
+});
+
+// ----------------------------------------------------------------- drafts
+
+describe("ActiveWorkout draft persistence", () => {
+  it("writes the draft even when the screen keeps re-rendering", () => {
+    vi.useFakeTimers();
+    const view = renderWorkout();
+    fireEvent.change(weightField(1), { target: { value: "100" } });
+
+    // Continuous re-renders, of the kind any clock on screen produces. Each
+    // one used to restart the debounce, and the draft was never written.
+    for (let round = 0; round < 6; round += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+      view.rerenderWorkout();
+    }
+
+    expect(vi.mocked(saveDraft)).toHaveBeenCalled();
+  });
+
+  it("keeps the draft under the id the interrupted session already had", async () => {
+    const draft = recoverableDraft();
+    vi.mocked(loadRecoverableDraft).mockResolvedValue(draft);
+
+    render(
+      <ActiveSessionProvider>
+        <GymSettingsProvider>
+          <RecoverHarness />
+          <ActiveWorkout
+            userId="user-1"
+            routineId={null}
+            routineTitle="Fuerza"
+            planned={planned()}
+            onFinished={vi.fn()}
+          />
+        </GymSettingsProvider>
+      </ActiveSessionProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(/Encontramos una sesión sin terminar/)).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByText("Recuperar"));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("Finalizar"));
+    });
+
+    // The session continues as the one that was interrupted: the same id on
+    // the server and on the device, and no orphan left behind.
+    expect(vi.mocked(queueAndSync).mock.calls[0]?.[0]?.logId).toBe("log-draft");
+    expect(vi.mocked(saveDraft).mock.calls.at(-1)?.[0]?.logId).toBe("log-draft");
+  });
+});
+
+// ------------------------------------------------------------------- previous
+describe("ActiveWorkout previous session", () => {  /** A strong previous set, as the engine would report it. */
   const trained = {
     squat: { ...EMPTY_PERFORMANCE, bestSet: { weight: 95, reps: 5, rpe: 8, is_warmup: false } },
   };

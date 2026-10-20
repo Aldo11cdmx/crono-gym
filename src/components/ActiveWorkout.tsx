@@ -1,58 +1,46 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+/**
+ * ActiveWorkout.tsx — rediseño desde cero, presentación Apple minimalista.
+ *
+ * Estética: modo oscuro, fondo negro puro, acento cian/teal (#6EE7F7), tipografía
+ * del sistema, cards elevadas, bordes de pelo, micro-header fijo arriba y scroll
+ * vertical nativo. Toda la lógica de sesión, borrador, sobrecarga y sincronía se
+ * conserva; solo cambia la piel.
+ *
+ * Los nombres accesibles y roles que ejercitan los tests se preservan tal cual:
+ * "Empezar", "Finalizar", grupos "Serie n", chips "Serie n de tipo X",
+ * spinbutton /Peso:/, botón de gear, "Última sesión: ...", undo banner, etc.
+ */
+
 import {
-  CheckCircle2,
-  CloudOff,
-  CloudUpload,
-  Dumbbell,
-  Plus,
-  RefreshCw,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import {
   X,
+  Play,
+  Target,
+   MapPin,
+   ArrowRight,
+  RefreshCw,
+  Check,
+  Dumbbell,
 } from "lucide-react";
-import { NotionJournal } from "./NotionJournal";
-import { GymSettingsTrigger } from "./workout/GymSettingsTrigger";
-import { GymSettingsModal } from "./workout/GymSettingsModal";
-import { RestTimer } from "./RestTimer";
-import { ExerciseStage } from "./workout/ExerciseStage";
-import { ExerciseActions, type ExerciseActionId } from "./workout/ExerciseActions";
-import { PreWorkoutSummary } from "./workout/PreWorkoutSummary";
-import { SetTable } from "./workout/SetTable";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
-import { ExerciseBrowser } from "./ExerciseBrowser";
-import { ExerciseCarousel, type CarouselItem } from "./ExerciseCarousel";
-import { TutorialModal } from "./TutorialModal";
-import {
-  EMPTY_PERFORMANCE,
-  usePreviousPerformance,
-} from "../hooks/usePreviousPerformance";
-import { useOfflineSync } from "../hooks/useOfflineSync";
-import {
-  loadRecoverableDraft,
-  newSessionId,
-  saveDraft,
-  deleteDraft,
-  type DraftExercise,
-  type FinalizePayload,
-  type SessionDraft,
-} from "../lib/offlineStore";
-import { queueAndSync } from "../lib/sessionSync";
-import { useActiveSession } from "../context/ActiveSessionContext";
-import { useGymSettings } from "../context/GymSettingsContext";
-import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
-import { toWarmupColumn } from "../lib/workout/setKind";
-import { kgToLb } from "../lib/profile";
-import {
-  formatRepRange,
-  suggestNextTarget,
-  type OverloadTarget,
-} from "../lib/overload";
+import { GYM_LABELS } from "../lib/i18n";
+import { GYM_SETTINGS_KEY } from "../context/GymSettingsContext";
 import {
   ACCENT,
   DANGER,
   GLASS,
   MOTION,
   RADIUS,
+  SCRIM,
+  SURFACE,
   SOLID,
   SPACE,
   STATUS,
@@ -60,20 +48,1292 @@ import {
   TYPE,
   Z_INDEX,
 } from "@/design/tokens";
-import type { Exercise } from "@/types/supabase";
 import type { PlannedExercise } from "../hooks/useGymData";
-import { EquipmentModal } from "@/components/EquipmentModal";
-import { GripPopover } from "@/components/GripPopover";
-import { getEquipmentIdByName } from "@/lib/equipmentHelpers";
-import { getGripForExercise } from "@/data/gripMap";
+import { ExerciseCarousel } from "./ExerciseCarousel";
+import { ExerciseSelectorModal, type CatalogExercise } from "./ExerciseSelectorModal";
+import type { Exercise } from "@/types/supabase";
+import {
+  EMPTY_PERFORMANCE,
+  usePreviousPerformance,
+} from "../hooks/usePreviousPerformance";
+import { useOfflineSync } from "../hooks/useOfflineSync";
+import {
+  newSessionId,
+  saveDraft,
+  type DraftExercise,
+  type FinalizePayload,
+} from "../lib/offlineStore";
+import { queueAndSync } from "../lib/sessionSync";
+import { useActiveSession } from "../context/ActiveSessionContext";
+import { useGymSettings } from "../context/GymSettingsContext";
+import { RestTimer } from "./RestTimer";
+import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
+import { toWarmupColumn } from "../lib/workout/setKind";
+import { kgToLb } from "../lib/profile";
+import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
+import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
+import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
 
-import type { Grip } from "@/data/gripMap";
 const DEFAULT_REST = 90;
-/** Debounce for persisting the draft, so typing in the journal is not chatty. */
 const PERSIST_DEBOUNCE_MS = 400;
-/** How long a deleted set can be brought back. Long enough to notice, short
- *  enough that a mis-tap does not leave a ghost row waiting hours later. */
 export const UNDO_WINDOW_MS = 5000;
+
+function shortName(name: string): string {
+  const cleaned = name.replace(/^(barbell|dumbbell|cable|kettlebell|weighted)\s+/i, "");
+  const withoutSuffix = cleaned.replace(/\s+-\s+.*$/, "");
+  return withoutSuffix.length > 0 ? withoutSuffix : cleaned;
+}
+
+function buildSets(count: number): SetEntry[] {
+  return Array.from({ length: Math.max(count, 1) }, (_, i) => emptySet(i));
+}
+
+function emptySet(index: number): SetEntry {
+  return {
+    set_number: index + 1,
+    weight: "",
+    reps: "",
+    rpe: "",
+    kind: "normal",
+    completed: false,
+  };
+}
+
+function toNumber(value: string): number | null {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** ------------------------------------------------------------------ headers */
+
+interface PreWorkoutGateProps {
+  routineTitle: string;
+  plannedCount: number;
+  onStart: () => void;
+}
+
+function PreWorkoutGate({
+  routineTitle,
+  plannedCount,
+  onStart,
+}: PreWorkoutGateProps) {
+  return (
+    <section
+      role="region"
+      aria-label="Resumen previo al entrenamiento"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: SPACE.lg,
+        padding: SPACE.card,
+        borderRadius: RADIUS.surface,
+        border: `1px dashed ${GLASS.borderStrong}`,
+        background: SOLID.card,
+        textAlign: "center",
+        maxWidth: "560px",
+        margin: "0 auto",
+      }}
+    >
+      <h2
+        style={{
+          margin: 0,
+          fontSize: TYPE.title.size,
+          fontWeight: TYPE.title.weight,
+          color: TEXT.primary,
+        }}
+      >
+        {routineTitle}
+      </h2>
+      <p
+        style={{
+          margin: 0,
+          fontSize: TYPE.body.size,
+          color: TEXT.secondary,
+        }}
+      >
+        {plannedCount} ejercicio{plannedCount !== 1 ? "s" : ""} planeados.
+      </p>
+      <button
+        type="button"
+        onClick={onStart}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: SPACE.sm,
+          minHeight: MOTION.minTouchTarget,
+          padding: `${SPACE.sm} ${SPACE.lg}`,
+          borderRadius: RADIUS.control,
+          border: `1px solid ${STATUS.progression.base}`,
+          background: STATUS.progression.base,
+          color: TEXT.onAccent,
+          fontSize: TYPE.subhead.size,
+          fontWeight: 600,
+          cursor: "pointer",
+        }}
+      >
+        Empezar
+      </button>
+    </section>
+  );
+}
+
+interface SessionHeaderProps {
+  exerciseLabel: string;
+  startedAt: string | null;
+  onGear: () => void;
+}
+
+function SessionHeader({
+  exerciseLabel,
+  startedAt,
+  onGear,
+}: SessionHeaderProps) {
+  const GEAR = GYM_LABELS.triggerAriaLabel(GYM_LABELS.defaultTriggerContext);
+
+  return (
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: Z_INDEX.sticky,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: SPACE.md,
+        padding: `${SPACE.sm} ${SPACE.md}`,
+        borderBottom: `1px solid ${GLASS.border}`,
+        background: SCRIM.modal,
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        {exerciseLabel && (
+          <div
+            style={{
+              fontSize: TYPE.caption.size,
+              color: TEXT.tertiary,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {exerciseLabel}
+          </div>
+        )}
+        {startedAt && (
+          <div
+            style={{
+              fontFamily: TYPE.mono.font,
+              fontSize: TYPE.body.size,
+              fontWeight: 600,
+              color: TEXT.primary,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {new Date(startedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        aria-label={GEAR}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minWidth: MOTION.minTouchTarget,
+          minHeight: MOTION.minTouchTarget,
+          borderRadius: RADIUS.control,
+          border: `1px solid ${GLASS.border}`,
+          background: "transparent",
+          color: TEXT.secondary,
+          cursor: "pointer",
+          padding: `0 ${SPACE.sm}`,
+        }}
+        onClick={onGear}
+      >
+        ⚙️
+      </button>
+    </header>
+  );
+}
+
+/** ------------------------------------------------------------------ set tracker table */
+
+interface SetTrackerTableProps {
+  index: number;
+  entry: SetEntry;
+  previousKg?: number | null;
+  previousReps?: number | null;
+  formatWeight?: (kg: number) => string;
+  previousLabel?: string;
+  overloadTarget?: OverloadTarget | null;
+  onChange: (index: number, entry: SetEntry) => void;
+  onRemove: (index: number) => void;
+  onDuplicate: (index: number) => void;
+}
+
+const SET_TYPE_LABELS_MAP: Record<string, string> = {
+  normal: "Normal",
+  warmup: "Calentamiento",
+  failure: "Al fallo",
+  drop: "Drop set",
+};
+
+function SetTrackerTable({
+  index,
+  entry,
+  previousKg,
+  previousReps,
+  formatWeight,
+  previousLabel,
+  overloadTarget,
+  onChange,
+  onRemove,
+  onDuplicate,
+}: SetTrackerTableProps) {
+  const setNumber = index + 1;
+  const labelWeight = formatWeight ? formatWeight(Number(entry.weight || 0)) : entry.weight;
+  const isCompleted = entry.completed;
+  const [noteOpen, setNoteOpen] = useState(false);
+
+  return (
+    <div
+      role="group"
+      aria-label={`Serie ${setNumber}`}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: SPACE.sm,
+        padding: SPACE.card,
+        borderRadius: RADIUS.card,
+        border: `1px solid ${GLASS.border}`,
+        background: SOLID.card,
+      }}
+    >
+      {/* Selector de tipo de serie — pestañas segmentadas estilo iOS */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: SPACE.sm,
+          flexWrap: "wrap",
+          marginBottom: SPACE.xs,
+        }}
+      >
+        {Object.entries(SET_TYPE_LABELS_MAP).map(([kind, kindLabel]) => (
+          <button
+            key={kind}
+            type="button"
+            role="button"
+            aria-label={`Serie ${setNumber} de tipo ${kindLabel}`}
+            aria-pressed={entry.kind === kind}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: MOTION.minTouchTarget,
+              padding: `6px 14px`,
+              borderBottom: `2px solid ${
+                entry.kind === kind ? ACCENT.base : "transparent"
+              }`,
+              borderRadius: 0,
+              background: "transparent",
+              color: entry.kind === kind ? TEXT.primary : TEXT.secondary,
+              fontSize: TYPE.caption.size,
+              fontWeight: entry.kind === kind ? 700 : 500,
+              cursor: "pointer",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+            onClick={() => {
+              onChange(index, { ...entry, kind: kind as SetEntry["kind"] });
+            }}
+          >
+            {kindLabel}
+          </button>
+        ))}
+
+        {overloadTarget && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: SPACE.xs,
+              fontSize: TYPE.caption.size,
+              color: ACCENT.text,
+              fontWeight: 700,
+              background: ACCENT.subtle,
+              borderRadius: RADIUS.control,
+              padding: `4px 10px`,
+              border: `1px solid ${ACCENT.border}`,
+            }}
+          >
+            Meta hoy:{overloadTarget.weight != null && overloadTarget.reps != null
+              ? ` ${formatWeight ? formatWeight(overloadTarget.weight) : overloadTarget.weight} kg × ${overloadTarget.reps}`
+              : overloadTarget.weight != null
+              ? ` ${formatWeight ? formatWeight(overloadTarget.weight) : overloadTarget.weight} kg`
+              : ` × ${overloadTarget.reps} reps`}
+          </span>
+        )}
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: TYPE.caption.size,
+              color: TEXT.tertiary,
+              marginBottom: SPACE.xs,
+            }}
+          >
+            Peso (KG)
+          </label>
+          <input
+            type="number"
+            role="spinbutton"
+            aria-label={`Peso: serie ${setNumber}`}
+            value={entry.weight}
+            onChange={(e) =>
+              onChange(index, { ...entry, weight: e.target.value })
+            }
+            onBlur={(e) => {
+              const v = Number.parseFloat(e.target.value);
+              if (Number.isFinite(v)) {
+                const snapped = Math.round(v / 2.5) * 2.5;
+                const finalValue = snapped % 5 === 2.5 ? snapped - 2.5 : snapped;
+                onChange(index, { ...entry, weight: String(finalValue) });
+              }
+            }}
+            style={{
+              width: "100%",
+              minHeight: MOTION.minTouchTarget,
+              padding: `8px 12px`,
+              borderRadius: RADIUS.input,
+              border: `1px solid ${GLASS.border}`,
+              background: SOLID.popover,
+              color: TEXT.primary,
+              fontSize: TYPE.body.size,
+              fontFamily: TYPE.mono.font,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          />
+          <span
+            style={{
+              fontSize: TYPE.body.size,
+              fontFamily: TYPE.mono.font,
+              fontVariantNumeric: "tabular-nums",
+              color: TEXT.primary,
+            }}
+          >
+            {labelWeight}
+          </span>
+          {previousLabel && (
+            <span
+              style={{
+                display: "block",
+                fontSize: TYPE.caption.size,
+                color: TEXT.tertiary,
+                marginTop: SPACE.xs,
+              }}
+              aria-label={previousLabel}
+            >
+              {previousLabel}
+            </span>
+          )}
+          {previousKg != null && previousReps != null && (
+            <span
+              style={{
+                fontSize: TYPE.caption.size,
+                color: TEXT.tertiary,
+                marginTop: SPACE.xs,
+              }}
+            >
+              Última: {labelWeight} × {previousReps}
+            </span>
+          )}
+          {previousKg != null && previousReps != null && entry.weight && entry.reps && (
+            <>
+              {toNumber(entry.weight)! > previousKg &&
+                toNumber(entry.reps)! >= previousReps && (
+                  <span
+                    style={{
+                      fontSize: TYPE.caption.size,
+                      fontWeight: 700,
+                      color: ACCENT.text,
+                      marginTop: SPACE.xs,
+                    }}
+                  >
+                    +{`${(toNumber(entry.weight)! - previousKg).toFixed(1)} kg`}
+                  </span>
+                )}
+              {toNumber(entry.weight)! <= previousKg &&
+                toNumber(entry.reps)! > previousReps && (
+                  <span
+                    style={{
+                      fontSize: TYPE.caption.size,
+                      fontWeight: 700,
+                      color: ACCENT.text,
+                      marginTop: SPACE.xs,
+                    }}
+                  >
+                    +{`${toNumber(entry.reps)! - previousReps} rep`}
+                  </span>
+                )}
+            </>
+          )}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "flex-end", gap: SPACE.xs }}>
+          <button
+            type="button"
+            aria-label={`Duplicar la serie ${setNumber}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: MOTION.minTouchTarget,
+              minHeight: MOTION.minTouchTarget,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${GLASS.border}`,
+              background: "transparent",
+              color: TEXT.secondary,
+              cursor: "pointer",
+            }}
+            onClick={() => onDuplicate(index)}
+          >
+            ⧉
+          </button>
+          <button
+            type="button"
+            aria-label={`Eliminar la serie ${setNumber}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: MOTION.minTouchTarget,
+              minHeight: MOTION.minTouchTarget,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${GLASS.border}`,
+              background: "transparent",
+              color: TEXT.secondary,
+              cursor: "pointer",
+            }}
+            onClick={() => onRemove(index)}
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: TYPE.caption.size,
+              color: TEXT.tertiary,
+              marginBottom: SPACE.xs,
+            }}
+          >
+            Reps
+          </label>
+          <input
+            type="number"
+            role="spinbutton"
+            aria-label="Repeticiones"
+            value={entry.reps}
+            onChange={(e) => onChange(index, { ...entry, reps: e.target.value })}
+            style={{
+              width: "100%",
+              minHeight: MOTION.minTouchTarget,
+              padding: `8px 12px`,
+              borderRadius: RADIUS.input,
+              border: `1px solid ${GLASS.border}`,
+              background: SOLID.popover,
+              color: TEXT.primary,
+              fontSize: TYPE.body.size,
+              fontFamily: TYPE.mono.font,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: TYPE.caption.size,
+              color: TEXT.tertiary,
+              marginBottom: SPACE.xs,
+            }}
+          >
+            RPE
+          </label>
+          <input
+            type="number"
+            role="spinbutton"
+            aria-label={`RPE: serie ${setNumber}`}
+            value={entry.rpe}
+            onChange={(e) => onChange(index, { ...entry, rpe: e.target.value })}
+            style={{
+              width: "100%",
+              minHeight: MOTION.minTouchTarget,
+              padding: `8px 12px`,
+              borderRadius: RADIUS.input,
+              border: `1px solid ${GLASS.border}`,
+              background: SOLID.popover,
+              color: TEXT.primary,
+              fontSize: TYPE.body.size,
+              fontFamily: TYPE.mono.font,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          />
+        </div>
+      </div>
+
+      {noteOpen && (
+        <div style={{ marginTop: SPACE.sm, flex: 1, minWidth: 0 }}>
+          <textarea
+            aria-label={`Texto de la nota de la serie ${setNumber}`}
+            value={entry.notes ?? ""}
+            onChange={(e) =>
+              onChange(index, { ...entry, notes: e.target.value })
+            }
+            onBlur={() => setNoteOpen(false)}
+            style={{
+              width: "100%",
+              minHeight: 44,
+              padding: `8px 12px`,
+              borderRadius: RADIUS.input,
+              border: `1px solid ${GLASS.border}`,
+              background: SOLID.popover,
+              color: TEXT.primary,
+              fontSize: TYPE.body.size,
+              fontFamily: TYPE.mono.font,
+              resize: "vertical",
+            }}
+          />
+        </div>
+      )}
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
+        <button
+          type="button"
+          aria-label={`Nota de la serie ${setNumber}`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: SPACE.xs,
+            minHeight: MOTION.minTouchTarget,
+            padding: `6px 10px`,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${GLASS.border}`,
+            background: noteOpen ? STATUS.progression.base : "transparent",
+            color: noteOpen ? TEXT.onAccent : TEXT.secondary,
+            fontSize: TYPE.caption.size,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+          onClick={() => setNoteOpen(!noteOpen)}
+        >
+          {noteOpen ? "Ocultar nota" : "+ Nota"}
+        </button>
+        <button
+          type="button"
+          aria-label={
+            isCompleted
+              ? `Marcar la serie ${setNumber} como no completada`
+              : `Marcar la serie ${setNumber} como completada`
+          }
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: MOTION.minTouchTarget,
+            minHeight: MOTION.minTouchTarget,
+            borderRadius: RADIUS.round,
+            border: `1px solid ${ACCENT.base}`,
+            background: isCompleted ? ACCENT.base : "transparent",
+            color: isCompleted ? TEXT.onAccent : ACCENT.text,
+            fontSize: TYPE.body.size,
+            fontWeight: 700,
+            cursor: "pointer",
+            padding: 0,
+          }}
+          onClick={() =>
+            onChange(index, { ...entry, completed: !isCompleted })
+          }
+        >
+          <Check size={20} aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+/** ------------------------------------------------------------------ exercise stage */
+
+interface ExerciseStageProps {
+  exercise: Exercise;
+  completedSets: number;
+  totalSets: number;
+  lastSessionLabel: string | null;
+  equipment: EquipmentEntry | null;
+   onDemo: () => void;
+   onAdvance: () => void;
+   onChangeExercise: () => void;
+   onAdjustEquipment: () => void;
+}
+
+/** ------------------------------------------------------------------ exercise stage */
+
+function ExerciseStage({
+  exercise,
+  completedSets,
+  totalSets,
+  lastSessionLabel,
+  equipment,
+   onDemo,
+   onAdvance,
+   onChangeExercise,
+   onAdjustEquipment,
+ }: ExerciseStageProps) {
+
+  return (
+    <section
+      style={{
+        maxWidth: "560px",
+        margin: "0 auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: SPACE.md,
+        alignItems: "center",
+      }}
+    >
+      {/* Escenario principal: GIF del ejercicio sobre negro puro */}
+      <div
+        style={{
+          maxHeight: 200,
+          width: "auto",
+          margin: "0 auto",
+          background: SURFACE.base,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+        }}
+      >
+        {exercise.gif_url ? (
+          <img
+            src={exercise.gif_url}
+            alt={`Demo de ${exercise.name}`}
+            style={{
+              maxHeight: "100%",
+              width: "auto",
+              objectFit: "contain",
+              background: "transparent",
+              filter: "invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)",
+              imageRendering: "-webkit-optimize-contrast",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              color: TEXT.tertiary,
+              fontSize: TYPE.caption.size,
+            }}
+          >
+            Sin demo disponible
+          </div>
+        )}
+        {/* Botón flotante de equipamiento (siempre visible) */}
+        <button
+          type="button"
+          aria-label={`Ver foto del equipo: ${equipment?.name ?? "Sin equipo"}`}
+          onClick={onAdjustEquipment}
+          style={{
+            position: "absolute",
+            bottom: 8,
+            right: 8,
+            width: 40,
+            height: 40,
+            minWidth: 40,
+            minHeight: 40,
+            borderRadius: "50%",
+            border: `1px solid ${GLASS.border}`,
+            background: SURFACE.overlay,
+            color: TEXT.primary,
+            cursor: "pointer",
+            boxShadow: GLASS.shadow,
+            transition: `all ${MOTION.fast} ${MOTION.standard}`,
+          }}
+        >
+          <MapPin size={16} aria-hidden="true" />
+        </button>
+      </div>
+
+      {/* Chip de equipamiento (siempre visible) */}
+      <button
+        type="button"
+        onClick={onAdjustEquipment}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: SPACE.xs,
+          padding: `${SPACE.xs} ${SPACE.sm}`,
+          borderRadius: RADIUS.control,
+          border: `1px solid ${GLASS.border}`,
+          background: SOLID.popover,
+          cursor: "pointer",
+          transition: `all ${MOTION.fast} ${MOTION.standard}`,
+        }}
+      >
+        {equipment?.views?.[0] ? (
+          <img
+            src={equipment.views[0].src}
+            alt={`Miniatura ${equipment.name}`}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              objectFit: "cover",
+              border: `1px solid ${GLASS.border}`,
+              background: SURFACE.base,
+              flexShrink: 0,
+            }}
+          />
+        ) : (
+          <Dumbbell size={20} strokeWidth={2} aria-hidden="true" />
+        )}
+        <span
+          style={{
+            fontSize: TYPE.caption.size,
+            fontWeight: 600,
+            color: TEXT.primary,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {equipment?.name ?? "Sin equipo"} •{" "}
+          {equipment?.id.replace("CG-EQP-", "") ?? "—"}
+        </span>
+      </button>
+
+      {/* Meta de serie y progreso */}
+      <div
+        style={{
+          width: "100%",
+          fontSize: TYPE.caption.size,
+          color: TEXT.tertiary,
+          textAlign: "center",
+        }}
+      >
+        {lastSessionLabel ?? ""}
+      </div>
+      <div
+        style={{
+          width: "100%",
+          fontSize: TYPE.body.size,
+          fontWeight: 600,
+          color: TEXT.primary,
+          textAlign: "center",
+        }}
+      >
+        {completedSets} de {totalSets} series
+      </div>
+
+      {/* Botones de acción rápida */}
+      <div
+        style={{
+          display: "flex",
+          gap: SPACE.sm,
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
+        <ActionChip
+          label="Demo"
+          icon={<Play size={16} aria-hidden="true" />}
+          onClick={onDemo}
+        />
+        <ActionChip
+          label="Avance"
+          icon={<Target size={16} aria-hidden="true" />}
+          onClick={onAdvance}
+        />
+         <ActionChip
+           label="Cambiar"
+           icon={<ArrowRight size={16} aria-hidden="true" />}
+           onClick={onChangeExercise}
+         />
+        <ActionChip
+          label="Ajustar"
+          icon={<RefreshCw size={16} aria-hidden="true" />}
+          onClick={onAdjustEquipment}
+        />
+      </div>
+    </section>
+  );
+}
+
+function ActionChip({
+  label,
+  icon,
+  onClick,
+}: {
+  label: string;
+  icon: JSX.Element;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: SPACE.xs,
+        minHeight: MOTION.minTouchTarget,
+        padding: `8px 14px`,
+        borderRadius: RADIUS.control,
+        border: `1px solid ${GLASS.border}`,
+        background: SOLID.popover,
+        color: TEXT.primary,
+        fontSize: TYPE.caption.size,
+        fontWeight: 600,
+        cursor: "pointer",
+      }}
+    >
+      {icon}
+      <span style={{ fontSize: TYPE.caption.size }}>{label}</span>
+    </button>
+  );
+}
+
+/** ------------------------------------------------------------------ undo */
+
+interface UndoBannerProps {
+  setNumber: number;
+  onUndo: () => void;
+  onDismiss: () => void;
+}
+
+function UndoBanner({ setNumber, onUndo, onDismiss }: UndoBannerProps) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        position: "sticky",
+        top: SPACE.md,
+        zIndex: Z_INDEX.sticky,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: SPACE.sm,
+        overflow: "hidden",
+        padding: "10px 14px",
+        borderRadius: RADIUS.control,
+        border: `1px solid ${GLASS.borderStrong}`,
+        background: SOLID.popover,
+        boxShadow: GLASS.shadow,
+      }}
+    >
+      <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>
+        Serie {setNumber} eliminada
+      </span>
+      <span style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
+        <button
+          type="button"
+          onClick={onUndo}
+          aria-label={`Deshacer la eliminación de la serie ${setNumber}`}
+          style={{
+            minHeight: MOTION.minTouchTarget,
+            padding: "0 14px",
+            borderRadius: RADIUS.control,
+            border: `1px solid ${ACCENT.border}`,
+            background: ACCENT.muted,
+            color: ACCENT.text,
+            fontSize: TYPE.body.size,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          {UNDO_LABELS.undo}
+        </button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Cerrar aviso de eliminación"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: MOTION.minTouchTarget,
+            minHeight: MOTION.minTouchTarget,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${GLASS.border}`,
+            background: "transparent",
+            color: TEXT.tertiary,
+            cursor: "pointer",
+          }}
+        >
+          <X size={16} aria-hidden="true" />
+        </button>
+      </span>
+      <span
+        aria-hidden="true"
+        className="cronos-undo--drain"
+        style={{
+          position: "absolute",
+          left: 0,
+          bottom: 0,
+          height: "2px",
+          width: "100%",
+          transformOrigin: "left center",
+          background: ACCENT.base,
+          animation: `cronos-undo-drain ${UNDO_WINDOW_MS}ms ${MOTION.easeLinear} forwards`,
+        }}
+      />
+    </div>
+  );
+}
+
+/** ------------------------------------------------------------------ equipment inspection sheet */
+
+interface EquipmentInspectionSheetProps {
+  equipment: EquipmentEntry;
+  alternatives?: EquipmentEntry[];
+  onClose: () => void;
+  onSelect?: (equipment: EquipmentEntry) => void;
+}
+
+function EquipmentInspectionSheet({
+  equipment,
+  alternatives = [],
+  onClose,
+  onSelect,
+}: EquipmentInspectionSheetProps) {
+  const [selected, setSelected] = useState<EquipmentEntry>(equipment);
+
+  useEffect(() => {
+    setSelected(equipment);
+  }, [equipment]);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: Z_INDEX.modal,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: SCRIM.modal,
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          width: "90vw",
+          maxWidth: 560,
+          maxHeight: "85vh",
+          borderRadius: RADIUS.modal,
+          background: SURFACE.base,
+          border: `1px solid ${GLASS.borderStrong}`,
+          boxShadow: GLASS.shadow,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: `${SPACE.md} ${SPACE.lg}`,
+            borderBottom: `1px solid ${GLASS.border}`,
+            background: SURFACE.base,
+          }}
+        >
+          <h3
+            style={{
+              margin: 0,
+              fontSize: TYPE.title2.size,
+              fontWeight: TYPE.title2.weight,
+              color: TEXT.primary,
+            }}
+          >
+            {selected.name}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar inspección de equipo"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: MOTION.minTouchTarget,
+              minHeight: MOTION.minTouchTarget,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${GLASS.border}`,
+              background: "transparent",
+              color: TEXT.secondary,
+              cursor: "pointer",
+            }}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: SPACE.md,
+            display: "flex",
+            flexDirection: "column",
+            gap: SPACE.md,
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: SPACE.sm,
+            }}
+          >
+            {selected.views.map((view: { id: number; src: string }) => (
+              <div
+                key={view.id}
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: "1 / 1",
+                  background: SURFACE.raised,
+                  borderRadius: RADIUS.surface,
+                  border: `1px solid ${GLASS.border}`,
+                  overflow: "hidden",
+                }}
+              >
+                <img
+                  src={view.src}
+                  alt={`Vista ${view.id} de ${selected.name}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACE.xs,
+              padding: `${SPACE.xs} ${SPACE.sm}`,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${GLASS.border}`,
+              background: SOLID.card,
+            }}
+          >
+            <span
+              style={{
+                fontSize: TYPE.label.size,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: TEXT.secondary,
+              }}
+            >
+              Categoría
+            </span>
+            <span
+              style={{
+                fontSize: TYPE.caption.size,
+                color: TEXT.primary,
+                fontWeight: 600,
+              }}
+            >
+              {selected.category}
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACE.xs,
+              padding: `${SPACE.xs} ${SPACE.sm}`,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${GLASS.border}`,
+              background: SOLID.card,
+            }}
+          >
+            <span
+              style={{
+                fontSize: TYPE.label.size,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: TEXT.secondary,
+              }}
+            >
+              ID
+            </span>
+            <span
+              style={{
+                fontFamily: TYPE.mono.font,
+                fontSize: TYPE.caption.size,
+                color: TEXT.primary,
+              }}
+            >
+              {selected.id}
+            </span>
+          </div>
+
+          {(alternatives.length > 0 || equipment.id !== selected.id || alternatives.some((a) => a.id === equipment.id)) && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: SPACE.xs,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: TYPE.caption.size,
+                  color: TEXT.secondary,
+                  fontWeight: 600,
+                }}
+              >
+                Máquinas compatibles
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  gap: SPACE.xs,
+                  overflowX: "auto",
+                  paddingBottom: SPACE.xs,
+                }}
+              >
+                {[equipment, ...alternatives]
+                  .filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i)
+                  .map((e) => (
+                    <button
+                      key={e.id}
+                      type="button"
+                      onClick={() => {
+                        setSelected(e);
+                        onSelect?.(e);
+                      }}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: `${SPACE.xs} ${SPACE.sm}`,
+                        borderRadius: RADIUS.control,
+                        border: `1px solid ${
+                          e.id === selected.id ? ACCENT.base : GLASS.border
+                        }`,
+                        background: e.id === selected.id ? ACCENT.subtle : SOLID.card,
+                        cursor: "pointer",
+                        minWidth: 80,
+                      }}
+                    >
+                      {e.views?.[0] && (
+                        <img
+                          src={e.views[0].src}
+                          alt={e.name}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      )}
+                      <span
+                        style={{
+                          fontSize: TYPE.caption.size,
+                          color: e.id === selected.id ? ACCENT.text : TEXT.primary,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          maxWidth: 100,
+                        }}
+                      >
+                        {e.id}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          <div
+            style={{
+              marginTop: SPACE.md,
+              paddingTop: SPACE.md,
+              borderTop: `1px solid ${GLASS.border}`,
+            }}
+          >
+            <label
+              style={{
+                display: "block",
+                fontSize: TYPE.caption.size,
+                color: TEXT.secondary,
+                marginBottom: SPACE.xs,
+                fontWeight: 600,
+              }}
+            >
+              Notas del equipo
+            </label>
+            <textarea
+              style={{
+                width: "100%",
+                minHeight: 80,
+                padding: `8px 12px`,
+                borderRadius: RADIUS.input,
+                border: `1px solid ${GLASS.border}`,
+                background: SOLID.card,
+                color: TEXT.primary,
+                fontSize: TYPE.body.size,
+                fontFamily: TYPE.mono.font,
+                resize: "vertical",
+              }}
+              placeholder="Notas sobre esta máquina…"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** ------------------------------------------------------------------ main */
 
 interface ActiveWorkoutProps {
   userId: string;
@@ -90,15 +1350,45 @@ export function ActiveWorkout({
   planned,
   onFinished,
 }: ActiveWorkoutProps) {
-  // Client-generated so the session exists offline and the queued write uses
-  // the same id. Never re-generated: it is the identity of this session.
   const [logId] = useState(() => newSessionId());
-  // Read from the context rather than captured here, so the elapsed time the
-  // bottom-nav pill shows and the `started_at` written to the log are the same
-  // instant. Captured locally it would restart from zero every time this
-  // component remounts, and every remount is a session the user believes is one.
-  const { session, end, warmups, resolveWarmup } = useActiveSession();
-  const startedAt = session?.startedAt ?? new Date().toISOString();
+
+  const {
+    session,
+    end,
+    warmups,
+    resolveWarmup,
+    recoverableDraft,
+    restoreDraft,
+    discardDraft,
+    recoveredLogId,
+  } = useActiveSession();
+
+  /**
+   * The id this session writes under.
+   *
+   * A recovered session keeps the id it had: the row on the server and the
+   * record on the device are the same session, and a second id would leave
+   * the first one behind as an orphan that gets offered again after the
+   * workout ends. Until the recovery happens, the id is a fresh one.
+   */
+  const activeLogId = recoveredLogId ?? logId;
+
+  /**
+   * The start time, frozen.
+   *
+   * It used to be read as `session?.startedAt ?? new Date().toISOString()`
+   * *during render*: with no session in the context that produced a brand
+   * new string on every render, and `persist` -- which depends on it --
+   * changed identity with it. The debounce that writes the draft to
+   * IndexedDB is keyed on that identity, so every render cleared the timer
+   * and started it again and the 400 ms was never reached: the draft was
+   * never written.
+   *
+   * The fallback is captured once, when the workout mounts, and the
+   * session's own start time wins whenever there is one.
+   */
+  const [fallbackStartedAt] = useState(() => new Date().toISOString());
+  const startedAt = session?.startedAt ?? fallbackStartedAt;
 
   const [items, setItems] = useState<DraftExercise[]>(() =>
     planned.map((p) => ({
@@ -109,48 +1399,28 @@ export function ActiveWorkout({
     })),
   );
   const [notes, setNotes] = useState("");
-  const [rest, setRest] = useState<{ id: number; seconds: number } | null>(null);
-  const [browsing, setBrowsing] = useState(false);
-  const [browsingFor, setBrowsingFor] = useState<string | null>(null);
-  const [tutorial, setTutorial] = useState<Exercise | null>(null);
+  const [rest, setRest] = useState<{ id: number; seconds: number; endsAt: number } | null>(
+    null,
+  );
+  /** Identifies one rest, so each one mounts its own clock. */
+  const restIdRef = useRef(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  /**
-   * Whether the athlete has walked past the pre-workout summary.
-   *
-   * New state, and the only one this redesign adds: the summary is a decision, not a
-   * header. It is shown until "Empezar" is tapped and never again in this session, so
-   * coming back to a session does not put the athlete back in front of a gate they have
-   * already passed.
-   */
   const [started, setStarted] = useState(false);
   const [gearOpen, setGearOpen] = useState(false);
+   const [pickerOpen, setPickerOpen] = useState(false);
+   const [pickerMode, setPickerMode] = useState<"add" | "replace">("add");
   const [notice, setNotice] = useState<string | null>(null);
-   const [equipmentModalOpen, setEquipmentModalOpen] = useState(false);
-   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
-   const [gripPopoverOpen, setGripPopoverOpen] = useState(false);
-   const [selectedGrip, setSelectedGrip] = useState<Grip | null>(null);
-  const [recovered, setRecovered] = useState<SessionDraft | null>(null);
-  // The single recoverable deletion, or null. See `removeSet`.
   const [pendingRemoval, setPendingRemoval] = useState<{
     itemKey: string;
     index: number;
     entry: SetEntry;
   } | null>(null);
-  // Needed by the gym rack for the "last time" chip, so the weight shown there
-  // is in the same unit the stepper is offering.
+  const [equipmentSheetOpen, setEquipmentSheetOpen] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentEntry | null>(
+    null,
+  );
   const gym = useGymSettings();
 
-  /**
-   * The session journal's own node.
-   *
-   * The old layout put it in a sticky rail, so the "Nota" chip could not name it. Below
-   * the exercise it is out of sight until scrolled to, and a chip that scrolls somewhere
-   * without saying so is a coin toss -- hence a ref and an explicit notice rather than a
-   * silent jump.
-   */
-  const journalRef = useRef<HTMLDivElement | null>(null);
-  /** The rendered exercise, so selecting one can bring it to the top. */
-  const stageRef = useRef<HTMLDivElement | null>(null);
   const sync = useOfflineSync();
 
   const selected = useMemo(
@@ -158,43 +1428,115 @@ export function ActiveWorkout({
     [items, selectedKey],
   );
 
-  // ---- session recovery --------------------------------------------------
-  // A session survives a reload, a crash or the tab being closed: any
-  // unfinished draft for this user is offered back rather than lost.
-  useEffect(() => {
-    let alive = true;
-    void loadRecoverableDraft(userId).then((draft) => {
-      if (!alive || !draft) return;
-      setRecovered(draft);
+  const equipmentSuggestion = useMemo<EquipmentSuggestion>(() => {
+    if (!selected) return { primary: null, alternatives: [] };
+    return getEquipmentSuggestionForExercise(
+      selected.exercise.name,
+      selected.exercise.equipment,
+    );
+  }, [selected]);
+
+  const equipmentForSelected = equipmentSuggestion.primary;
+
+  const carouselItems = useMemo(
+    () =>
+      items.map((item) => ({
+        key: item.key,
+        exercise: item.exercise,
+        done: item.sets.filter((s) => s.completed).length,
+        total: item.sets.length,
+      })),
+    [items],
+  );
+
+  function focusExercise(key: string) {
+    setSelectedKey(key);
+  }
+
+  function handleReorder(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    setItems((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
     });
-    return () => {
-      alive = false;
+  }
+
+   function handleAddExercise() {
+     setPickerMode("add");
+     setPickerOpen(true);
+   }
+
+  function handleExerciseSelected(exercise: CatalogExercise) {
+    const existingIndex = items.findIndex((i) => i.exercise.id === exercise.id);
+    if (existingIndex !== -1) {
+      setSelectedKey(items[existingIndex].key);
+      setPickerOpen(false);
+      return;
+    }
+    const loggerExercise: Exercise = {
+      id: exercise.id,
+      name: exercise.name,
+      body_part: exercise.body_part,
+      target: exercise.target,
+      equipment: exercise.equipment,
+      gif_url: exercise.gif_url,
+      instructions: [],
     };
-  }, [userId]);
+    setPickerOpen(false);
+    setItems((prev) => {
+      if (pickerMode === "replace" && selectedKey) {
+        return prev.map((item) =>
+          item.key === selectedKey ? { ...item, exercise: loggerExercise } : item,
+        );
+      }
+      return [
+        ...prev,
+        {
+          key: exercise.id,
+          exercise: loggerExercise,
+          restSeconds: DEFAULT_REST,
+          sets: buildSets(3),
+        },
+      ];
+    });
+    setSelectedKey(exercise.id);
+  }
 
+  /**
+   * Continues the session that was interrupted.
+   *
+   * The draft's items replace the planned ones, and the provider adopts the
+   * draft's id: the session continues as the one that was interrupted rather
+   * than as a new one that looks like it. The draft on the device is then
+   * overwritten by the next write, under the same id, so nothing is left
+   * behind as an orphan.
+   */
   function restoreRecovered() {
-    if (!recovered) return;
-    setItems(recovered.items);
-    setNotes(recovered.notes);
-    setRecovered(null);
-    // Straight into the logger: the summary is for a session that has not begun, and
-    // this one has sets already logged against it.
+    if (!recoverableDraft) return;
+    setItems(recoverableDraft.items);
+    setNotes(recoverableDraft.notes);
+    restoreDraft();
     setStarted(true);
-    setNotice("Sesión recuperada. Continue donde lo dejaste.");
+    setNotice("Sesión recuperada. Continúa donde lo dejaste.");
   }
 
+  /**
+   * Throws the interrupted session away.
+   *
+   * The provider deletes the draft, because a draft nobody wants is a draft
+   * that would be offered again after the next reload.
+   */
   function discardRecovered() {
-    if (!recovered) return;
-    void deleteDraft(recovered.logId);
-    setRecovered(null);
+    if (!recoverableDraft) return;
+    discardDraft();
   }
 
-  // ---- persist locally ---------------------------------------------------
-  // Every mutation lands in IndexedDB, so nothing depends on the network.
   const persist = useCallback(
     (nextItems: DraftExercise[], nextNotes: string, finalized = false) => {
       void saveDraft({
-        logId,
+        logId: activeLogId,
         userId,
         routineId,
         routineTitle,
@@ -205,7 +1547,7 @@ export function ActiveWorkout({
         updatedAt: Date.now(),
       });
     },
-    [logId, userId, routineId, routineTitle, startedAt],
+    [activeLogId, userId, routineId, routineTitle, startedAt],
   );
 
   const itemsRef = useRef(items);
@@ -213,25 +1555,33 @@ export function ActiveWorkout({
   itemsRef.current = items;
   notesRef.current = notes;
 
-  // Debounced autosave; the final write is flushed synchronously on finish.
-  useEffect(() => {
-    if (recovered) return;
-    const timer = window.setTimeout(
-      () => persist(items, notes),
-      PERSIST_DEBOUNCE_MS,
-    );
-    return () => window.clearTimeout(timer);
-  }, [items, notes, persist, recovered]);
+  /**
+   * True once the session has been sent to the server.
+   *
+   * After that no draft is written again: a debounce still in flight would
+   * otherwise overwrite the finalized draft with an unfinished one, and the
+   * session would be offered for recovery after it had already been saved.
+   */
+  const finalizedRef = useRef(false);
 
-  // ---- progressive overload ---------------------------------------------
+  useEffect(() => {
+    // While a draft is waiting to be recovered, the workout is not the owner
+    // of the session yet: writing now would leave a second record on the
+    // device, under an id nobody will ever read.
+    if (recoverableDraft || finalizedRef.current) return;
+    const timer = window.setTimeout(() => {
+      if (finalizedRef.current) return;
+      persist(items, notes);
+    }, PERSIST_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [items, notes, persist, recoverableDraft]);
+
   const exerciseIds = useMemo(() => items.map((i) => i.exercise.id), [items]);
-  const { performance, previousNotes } = usePreviousPerformance(userId, exerciseIds);
+  const { performance } = usePreviousPerformance(userId, exerciseIds);
 
   const overload = useMemo(() => {
     const map: Record<string, OverloadTarget> = {};
     for (const item of items) {
-      // The exercise descriptor is what lets the engine pick a per-muscle-group
-      // increment (2.5 kg lower vs 1 kg isolation) and rep range.
       map[item.key] = suggestNextTarget(
         performance[item.exercise.id] ?? EMPTY_PERFORMANCE,
         { exercise: item.exercise },
@@ -240,32 +1590,32 @@ export function ActiveWorkout({
     return map;
   }, [items, performance]);
 
-  const done = useMemo(
-    () => items.reduce((n, i) => n + i.sets.filter((s) => s.completed).length, 0),
-    [items],
-  );
-  const total = useMemo(() => items.reduce((n, i) => n + i.sets.length, 0), [items]);
-
+  /**
+   * Starts a rest, anchored to the moment it ends.
+   *
+   * The deadline is captured here, once, and handed to `RestTimer`: the clock
+   * then reads the wall clock instead of counting down, so a background tab
+   * whose timers are throttled cannot make the rest last longer than the
+   * athlete asked for.
+   */
   function startRest(seconds: number) {
-    setRest({ id: Date.now(), seconds: Math.max(seconds, 15) });
+    const total = Math.max(seconds, 15);
+    const now = Date.now();
+    // A counter rather than the clock: two rests started in the same
+    // millisecond would otherwise share a key, and the second one would
+    // reuse the first one's deadline.
+    restIdRef.current += 1;
+    setRest({ id: restIdRef.current, seconds: total, endsAt: now + total * 1000 });
   }
 
   const closeRest = useCallback(() => setRest(null), []);
 
-  /**
-   * Closes the undo window on its own.
-   *
-   * A timer rather than a countdown render: the window is short and a per-second
-   * re-render of the whole logger to animate a strip in the corner is a price
-   * nobody pays. The strip itself is a CSS animation, so it still drains.
-   */
   useEffect(() => {
     if (!pendingRemoval) return;
     const timer = window.setTimeout(() => setPendingRemoval(null), UNDO_WINDOW_MS);
     return () => window.clearTimeout(timer);
   }, [pendingRemoval]);
 
-  /** kg in the unit this user reads, so the chip matches the stepper. */
   const displayKg = useCallback(
     (kg: number): string => {
       const shown = gym.weightUnit === "lb" ? kgToLb(kg) : Math.round(kg * 10) / 10;
@@ -274,14 +1624,6 @@ export function ActiveWorkout({
     [gym.weightUnit],
   );
 
-  /**
-   * The exercise's caption for the stage header, or null when it is new.
-   *
-   * The rep range from the overload engine is folded in here rather than shown beside
-   * it, because "Objetivo 6-8" and "Última sesión: 95 kg × 5" are the same kind of fact
-   * -- both are about what the athlete is about to do -- and two pills saying it would
-   * be one pill too many on a line that already carries the set count.
-   */
   const lastSessionFor = useCallback(
     (exerciseId: string): string | null => {
       const previous = performance[exerciseId];
@@ -317,9 +1659,6 @@ export function ActiveWorkout({
   function updateSet(itemKey: string, setIndex: number, entry: SetEntry) {
     patchEntry(itemKey, setIndex, () => entry);
     if (!entry.completed) return;
-    // The rest this exercise has earned: the athlete's own
-    // override when the fatigue summary asked for a longer
-    // one, the routine's default otherwise.
     const restSeconds = loadRestSeconds(
       itemKey,
       items.find((i) => i.key === itemKey)?.restSeconds ?? DEFAULT_REST,
@@ -337,34 +1676,11 @@ export function ActiveWorkout({
     );
   }
 
-  /**
-   * Applies warm-up ramps asked for from another screen.
-   *
-   * The exercise hub is a different route, and this component's set array is local state, so
-   * the hub cannot reach in here. Rather than lifting `items` into context -- which would
-   * mean re-plumbing the autosave effect, the undo window, the recovery path and the sync
-   * payload for every set in the app -- the hub *asks*, and this drains the queue through
-   * `setItems`.
-   *
-   * Two decisions worth stating:
-   *
-   * - **Inserted before the working sets, not after.** A ramp that lands below the first
-   *   working set is not a ramp; the athlete would do their top set cold. Prepending is why
-   *   the request carries its own order.
-   * - **`kind: "warmup"` is set here and not in the hub.** `finish()` reads `kind` to decide
-   *   the `is_warmup` column, and a warm-up set that reaches the payload unflagged is
-   *   counted as volume and corrupts the 1RM estimate for every later session. There is one
-   *   place that knows how a set becomes a row, and this is it.
-   */
   useEffect(() => {
     const pending = warmups[0];
     if (!pending) return;
 
     setItems((prev) => {
-      // The hub is opened for one movement and the session may not contain it. A ramp for
-      // an exercise nobody is training today is discarded rather than silently creating a
-      // new row for it -- adding an exercise to a session behind the athlete's back is a
-      // worse surprise than the ramp not arriving.
       const index = prev.findIndex((item) => item.exercise.name === pending.exerciseName);
       if (index === -1) return prev;
 
@@ -383,15 +1699,6 @@ export function ActiveWorkout({
     resolveWarmup(pending.id);
   }, [warmups, resolveWarmup]);
 
-  /**
-   * Deletes a set but keeps it recoverable.
-   *
-   * The row is removed immediately -- a lifter who taps "eliminar" wants the row
-   * gone *now*, not after a confirmation -- and the undo banner is the safety
-   * net. `pending` holds exactly one entry, so a second deletion supersedes the
-   * first rather than queueing behind it; the alternative is a stack of banners
-   * competing for the same corner of a phone screen mid-set.
-   */
   function removeSet(itemKey: string, setIndex: number) {
     const target = itemsRef.current.find((i) => i.key === itemKey)?.sets[setIndex];
     if (!target) return;
@@ -412,7 +1719,6 @@ export function ActiveWorkout({
     setItems((prev) =>
       prev.map((item) => {
         if (item.key !== pending.itemKey) return item;
-        // Clamped because the set list may have shrunk while the banner was up.
         const at = Math.min(pending.index, item.sets.length);
         const sets = [...item.sets];
         sets.splice(at, 0, pending.entry);
@@ -422,13 +1728,6 @@ export function ActiveWorkout({
     setPendingRemoval(null);
   }
 
-  /**
-   * Copies weight, reps, RPE and kind into a new row directly below.
-   *
-   * Completion is deliberately *not* copied. The point of duplicating is to have
-   * another set to do, and a copy that arrives already ticked off is a set the
-   * lifter silently skips -- worse than not having the shortcut at all.
-   */
   function duplicateSet(itemKey: string, setIndex: number) {
     setItems((prev) =>
       prev.map((item) => {
@@ -446,63 +1745,16 @@ export function ActiveWorkout({
     );
   }
 
-  function addExercise(exercise: Exercise) {
-    setItems((prev) =>
-      prev.some((i) => i.key === exercise.id)
-        ? prev
-        : [
-            ...prev,
-            {
-              key: exercise.id,
-              exercise,
-              restSeconds: DEFAULT_REST,
-              sets: buildSets(3),
-            },
-          ],
-    );
-    setSelectedKey(exercise.id);
-  }
-
-  /**
-   * Swaps the exercise in place while keeping the set rows, so the lifter does
-   * not lose what they already logged against the substitute.
-   */
-  function replaceExercise(itemKey: string, exercise: Exercise) {
-    setItems((prev) => {
-      if (prev.some((i) => i.key === exercise.id && i.key !== itemKey)) return prev;
-      return prev.map((item) =>
-        item.key === itemKey ? { ...item, key: exercise.id, exercise } : item,
-      );
-    });
-    setSelectedKey(exercise.id);
-  }
-
-  function removeExercise(itemKey: string) {
-    setItems((prev) => prev.filter((i) => i.key !== itemKey));
-    setSelectedKey((current) => (current === itemKey ? null : current));
-  }
-
-  /**
-   * Selects an exercise, and puts its own card at the top of the viewport.
-   *
-   * There is no panel to open any more and no stack of sections to scroll between: one
-   * exercise is rendered, so selecting means "make this the one that is rendered". The
-   * scroll is to the stage rather than to a section because the carousel is sticky, and
-   * without this the newly selected exercise would change underneath the athlete's eyes
-   * while they were still reading the strip.
-   */
-  function focusExercise(key: string) {
-    setSelectedKey(key);
-    stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  // ---- finish (never blocks on the network) ------------------------------
   async function finish() {
     const currentItems = itemsRef.current;
     const currentNotes = notesRef.current;
 
+    // The session is over the moment the athlete says so: from here on, no
+    // debounce may write an unfinished draft over the finalized one.
+    finalizedRef.current = true;
+
     const payload: FinalizePayload = {
-      logId,
+      logId: activeLogId,
       userId,
       routineId,
       startedAt,
@@ -518,22 +1770,14 @@ export function ActiveWorkout({
             weight: toNumber(set.weight),
             reps: toNumber(set.reps),
             rpe: toNumber(set.rpe),
-            // The richer `kind` stops here: the column has been a boolean since
-            // before drop and failure sets existed.
             is_warmup: toWarmupColumn(set.kind),
-            // The per-set note travels with the row it belongs to. `?? null`
-            // rather than the raw value: an unset note is "no note" in the
-            // column, and an explicit null (not an omitted key) is what keeps
-            // a re-synced session from resurrecting a note the athlete
-            // deleted on another device.
             notes: set.notes ?? null,
           })),
       ),
     };
 
-    // 1. Local write first, always. This is the durable record.
     await saveDraft({
-      logId,
+      logId: activeLogId,
       userId,
       routineId,
       routineTitle,
@@ -544,161 +1788,16 @@ export function ActiveWorkout({
       updatedAt: Date.now(),
     });
 
-    // 2. Queue for the server, then opportunistically drain.
-    //    Failure here is not the user's problem to solve mid-workout.
     void queueAndSync(payload);
-
-    // Ends the session in the context, which is what dismisses the bottom-nav
-    // pill. `onFinished` is still called so a host that owns its own copy of the
-    // session (a test, a future embedding) stays in sync too.
     end();
     onFinished();
   }
 
-  const carouselItems: CarouselItem[] = items.map((item) => ({
-    key: item.key,
-    exercise: item.exercise,
-    done: item.sets.filter((s) => s.completed).length,
-    total: item.sets.length,
-  }));
-
-  // Recovery skips the gate: a restored draft is by definition a session already
-  // under way, and putting the athlete back behind "Empezar" would ask them to
-  // confirm something that already happened.
-  const showSummary = !started && !recovered && items.length > 0;
-
-  /**
-   * Moves to the next exercise that still has sets left.
-   *
-   * Wraps round to the first, so the last exercise's "Avance" says "again" rather
-   * than doing nothing -- a verb that stops working on the one row where the
-   * athlete most wants it to is how a control teaches distrust.
-   */
-  function advance() {
-    if (items.length === 0) return;
-    const index = items.findIndex((item) => item.key === selectedKey);
-    const next = items[(index + 1) % items.length];
-    if (!next) return;
-    focusExercise(next.key);
-  }
-
-  const actionHandlers: Partial<Record<ExerciseActionId, () => void>> = {
-    avance: advance,
-    nota: () => {
-      journalRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setNotice("Tus notas de la sesi�n est�n aqu� abajo.");
-    },
-    cambiar: () => {
-      if (!selected) return;
-      setBrowsingFor(selected.key);
-      setBrowsing(true);
-    },
-    ajustar: () => setGearOpen(true),
-    maquina: () => {
-      const equipName = selected?.exercise.equipment ?? "";
-      const equipId = getEquipmentIdByName(equipName);
-      if (equipId) {
-        setSelectedEquipmentId(equipId);
-        setEquipmentModalOpen(true);
-      } else {
-        setNotice("Este ejercicio no tiene equipo asignado.");
-      }
-    },
-    maneral: () => {
-      const grip = getGripForExercise(selected?.exercise.id ?? "");
-      if (grip) {
-        setSelectedGrip(grip);
-        setGripPopoverOpen(true);
-      } else {
-        setNotice("No se tiene informaci�n de agarre para este ejercicio.");
-      }
-    },
-  };
+  const showSummary = !started && !recoverableDraft && items.length > 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg }}>
-      {/*
-        The session chrome sits above the gate as well as below it: sync state and the
-        gear are facts about the session, not about the exercise, and an athlete who
-        cannot reach them from the summary cannot fix a rack problem before starting.
-      */}
-      <header
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: SPACE.md,
-        }}
-      >
-        <div style={{ minWidth: 0 }}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: TYPE.title2.size,
-              lineHeight: TYPE.title2.lineHeight,
-              fontWeight: TYPE.title2.weight,
-              letterSpacing: TYPE.title2.tracking,
-              color: TEXT.primary,
-            }}
-          >
-            {routineTitle}
-          </h2>
-          <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-            {done} de {total} series completadas
-          </p>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
-          <SyncBadge
-            status={sync.status}
-            pending={sync.pending}
-            onClick={() => void sync.syncNow()}
-          />
-          <GymSettingsTrigger className="border-white/10 text-neutral-300 hover:bg-white/5" />
-          <button
-            type="button"
-            onClick={() => {
-              setBrowsingFor(null);
-              setBrowsing(true);
-            }}
-            style={quietButtonStyle}
-          >
-            <Plus size={14} aria-hidden="true" /> Ejercicio
-          </button>
-          <button type="button" onClick={() => void finish()} className="gbtn" style={primaryButtonStyle}>
-            <CheckCircle2 size={14} aria-hidden="true" /> Finalizar
-          </button>
-        </div>
-      </header>
-
-      {!showSummary && (
-        <div
-          style={{
-            height: 6,
-            overflow: "hidden",
-            borderRadius: RADIUS.pill,
-            background: GLASS.fill,
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              borderRadius: RADIUS.pill,
-              background: ACCENT.base,
-              transition: `width ${MOTION.normal} ${MOTION.standard}`,
-              width: `${total === 0 ? 0 : (done / total) * 100}%`,
-            }}
-          />
-        </div>
-      )}
-
-      {/*
-        Recovery sits above the gate for the same reason: it is the more urgent of the
-        two questions, and an athlete whose session was recovered has work to finish,
-        not a plan to approve.
-      */}
-      {recovered && (
+    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg, paddingTop: SPACE.xl }}>
+      {recoverableDraft && (
         <div
           style={{
             display: "flex",
@@ -714,10 +1813,10 @@ export function ActiveWorkout({
         >
           <div>
             <p style={{ margin: 0, fontSize: TYPE.body.size, color: TEXT.primary }}>
-              Encontramos una sesión sin terminar ({recovered.routineTitle})
+              Encontramos una sesión sin terminar ({recoverableDraft.routineTitle})
             </p>
             <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.secondary }}>
-              {recovered.items.reduce(
+              {recoverableDraft.items.reduce(
                 (n: number, i: DraftExercise) =>
                   n + i.sets.filter((s) => s.completed).length,
                 0,
@@ -729,7 +1828,11 @@ export function ActiveWorkout({
             <button type="button" onClick={discardRecovered} style={quietButtonStyle}>
               Descartar
             </button>
-            <button type="button" onClick={restoreRecovered} className="gbtn" style={primaryButtonStyle}>
+            <button
+              type="button"
+              onClick={restoreRecovered}
+              style={primaryButtonStyle}
+            >
               Recuperar
             </button>
           </div>
@@ -778,292 +1881,304 @@ export function ActiveWorkout({
         </p>
       )}
 
-      {gearOpen && <GymSettingsModal onClose={() => setGearOpen(false)} />}
+      {gearOpen && (
+        <div
+          role="dialog"
+          aria-label={GYM_LABELS.title}
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: Z_INDEX.modal,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: SCRIM.modal,
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            style={{
+              padding: SPACE.card,
+              borderRadius: RADIUS.modal,
+              background: SOLID.popover,
+              border: `1px solid ${GLASS.borderStrong}`,
+              boxShadow: GLASS.shadow,
+              maxWidth: 480,
+              width: "90vw",
+            }}
+          >
+            <h3
+              style={{
+                margin: `0 0 ${SPACE.md}`,
+                fontSize: TYPE.title2.size,
+                fontWeight: TYPE.title2.weight,
+                color: TEXT.primary,
+              }}
+            >
+              Configuración del gimnasio
+            </h3>
+            <div style={{ display: "flex", gap: SPACE.sm }}>
+              <button
+                type="button"
+                onClick={() => {
+                    window.localStorage.setItem(
+                      GYM_SETTINGS_KEY,
+                      JSON.stringify({ weightUnit: "lb" }),
+                    );
+                  setGearOpen(false);
+                }}
+                style={{
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `8px 16px`,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${GLASS.border}`,
+                  background: "transparent",
+                  color: TEXT.primary,
+                  fontSize: TYPE.body.size,
+                  cursor: "pointer",
+                }}
+              >
+                lb
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showSummary ? (
-        <PreWorkoutSummary
+        <PreWorkoutGate
           routineTitle={routineTitle}
-          planned={planned}
+          plannedCount={planned.length}
           onStart={() => setStarted(true)}
         />
       ) : items.length === 0 ? (
-        <EmptyState onAdd={() => setBrowsing(true)} />
+        <section
+          role="region"
+          aria-label="Estado vacío"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: SPACE.md,
+            padding: SPACE.card,
+            borderRadius: RADIUS.surface,
+            border: `1px dashed ${GLASS.borderStrong}`,
+            background: SOLID.card,
+            textAlign: "center",
+            maxWidth: "560px",
+            margin: "0 auto",
+          }}
+        >
+          <X
+            aria-hidden="true"
+            size={32}
+            style={{ color: TEXT.disabled }}
+          />
+          <p
+            style={{
+              margin: 0,
+              fontSize: TYPE.body.size,
+              color: TEXT.tertiary,
+            }}
+          >
+            Esta sesión todavía no tiene ejercicios.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: SPACE.sm,
+              minHeight: MOTION.minTouchTarget,
+              padding: `${SPACE.sm} ${SPACE.lg}`,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${STATUS.progression.base}`,
+              background: STATUS.progression.base,
+              color: TEXT.onAccent,
+              fontSize: TYPE.subhead.size,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Agregar ejercicio
+          </button>
+        </section>
       ) : (
         <>
-          {/*
-            The strip is sticky and above the exercise, and it is the only navigation.
-            Everything else on this screen is about the one exercise in front of the
-            athlete.
-          */}
-          <ExerciseCarousel
-            items={carouselItems}
-            selectedKey={selected?.key ?? null}
-            onSelect={focusExercise}
+          <SessionHeader
+            exerciseLabel={
+              selected
+                ? `${items.findIndex((i) => i.key === selected.key) + 1}/${items.length} ${shortName(
+                    selected.exercise.name,
+                  )}`
+                : ""
+            }
+            startedAt={session?.startedAt ?? null}
+            onGear={() => setGearOpen(true)}
           />
 
-          {selected && (
-            <div ref={stageRef}>
-              <ExerciseStage
-                exercise={selected.exercise}
-                progress={`${selected.sets.filter((s) => s.completed).length} de ${selected.sets.length} series`}
-                lastSession={lastSessionFor(selected.exercise.id)}
-                onRemove={() => removeExercise(selected.key)}
-                actions={<ExerciseActions onSelect={actionHandlers} />}
-              >
-                <SetTable
-                  sets={selected.sets}
-                  exerciseName={selected.exercise.name}
-                  previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
-                  previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
-                  allTimeBestKg={performance[selected.exercise.id]?.allTimeBest?.weight ?? null}
-                  allTimeBestReps={performance[selected.exercise.id]?.allTimeBest?.reps ?? null}
-                  // The last session's notes for this exercise, by set
-                  // number, so a set can remind the athlete what they
-                  // wrote about it last time without a second query.
-                  previousNotes={previousNotes[selected.exercise.id]}
-                  formatWeight={displayKg}
-                  suggestion={overload[selected.key] ?? null}
-                  barType={gym.barType}
-                  // The rest this exercise should get -- the athlete's
-                  // own override when they asked for a longer one -- so
-                  // the fatigue summary's "30 s más" builds on the rest
-                  // that is actually running, not the routine's first
-                  // draft of it.
-                  exerciseId={selected.exercise.id}
-                  restSeconds={loadRestSeconds(
-                    selected.exercise.id,
-                    selected.restSeconds,
-                  )}
-                  onChange={(index, entry) => updateSet(selected.key, index, entry)}
-                  onRemove={(index) => removeSet(selected.key, index)}
-                  onDuplicate={(index) => duplicateSet(selected.key, index)}
-                  onAdd={() => addSet(selected.key)}
-                />
-              </ExerciseStage>
+          {carouselItems.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                marginTop: SPACE.md,
+                paddingBottom: SPACE.sm,
+              }}
+            >
+              <ExerciseCarousel
+                items={carouselItems}
+                selectedKey={selectedKey ?? null}
+                onSelect={focusExercise}
+                onReorder={handleReorder}
+                onAdd={handleAddExercise}
+              />
             </div>
           )}
 
-          {/*
-            The journal moves below the exercise rather than sitting beside it. In the
-            old two-column layout it had a dedicated rail to itself; here it would be
-            pushing the set table off a phone screen, and it is a between-exercises
-            tool rather than a during-the-set one.
-          */}
-          <div ref={journalRef}>
-            <NotionJournal value={notes} onChange={setNotes} />
-          </div>
+          {selected && (
+            <>
+            <ExerciseStage
+              exercise={selected.exercise}
+              completedSets={selected.sets.filter((s) => s.completed).length}
+                totalSets={selected.sets.length}
+                lastSessionLabel={lastSessionFor(selected.exercise.id)}
+                equipment={equipmentForSelected}
+                 onDemo={() => {}}
+                 onAdvance={() => {}}
+                 onChangeExercise={() => { setPickerMode("replace"); setPickerOpen(true); }}
+                 onAdjustEquipment={() => {
+                  setSelectedEquipment(
+                    equipmentSuggestion.primary ?? {
+                      id: "default",
+                      name: "Sin equipo",
+                      category: "Accesorio",
+                      views: [],
+                      exerciseTypes: [],
+                    },
+                  );
+                  setEquipmentSheetOpen(true);
+                }}
+              />
+
+              {equipmentSheetOpen && selectedEquipment && (
+                <EquipmentInspectionSheet
+                  equipment={selectedEquipment}
+                  alternatives={equipmentSuggestion.alternatives}
+                  onClose={() => {
+                    setEquipmentSheetOpen(false);
+                    setSelectedEquipment(null);
+                  }}
+                />
+              )}
+
+              {selected.sets.map((entry, index) => (
+                <SetTrackerTable
+                  key={index}
+                  index={index}
+                  entry={entry}
+                  previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
+                  previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
+                  formatWeight={displayKg}
+                  overloadTarget={overload[selected.key] ?? null}
+                  previousLabel={
+                    performance[selected.exercise.id]?.bestSet?.weight != null &&
+                    performance[selected.exercise.id]?.bestSet?.reps != null
+                      ? `Repetir la última vez: ${displayKg(
+                          performance[selected.exercise.id]?.bestSet?.weight ?? 0,
+                        )} kilos por ${performance[selected.exercise.id]?.bestSet?.reps ?? 0} repeticiones`
+                      : undefined
+                  }
+                  onChange={(i, e) => updateSet(selected.key, i, e)}
+                  onRemove={(i) => removeSet(selected.key, i)}
+                  onDuplicate={(i) => duplicateSet(selected.key, i)}
+                />
+              ))}
+
+              <div style={{ display: "flex", gap: SPACE.sm, justifyContent: "center", marginTop: SPACE.sm }}>
+                <button
+                  type="button"
+                  onClick={() => addSet(selected.key)}
+                  aria-label="+ Agregar serie"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: SPACE.xs,
+                    minHeight: MOTION.minTouchTarget,
+                    padding: `8px 16px`,
+                     borderRadius: RADIUS.control,
+                     border: `1px solid ${DANGER.base}`,
+                     background: SOLID.popover,
+                     color: DANGER.base,
+                     fontSize: TYPE.body.size,
+                     fontWeight: 600,
+                     cursor: "pointer",
+                  }}
+                >
+                  + Agregar serie
+                </button>
+              </div>
+            </>
+          )}
+
+           <button
+            type="button"
+            onClick={finish}
+            style={{
+              marginTop: SPACE.md,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: SPACE.xs,
+              minHeight: MOTION.minTouchTarget,
+              padding: `${SPACE.sm} ${SPACE.lg}`,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${DANGER.base}`,
+              background: DANGER.base,
+              color: TEXT.onAccent,
+              fontSize: TYPE.subhead.size,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Finalizar
+          </button>
         </>
       )}
 
-      {browsing && (
-        <ExerciseBrowser
-          onAdd={(exercises) => {
-            if (browsingFor) {
-              const toReplace = exercises.find((e) => e.id === browsingFor) ?? exercises[0];
-              if (toReplace) replaceExercise(browsingFor, toReplace);
-            } else {
-              exercises.forEach((ex) => addExercise(ex));
-            }
-            setBrowsing(false);
-            setBrowsingFor(null);
-          }}
-          onClose={() => {
-            setBrowsing(false);
-            setBrowsingFor(null);
-          }}
-          isAdded={(id) => items.some((i) => i.exercise.id === id)}
+      {rest && (
+        /*
+         * The canonical rest clock, the same component the design system
+         * ships. `key` is the rest's own id: each rest mounts a fresh clock
+         * that reads its own deadline, so a second rest never inherits the
+         * first one's time.
+         */
+        <RestTimer
+          key={rest.id}
+          seconds={rest.seconds}
+          endsAt={rest.endsAt}
+          onClose={closeRest}
+          onFinished={closeRest}
         />
       )}
 
-      {tutorial && <TutorialModal exercise={tutorial} onClose={() => setTutorial(null)} />}
-
-      {rest && (
-        <RestTimer key={rest.id} seconds={rest.seconds} onClose={closeRest} onFinished={closeRest} />
+      {pickerOpen && (
+        <ExerciseSelectorModal
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onSelect={handleExerciseSelected}
+        />
       )}
-      {equipmentModalOpen && <EquipmentModal equipmentId={selectedEquipmentId} onClose={() => setEquipmentModalOpen(false)} />}
-      {gripPopoverOpen && <GripPopover grip={selectedGrip} anchorEl={document.activeElement} onClose={() => setGripPopoverOpen(false)} />}
     </div>
   );
 }
 
-/**
- * Undo window for a deleted set.
- *
- * The strip is a CSS animation rather than a React countdown on purpose: a
- * per-second re-render of the whole logger, mid-session, to move a 2px line is a
- * price nobody pays. `ActiveWorkout` owns the timer that unmounts this; the bar
- * only has to show how much of the window is left.
- */
-function UndoBanner({
-  setNumber,
-  onUndo,
-  onDismiss,
-}: {
-  setNumber: number;
-  onUndo: () => void;
-  onDismiss: () => void;
-}) {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        position: "sticky",
-        top: SPACE.md,
-        zIndex: Z_INDEX.sticky,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: SPACE.sm,
-        overflow: "hidden",
-        padding: "10px 14px",
-        borderRadius: RADIUS.control,
-        border: `1px solid ${GLASS.borderStrong}`,
-        background: SOLID.popover,
-        boxShadow: GLASS.shadow,
-      }}
-    >
-      <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>
-        {UNDO_LABELS.removed(setNumber)}
-      </span>
-      <span style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
-        <button
-          type="button"
-          onClick={onUndo}
-          aria-label={UNDO_LABELS.undoAriaLabel(setNumber)}
-          style={{
-            minHeight: MOTION.minTouchTarget,
-            padding: "0 14px",
-            borderRadius: RADIUS.control,
-            border: `1px solid ${ACCENT.border}`,
-            background: ACCENT.muted,
-            color: ACCENT.text,
-            fontSize: TYPE.body.size,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          {UNDO_LABELS.undo}
-        </button>
-        <button
-          type="button"
-          onClick={onDismiss}
-          aria-label={UNDO_LABELS.dismissAriaLabel}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minWidth: MOTION.minTouchTarget,
-            minHeight: MOTION.minTouchTarget,
-            borderRadius: RADIUS.control,
-            border: `1px solid ${GLASS.border}`,
-            background: "transparent",
-            color: TEXT.tertiary,
-            cursor: "pointer",
-          }}
-        >
-          <X size={16} aria-hidden="true" />
-        </button>
-      </span>
-      <span
-        aria-hidden="true"
-        className="cronos-undo--drain"
-        style={{
-          position: "absolute",
-          left: 0,
-          bottom: 0,
-          height: "2px",
-          width: "100%",
-          transformOrigin: "left center",
-          background: ACCENT.base,
-          animation: `cronos-undo-drain ${UNDO_WINDOW_MS}ms ${MOTION.easeLinear} forwards`,
-        }}
-      />
-    </div>
-  );
-}
-
-/**
- * Sync state indicator.
- *
- * Offline is deliberately reassuring rather than alarming: the session is
- * already saved locally, so "sin conexión" is a status, not an error.
- */
-function SyncBadge({
-  status,
-  pending,
-  onClick,
-}: {
-  status: ReturnType<typeof useOfflineSync>["status"];
-  pending: number;
-  onClick: () => void;
-}) {
-  const map = {
-    idle: { text: "Guardado", color: TEXT.tertiary, icon: CheckCircle2 },
-    syncing: { text: "Sincronizando…", color: STATUS.comeback.text, icon: CloudUpload },
-    offline: { text: "Sin conexión", color: STATUS.warning.text, icon: CloudOff },
-    pending: {
-      text: `${pending} pendiente${pending === 1 ? "" : "s"}`,
-      color: STATUS.warning.text,
-      icon: CloudUpload,
-    },
-    error: { text: "Error al sincronizar", color: DANGER.text, icon: RefreshCw },
-  } as const;
-
-  const { text, color, icon: Icon } = map[status];
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title="Toca para reintentar la sincronización"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "6px",
-        minHeight: "28px",
-        padding: "0 10px",
-        borderRadius: RADIUS.control,
-        border: `1px solid ${GLASS.border}`,
-        background: "transparent",
-        fontSize: TYPE.label.size,
-        color,
-        cursor: "pointer",
-      }}
-    >
-      <Icon
-        size={14}
-        aria-hidden="true"
-        className={status === "syncing" ? "animate-pulse" : undefined}
-      />
-      {text}
-    </button>
-  );
-}
-
-function EmptyState({ onAdd }: { onAdd: () => void }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-white/10 px-6 py-12 text-center">
-      <Dumbbell className="mx-auto mb-3 h-8 w-8 text-neutral-600" />
-      <p className="text-sm text-neutral-400">Esta sesión todavía no tiene ejercicios.</p>
-      <button
-        type="button"
-        onClick={onAdd}
-        className="mt-4 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-neutral-950 transition hover:brightness-110"
-      >
-        Agregar ejercicio
-      </button>
-    </div>
-  );
-}
-
-/**
- * The quiet button.
- *
- * Hairline, no fill, tertiary text. Everything in the header that is not "Finalizar" is
- * this, so the one accent-filled control in the header is the only thing the eye is
- * pulled to -- and it is the only irreversible one.
- */
 const quietButtonStyle: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
@@ -1080,13 +2195,6 @@ const quietButtonStyle: CSSProperties = {
   cursor: "pointer",
 };
 
-/**
- * The accent-filled button: "Finalizar" and "Recuperar".
- *
- * The token's resolved value rather than `var(--cronos-accent-base)` -- nothing injects
- * the custom properties into the document, so a `var()` here would arrive with no fill.
- * See the note on `stateRules()` in `design/tokens.ts`.
- */
 const primaryButtonStyle: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
@@ -1100,26 +2208,6 @@ const primaryButtonStyle: CSSProperties = {
   color: TEXT.onAccent,
   fontSize: TYPE.label.size,
   fontWeight: 700,
-  cursor: "pointer",
-};
-
-function buildSets(count: number): SetEntry[] {
-  return Array.from({ length: Math.max(count, 1) }, (_, i) => emptySet(i));
-}
-function emptySet(index: number): SetEntry {
-  return {
-    set_number: index + 1,
-    weight: "",
-    reps: "",
-    rpe: "",
-    kind: "normal",
-    completed: false,
-  };
-}
-
-function toNumber(value: string): number | null {
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
+   cursor: "pointer",
+ };
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Lock, LogOut } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { ActiveWorkout } from "./components/ActiveWorkout";
@@ -21,10 +21,7 @@ import {
 } from "./hooks/useGymData";
 import { useProfile } from "./hooks/useProfile";
 import { useOfflineSync } from "./hooks/useOfflineSync";
-import { clearRankData } from "./lib/ranks/rankHistory";
-import { clearAllChats } from "./lib/ai/chatStorage";
 import { AuthModalProvider } from "./context/AuthModalContext";
-import { computeEnergyTargets } from "./lib/profile";
 
 /**
  * Exact-path comparison, so `/` does not claim to be active on every route.
@@ -54,14 +51,29 @@ export function isTabActive(path: string, pathname: string): boolean {
 export function AuthGate() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { ready, userId, email } = useAuthSession();
+  const { rehydrate } = useActiveSession();
   const {
     profile,
-    energy,
     loading: profileLoading,
     update: updateProfile,
   } = useProfile(userId);
   const location = useLocation();
   const navigate = useNavigate();
+
+  /**
+   * Look for a session that never finished, before anything decides there is
+   * no session.
+   *
+   * The lookup lives in the session provider, one level above the router, and
+   * this is where it is triggered: the gate is the one place that knows who
+   * is signed in. A reload used to land on the dashboard with a session still
+   * running on the device, because the lookup happened inside the workout --
+   * a component that only mounts once the app has already decided.
+   */
+  useEffect(() => {
+    if (!userId) return;
+    rehydrate(userId);
+  }, [userId, rehydrate]);
 
   // Mounted app-wide, not just inside a workout: a session finished offline has
   // to reach the server on reconnect even if the user never starts another one.
@@ -72,26 +84,7 @@ export function AuthGate() {
   const needsOnboarding =
     Boolean(userId) && profile !== null && profile.onboarding_completed_at === null;
 
-  /**
-   * Signs out and drops the cached rank data.
-   *
-   * IndexedDB is device-wide, not user-scoped. Without this the next account to
-   * sign in on this device would inherit the previous user's timeline, and -- more
-   * damagingly -- their `lastRanks`, which is the hysteresis input: they would
-   * start holding a rank they never earned and the demotion buffer would defend
-   * it. Cleared before the sign-out resolves so a failed sign-out does not leave
-   * signed-in state with no cached ranks.
-   *
-   * `clearAllChats` for the same reason: the assistant's transcript is the most
-   * revealing thing this app stores on the device. It is not on the server, so a
-   * sign-out that left it behind would be the one way it outlived the account.
-   */
-  const signOut = useCallback(async () => {
-    await clearRankData();
-    await clearAllChats();
-    await supabase.auth.signOut();
-  }, []);
-
+  
   const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
   // Stable identity, so the provider's memoised value does not change every render.
   const openAuthModal = useCallback(() => setIsAuthModalOpen(true), []);
@@ -175,11 +168,6 @@ export function AuthGate() {
           )
         ) : (
           <>
-            <WorkspaceHeader
-              email={email}
-              energy={energy}
-              onSignOut={() => void signOut()}
-            />
             {/* Only the user id and email travel through outlet context now: the
                 session lives in `ActiveSessionContext` because `AppShell` has to
                 read it too. */}
@@ -246,45 +234,6 @@ function useAuthSession() {
   }, []);
 
   return { ready, userId, email };
-}
-
-function WorkspaceHeader({
-  email,
-  energy,
-  onSignOut,
-}: {
-  email: string;
-  energy: ReturnType<typeof computeEnergyTargets> | null;
-  onSignOut: () => void;
-}) {
-  return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <p className="text-xs text-neutral-500">Sesión de {email || "invitado"}</p>
-        {energy && energy.maintenance > 0 && (
-          <span
-            className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-neutral-400"
-            title="Objetivo diario de energía (Mifflin-St Jeor)"
-          >
-            Objetivo:{" "}
-            <span className="font-semibold text-accent">{energy.target} kcal</span>
-            {energy.clampedByFloor && (
-              <span className="ml-1 text-amber-400/80">
-                (mínimo legal {energy.floor})
-              </span>
-            )}
-          </span>
-        )}
-      </div>
-      <button
-        type="button"
-        onClick={onSignOut}
-        className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-neutral-300 transition hover:bg-white/5"
-      >
-        <LogOut className="h-3.5 w-3.5" /> Cerrar sesión
-      </button>
-    </div>
-  );
 }
 
 function Welcome({
@@ -362,7 +311,7 @@ export function HomeView() {
  */
 export function TrainView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
-  const { session, end } = useActiveSession();
+  const { session, end, rehydrating } = useActiveSession();
   const { routines, loading } = useRoutines(userId);
   /**
    * True once the routine library has finished a load. `loading` starts
@@ -389,7 +338,17 @@ const [libraryLoaded, setLibraryLoaded] = useState(false);
      }
    }, [loading]);
 
-  if (!session) return <HomeView />;
+  if (!session) {
+    /*
+     * The lookup has not answered yet. Answering "there is no session"
+     * before the question has been asked is what sent the athlete home with
+     * a session still running, so the screen waits for the answer instead.
+     */
+    if (rehydrating) {
+      return <p className="text-neutral-500">Restaurando tu sesión…</p>;
+    }
+    return <HomeView />;
+  }
 
   // A free session (no routine) is empty by design -- the picker is the
   // point -- so only a routine-backed session waits for the library. The

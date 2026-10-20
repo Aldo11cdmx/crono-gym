@@ -21,14 +21,14 @@
  * 3. The placeholder is labelled. "GIF" in the corner of an empty box tells a screen
  *    reader nothing and tells a sighted athlete the asset is missing rather than pending.
  *
- * `object-fit: cover` on a fixed frame, because the catalog's demos are inconsistent
- * aspect ratios and `contain` would letterbox most of them into a strip with more empty
- * space than picture.
+ * `object-fit: contain` on the frame, because the catalog's demos are inconsistent
+ * aspect ratios and `cover` clips anatomy at the top of the frame — an athlete
+ * looking up mid-set cannot afford to lose the bar or their hands.
  */
 
 import type { CSSProperties, ReactNode } from "react";
-import { ImageOff } from "lucide-react";
-import { DANGER, DIAGRAM, GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
+import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { DANGER, DIAGRAM, GLASS, MOTION, RADIUS, SPACE, SURFACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { TARGET_LABELS, BODY_PART_LABELS, EQUIPMENT_LABELS } from "../../lib/i18n";
 import type { Exercise } from "@/types/supabase";
 
@@ -51,6 +51,12 @@ export interface ExerciseStageProps {
   onRemove?: () => void;
   /** The set table, rendered below the fold of this component. */
   children?: ReactNode;
+  /**
+   * Optional ghosted navigation arrows, shown when the carousel has been retired
+   * in favour of gestural swipe + explicit prev/next buttons over the media.
+   */
+  navPrev?: () => void;
+  navNext?: () => void;
 }
 
 export function ExerciseStage({
@@ -60,6 +66,8 @@ export function ExerciseStage({
   actions,
   onRemove,
   children,
+  navPrev,
+  navNext,
 }: ExerciseStageProps) {
   return (
     <section
@@ -69,9 +77,73 @@ export function ExerciseStage({
         flexDirection: "column",
         alignItems: "center",
         gap: SPACE.lg,
+        position: "relative",
+        maxWidth: "560px",
+        width: "100%",
+        margin: "0 auto",
       }}
     >
       <ExerciseMedia exercise={exercise} />
+
+      {navPrev && (
+        <button
+          type="button"
+          aria-label="Ejercicio anterior"
+          title="Ejercicio anterior"
+          onClick={navPrev}
+          style={{
+            position: "absolute",
+            left: SPACE.sm,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: Z_INDEX.sticky,
+            width: MOTION.minTouchTarget,
+            height: MOTION.minTouchTarget,
+            borderRadius: RADIUS.round,
+            border: `1px solid ${GLASS.borderStrong}`,
+            background: "transparent",
+            color: TEXT.secondary,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: TYPE.caption.size,
+            fontWeight: 600,
+          }}
+        >
+          <ChevronLeft size={16} aria-hidden="true" />
+        </button>
+      )}
+
+      {navNext && (
+        <button
+          type="button"
+          aria-label="Ejercicio siguiente"
+          title="Ejercicio siguiente"
+          onClick={navNext}
+          style={{
+            position: "absolute",
+            right: SPACE.sm,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: Z_INDEX.sticky,
+            width: MOTION.minTouchTarget,
+            height: MOTION.minTouchTarget,
+            borderRadius: RADIUS.round,
+            border: `1px solid ${GLASS.borderStrong}`,
+            background: "transparent",
+            color: TEXT.secondary,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: TYPE.caption.size,
+            fontWeight: 600,
+          }}
+        >
+          <ChevronRight size={16} aria-hidden="true" />
+        </button>
+      )}
 
       <header style={{ textAlign: "center", maxWidth: "42ch" }}>
         <h2
@@ -208,9 +280,18 @@ function ExerciseMedia({ exercise }: { exercise: Exercise }) {
           style={{
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            objectFit: "contain",
             display: "block",
-            backgroundColor: DIAGRAM.regionFill,
+            // The container carries the black backing, so transparent GIF pixels
+            // fall through to SURFACE.base with zero flash.
+            backgroundColor: "transparent",
+            // `invert` turns the GIF's native white background into black so it
+            // vanishes against the dark container; `hue-rotate(180)` approximately
+            // compensates so the figure's colours do not come through as a negative.
+            // `screen` blends the result against the black frame, darkening any
+            // remaining mid-tones to integrate with the Apple dark-mode aesthetic.
+            filter: "invert(1) hue-rotate(180deg)",
+            mixBlendMode: "screen",
           }}
         />
       ) : (
@@ -275,6 +356,7 @@ const mediaFrame: CSSProperties = {
   overflow: "hidden",
   border: `1px solid ${GLASS.border}`,
   boxShadow: GLASS.shadow,
-  // A hairline top highlight, so the frame reads as a lit surface rather than a hole.
+  // Black backing so the GIF's white backgrounds are absorbed by mix-blend-mode below.
+  backgroundColor: SURFACE.base,
   transition: `opacity ${MOTION.normal} ${MOTION.standard}`,
 };

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { equipmentMap } from "@/data/equipmentMap";
-import { ACCENT, GLASS, RADIUS, SCRIM, SOLID, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, RADIUS, SCRIM, SOLID, SURFACE_ROLE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 export interface EquipmentModalProps {
   equipmentId: string | null;
@@ -22,8 +22,13 @@ export function EquipmentModal({ equipmentId, onClose }: EquipmentModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end"
-      style={{ backgroundColor: SCRIM.modal }}
+      className="fixed inset-0 flex items-center justify-center p-4"
+      style={{
+        backgroundColor: SCRIM.modal,
+        zIndex: Z_INDEX.modal,
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+      }}
       onClick={onClose}
     >
       <div

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * ExerciseActions.test.tsx — five verbs, none of them primary.
+ * ExerciseActions.test.tsx — the verbs, none of them primary.
  *
  * The row is the one place on the immersive screen where a design decision has to be
  * defended rather than assumed, because it looks like an oversight:
@@ -48,8 +48,8 @@ describe("the row", () => {
   it("renders all five verbs, in the order they appear", () => {
     render(<ExerciseActions onSelect={ALL_WIRED} />);
 
-    expect(IDS).toEqual(["demo", "avance", "nota", "cambiar", "ajustar"]);
-    expect(screen.getAllByRole("button")).toHaveLength(5);
+    expect(IDS).toEqual(["demo", "avance", "nota", "cambiar", "ajustar", "maquina", "maneral"]);
+    expect(screen.getAllByRole("button")).toHaveLength(7);
   });
 
   it("names itself, so the row is not five anonymous buttons", () => {
@@ -160,7 +160,7 @@ describe("an unwired chip", () => {
     render(<ExerciseActions onSelect={{}} />);
     const ids = screen.getAllByRole("button").map((b) => b.getAttribute("aria-describedby"));
 
-    expect(new Set(ids).size).toBe(5);
+    expect(new Set(ids).size).toBe(7);
     expect(ids.every((id) => id !== null)).toBe(true);
   });
 
@@ -210,11 +210,11 @@ describe("no handlers at all", () => {
     // `onSelect` is optional so the row can be dropped into a screen that has not wired it
     // yet. Throwing here would make the row unshippable until all five exist.
     expect(() => render(<ExerciseActions />)).not.toThrow();
-    expect(screen.getAllByRole("button")).toHaveLength(5);
+    expect(screen.getAllByRole("button")).toHaveLength(7);
   });
 
   it("marks every chip as pending", () => {
     render(<ExerciseActions />);
-    expect(screen.getAllByText(ACTION_PENDING_TEXT)).toHaveLength(5);
+    expect(screen.getAllByText(ACTION_PENDING_TEXT)).toHaveLength(7);
   });
 });

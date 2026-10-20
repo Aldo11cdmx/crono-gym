@@ -201,7 +201,7 @@ describe("ProfilePage tab navigation", () => {
 describe("ProfilePage biometric tab", () => {
   it("shows the account's email in the header", async () => {
     renderPage();
-    await waitFor(() => expect(screen.getByText(EMAIL)).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText(EMAIL).length).toBeGreaterThanOrEqual(1));
   });
 
   it("shows body metrics stored", async () => {

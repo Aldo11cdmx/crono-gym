@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import type { Grip } from "@/data/gripMap";
-import { GLASS, RADIUS, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
+import { GLASS, RADIUS, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 export interface GripPopoverProps {
   grip: Grip | null;
@@ -51,7 +51,7 @@ export function GripPopover({ grip, anchorEl, onClose }: GripPopoverProps) {
         top: `${top}px`,
         width: `${popoverWidth}px`,
         height: `${popoverHeight}px`,
-        backgroundColor: "rgba(20,20,20,0.85)",
+        backgroundColor: SOLID.popover,
         border: `1px solid ${GLASS.border}`,
         borderRadius: RADIUS.card,
         boxShadow: GLASS.shadow,

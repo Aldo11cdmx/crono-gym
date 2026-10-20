@@ -23,6 +23,9 @@ import { Award, ChevronRight, Flame, Search, Sparkles, TrendingUp } from "lucide
 import type { Slug } from "react-muscle-highlighter";
 import { MuscleSelector } from "../MuscleSelector";
 import { MuscleRankDetail } from "../MuscleRankDetail";
+import { ProgressCharts } from "../progress/ProgressCharts";
+import { ConsistencyTracker } from "../progress/ConsistencyTracker";
+import { WorkoutHistory } from "../progress/WorkoutHistory";
 import { useMuscleRanks } from "@/hooks/useMuscleRanks";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { RANK_LABELS as T } from "@/lib/i18n";
@@ -298,6 +301,13 @@ export function AnatomicalRanksPage({
           }
         />
       )}
+
+      {/* Módulos de Analítica y Consistencia de Progreso */}
+      <div className="mt-8 space-y-6">
+        <ConsistencyTracker userId={userId} />
+        <ProgressCharts userId={userId} />
+        <WorkoutHistory userId={userId} />
+      </div>
     </div>
   );
 }

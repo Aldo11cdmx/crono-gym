@@ -134,10 +134,18 @@ afterEach(cleanup);
 describe("ProfileView stored values", () => {
   it("shows the account's email, which the gate already resolved", async () => {
     renderView();
-    // In the header and in the read-only identity field: the second is what a
+    // In the read-only identity field below the header: that is what a
     // screen reader reads when the user navigates the sections, so it has to be
-    // there too, not just decorative in the header.
-    await waitFor(() => expect(screen.getAllByText(EMAIL).length).toBeGreaterThanOrEqual(2));
+    // there.
+    await waitFor(() => expect(screen.getAllByText(EMAIL).length).toBeGreaterThanOrEqual(1));
+  });
+
+  it("shows the friendly profile name in the header, not the raw email", async () => {
+    renderView();
+    // The header uses the display name ("Alex") as a friendly identifier, while
+    // the read-only identity field still carries the technical email.
+    await waitFor(() => expect(screen.getByText("Alex")).toBeTruthy());
+    expect(screen.getAllByText(EMAIL).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows the body metrics stored, not a form to re-enter them", async () => {

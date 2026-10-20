@@ -481,6 +481,10 @@ export const SET_LOGGER_LABELS = {
     `Última sesión: ${weight} ${unit} × ${reps}`,
   lastSessionAriaLabel: (weight: string, unit: string, reps: string): string =>
     `Última sesión: ${weight} ${unit} por ${reps} repeticiones`,
+  bodyweightLabel: "Corporal",
+  bodyweightAddKg: "+kg",
+  setBadgeAriaLabel: (kindLabel: string, n: number): string =>
+    `Serie ${n}, tipo ${kindLabel}`,
 } as const;
 
 /**

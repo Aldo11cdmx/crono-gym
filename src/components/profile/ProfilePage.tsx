@@ -196,7 +196,7 @@ export function ProfilePage() {
           </span>
           <div style={{ minWidth: 0, flex: 1 }}>
             <h1 style={heroTitleStyle}>{PROFILE_LABELS.title}</h1>
-            <p style={{ ...mutedStyle, margin: `${SPACE.xs} 0 0` }}>{email || PROFILE_LABELS.notSet}</p>
+            <p style={{ ...mutedStyle, margin: `${SPACE.xs} 0 0` }}>{profile.display_name || email || PROFILE_LABELS.notSet}</p>
             <div style={{ display: "flex", gap: SPACE.xs, marginTop: SPACE.sm, flexWrap: "wrap" }}>
               <span style={badgeStyle}>
                 {BADGE_ROLE[session.role] ?? session.role} · {EXPERIENCE_BADGE[profile.experience_level] ?? profile.experience_level}
@@ -266,6 +266,7 @@ export function ProfilePage() {
       {activeTab === "biometric" && (
         <BiometricTabContent
           profile={profile}
+          email={email}
           energy={energy}
           bodyMetrics={bodyMetrics}
           age={age}
@@ -433,6 +434,7 @@ function MacroCell({ label, value }: { label: string; value: string }) {
 
 function BiometricTabContent({
   profile,
+  email,
   energy,
   bodyMetrics,
   age,
@@ -441,6 +443,7 @@ function BiometricTabContent({
   update,
 }: {
   profile: Profile;
+  email: string;
   energy: EnergyReport | null;
   bodyMetrics: ReturnType<typeof useBodyMetrics>;
   age: number | null;
@@ -459,6 +462,12 @@ function BiometricTabContent({
           style={inputStyle}
           disabled={saving}
         />
+        <dl style={readoutGridStyle}>
+          <div>
+            <dt style={readoutLabelStyle}>{PROFILE_LABELS.emailLabel}</dt>
+            <dd style={readoutValueStyle}>{email || PROFILE_LABELS.notSet}</dd>
+          </div>
+        </dl>
       </GroupedSection>
 
       <GroupedSection title={PROFILE_LABELS.bodyLabel}>

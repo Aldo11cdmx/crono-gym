@@ -491,6 +491,10 @@ export const DANGER = {
   text: "#e08d9c",
   border: "rgba(224, 141, 156, 0.42)",
   muted: "rgba(122, 47, 61, 0.24)",
+  /** Subtle red tint for active state backgrounds. */
+  subtle: "rgba(239, 68, 68, 0.12)",
+  /** Red glow for active rings and shadows. */
+  glow: "rgba(239, 68, 68, 0.4)",
   /** Deepest variant, for a critical banner. */
   deep: "#4a1a25",
 } as const;

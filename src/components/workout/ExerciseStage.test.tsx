@@ -21,7 +21,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ExerciseStage } from "./ExerciseStage";
 import type { Exercise } from "../../types/supabase";
 import { borderColor, sameColor } from "../../test-support/color";
-import { DIAGRAM, DANGER, GLASS } from "@/design/tokens";
+import { DIAGRAM, DANGER, GLASS, SURFACE } from "@/design/tokens";
 
 afterEach(cleanup);
 
@@ -130,13 +130,14 @@ describe("the media frame", () => {
     expect(frame.style.overflow).toBe("hidden");
   });
 
-  it("clips, so a tall demo cannot grow the frame", () => {
+  it("fits the whole GIF without clipping, so no anatomy is cut off", () => {
     const { container } = renderStage();
     const image = container.querySelector("img")!;
 
-    // The catalog's demos are inconsistent aspect ratios. `contain` would letterbox most
-    // of them into a strip with more empty space than picture.
-    expect(image.style.objectFit).toBe("cover");
+    // The catalog's demos are inconsistent aspect ratios. `contain` guarantees
+    // the full figure is visible even if it means letterboxing, which is better
+    // than losing the bar or the athlete's hands at the top of the frame.
+    expect(image.style.objectFit).toBe("contain");
   });
 
   it("renders the demo eagerly, because it is above the set table", () => {
@@ -157,9 +158,13 @@ describe("the media frame", () => {
     expect(image.getAttribute("height")).toBe("360");
   });
 
-  it("paints behind the image, so a load does not flash white", () => {
-    renderStage();
-    expect(sameColor((screen.getByRole("img") as HTMLElement).style.backgroundColor, DIAGRAM.regionFill)).toBe(true);
+  it("paints the frame black, so a load does not flash white", () => {
+    const { container } = renderStage();
+
+    // The container carries the black backing; the image itself is transparent
+    // so its filter + screen blend integrate with the dark frame.
+    expect(sameColor((mediaFrame(container) as HTMLElement).style.backgroundColor, SURFACE.base)).toBe(true);
+    expect((screen.getByRole("img") as HTMLElement).style.backgroundColor).toBe("transparent");
   });
 
   it("names the demo in its alt text", () => {

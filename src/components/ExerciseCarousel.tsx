@@ -32,8 +32,8 @@
  * asks both. The header's overall bar answers the second; this answers the first.
  */
 
-import { useEffect, useRef } from "react";
-import { Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Plus } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
 import {
   ACCENT,
@@ -41,12 +41,10 @@ import {
   GLASS,
   MOTION,
   RADIUS,
-  SPACE,
   STATUS,
   SURFACE,
   TEXT,
   TYPE,
-  Z_INDEX,
 } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -62,11 +60,31 @@ interface ExerciseCarouselProps {
   items: CarouselItem[];
   selectedKey: string | null;
   onSelect: (key: string) => void;
+  /**
+   * Called with `(fromIndex, toIndex)` after a drag-and-drop reorder.
+   *
+   * Omitted by callers that do not support reordering (e.g. a routine that is
+   * fixed in plan order); the items remain draggable for screen-reader users
+   * via the tab list, but the visual drag handle is hidden.
+   */
+  onReorder?: (fromIndex: number, toIndex: number) => void;
+  /**
+   * Called when the '+' button at the end of the strip is tapped.
+   * Omitted when adding exercises is not supported.
+   */
+  onAdd?: () => void;
 }
 
-export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarouselProps) {
+export function ExerciseCarousel({
+  items,
+  selectedKey,
+  onSelect,
+  onReorder,
+  onAdd,
+}: ExerciseCarouselProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   /*
    * Keeps the active bubble visible when selection comes from elsewhere.
@@ -89,22 +107,14 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
   if (items.length === 0) return null;
 
   return (
-    // `sticky` at `Z_INDEX.sticky`, below the nav: the strip is chrome, so it ranks with
-    // chrome rather than above anything the athlete summoned on purpose.
+    // In-flow strip, centred by its parent (ActiveWorkout). It lives between the
+    // Transparent strip centred by its parent. Floats cleanly over the black canvas,
+    // with no card background, border, or shadow.
     <div
       style={{
-        position: "sticky",
-        top: 0,
-        zIndex: Z_INDEX.sticky,
-        // A hair wider than the screen, so a bubble's glow is not clipped by the edge
-        // when it is the first or last one. `padding` rather than `margin` keeps the
-        // scroll container's own bounds inside the sticky box.
-        padding: `${SPACE.sm} ${SPACE.gutter}`,
-        margin: `0 -${SPACE.gutter}`,
-        background: GLASS.fill,
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderBottom: `1px solid ${GLASS.border}`,
+        position: "relative",
+        width: "100%",
+        margin: 0,
       }}
     >
       <div
@@ -116,6 +126,7 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
           display: "flex",
           gap: 10,
           overflowX: "auto",
+          justifyContent: "center",
           // The two properties that make this a carousel. `x mandatory` because a strip
           // that can rest between two bubbles cannot answer "which one am I on".
           scrollSnapType: "x mandatory",
@@ -145,6 +156,34 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
               // someone navigate the strip without seeing it.
               aria-label={`${item.exercise.name}, ${index + 1} de ${items.length}, ${item.done} de ${item.total} series`}
               onClick={() => onSelect(item.key)}
+              onClickCapture={onReorder ? (e) => {
+                // Prevent the select handler from firing when starting a drag.
+                if (dragIndex !== null) e.stopPropagation();
+              } : undefined}
+              draggable={!!onReorder}
+              onDragStart={(e) => {
+                if (!onReorder) return;
+                setDragIndex(index);
+                e.dataTransfer.effectAllowed = "move";
+                // A transparent 1x1 gif prevents the browser from showing a ghost
+                // image that obscures the thumb position.
+                const dt = e.dataTransfer as DataTransfer & {
+                  setImage: (img: HTMLImageElement, x: number, y: number) => void;
+                };
+                dt.setImage(new Image(), 0, 0);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (onReorder && dragIndex !== null && dragIndex !== index) {
+                  onReorder(dragIndex, index);
+                }
+                setDragIndex(null);
+              }}
+              onDragEnd={() => setDragIndex(null)}
               style={{
                 // The snap target. Without this the strip can rest with a bubble anywhere
                 // and `mandatory` has nothing to snap *to*.
@@ -172,6 +211,7 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
                   height: 56,
                   overflow: "hidden",
                   borderRadius: RADIUS.round,
+                  // Red border for the active exercise, per the design spec.
                   border: `2px solid ${borderFor(selected, complete)}`,
                   background: selected ? ACCENT.subtle : SURFACE.raised,
                   // The one thing on this screen that changes size, and the reason the
@@ -182,7 +222,6 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
                   transition: reducedMotion
                     ? undefined
                     : `transform ${MOTION.fast} ${MOTION.spring}, border-color ${MOTION.fast} ${MOTION.standard}`,
-                  boxShadow: selected ? ACCENT.glow : "none",
                 }}
               >
                 {/*
@@ -192,19 +231,26 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
                   undefined would blank the session.
                 */}
                 {exerciseGif(item.exercise) ? (
-                  <img
-                    src={exerciseGif(item.exercise)}
-                    alt=""
-                    loading="lazy"
-                    width={56}
-                    height={56}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
+                   <img
+                     src={exerciseGif(item.exercise)}
+                     alt=""
+                     loading="lazy"
+                     width={56}
+                     height={56}
+                     style={{
+                       width: "100%",
+                       height: "100%",
+                       objectFit: "cover",
+                       display: "block",
+                       // Neutralise the white background baked into the GIF thumbnails,
+                       // turning opaque white to black so it blends into the pure-black
+                       // surface instead of flashing paper-white. The transparent base
+                       // lets any true transparency in the GIF pass through.
+                       backgroundColor: "transparent",
+                       filter: "invert(1) hue-rotate(180deg)",
+                       WebkitFilter: "invert(1) hue-rotate(180deg)",
+                     }}
+                   />
                 ) : (
                   // Same reasoning as `ExerciseStage`'s placeholder, at 56px: no
                   // illustration beats a letterboxed one, and the numbered badge below
@@ -288,7 +334,7 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
                   fontSize: TYPE.label.size,
                   lineHeight: TYPE.label.lineHeight,
                   fontWeight: selected ? 600 : TYPE.label.weight,
-                  color: selected ? ACCENT.text : complete ? STATUS.success.text : TEXT.tertiary,
+                   color: selected ? ACCENT.text : complete ? STATUS.success.text : TEXT.tertiary,
                 }}
               >
                 {shortName(item.exercise.name)}
@@ -296,14 +342,70 @@ export function ExerciseCarousel({ items, selectedKey, onSelect }: ExerciseCarou
             </button>
           );
         })}
+
+        {/* '+' button at the end of the strip to add a new exercise. */}
+        {onAdd && (
+          <button
+            type="button"
+            role="tab"
+            aria-label="Agregar ejercicio"
+            onClick={onAdd}
+            style={{
+              scrollSnapAlign: "center",
+              flex: "0 0 auto",
+              width: 68,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+          >
+            <span
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 56,
+                height: 56,
+                overflow: "hidden",
+                borderRadius: RADIUS.round,
+                border: `2px solid ${ACCENT.border}`,
+                background: SURFACE.raised,
+              }}
+            >
+              <Plus size={20} strokeWidth={2.5} aria-hidden="true" />
+            </span>
+            <span
+              style={{
+                width: "100%",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                textAlign: "center",
+                fontSize: TYPE.label.size,
+                lineHeight: TYPE.label.lineHeight,
+                fontWeight: TYPE.label.weight,
+                color: TEXT.secondary,
+              }}
+            >
+              +
+            </span>
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-/** The accent border, and only when the bubble is the one being worked. */
+/** The bright red border for the active exercise, and the success blue for complete. */
 function borderFor(selected: boolean, complete: boolean): string {
-  if (selected) return ACCENT.border;
+  if (selected) return ACCENT.base;
   if (complete) return STATUS.success.border;
   return GLASS.border;
 }

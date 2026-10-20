@@ -141,9 +141,8 @@ describe("the three states", () => {
     // success border.
     const pending = container.querySelector("[data-key='row']")!;
 
-    // `ACCENT.border`, not `ACCENT.base`: a 42%-alpha hairline has to survive against the
-    // fill behind it, which is why the token exists separately from the fill.
-    expect(sameColor(borderColorOf(active.firstElementChild!), ACCENT.border)).toBe(true);
+    // The active border is the red accent token, matching the ActiveWorkout theme.
+    expect(sameColor(borderColorOf(active.firstElementChild!), ACCENT.base)).toBe(true);
     expect(sameColor(borderColorOf(pending.firstElementChild!), GLASS.border)).toBe(true);
   });
 
@@ -342,6 +341,10 @@ describe("colour discipline", () => {
       STATUS.success.base,
       STATUS.success.text,
       STATUS.success.border,
+      STATUS.progression.base,
+      STATUS.progression.text,
+      STATUS.progression.border,
+      STATUS.progression.muted,
       TEXT.disabled,
       TEXT.secondary,
       TEXT.tertiary,

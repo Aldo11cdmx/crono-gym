@@ -129,7 +129,7 @@ export function ProfileView() {
         <h1 style={{ margin: 0, fontSize: TYPE.title.size, fontWeight: TYPE.title.weight, color: TEXT.primary }}>
           {PROFILE_LABELS.title}
         </h1>
-        <p style={{ margin: `${SPACE.xs} 0 0`, ...mutedStyle }}>{email}</p>
+        <p style={{ margin: `${SPACE.xs} 0 0`, ...mutedStyle }}>{profile.display_name || email || PROFILE_LABELS.notSet}</p>
       </header>
 
       {/* ------------------------------------------------------ identity */}

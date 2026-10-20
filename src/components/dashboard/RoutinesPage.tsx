@@ -248,7 +248,7 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
     useRoutines(userId);
   const { start } = useActiveSession();
   const navigate = useNavigate();
-  const { exercises: catalogExercises } = useExerciseCatalog(userId);
+  const { exercises: catalogExercises } = useExerciseCatalog();
 
   const todayIdx = useMemo(() => getWeekdayIndex(Date.now()), []);
 

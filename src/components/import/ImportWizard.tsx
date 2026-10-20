@@ -93,7 +93,7 @@ export function ImportWizard({ userId, onClose, onImported }: ImportWizardProps)
   const [undone, setUndone] = useState<string | null>(null);
 
   const { state, read, reset } = useCsvImport();
-  const catalog = useExerciseCatalog(userId);
+  const catalog = useExerciseCatalog();
 
   const analysis = state.analysis;
   // The mapping is deliberately *not* held in state: the worker returns the one

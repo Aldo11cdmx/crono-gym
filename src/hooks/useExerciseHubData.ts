@@ -48,7 +48,7 @@ export function useExerciseHubData(
   userId: string | null,
   exerciseId: string | null | undefined,
 ): ExerciseHubData {
-  const catalog = useExerciseCatalog(userId);
+  const catalog = useExerciseCatalog();
   const prs = useAthletePRs(userId);
 
   const exercise = useMemo(() => {

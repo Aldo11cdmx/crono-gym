@@ -14,9 +14,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Slug } from "react-muscle-highlighter";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@lib/supabase";
-import { loadExercises } from "@services/seedExercises";
 import type { Exercise } from "../types/supabase";
+import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { toExercises } from "@/lib/catalog/exerciseAdapter";
 import { resolveMedia } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import {
@@ -24,7 +24,6 @@ import {
   Dumbbell,
   X,
   AlertCircle,
-  CloudDownload,
   PersonStanding,
   Filter,
   Check,
@@ -67,8 +66,6 @@ import {
 
 const BODY_PARTS = BODY_PART_FILTER_VALUES;
 
-type Source = "supabase" | "fallback";
-
 export function ExerciseBrowser({
   onAdd,
   isAdded,
@@ -85,7 +82,6 @@ export function ExerciseBrowser({
   const [target, setTarget] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [source, setSource] = useState<Source>("supabase");
   const [detailExercise, setDetailExercise] = useState<Exercise | null>(null);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -104,38 +100,25 @@ export function ExerciseBrowser({
       setLoading(true);
       setError(null);
 
-      const { data, error: dbError } = await supabase
-        .from("exercises")
-        .select("*")
-        .order("id", { ascending: true });
-
-      const rows = (data ?? []) as Exercise[];
-      if (!alive) return;
-
-      if (!dbError && rows.length > 0) {
-        setExercises(rows);
-        setSource("supabase");
-        setLoading(false);
-        return;
-      }
-
-      const reason = dbError
-        ? dbError.message
-        : "La tabla exercises está vacía";
+      /*
+       * The catalog comes from the device.
+       *
+       * It used to be `select *` from the `exercises` table, with a 16 MB
+       * fetch of the whole dataset as the fallback. Both downloaded the same
+       * 1,324 exercises the app already ships with, on every visit to the
+       * library. Now the catalog is read from the device copy, which is
+       * downloaded once and kept.
+       */
       try {
-        const fallback = await loadExercises();
+        const rows = toExercises(await loadCatalog());
         if (!alive) return;
-        setExercises(fallback);
-        setSource("fallback");
-        setError(
-          `Mostrando el catálogo en caché (${fallback.length}). ${reason}.`,
-        );
-      } catch (fallbackError) {
+        setExercises(rows);
+      } catch (err) {
         if (!alive) return;
         setExercises([]);
         setError(
           `No se pudo cargar el catálogo: ${
-            fallbackError instanceof Error ? fallbackError.message : reason
+            err instanceof Error ? err.message : "error desconocido"
           }`,
         );
       } finally {
@@ -422,7 +405,6 @@ export function ExerciseBrowser({
             }}
           >
             {filtered.length} de {exercises.length} ejercicios
-            {source === "fallback" ? " (caché local)" : ""}
           </span>
         </div>
 
@@ -472,26 +454,13 @@ export function ExerciseBrowser({
               <div
                 className="mb-4 flex items-start gap-2 rounded-xl border px-4 py-3 text-sm"
                 style={{
-                  borderColor:
-                    source === "fallback"
-                      ? STATUS.warning.border
-                      : STATUS.error.border,
-                  backgroundColor:
-                    source === "fallback"
-                      ? STATUS.warning.muted
-                      : STATUS.error.muted,
-                  color:
-                    source === "fallback"
-                      ? STATUS.warning.text
-                      : STATUS.error.text,
+                  borderColor: STATUS.error.border,
+                  backgroundColor: STATUS.error.muted,
+                  color: STATUS.error.text,
                 }}
               >
                 <span className="mt-0.5 shrink-0">
-                  {source === "fallback" ? (
-                    <CloudDownload className="h-4 w-4" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4" />
-                  )}
+                  <AlertCircle className="h-4 w-4" />
                 </span>
                 <span>{error}</span>
               </div>

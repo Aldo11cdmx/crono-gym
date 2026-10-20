@@ -119,39 +119,57 @@ export function useRoutines(userId: string | null) {
     }
     setLoading(true);
     setError(null);
-    const [routineRes, linkRes, exerciseRes] = await Promise.all([
-      supabase.from("routines").select("*").eq("user_id", userId),
-      supabase.from("routine_exercises").select("*"),
-      supabase.from("exercises").select("*"),
-    ]);
+    const routineRes = await supabase.from("routines").select("*").eq("user_id", userId);
     if (routineRes.error) {
       setError(routineRes.error.message);
       applyRoutines([]);
       setLoading(false);
       return;
     }
-    if (linkRes.error || exerciseRes.error) {
-      setError((linkRes.error ?? exerciseRes.error)!.message);
+
+    const rows = (routineRes.data ?? []) as Routine[];
+    const routineIds = rows.map((row) => row.id);
+
+    /*
+     * The links of *these* routines, with the exercise each one points at.
+     *
+     * It used to be three parallel reads: the routines, every link in the
+     * table and every exercise in the table. Two of them were unbounded -- a
+     * routine of four exercises made the app download 1,324 exercises and
+     * every link every user had ever written. Now the links are read for
+     * these routines only, and the exercise each link points at comes with
+     * them, so the read is as long as the routines on screen.
+     */
+    const linkRes =
+      routineIds.length === 0
+        ? { data: [], error: null }
+        : await supabase
+            .from("routine_exercises")
+            .select("*, exercises(*)")
+            .in("routine_id", routineIds);
+    if (linkRes.error) {
+      setError(linkRes.error.message);
       applyRoutines([]);
       setLoading(false);
       return;
     }
 
-    const rows = (routineRes.data ?? []) as Routine[];
     /*
      * `group_id` is read through a widened row type on purpose: the column
      * arrives with the superset migration, and the read has to work both
      * before and after it without a second code path. `select("*")` returns
      * whatever the table has, so the moment the column exists this reads it
      * and the day before it reads nothing.
+     *
+     * `exercises` is the row the link points at, delivered with the link.
      */
-    const links = (linkRes.data ?? []) as (RoutineExercise & { group_id?: string | null })[];
-    const catalog = new Map<string, Exercise>(
-      ((exerciseRes.data ?? []) as Exercise[]).map((e) => [e.id, e]),
-    );
+    const links = (linkRes.data ?? []) as unknown as (RoutineExercise & {
+      group_id?: string | null;
+      exercises: Exercise | null;
+    })[];
     const byRoutine = new Map<string, PlannedExercise[]>();
     for (const link of [...links].sort((a, b) => a.order_index - b.order_index)) {
-      const exercise = catalog.get(link.exercise_id);
+      const exercise = link.exercises;
       if (!exercise) continue;
       const list = byRoutine.get(link.routine_id) ?? [];
       list.push({

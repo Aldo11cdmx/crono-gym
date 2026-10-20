@@ -88,7 +88,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
    * passing the athlete keeps it consistent with every other read in this panel. Passing the
    * coach would work today and break the moment the catalog became per-user.
    */
-  const { exercises, loading: catalogLoading } = useExerciseCatalog(athleteId);
+  const { exercises, loading: catalogLoading } = useExerciseCatalog();
 
   const [title, setTitle] = useState("");
   const [days, setDays] = useState<CoachRoutineDay[]>([emptyDay()]);

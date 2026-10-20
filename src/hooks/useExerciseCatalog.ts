@@ -6,13 +6,21 @@
  * possible if every row with that name is in hand, and the user's file will name
  * exercises from every region regardless of which muscles they picked.
  *
- * Shared across the wizard's steps rather than refetched per step, because a
- * catalogue query is the largest single read in the importer and re-running it on
- * every column change is what makes a wizard feel broken.
+ * The catalog is read from the device, not from the server. It used to be
+ * `select *` from the `exercises` table -- 1,324 rows on every mount of the
+ * wizard, the library or the hub -- and the rows it needs are the same rows
+ * the app ships with. The device copy is downloaded once, kept in IndexedDB
+ * and read from there, so the wizard opens without a round trip and opens
+ * without a connection.
+ *
+ * Shared across the wizard's steps rather than refetched per step, because
+ * re-reading the catalogue on every column change is what makes a wizard feel
+ * broken.
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@lib/supabase";
+import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { toExercises } from "@/lib/catalog/exerciseAdapter";
 import type { Exercise } from "@/types/supabase";
 
 export interface ExerciseCatalogState {
@@ -41,23 +49,25 @@ export function normaliseExerciseName(name: string): string {
     .trim();
 }
 
-export function useExerciseCatalog(userId: string | null): ExerciseCatalogState {
+export function useExerciseCatalog(): ExerciseCatalogState {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!userId) {
-      setExercises([]);
-      return;
-    }
     setLoading(true);
     setError(null);
-    const { data, error: err } = await supabase.from("exercises").select("*");
-    if (err) setError(err.message);
-    else setExercises((data ?? []) as Exercise[]);
-    setLoading(false);
-  }, [userId]);
+    try {
+      const rows = await loadCatalog();
+      setExercises(toExercises(rows));
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "No se pudo cargar el catálogo de ejercicios",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void refresh();

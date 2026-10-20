@@ -15,7 +15,6 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { ExerciseBrowser } from "./ExerciseBrowser";
-import type { Exercise } from "@/types/supabase";
 
 const hoisted = vi.hoisted(() => ({
   mockSetSearchParams: vi.fn(),
@@ -27,7 +26,7 @@ const hoisted = vi.hoisted(() => ({
       target: "pectorals",
       equipment: "barbell",
       gif_url: "https://example.com/anim1.gif",
-      instructions: ["Lie down.", "Grab the bar."],
+      instruction_steps: { es: ["Lie down.", "Grab the bar."] },
     },
     {
       id: "ex-2",
@@ -36,27 +35,31 @@ const hoisted = vi.hoisted(() => ({
       target: "quadriceps",
       equipment: "barbell",
       gif_url: "https://example.com/anim2.gif",
-      instructions: ["Stand.", "Bend knees."],
+      instruction_steps: { es: ["Stand.", "Bend knees."] },
     },
-  ] as Exercise[],
+  ],
 }));
 
-vi.mock("@lib/supabase", () => ({
-  supabase: {
-    from: () => ({
-      select: () => ({
-        order: () =>
-          Promise.resolve({
-            data: hoisted.mockExercises,
-            error: null,
-          }),
-      }),
-    }),
-  },
-}));
-
-vi.mock("@services/seedExercises", () => ({
-  loadExercises: () => Promise.resolve([]),
+/*
+ * The browser reads the catalog from the device, not from the server: the
+ * 1,324 rows it needs are the ones the app ships with.
+ */
+vi.mock("@/lib/catalog/catalogLoader", () => ({
+  loadCatalog: () =>
+    Promise.resolve(
+      hoisted.mockExercises.map((ex) => ({
+        ...ex,
+        category: ex.body_part,
+        image: "",
+        muscle_group: ex.target,
+        secondary_muscles: [],
+        availableInCronosGym: true,
+        instructions: { es: ex.instruction_steps.es.join(" ") },
+        media_id: "test",
+        created_at: "2024-01-01",
+        attribution: null,
+      })),
+    ),
 }));
 
 vi.mock("react-router-dom", async (importOriginal) => {

@@ -50,7 +50,8 @@ import {
 } from "@/design/tokens";
 import type { PlannedExercise } from "../hooks/useGymData";
 import { ExerciseCarousel } from "./ExerciseCarousel";
-import { ExerciseSelectorModal, type CatalogExercise } from "./ExerciseSelectorModal";
+import { ExerciseSelectorModal } from "./ExerciseSelectorModal";
+import type { CatalogExercise } from "@/lib/catalog/types";
 import type { Exercise } from "@/types/supabase";
 import {
   EMPTY_PERFORMANCE,

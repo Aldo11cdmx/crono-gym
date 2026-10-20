@@ -1,20 +1,26 @@
 /**
  * ExerciseSelectorModal.tsx — selector de ejercicios para el entrenamiento activo.
  *
- * Lee el catálogo de `src/data/exercisesCatalog.json`, filtra por búsqueda y por
- * el toggle "Solo Cronos Gym" (activado por defecto: `availableInCronosGym ===
- * true`) y renderiza la lista con virtualización de `itemHeight` fijo, de modo
- * que el scroll sobre los 1.135 ejercicios disponibles se mantenga a 60 FPS.
+ * Filtra el catálogo de ejercicios por búsqueda y por el toggle "Solo Cronos Gym"
+ * (activado por defecto: `availableInCronosGym === true`) y renderiza la lista con
+ * virtualización de `itemHeight` fijo, de modo que el scroll sobre los 1.135
+ * ejercicios disponibles se mantenga a 60 FPS.
+ *
+ * El catálogo ya no se importa de forma estática: son 16,3 MB de JSON que
+ * inflaban el bundle principal. `loadCatalog()` lo descarga la primera vez que
+ * se abre el selector y lo mantiene en memoria; mientras tanto el modal
+ * muestra su estado de carga y, si la descarga falla, un reintento.
  *
  * Cada tarjeta muestra: miniatura GIF (48 × 48 px), nombre + grupo muscular y un
  * chip con la foto HD de la máquina asignada (CG-EQP-XXXX). Al tocar una
  * tarjeta se invoca `onSelect` con el ejercicio elegido.
  */
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import { X, Search, Dumbbell } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { X, Search, Dumbbell, Loader2 } from "lucide-react";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
-import exercisesCatalog from "@/data/exercisesCatalog.json";
+import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import type { CatalogExercise } from "@/lib/catalog/types";
 import { translateBodyPart } from "@/lib/i18n";
 import {
   ACCENT,
@@ -29,25 +35,6 @@ import {
   TYPE,
   Z_INDEX,
 } from "@/design/tokens";
-
-interface CatalogExercise {
-  id: string;
-  name: string;
-  category: string;
-  body_part: string;
-  equipment: string;
-  gif_url: string;
-  image: string;
-  muscle_group: string;
-  secondary_muscles: string[];
-  target: string;
-  availableInCronosGym: boolean;
-  instructions: Record<string, string>;
-  instruction_steps: Record<string, string[]>;
-  media_id: string;
-  created_at: string;
-  attribution: string | null;
-}
 
 export interface ExerciseSelectorModalProps {
   open: boolean;
@@ -70,15 +57,35 @@ function ExerciseSelectorModal({
   const [query, setQuery] = useState("");
   const [onlyCronos, setOnlyCronos] = useState(true);
   const [scrollTop, setScrollTop] = useState(0);
+  const [catalog, setCatalog] = useState<CatalogExercise[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 
-  if (!open) return null;
-
-  const catalog = exercisesCatalog as CatalogExercise[];
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setLoadError(null);
+    void loadCatalog()
+      .then((rows) => {
+        if (!cancelled) setCatalog(rows);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setCatalog(null);
+        setLoadError(
+          err instanceof Error ? err.message : "No se pudo cargar el catálogo de ejercicios",
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, reloadToken]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
-    return catalog.filter((ex) => {
+    const rows = catalog ?? [];
+    return rows.filter((ex) => {
       if (onlyCronos && ex.availableInCronosGym !== true) return false;
       return q === "" || ex.name.toLowerCase().includes(q);
     });
@@ -107,6 +114,8 @@ function ExerciseSelectorModal({
     },
     [onClose, onSelect],
   );
+
+  if (!open) return null;
 
   return (
     <div
@@ -171,7 +180,9 @@ function ExerciseSelectorModal({
                 color: TEXT.secondary,
               }}
             >
-              {filtered.length} ejercicio{filtered.length !== 1 ? "s" : ""}
+              {catalog === null && loadError === null
+                ? "Cargando…"
+                : `${filtered.length} ejercicio${filtered.length !== 1 ? "s" : ""}`}
             </p>
           </div>
           <button
@@ -298,130 +309,102 @@ function ExerciseSelectorModal({
           }}
           onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
         >
-          <div style={{ height: filtered.length * ITEM_HEIGHT, position: "relative" }}>
-                  {filtered.slice(start, end).map((ex, i) => {
-              const suggestion = suggestions.get(ex.id);
-              const primary = suggestion?.primary ?? null;
-              const machineImg = primary?.views?.[0]?.src;
-              return (
-                <div
-                  key={ex.id}
-                  style={{
-                    position: "absolute",
-                    top: (start + i) * ITEM_HEIGHT - offset,
-                    left: 0,
-                    right: 0,
-                    height: ITEM_HEIGHT,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: SPACE.md,
-                    padding: `${SPACE.xs} ${SPACE.sm}`,
-                    borderBottom: `1px solid ${GLASS.border}`,
-                    background: SURFACE_ROLE.card,
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = SOLID.popover;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = SURFACE_ROLE.card;
-                  }}
-                  onClick={() => handleSelect(ex)}
-                  role="option"
-                  aria-label={ex.name}
-                >
-                  {/* Miniatura GIF 48 × 48 */}
-                  <div
-                    style={{
-                      width: THUMB_SIZE,
-                      height: THUMB_SIZE,
-                      flexShrink: 0,
-                      borderRadius: RADIUS.sm,
-                      overflow: "hidden",
-                      background: SURFACE_ROLE.well,
-                      border: `1px solid ${GLASS.border}`,
-                    }}
-                  >
-                    {ex.gif_url ? (
-                      <img
-                        src={resolveImageSrc(ex.gif_url)}
-                        alt={`Animación de ${ex.name}`}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                        onError={(ev) => {
-                          (ev.currentTarget as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    ) : null}
-                    {!ex.gif_url && (
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: TEXT.tertiary,
-                        }}
-                      >
-                        <Dumbbell style={{ width: 20, height: 20 }} aria-hidden="true" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
+          {loadError !== null ? (
+            <div
+              style={{
+                padding: SPACE.card,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: SPACE.sm,
+                textAlign: "center",
+                color: TEXT.secondary,
+                fontSize: TYPE.body.size,
+              }}
+            >
+              <span>{loadError}</span>
+              <button
+                type="button"
+                onClick={() => setReloadToken((token) => token + 1)}
+                style={{
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `0 ${SPACE.md}`,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${GLASS.borderStrong}`,
+                  background: "transparent",
+                  color: TEXT.primary,
+                  cursor: "pointer",
+                  fontSize: TYPE.body.size,
+                }}
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : catalog === null ? (
+            <div
+              style={{
+                padding: SPACE.card,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: SPACE.sm,
+                color: TEXT.tertiary,
+                fontSize: TYPE.body.size,
+              }}
+            >
+              <Loader2 size={16} aria-hidden="true" />
+              Cargando catálogo…
+            </div>
+          ) : (
+            <>
+              <div style={{ height: filtered.length * ITEM_HEIGHT, position: "relative" }}>
+                {filtered.slice(start, end).map((ex, i) => {
+                  const suggestion = suggestions.get(ex.id);
+                  const primary = suggestion?.primary ?? null;
+                  const machineImg = primary?.views?.[0]?.src;
+                  return (
                     <div
+                      key={ex.id}
                       style={{
-                        fontSize: TYPE.body.size,
-                        fontWeight: 600,
-                        color: TEXT.primary,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {ex.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: TYPE.caption.size,
-                        color: TEXT.tertiary,
-                        marginTop: 2,
-                      }}
-                    >
-                      {translateBodyPart(ex.body_part)}
-                    </div>
-                  </div>
-
-                  {/* Chip con la foto HD de la máquina asignada (CG-EQP-XXXX) */}
-                  {primary && (
-                    <div
-                      style={{
+                        position: "absolute",
+                        top: (start + i) * ITEM_HEIGHT - offset,
+                        left: 0,
+                        right: 0,
+                        height: ITEM_HEIGHT,
                         display: "flex",
-                        flexDirection: "column",
                         alignItems: "center",
-                        gap: SPACE.xs,
-                        flexShrink: 0,
+                        gap: SPACE.md,
+                        padding: `${SPACE.xs} ${SPACE.sm}`,
+                        borderBottom: `1px solid ${GLASS.border}`,
+                        background: SURFACE_ROLE.card,
+                        cursor: "pointer",
                       }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = SOLID.popover;
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = SURFACE_ROLE.card;
+                      }}
+                      onClick={() => handleSelect(ex)}
+                      role="option"
+                      aria-label={ex.name}
                     >
+                      {/* Miniatura GIF 48 × 48 */}
                       <div
                         style={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: RADIUS.round,
+                          width: THUMB_SIZE,
+                          height: THUMB_SIZE,
+                          flexShrink: 0,
+                          borderRadius: RADIUS.sm,
                           overflow: "hidden",
-                          border: `1px solid ${GLASS.border}`,
                           background: SURFACE_ROLE.well,
+                          border: `1px solid ${GLASS.border}`,
                         }}
                       >
-                        {machineImg ? (
+                        {ex.gif_url ? (
                           <img
-                            src={resolveImageSrc(machineImg)}
-                            alt={`Foto de ${primary.name}`}
+                            src={resolveImageSrc(ex.gif_url)}
+                            alt={`Animación de ${ex.name}`}
                             style={{
                               width: "100%",
                               height: "100%",
@@ -432,40 +415,118 @@ function ExerciseSelectorModal({
                               (ev.currentTarget as HTMLImageElement).style.display = "none";
                             }}
                           />
-                        ) : (
-                          <Dumbbell style={{ width: 18, height: 18 }} aria-hidden="true" />
+                        ) : null}
+                        {!ex.gif_url && (
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: TEXT.tertiary,
+                            }}
+                          >
+                            <Dumbbell style={{ width: 20, height: 20 }} aria-hidden="true" />
+                          </div>
                         )}
                       </div>
-                      <span
-                        style={{
-                          fontSize: TYPE.label.size,
-                          fontFamily: TYPE.mono.font,
-                          color: TEXT.tertiary,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          maxWidth: 70,
-                        }}
-                      >
-                        {primary.id}
-                      </span>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: TYPE.body.size,
+                            fontWeight: 600,
+                            color: TEXT.primary,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {ex.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: TYPE.caption.size,
+                            color: TEXT.tertiary,
+                            marginTop: 2,
+                          }}
+                        >
+                          {translateBodyPart(ex.body_part)}
+                        </div>
+                      </div>
+
+                      {/* Chip con la foto HD de la máquina asignada (CG-EQP-XXXX) */}
+                      {primary && (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: SPACE.xs,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 34,
+                              height: 34,
+                              borderRadius: RADIUS.round,
+                              overflow: "hidden",
+                              border: `1px solid ${GLASS.border}`,
+                              background: SURFACE_ROLE.well,
+                            }}
+                          >
+                            {machineImg ? (
+                              <img
+                                src={resolveImageSrc(machineImg)}
+                                alt={`Foto de ${primary.name}`}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  display: "block",
+                                }}
+                                onError={(ev) => {
+                                  (ev.currentTarget as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                            ) : (
+                              <Dumbbell style={{ width: 18, height: 18 }} aria-hidden="true" />
+                            )}
+                          </div>
+                          <span
+                            style={{
+                              fontSize: TYPE.label.size,
+                              fontFamily: TYPE.mono.font,
+                              color: TEXT.tertiary,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              maxWidth: 70,
+                            }}
+                          >
+                            {primary.id}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  );
+                })}
+              </div>
+              {filtered.length === 0 && (
+                <div
+                  style={{
+                    padding: SPACE.card,
+                    textAlign: "center",
+                    color: TEXT.tertiary,
+                    fontSize: TYPE.body.size,
+                  }}
+                >
+                  No se encontró ningún ejercicio con esos filtros.
                 </div>
-              );
-            })}
-          </div>
-          {filtered.length === 0 && (
-            <div
-              style={{
-                padding: SPACE.card,
-                textAlign: "center",
-                color: TEXT.tertiary,
-                fontSize: TYPE.body.size,
-              }}
-            >
-              No se encontró ningún ejercicio con esos filtros.
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -474,4 +535,4 @@ function ExerciseSelectorModal({
 }
 
 export { ExerciseSelectorModal };
-export type { CatalogExercise };
+export type { CatalogExercise } from "@/lib/catalog/types";

@@ -9,6 +9,11 @@ import { GymSettingsProvider } from "./context/GymSettingsContext";
 // frame. Module scope, not an effect, so it is there before the first paint.
 import "./design/installDesignTokens";
 import "./index.css";
+import { registerServiceWorker } from "./lib/pwa/registerServiceWorker";
+
+// The shell that starts without a connection. Not in development: a cached
+// module is a module that does not hot-reload.
+registerServiceWorker({ enabled: !import.meta.env.DEV });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

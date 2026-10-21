@@ -14,6 +14,44 @@
   </head>
   <body class="min-h-screen bg-neutral-950 text-neutral-100 antialiased">
     <div id="root"></div>
+    <script type="module">
+      /*
+       * Development hygiene.
+       *
+       * A service worker installed by an earlier production build stays in
+       * control of the same origin, and it answers module requests from its
+       * cache. A cached module is a module that does not hot-reload, and a
+       * stale one fails with "The requested module '...' does not provide an
+       * export named '...'", or with "Invalid or unexpected token" when what
+       * it serves is not JavaScript at all. Both read like broken source and
+       * are not: the file on disk is fine, the browser is holding an older
+       * copy of it.
+       *
+       * So the worker is removed here, before the app's module graph is
+       * fetched, and the page is reloaded once so the modules of *this* load
+       * come from the dev server and not from the cache that was serving the
+       * broken copy. The reload is bounded by a flag: it happens once, not on
+       * every load.
+       *
+       * The condition is false in a build, so the shipped page carries none of
+       * this.
+       */
+      if (import.meta.env.DEV && "serviceWorker" in navigator) {
+        const RELOAD_FLAG = "cronos:dev-worker-cleared";
+        navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+          if (registrations.length === 0) return;
+          await Promise.all(registrations.map((one) => one.unregister()));
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((key) => caches.delete(key)));
+          }
+          if (!sessionStorage.getItem(RELOAD_FLAG)) {
+            sessionStorage.setItem(RELOAD_FLAG, "1");
+            location.reload();
+          }
+        });
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

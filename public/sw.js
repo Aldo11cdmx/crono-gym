@@ -27,6 +27,26 @@
 const CACHE = "cronos-shell-v1";
 const SHELL = ["/", "/index.html"];
 
+/**
+ * The development server's modules are not assets.
+ *
+ * A dev module URL -- `/src/...`, `/@vite/client`, `/node_modules/.vite/deps/...`
+ * -- is same-origin, so the cache-first rule below would store it and keep
+ * serving it for as long as the cache lives. A stale module then fails with
+ * "The requested module '...' does not provide an export named '...'", which
+ * reads like a broken import and is not one: the export is in the file, the
+ * browser is holding an older copy of it.
+ *
+ * So the worker stands aside for them. The dev server is the network.
+ */
+function isDevModule(url) {
+  return (
+    url.pathname.startsWith("/src/") ||
+    url.pathname.startsWith("/@") ||
+    url.pathname.startsWith("/node_modules/")
+  );
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -55,6 +75,9 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // The dev server's modules: the worker does not stand in the way of them.
+  if (isDevModule(url)) return;
 
   // The shell: the network first, the stored copy when there is no network.
   if (request.mode === "navigate") {

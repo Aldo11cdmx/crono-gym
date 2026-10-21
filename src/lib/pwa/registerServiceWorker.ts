@@ -13,6 +13,15 @@
 /** Where the worker lives. Stable, because the browser fetches it by URL. */
 export const SERVICE_WORKER_URL = "/sw.js";
 
+/**
+ * The caches the worker owns.
+ *
+ * The prefix rather than the exact name, because the name is versioned: a
+ * worker that is replaced leaves the previous cache behind, and that copy of
+ * the shell is the one that keeps serving a build nobody is running.
+ */
+const SHELL_CACHE_PREFIX = "cronos-shell-v";
+
 export interface RegisterServiceWorkerOptions {
   /** Whether to register at all. The app passes `!import.meta.env.DEV`. */
   enabled?: boolean;
@@ -48,6 +57,11 @@ export function registerServiceWorker(options: RegisterServiceWorkerOptions = {}
  *
  * The escape hatch: a worker that keeps serving a shell nobody wants is
  * removed here, and the app goes back to the network on the next load.
+ *
+ * The caches go with it. A worker that is unregistered but whose cache
+ * survives is half a worker: the shell is still on the device, and anything
+ * that reads it directly -- a stale module, an old asset -- still answers from
+ * the copy that was current when the worker was installed.
  */
 export async function unregisterServiceWorker(): Promise<void> {
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
@@ -56,5 +70,27 @@ export async function unregisterServiceWorker(): Promise<void> {
     await registration?.unregister();
   } catch {
     // Nothing to remove, or the browser would not let go of it.
+  }
+  await clearShellCaches();
+}
+
+/**
+ * Deletes the caches the worker filled.
+ *
+ * Only the shell's own caches: a cache this app did not create is somebody
+ * else's data, and the browser is the only thing that should decide how long
+ * it lives.
+ */
+export async function clearShellCaches(): Promise<void> {
+  if (typeof caches === "undefined") return;
+  try {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys
+        .filter((key) => key.startsWith(SHELL_CACHE_PREFIX))
+        .map((key) => caches.delete(key)),
+    );
+  } catch {
+    // A browser that will not let go of its caches is not a problem to raise.
   }
 }

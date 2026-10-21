@@ -95,7 +95,7 @@ const COMPONENT_SOURCES = import.meta.glob("../**/*.tsx", {
 const IN_FLIGHT_SOURCES: readonly string[] = [
   "../components/coach/CoachFloatingButton.tsx",
   "../components/coach/RoutineGeneratorWizard.tsx",
-  "../components/coach/SymmetryBottomSheet.tsx",
+  "../components/coach/CronosBottomSheet.tsx",
 ];
 
 /**

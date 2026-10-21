@@ -9,7 +9,34 @@
 
 import { describe, expect, it } from "vitest";
 
-import { COACH_PORTAL_LABELS } from "@/lib/i18n";
+import { COACH_PORTAL_LABELS, MUSCLE_LABELS_ES, translateMuscle } from "@/lib/i18n";
+import { MUSCLE_DEFINITIONS } from "@/lib/muscleMap";
+
+describe("translateMuscle", () => {
+  it("names the back and forearm groups in neutral Spanish", () => {
+    // These four used to reach the coverage card as the raw slug -- "upper-back",
+    // "lower-back" -- in the middle of a Spanish screen.
+    expect(translateMuscle("lower-back")).toBe("Lumbares");
+    expect(translateMuscle("upper-back")).toBe("Espalda Alta");
+    expect(translateMuscle("trapezius")).toBe("Trapecios");
+    expect(translateMuscle("forearm")).toBe("Antebrazos");
+  });
+
+  it("names every muscle the map can count", () => {
+    // The coverage card lists the groups the map counts sets by. A group without a
+    // label shows its slug, so the card would read "deltoids" next to "Pecho".
+    const missing = MUSCLE_DEFINITIONS.filter(
+      (definition) => !MUSCLE_LABELS_ES[definition.slug],
+    ).map((definition) => definition.slug);
+    expect(missing).toEqual([]);
+  });
+
+  it("keeps a group it does not know readable instead of blank", () => {
+    expect(translateMuscle("a-muscle-that-does-not-exist")).toBe(
+      "a-muscle-that-does-not-exist",
+    );
+  });
+});
 
 describe("COACH_PORTAL_LABELS.lockedUntilMinutes", () => {
   it("rounds up so the final minute never reads as zero", () => {

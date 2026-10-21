@@ -131,7 +131,7 @@ export interface WeeklyPlanDay {
 const WEEKDAY_NAME_ES = [
   "Lunes",
   "Martes",
-  "Miércol",
+  "Miércoles",
   "Jueves",
   "Viernes",
   "Sábado",

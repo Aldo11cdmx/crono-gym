@@ -1,4 +1,7 @@
-﻿import { describe, it, expect, vi } from 'vitest'
+/**
+ * @vitest-environment jsdom
+ */
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { ExercisePickerModal } from './ExercisePickerModal'
 
@@ -10,31 +13,43 @@ const exercises = [
 describe('ExercisePickerModal', () => {
   it('renders with full-width layout and chips', () => {
     const onClose = vi.fn()
+    const onSelect = vi.fn()
     render(
       <ExercisePickerModal
         open={true}
         onClose={onClose}
         exercises={exercises}
-        selectedIds={[]}
-        onSelectionChange={() => {}}
+        onSelect={onSelect}
       />
     )
-    expect(screen.getByText('Pecho')).toBeTruthy()
-    expect(screen.getByText('Mancuernas')).toBeTruthy()
+    expect(screen.getAllByText('Pecho').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Mancuernas').length).toBeGreaterThan(0)
   })
 
-  it('supports multiselection', () => {
-    const onSelectionChange = vi.fn()
+  it('renders exercise cards with names and muscle badges', () => {
+    const onSelect = vi.fn()
     render(
       <ExercisePickerModal
         open={true}
         onClose={() => {}}
         exercises={exercises}
-        selectedIds={['1']}
-        onSelectionChange={onSelectionChange}
+        onSelect={onSelect}
       />
     )
-    const checkboxes = screen.getAllByRole('checkbox')
-    expect(checkboxes.length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Curl').length).toBeGreaterThan(0)
+    expect(screen.getAllByTestId('exercise-picker-card').length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('renders nothing when closed', () => {
+    const { container } = render(
+      <ExercisePickerModal
+        open={false}
+        onClose={() => {}}
+        exercises={exercises}
+        onSelect={() => {}}
+      />
+    )
+    expect(container.innerHTML).toBe('')
   })
 })

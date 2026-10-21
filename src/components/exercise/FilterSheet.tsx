@@ -1,4 +1,4 @@
-﻿import type { PickerFilters } from '@/lib/picker/pickerHelpers'
+import type { PickerFilters } from '@/lib/picker/pickerHelpers'
 
 interface FilterSheetProps {
   open: boolean

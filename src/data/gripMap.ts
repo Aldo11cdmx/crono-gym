@@ -10,22 +10,22 @@ export interface Grip {
 export const gripMap: Record<string, Grip> = {
   'GRIP-001': {
     id: 'GRIP-001',
-    name: 'Agarre estándar',
-    description: 'Agarre típico para ejercicios de empuje y tracción.',
+    name: 'Agarre estÃ¡ndar',
+    description: 'Agarre tÃ­pico para ejercicios de empuje y tracciÃ³n.',
     primaryMuscles: ['pectorales', 'deltoides'],
-    secondaryMuscles: ['tríceps'],
+    secondaryMuscles: ['trÃ­ceps'],
   },
   'GRIP-002': {
     id: 'GRIP-002',
     name: 'Agarre neutro',
-    description: 'Agarre con palomas enfrentadas, reduce tensión en muñecas.',
-    primaryMuscles: ['dorsales', 'bíceps'],
+    description: 'Agarre con palomas enfrentadas, reduce tensiÃ³n en muÃ±ecas.',
+    primaryMuscles: ['dorsales', 'bÃ­ceps'],
     secondaryMuscles: ['antebrazos'],
   },
   'GRIP-003': {
     id: 'GRIP-003',
     name: 'Agarre ancho',
-    description: 'Agarre más ancho que el estándar, enfoca más en dorsales.',
+    description: 'Agarre mÃ¡s ancho que el estÃ¡ndar, enfoca mÃ¡s en dorsales.',
     primaryMuscles: ['dorsales'],
     secondaryMuscles: ['trapezoides'],
   },

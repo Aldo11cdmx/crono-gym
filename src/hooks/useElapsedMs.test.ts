@@ -4,10 +4,10 @@
  * useElapsedMs is the single source of truth for the session clock. These tests
  * lock down the two invariants that the rest of the hub depends on:
  *
- * 1. Elapsed time is derived from `startedAt`, not accumulated — so there is no
+ * 1. Elapsed time is derived from `startedAt`, not accumulated â€” so there is no
  *    counter stored in component state to get out of sync.
  * 2. Exactly one `setInterval` is created, cleaned up on unmount and on
- *    `startedAt` change — no duplicate timers, no leaks.
+ *    `startedAt` change â€” no duplicate timers, no leaks.
  *
  * The format function is tested too because every component that shows a clock
  * must produce the identical string.
@@ -30,7 +30,7 @@ describe("formatElapsed", () => {
     expect(formatElapsed(9900)).toBe("00:09");
   });
 
-  it("does not cap minutes — long sessions go past 59", () => {
+  it("does not cap minutes â€” long sessions go past 59", () => {
     expect(formatElapsed(3 * 60 * 1000)).toBe("03:00");
     expect(formatElapsed(125 * 60 * 1000)).toBe("125:00");
   });

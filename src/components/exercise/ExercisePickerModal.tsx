@@ -1,135 +1,665 @@
-﻿import { useMemo, useState } from 'react'
-import { Search, X } from 'lucide-react'
-import type { Exercise } from '@/types/supabase'
-import { searchExercises, filterExercises, sortExercises, collectBodyParts, collectEquipment, collectTargets, EMPTY_FILTERS, type PickerFilters } from '@/lib/picker/pickerHelpers'
-import { ExercisePickerCard } from './ExercisePickerCard'
-import { FilterSheet } from './FilterSheet'
+/**
+ * ExercisePickerModal.tsx — selector full-width con mapa anatómico refinado y colapsable.
+ *
+ * Modal a ancho completo (o drawer responsivo) con fondo oscuro estilo Cronos Gym.
+ * Header fijo con búsqueda en tiempo real y botón alternador del mapa anatómico.
+ * Filtros por chips scrollables (músculos y equipamiento) y listado memoizado
+ * de tarjetas compactas con thumbnail circular vía `useMediaSrc`.
+ *
+ * Selección instantánea mediante callback `onSelect(exercise)`.
+ */
 
-interface ExercisePickerModalProps {
-  open: boolean
-  onClose: () => void
-  exercises: Exercise[]
-  selectedIds: string[]
-  onSelectionChange: (ids: string[]) => void
-  onAdd?: (exercises: Exercise[]) => void
+import { memo, useCallback, useMemo, useState } from "react";
+import { Search, X, Dumbbell } from "lucide-react";
+import type { Slug } from "react-muscle-highlighter";
+import type { Exercise } from "@/types/supabase";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { MUSCLE_DEFINITIONS, muscleMatchLevel, type MatchLevel } from "@/lib/muscleMap";
+import { MuscleSelector } from "@/components/MuscleSelector";
+import { getExerciseName } from "@/lib/routines/routineDraftModel";
+import {
+  ACCENT,
+  GLASS,
+  MOTION,
+  RADIUS,
+  SCRIM,
+  SPACE,
+  SURFACE,
+  TEXT,
+  TYPE,
+  Z_INDEX,
+} from "@/design/tokens";
+
+export interface ExercisePickerModalProps {
+  open: boolean;
+  onClose: () => void;
+  exercises: Exercise[];
+  onSelect: (exercise: Exercise) => void;
+  /** Heading of the sheet. */
+  title?: string;
 }
 
-const CHIPS = ['Todos', 'Pecho', 'Espalda', 'Brazos', 'Piernas', 'Recientes', 'Cuerpo libre', 'Mancuernas', 'Barra', 'Polea']
+/**
+ * A muscle chip can cover several anatomical regions: "Piernas" is quads, hamstrings,
+ * glutes and calves, and "Espalda" is the upper back, the lats and the trapezius.
+ *
+ * The chip therefore carries a list of slugs and the filter is their union, the same
+ * rule the library filter uses (a selection is a union of muscles).
+ */
+interface MuscleChip {
+  key: string;
+  label: string;
+  slugs: Slug[];
+}
+
+const MUSCLE_CHIPS: MuscleChip[] = [
+  { key: "chest", label: "Pecho", slugs: ["chest"] },
+  {
+    key: "back",
+    label: "Espalda",
+    slugs: ["upper-back", "lower-back", "trapezius"],
+  },
+  { key: "deltoids", label: "Hombros", slugs: ["deltoids"] },
+  { key: "triceps", label: "Tríceps", slugs: ["triceps"] },
+  { key: "biceps", label: "Bíceps", slugs: ["biceps"] },
+  {
+    key: "legs",
+    label: "Piernas",
+    slugs: ["quadriceps", "hamstring", "gluteal", "calves"],
+  },
+  { key: "abs", label: "Abs", slugs: ["abs", "obliques"] },
+];
+
+/**
+ * Equipment chips.
+ *
+ * The catalog stores equipment in English ("dumbbell", "body weight", "leverage
+ * machine"), so a chip is a list of tokens rather than a single value: the matcher
+ * looks for any of them inside the row's equipment string, which is what makes
+ * "olympic barbell" match "Barra" and "leverage machine" match "Máquina".
+ *
+ * The Spanish spellings are in the list too, because a routine built by hand can
+ * carry them and the filter should not silently return nothing for them.
+ */
+interface EquipmentChip {
+  key: string;
+  label: string;
+  tokens: string[];
+}
+
+const EQUIPMENT_CHIPS: EquipmentChip[] = [
+  { key: "dumbbell", label: "Mancuernas", tokens: ["dumbbell", "mancuerna", "dumbell"] },
+  { key: "barbell", label: "Barra", tokens: ["barbell", "barra"] },
+  { key: "cable", label: "Polea", tokens: ["cable", "polea", "rope"] },
+  { key: "machine", label: "Máquina", tokens: ["machine", "maquina"] },
+  {
+    key: "bodyweight",
+    label: "Peso Corporal",
+    tokens: ["body weight", "bodyweight", "peso corporal", "weighted"],
+  },
+];
+
+/** Lowercase, accent-free, so "Máquina" and "maquina" are the same token. */
+function normalise(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function equipmentMatches(exercise: Exercise, tokens: string[]): boolean {
+  const equipment = normalise(exercise.equipment ?? "");
+  if (equipment === "") return false;
+  return tokens.some((token) => equipment.includes(token));
+}
+
+/**
+ * The muscles an exercise works, best first.
+ *
+ * `muscleMatchLevel` is the app's own notion of primary (the catalog's `target`) and
+ * secondary (the region it lives in), so the badge says the same thing the ranks
+ * engine says rather than a second, slightly different taxonomy.
+ */
+function muscleBadges(exercise: Exercise): { label: string; level: MatchLevel }[] {
+  const found: { label: string; level: MatchLevel }[] = [];
+  for (const def of MUSCLE_DEFINITIONS) {
+    const level = muscleMatchLevel(exercise, def.slug);
+    if (!level) continue;
+    found.push({ label: def.label, level });
+  }
+  const rank = (level: MatchLevel) => (level === "primary" ? 0 : 1);
+  return found.sort((a, b) => rank(a.level) - rank(b.level)).slice(0, 2);
+}
 
 export function ExercisePickerModal({
   open,
   onClose,
   exercises,
-  selectedIds,
-  onSelectionChange,
-  onAdd,
+  onSelect,
+  title = "Selector de ejercicios",
 }: ExercisePickerModalProps) {
-  const [query, setQuery] = useState('')
-  const [activeChip, setActiveChip] = useState('Todos')
-  const [filters, setFilters] = useState<PickerFilters>(EMPTY_FILTERS)
-  const [isFilterSheetOpen, setFilterSheetOpen] = useState(false)
-
-  const bodyParts = useMemo(() => collectBodyParts(exercises), [exercises])
-  const equipmentOptions = useMemo(() => collectEquipment(exercises), [exercises])
-  const targetOptions = useMemo(() => collectTargets(exercises), [exercises])
+  const [query, setQuery] = useState("");
+  const [mapOpen, setMapOpen] = useState(false);
+  const [selectedMuscles, setSelectedMuscles] = useState<Slug[]>([]);
+  const [selectedEquipment, setSelectedEquipment] = useState<string>("all");
 
   const filtered = useMemo(() => {
-    let searched = searchExercises(exercises, query)
-    searched = filterExercises(searched, filters)
-    if (activeChip !== 'Todos' && activeChip !== 'Recientes') {
-      const lower = activeChip.toLowerCase()
-      if (lower.includes('cuerpo') || lower.includes('mancuer') || lower.includes('barra') || lower.includes('polea')) {
-        searched = searched.filter((ex) => {
-          const eq = ((ex as any).equipment || '').toLowerCase()
-          if (lower === 'cuerpo libre') return eq.includes('body') || eq.includes('none') || eq === ''
-          if (lower === 'mancuernas') return eq.includes('dumbbell') || eq.includes('mancuer')
-          if (lower === 'barra') return eq.includes('barbell') || eq.includes('barra')
-          if (lower === 'polea') return eq.includes('cable') || eq.includes('machine')
-          return eq.includes(lower)
-        })
-      } else {
-        searched = searched.filter((ex) => ((ex as any).body_part || '').toLowerCase().includes(lower) || ((ex as any).target || '').toLowerCase().includes(lower))
+    const q = normalise(query);
+    const result = exercises.filter((ex) => {
+      if (q && !normalise(ex.name).includes(q)) return false;
+      if (selectedMuscles.length > 0) {
+        const matched = selectedMuscles.some(
+          (slug) => muscleMatchLevel(ex, slug) !== null,
+        );
+        if (!matched) return false;
       }
-    }
-    return sortExercises(searched, 'name')
-  }, [exercises, query, filters, activeChip])
+      if (selectedEquipment !== "all") {
+        const chip = EQUIPMENT_CHIPS.find((c) => c.key === selectedEquipment);
+        if (chip && !equipmentMatches(ex, chip.tokens)) return false;
+      }
+      return true;
+    });
+    return result.sort((a, b) => a.name.localeCompare(b.name));
+  }, [exercises, query, selectedMuscles, selectedEquipment]);
 
-  const isChecked = (id: string) => selectedIds.includes(id)
-  const handleToggle = (id: string) => {
-    const next = isChecked(id) ? selectedIds.filter((s) => s !== id) : [...selectedIds, id]
-    onSelectionChange(next)
-  }
+  const handleSelect = useCallback(
+    (exercise: Exercise) => {
+      onSelect(exercise);
+    },
+    [onSelect],
+  );
 
-  if (!open) return null
+  const toggleMuscleChip = useCallback((chip: MuscleChip) => {
+    setSelectedMuscles((prev) => {
+      const active = chip.slugs.filter((slug) => prev.includes(slug));
+      if (active.length === 0) {
+        return [...prev, ...chip.slugs];
+      }
+      // Clicking an active chip clears the whole group it stands for.
+      return prev.filter((slug) => !chip.slugs.includes(slug));
+    });
+  }, []);
 
-  const toAdd = exercises.filter((e) => selectedIds.includes(e.id))
+  if (!open) return null;
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-0 sm:p-4'>
-      <div className='flex h-full w-full flex-col bg-neutral-950 sm:h-[90vh] sm:w-[95vw] sm:rounded-xl sm:border sm:border-white/10'>
-        <div className='flex items-center gap-2 border-b border-white/10 px-4 py-3'>
-          <div className='relative flex-1'>
-            <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500' />
-            <input
-              type='text'
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder='Buscar ejercicio...'
-              className='w-full rounded-lg border border-white/10 bg-neutral-950/60 py-2 pl-9 pr-3 text-sm text-neutral-100'
-            />
-            {query && (
-              <button type='button' onClick={() => setQuery('')} className='absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500'>
-                <X className='h-3.5 w-3.5' />
-              </button>
-            )}
-          </div>
-          <button type='button' onClick={onClose} className='rounded-lg px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200'>
-            Cerrar
-          </button>
-        </div>
-
-        <div className='flex gap-2 overflow-x-auto border-b border-white/10 px-4 py-2'>
-          {CHIPS.map((chip) => (
-            <button
-              key={chip}
-              type='button'
-              onClick={() => setActiveChip(chip)}
-              className={activeChip === chip ? 'whitespace-nowrap rounded-full px-3 py-1 text-xs bg-accent text-neutral-950' : 'whitespace-nowrap rounded-full px-3 py-1 text-xs bg-neutral-900 text-neutral-300 hover:bg-neutral-800'}
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
-
-        <div className='flex-1 overflow-auto px-4 py-3'>
-          <div className='mb-2 text-xs text-neutral-500'>{filtered.length} ejercicios</div>
-          <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-            {filtered.map((ex) => (
-              <ExercisePickerCard
-                key={ex.id}
-                exercise={ex}
-                selected={isChecked(ex.id)}
-                onToggleSelect={handleToggle}
-                view='grid'
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: Z_INDEX.modal,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: SCRIM.modal,
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          maxWidth: "100%",
+          height: "92vh",
+          maxHeight: "92vh",
+          borderRadius: 0,
+          background: SURFACE.raised,
+          border: "none",
+          boxShadow: GLASS.shadow,
+          overflow: "hidden",
+        }}
+      >
+        {/* Header fijo */}
+        <header
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: SPACE.sm,
+            padding: `${SPACE.sm} ${SPACE.md}`,
+            borderBottom: `1px solid ${GLASS.border}`,
+            background: GLASS.fillRaised,
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACE.xs,
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+              <Search
+                style={{
+                  position: "absolute",
+                  left: SPACE.xs,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 16,
+                  height: 16,
+                  color: TEXT.tertiary,
+                }}
               />
-            ))}
-          </div>
-        </div>
-
-        {selectedIds.length > 0 && onAdd && (
-          <div className='sticky bottom-0 border-t border-white/10 bg-neutral-950/95 p-3 backdrop-blur'>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar ejercicio…"
+                aria-label="Buscar ejercicio"
+                style={{
+                  width: "100%",
+                  minHeight: MOTION.minTouchTarget,
+                  paddingLeft: 36,
+                  paddingRight: 32,
+                  borderRadius: RADIUS.input,
+                  border: `1px solid ${GLASS.border}`,
+                  background: "transparent",
+                  color: TEXT.primary,
+                  fontSize: TYPE.body.size,
+                  fontFamily: "inherit",
+                }}
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Limpiar búsqueda"
+                  style={{
+                    position: "absolute",
+                    right: SPACE.xs,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    border: "none",
+                    background: "transparent",
+                    color: TEXT.tertiary,
+                    cursor: "pointer",
+                    padding: 4,
+                    borderRadius: RADIUS.sm,
+                  }}
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              )}
+            </div>
             <button
-              type='button'
-              onClick={() => onAdd(toAdd)}
-              className='w-full rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-neutral-950 hover:brightness-110'
+              type="button"
+              onClick={() => setMapOpen((m) => !m)}
+              aria-pressed={mapOpen}
+              aria-label={mapOpen ? "Ocultar mapa anatómico" : "Mostrar mapa anatómico"}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: SPACE.xs,
+                minHeight: MOTION.minTouchTarget,
+                padding: `0 ${SPACE.sm}`,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${mapOpen ? ACCENT.base : GLASS.border}`,
+                background: mapOpen ? ACCENT.subtle : "transparent",
+                color: mapOpen ? ACCENT.text : TEXT.primary,
+                fontSize: TYPE.caption.size,
+                fontWeight: 600,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
             >
-              Agregar ({selectedIds.length}) ejercicios a la rutina ➔
+              🧍 Mapa Anatómico
             </button>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: MOTION.minTouchTarget,
+              minHeight: MOTION.minTouchTarget,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${GLASS.border}`,
+              background: "transparent",
+              color: TEXT.secondary,
+              cursor: "pointer",
+            }}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </header>
+
+        {/* Mapa anatómico (colapsable) */}
+        {mapOpen && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: SPACE.xs,
+              padding: SPACE.sm,
+              borderBottom: `1px solid ${GLASS.border}`,
+              background: GLASS.fill,
+              maxHeight: "46vh",
+              overflowY: "auto",
+            }}
+          >
+            <div
+              style={{
+                fontSize: TYPE.caption.size,
+                fontWeight: TYPE.caption.weight,
+                letterSpacing: TYPE.caption.tracking,
+                textTransform: "uppercase",
+                color: TEXT.secondary,
+                marginLeft: SPACE.xs,
+              }}
+            >
+              Filtrar por músculo
+            </div>
+            <MuscleSelector
+              selected={selectedMuscles}
+              onChange={setSelectedMuscles}
+            />
           </div>
         )}
-      </div>
 
-      <FilterSheet open={isFilterSheetOpen} onClose={() => setFilterSheetOpen(false)} filters={filters} onChange={setFilters} bodyParts={bodyParts} equipmentOptions={equipmentOptions} targetOptions={targetOptions} />
+        {/* Filtros por chips scrollables */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: SPACE.xs,
+            padding: `${SPACE.sm} ${SPACE.md}`,
+            borderBottom: `1px solid ${GLASS.border}`,
+            background: GLASS.fillRaised,
+            overflowX: "hidden",
+          }}
+        >
+          <div
+            style={{
+              fontSize: TYPE.caption.size,
+              fontWeight: TYPE.caption.weight,
+              letterSpacing: TYPE.caption.tracking,
+              textTransform: "uppercase",
+              color: TEXT.secondary,
+            }}
+          >
+            Músculos
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: SPACE.xs,
+              overflowX: "auto",
+              paddingBottom: SPACE.xs,
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            {MUSCLE_CHIPS.map((chip) => {
+              const active = chip.slugs.some((slug) => selectedMuscles.includes(slug));
+              return (
+                <button
+                  key={chip.key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => toggleMuscleChip(chip)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: SPACE.xs,
+                    minHeight: 30,
+                    padding: `0 ${SPACE.sm}`,
+                    borderRadius: RADIUS.pill,
+                    border: `1px solid ${active ? ACCENT.base : GLASS.border}`,
+                    background: active ? ACCENT.base : "transparent",
+                    color: active ? TEXT.onAccent : TEXT.secondary,
+                    fontSize: TYPE.caption.size,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            style={{
+              fontSize: TYPE.caption.size,
+              fontWeight: TYPE.caption.weight,
+              letterSpacing: TYPE.caption.tracking,
+              textTransform: "uppercase",
+              color: TEXT.secondary,
+              marginTop: SPACE.xs,
+            }}
+          >
+            Equipamiento
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: SPACE.xs,
+              overflowX: "auto",
+              paddingBottom: SPACE.xs,
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            {EQUIPMENT_CHIPS.map((chip) => {
+              const active = selectedEquipment === chip.key;
+              return (
+                <button
+                  key={chip.key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() =>
+                    setSelectedEquipment((prev) => (prev === chip.key ? "all" : chip.key))
+                  }
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: SPACE.xs,
+                    minHeight: 30,
+                    padding: `0 ${SPACE.sm}`,
+                    borderRadius: RADIUS.pill,
+                    border: `1px solid ${active ? ACCENT.base : GLASS.border}`,
+                    background: active ? ACCENT.base : "transparent",
+                    color: active ? TEXT.onAccent : TEXT.secondary,
+                    fontSize: TYPE.caption.size,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Listado de ejercicios */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: SPACE.md,
+            display: "flex",
+            flexDirection: "column",
+            gap: SPACE.sm,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <span
+              style={{
+                fontSize: TYPE.caption.size,
+                color: TEXT.secondary,
+              }}
+            >
+              {filtered.length} ejercicio{filtered.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+              gap: SPACE.sm,
+            }}
+          >
+            {filtered.map((exercise) => (
+              <PickerCard
+                key={exercise.id}
+                exercise={exercise}
+                onSelect={handleSelect}
+              />
+            ))}
+            {filtered.length === 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: SPACE.lg,
+                  color: TEXT.tertiary,
+                  fontSize: TYPE.caption.size,
+                }}
+              >
+                Sin resultados
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
+
+/**
+ * One compact exercise card.
+ *
+ * Memoised on purpose: the list can hold a thousand rows and the parent re-renders
+ * on every keystroke in the search box, so a card that re-rendered with it would
+ * re-run its own image resolution for every visible row.
+ */
+const PickerCard = memo(function PickerCard({
+  exercise,
+  onSelect,
+}: {
+  exercise: Exercise;
+  onSelect: (exercise: Exercise) => void;
+}) {
+  const media = useMemo(
+    () => resolveMedia("exercise-gif", exercise.id, exercise.gif_url),
+    [exercise.id, exercise.gif_url],
+  );
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
+  const badges = useMemo(() => muscleBadges(exercise), [exercise]);
+  const name = getExerciseName(exercise);
+
+  return (
+    <button
+      type="button"
+      data-testid="exercise-picker-card"
+      onClick={() => onSelect(exercise)}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: SPACE.xs,
+        padding: SPACE.sm,
+        borderRadius: RADIUS.card,
+        border: `1px solid ${GLASS.border}`,
+        background: GLASS.fillRaised,
+        color: TEXT.primary,
+        cursor: "pointer",
+        textAlign: "left",
+        transition: `border-color ${MOTION.fast} ${MOTION.standard}`,
+      }}
+    >
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: RADIUS.round,
+          background: GLASS.fill,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          border: `1px solid ${GLASS.border}`,
+        }}
+      >
+        {src !== "" && !failed ? (
+          <img
+            src={src}
+            alt=""
+            loading="lazy"
+            onLoad={onLoad}
+            onError={onError}
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: RADIUS.round,
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <Dumbbell size={18} strokeWidth={1.5} aria-hidden="true" />
+        )}
+      </div>
+      <span
+        style={{
+          fontSize: TYPE.caption.size,
+          fontWeight: TYPE.caption.weight,
+          color: TEXT.secondary,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          lineHeight: 1.2,
+        }}
+        title={name}
+      >
+        {name}
+      </span>
+      {badges.length > 0 && (
+        <span style={{ display: "flex", flexWrap: "wrap", gap: SPACE.xs }}>
+          {badges.map((badge) => (
+            <span
+              key={`${badge.label}-${badge.level}`}
+              style={{
+                fontSize: TYPE.label.size,
+                fontWeight: TYPE.label.weight,
+                letterSpacing: TYPE.label.tracking,
+                color: badge.level === "primary" ? ACCENT.text : TEXT.tertiary,
+                background:
+                  badge.level === "primary" ? ACCENT.subtle : GLASS.fill,
+                borderRadius: RADIUS.sm,
+                padding: "1px 6px",
+              }}
+            >
+              {badge.label}
+            </span>
+          ))}
+        </span>
+      )}
+    </button>
+  );
+});

@@ -35,6 +35,8 @@ import { useNavigate } from "react-router-dom";
 import { TRAIN_PATH } from "@/components/shell/navItems";
 import { supabase } from "@lib/supabase";
 import { ExerciseBrowser } from "@/components/ExerciseBrowser";
+import { ExercisePickerModal } from "@/components/exercise/ExercisePickerModal";
+import { WeeklyPlanEditor } from "@/components/routines/WeeklyPlanEditor";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { RoutineLibrary } from "@/components/dashboard/RoutineLibrary";
 import { WeeklyPlanner } from "@/components/dashboard/WeeklyPlanner";
@@ -51,22 +53,23 @@ import {
   SCRIM,
   SPACE,
   SOLID,
-  STATUS,
   TEXT,
   TYPE,
   Z_INDEX,
 } from "@/design/tokens";
 import { useRoutines, type RoutineWithExercises } from "@/hooks/useGymData";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
-import { getWeekdayIndex, WEEKDAY_SHORT_ES, WEEKDAY_NAME_ES } from "@/lib/dashboard/heroCardModel";
+import { getWeekdayIndex } from "@/lib/dashboard/heroCardModel";
 import { saveRoutine, duplicateRoutine } from "@/lib/routines/routineSave";
 import {
   draftProblem,
   emptyDraft,
+  estimateMinutes,
   estimateRoutineDuration,
   getExerciseName,
   getRepLabel,
   isSavableDraft,
+  withDayLabel,
   type DraftExercise,
   type RoutineDraft,
 } from "@/lib/routines/routineDraftModel";
@@ -158,6 +161,16 @@ const OVERLAY_STYLE: CSSProperties = {
 };
 
 function draftFromRoutine(routine: RoutineWithExercises): RoutineDraft {
+  // A weekly plan keeps the name of every day it touches, so the planner can
+  // say "Lunes: Empuje Pro" without the name living in each movement.
+  const dayLabels: Record<number, string> = {};
+  for (const pe of routine.exercises) {
+    const day = pe.dayIndex ?? 0;
+    if (!dayLabels[day] && pe.dayLabel && pe.dayLabel.trim() !== "") {
+      dayLabels[day] = pe.dayLabel;
+    }
+  }
+
   return {
     id: routine.id,
     title: routine.title,
@@ -171,7 +184,9 @@ function draftFromRoutine(routine: RoutineWithExercises): RoutineDraft {
       order_index: index,
       target_reps_min: null,
       target_reps_max: null,
+      dayIndex: pe.dayIndex ?? 0,
     })),
+    dayLabels,
   };
 }
 
@@ -246,7 +261,7 @@ async function restoreRoutine(
 export function RoutinesPage({ userId }: RoutinesPageProps) {
   const { routines, loading, error, refresh, toggleFavorite, pendingIds } =
     useRoutines(userId);
-  const { start } = useActiveSession();
+  const { start, session } = useActiveSession();
   const navigate = useNavigate();
   const { exercises: catalogExercises } = useExerciseCatalog();
 
@@ -270,9 +285,10 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
     [refresh],
   );
 
-   type SheetMode = "closed" | "new" | "edit" | "browse";
+   type SheetMode = "closed" | "new" | "edit" | "browse" | "new-choice";
   const [sheet, setSheet] = useState<SheetMode>("closed");
   const [draft, setDraft] = useState<RoutineDraft>(emptyDraft());
+  const [newMode, setNewMode] = useState<"single" | "weekly" | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [recentlyDeletedId, setRecentlyDeletedId] = useState<string | null>(null);
@@ -286,6 +302,8 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   } | null>(null);
   const [shareToast, setShareToast] = useState<string | null>(null);
   const [deloadActive, setDeloadActive] = useState(false);
+  /** The day the exercise picker is filling, or null when it is closed. */
+  const [pickerDay, setPickerDay] = useState<number | null>(null);
 
   const gym = useGymSettings();
   const availableEquipment = useMemo(
@@ -296,16 +314,36 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   const closeSheet = useCallback(() => {
     setSheet("closed");
     setSaveError(null);
+    setNewMode(null);
+  }, []);
+
+  const openNewChoice = useCallback(() => {
+    setNewMode(null);
+    setSheet("new-choice");
+    setSaveError(null);
   }, []);
 
   const openNew = useCallback(() => {
+    openNewChoice();
+  }, [openNewChoice]);
+
+  const openNewSingle = useCallback(() => {
     setDraft(emptyDraft());
+    setNewMode("single");
+    setSheet("new");
+    setSaveError(null);
+  }, []);
+
+  const openNewWeekly = useCallback(() => {
+    setDraft(emptyDraft());
+    setNewMode("weekly");
     setSheet("new");
     setSaveError(null);
   }, []);
 
   const openEdit = useCallback((routine: RoutineWithExercises) => {
     setDraft(draftFromRoutine(routine));
+    setNewMode(null);
     setSheet("edit");
     setSaveError(null);
   }, []);
@@ -321,6 +359,18 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
       navigate(TRAIN_PATH);
     },
     [start, navigate],
+  );
+
+  /** Starts the routine planned for a day of the week. */
+  const handleStartDay = useCallback(
+    (dayIndex: number) => {
+      const assignment = weeklyAssignments.find((a) => a.dayIndex === dayIndex);
+      const routine = assignment
+        ? routines.find((r) => r.id === assignment.routineId)
+        : undefined;
+      if (routine) handleStart(routine);
+    },
+    [weeklyAssignments, routines, handleStart],
   );
 
   const handleDelete = useCallback(
@@ -345,6 +395,48 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
 
   const addExercise = useCallback((ex: Exercise) => {
     setDraft((prev) => applyAddExercise(prev, ex));
+  }, []);
+
+  /** Adds an exercise to one day of a weekly plan. */
+  const addExerciseToDay = useCallback((ex: Exercise, dayIndex: number) => {
+    setDraft((prev) => {
+      if (prev.items.some((i) => i.exercise.id === ex.id)) return prev;
+      return {
+        ...prev,
+        items: [
+          ...prev.items,
+          {
+            exercise: ex,
+            target_sets: 3,
+            rest_seconds: 90,
+            order_index: prev.items.length,
+            target_reps_min: null,
+            target_reps_max: null,
+            dayIndex,
+          },
+        ],
+      };
+    });
+  }, []);
+
+  /** Renames the session of a day of a weekly plan. */
+  const renameDay = useCallback((dayIndex: number, label: string) => {
+    setDraft((prev) => withDayLabel(prev, dayIndex, label));
+  }, []);
+
+  /** Moves a movement up or down inside the plan. */
+  const moveItem = useCallback((from: number, to: number) => {
+    setDraft((prev) => {
+      if (from < 0 || from >= prev.items.length) return prev;
+      if (to < 0 || to >= prev.items.length) return prev;
+      const items = [...prev.items];
+      const [moved] = items.splice(from, 1);
+      items.splice(to, 0, moved);
+      return {
+        ...prev,
+        items: items.map((item, i) => ({ ...item, order_index: i })),
+      };
+    });
   }, []);
 
   const removeItem = useCallback((index: number) => {
@@ -500,6 +592,33 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
      [visibleRoutines, weeklyAssignments, deloadActive],
    );
 
+   /**
+    * The week, read one day at a time.
+    *
+    * The same planner is rendered whether the athlete has routines or not: the
+    * empty state used to draw its own strip of days, and the page then showed
+    * two views of the same week depending on how many routines there were.
+    */
+   const weeklyPlanner = (
+     <WeeklyPlanner
+       routines={routines.map((r) => ({
+         routineId: r.id,
+         title: r.title,
+         exerciseCount: r.exercises.length,
+         durationMin: estimateMinutes(
+           r.exercises.length,
+           r.exercises.reduce((sum, e) => sum + (e.rest_seconds ?? 0), 0),
+         ),
+       }))}
+       initialAssignments={weeklyAssignments}
+       onChange={handleWeeklyChange}
+       todayIndex={todayIdx}
+       deloadActive={deloadActive}
+       activeRoutineId={session?.routineId ?? null}
+       onStartDay={handleStartDay}
+     />
+   );
+
   return (
     <>
       <div
@@ -552,7 +671,7 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
           <RoutineListSkeleton />
         ) : visibleRoutines.length === 0 ? (
           <>
-            <WeeklyStrip deloadActive={deloadActive} />
+            {weeklyPlanner}
             {error == null && (
               <EmptyState onNew={openNew} onTemplate={openBrowse} />
             )}
@@ -565,16 +684,7 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
               onToggleDeload={() => setDeloadActive((d) => !d)}
             />
 
-            <WeeklyPlanner
-              routines={routines.map((r) => ({
-                routineId: r.id,
-                title: r.title,
-              }))}
-              initialAssignments={weeklyAssignments}
-              onChange={handleWeeklyChange}
-              todayIndex={todayIdx}
-              deloadActive={deloadActive}
-            />
+            {weeklyPlanner}
 
             <div
               style={{
@@ -603,7 +713,89 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
         )}
       </div>
 
-      {sheet !== "closed" && sheet !== "browse" && (
+      {sheet === "new-choice" && (
+        <div
+          style={{
+            ...OVERLAY_STYLE,
+            position: "fixed",
+            inset: 0,
+            zIndex: Z_INDEX.modal,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={closeSheet}
+        >
+          <div
+            style={{
+              ...SURFACE_RAISED,
+              borderRadius: RADIUS.surface,
+              padding: SPACE.card,
+              maxWidth: 420,
+              width: "90%",
+              border: `1px solid ${GLASS.border}`,
+              display: "flex",
+              flexDirection: "column",
+              gap: SPACE.md,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <h2 style={{ fontSize: TYPE.title1.size, fontWeight: TYPE.title1.weight, margin: 0, color: TEXT.primary }}>
+                Nueva Rutina
+              </h2>
+              <button
+                type="button"
+                onClick={closeSheet}
+                aria-label={LABELS.closeAria}
+                style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: 32, height: 32, borderRadius: RADIUS.chip, border: "none",
+                  background: "transparent", color: TEXT.secondary, cursor: "pointer",
+                }}
+              >
+                <X style={{ width: 16, height: 16 }} strokeWidth={1.5} />
+              </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
+              <button
+                type="button"
+                onClick={openNewSingle}
+                style={{
+                  ...SURFACE_STYLE,
+                  padding: SPACE.md,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${GLASS.border}`,
+                  color: TEXT.primary,
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight }}>Rutina Individual</div>
+                <div style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, marginTop: SPACE.xs }}>Para crear un bloque de entrenamiento único/suelto.</div>
+              </button>
+              <button
+                type="button"
+                onClick={openNewWeekly}
+                style={{
+                  ...SURFACE_STYLE,
+                  padding: SPACE.md,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${GLASS.border}`,
+                  color: TEXT.primary,
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight }}>Plan Semanal Completo (7 Días)</div>
+                <div style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, marginTop: SPACE.xs }}>Vista tabulada/acordeón de Lunes a Domingo para armar toda la semana en una sola pantalla.</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {sheet !== "closed" && sheet !== "browse" && sheet !== "new-choice" && (
         <Sheet
           mode={sheet === "new" ? "new" : "edit"}
           draft={draft}
@@ -616,6 +808,22 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
           onOpenSwap={setSwapItemIndex}
           onSave={handleSave}
           onClose={closeSheet}
+          newMode={newMode}
+          onPickExercise={setPickerDay}
+          onRenameDay={renameDay}
+          onMoveItem={moveItem}
+        />
+      )}
+
+      {pickerDay !== null && (
+        <ExercisePickerModal
+          open
+          onClose={() => setPickerDay(null)}
+          exercises={catalogExercises}
+          onSelect={(exercise) => {
+            addExerciseToDay(exercise, pickerDay);
+            setPickerDay(null);
+          }}
         />
       )}
 
@@ -794,95 +1002,6 @@ const glassButtonStyle: CSSProperties = {
   transition: `background-color ${MOTION.fast} ${MOTION.standard}`,
 };
 
-function WeeklyStrip({ deloadActive }: { deloadActive: boolean }) {
-  const days = useMemo(() => {
-    const todayIdx = getWeekdayIndex(Date.now());
-    return WEEKDAY_SHORT_ES.map((short, i) => ({
-      short,
-      full: WEEKDAY_NAME_ES[i],
-      isToday: i === todayIdx,
-      isSaturday: WEEKDAY_NAME_ES[i] === "Sábado",
-    }));
-  }, []);
-
-  return (
-    <div style={{ marginTop: SPACE.md }}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          flexWrap: "nowrap",
-          gap: SPACE.sm,
-          justifyContent: "space-between",
-        }}
-      >
-        {days.map((day) => {
-          const bg = day.isToday ? ACCENT.base : GLASS.fill;
-          const border = day.isToday ? ACCENT.border : GLASS.border;
-          const color = day.isToday ? TEXT.onAccent : TEXT.tertiary;
-          const halo = day.isToday
-            ? ACCENT.ring
-            : day.isSaturday
-              ? `0 0 0 3px ${ACCENT.glow}`
-              : "none";
-
-          return (
-            <div
-              key={day.full}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: SPACE.xs,
-              }}
-            >
-              <span
-                title={day.full}
-                style={{
-                  width: MOTION.minTouchTarget,
-                  height: MOTION.minTouchTarget,
-                  borderRadius: RADIUS.round,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: TYPE.caption.size,
-                  fontWeight: day.isToday ? TYPE.caption.weight : undefined,
-                  letterSpacing: "0.02em",
-                  color,
-                  background: bg,
-                  border: `1px solid ${border}`,
-                  boxShadow: halo,
-                }}
-              >
-                {day.short}
-              </span>
-              {day.isToday && (
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: RADIUS.round,
-                    background: ACCENT.base,
-                  }}
-                />
-              )}
-              {deloadActive && (
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: RADIUS.round,
-                    background: STATUS.warning.base,
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 function WeeklyVolumeCoverage({
   coverage,
@@ -1433,6 +1552,10 @@ function Sheet({
   mode, draft, saving, error, onPatch, onRemoveItem, onUpdateItem,
   onBrowse, onOpenSwap,
   onSave, onClose,
+  newMode,
+  onPickExercise,
+  onRenameDay,
+  onMoveItem,
 }: {
   mode: "new" | "edit";
   draft: RoutineDraft;
@@ -1445,8 +1568,13 @@ function Sheet({
   onOpenSwap: (index: number) => void;
   onSave: () => void;
   onClose: () => void;
+  newMode?: "single" | "weekly" | null;
+  onPickExercise: (dayIndex: number) => void;
+  onRenameDay: (dayIndex: number, label: string) => void;
+  onMoveItem: (from: number, to: number) => void;
 }) {
   const canSave = isSavableDraft(draft) && !saving;
+  const isWeekly = newMode === "weekly";
 
   return (
     <div
@@ -1488,9 +1616,9 @@ function Sheet({
         />
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: SPACE.md }}>
-          <h2 style={{ fontSize: TYPE.title1.size, fontWeight: TYPE.title1.weight, margin: 0, color: TEXT.primary }}>
-            {mode === "new" ? LABELS.newRoutine : LABELS.edit}
-          </h2>
+            <h2 style={{ fontSize: TYPE.title1.size, fontWeight: TYPE.title1.weight, margin: 0, color: TEXT.primary }}>
+              {mode === "new" ? (newMode === "weekly" ? "Plan Semanal Completo (7 Días)" : "Rutina Individual") : LABELS.edit}
+            </h2>
           <button
             type="button"
             onClick={onClose}
@@ -1505,7 +1633,7 @@ function Sheet({
           </button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, paddingBottom: SPACE.card }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, paddingBottom: SPACE.card }}>
           {error && (
             <div
               style={{
@@ -1524,89 +1652,63 @@ function Sheet({
             </div>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
-            <div>
-              <label
-                style={{
-                  fontSize: TYPE.caption.size,
-                  color: TEXT.secondary,
-                  display: "block",
-                  marginBottom: SPACE.xs,
-                }}
-              >
-                Nombre
-              </label>
-              <input
-                type="text"
-                value={draft.title}
-                onChange={(e) => onPatch({ title: e.target.value })}
-                placeholder={LABELS.namePlaceholder}
-                style={{
-                  width: "100%",
-                  padding: `${SPACE.sm} ${SPACE.md}`,
-                  borderRadius: RADIUS.control,
-                  border: `1px solid ${GLASS.border}`,
-                  background: SOLID.card,
-                  color: TEXT.primary,
-                  fontSize: TYPE.body.size,
-                }}
-              />
-            </div>
-
-            <div>
-              <label
-                style={{
-                  fontSize: TYPE.caption.size,
-                  color: TEXT.secondary,
-                  display: "block",
-                  marginBottom: SPACE.xs,
-                }}
-              >
-                Descripción
-              </label>
-              <input
-                type="text"
-                value={draft.description}
-                onChange={(e) => onPatch({ description: e.target.value })}
-                placeholder={LABELS.descPlaceholder}
-                style={{
-                  width: "100%",
-                  padding: `${SPACE.sm} ${SPACE.md}`,
-                  borderRadius: RADIUS.control,
-                  border: `1px solid ${GLASS.border}`,
-                  background: SOLID.card,
-                  color: TEXT.primary,
-                  fontSize: TYPE.body.size,
-                }}
-              />
-            </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+            <input
+              type="text"
+              value={draft.title}
+              onChange={(e) => onPatch({ title: e.target.value })}
+              placeholder="Nombre de la rutina"
+              style={{
+                width: "100%",
+                padding: `${SPACE.sm} ${SPACE.md}`,
+                borderRadius: RADIUS.control,
+                border: "none",
+                background: "transparent",
+                color: TEXT.primary,
+                fontSize: TYPE.title2.size,
+                fontWeight: TYPE.title2.weight,
+                outline: "none",
+              }}
+            />
+            <div style={{ height: 1, background: GLASS.border }} />
           </div>
 
+          {isWeekly ? (
+            <WeeklyPlanEditor
+              draft={draft}
+              onRenameDay={onRenameDay}
+              onAddExercise={onPickExercise}
+              onRemoveItem={onRemoveItem}
+              onUpdateItem={onUpdateItem}
+              onMoveItem={onMoveItem}
+            />
+          ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
             <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
               <label style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, minWidth: 100 }}>
                 {LABELS.exerciseCount(draft.items.length)}
               </label>
-              <button
-                type="button"
-                onClick={onBrowse}
-                aria-label={LABELS.browseAria}
-                style={{
-                  marginLeft: "auto",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: SPACE.xs,
-                  padding: `${SPACE.xs} ${SPACE.sm}`,
-                  borderRadius: RADIUS.chip,
-                  border: `1px solid ${GLASS.border}`,
-                  background: SOLID.card,
-                  color: TEXT.secondary,
-                  fontSize: TYPE.caption.size,
-                  cursor: "pointer",
-                }}
-              >
-                <Plus style={{ width: 12, height: 12 }} strokeWidth={1.5} /> {LABELS.addExercise}
-              </button>
+            <button
+              type="button"
+              onClick={onBrowse}
+              aria-label={LABELS.browseAria}
+              style={{
+                marginLeft: "auto",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: SPACE.xs,
+                padding: `${SPACE.sm} ${SPACE.md}`,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${GLASS.border}`,
+                background: GLASS.fill,
+                color: TEXT.primary,
+                fontSize: TYPE.subhead.size,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <Plus style={{ width: 14, height: 14 }} strokeWidth={1.5} /> {LABELS.addExercise}
+            </button>
             </div>
 
             {draft.items.length === 0 ? (
@@ -1625,6 +1727,7 @@ function Sheet({
               </div>
             )}
           </div>
+          )}
 
           <div
             style={{

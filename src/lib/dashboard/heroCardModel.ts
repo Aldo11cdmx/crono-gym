@@ -30,7 +30,7 @@ export const WEEKDAY_SHORT_ES = ["L", "M", "X", "J", "V", "S", "D"];
 export const WEEKDAY_NAME_ES = [
   "Lunes",
   "Martes",
-  "Miércol",
+  "Miércoles",
   "Jueves",
   "Viernes",
   "Sábado",

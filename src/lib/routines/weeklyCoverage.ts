@@ -17,7 +17,7 @@
  */
 
 import { countMuscleSets } from "@/components/MuscleReadonlyMap";
-import { translateBodyPart } from "@/lib/i18n";
+import { translateMuscle } from "@/lib/i18n";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
 import type { WeeklyAssignment } from "./routinesViewModel";
 
@@ -89,7 +89,7 @@ export function computeWeeklyCoverage(
     totalSetsDisplayed += displayedSets;
     muscles.push({
       slug,
-      label: translateBodyPart(slug),
+      label: translateMuscle(slug),
       rawSets,
       displayedSets,
       lowVolume: rawSets < LOW_VOLUME_THRESHOLD,

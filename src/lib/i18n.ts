@@ -61,6 +61,44 @@ export const TARGET_LABELS: Record<string, string> = {
   "levator scapulae": "Elevador de la escápula",
 };
 
+/**
+ * The muscle groups the coverage card names.
+ *
+ * These are the slugs the muscle map counts sets by (`countMuscleSets`), not
+ * the catalog's `body_part`/`target` strings: they are a vocabulary of their
+ * own, and the coverage card was showing them raw -- "upper-back",
+ * "lower-back" -- in the middle of a Spanish screen.
+ *
+ * The names are the neutral ones an athlete would use: "Lumbares" and not
+ * "Zona lumbar", "Espalda Alta" and not "Espalda alta", because the card lists
+ * groups in a column and the capital reads as the start of a name.
+ */
+export const MUSCLE_LABELS_ES: Record<string, string> = {
+  chest: "Pecho",
+  deltoids: "Hombros",
+  biceps: "Bíceps",
+  triceps: "Tríceps",
+  forearm: "Antebrazos",
+  "upper-back": "Espalda Alta",
+  trapezius: "Trapecios",
+  "lower-back": "Lumbares",
+  abs: "Abdominales",
+  obliques: "Oblicuos",
+  gluteal: "Glúteos",
+  quadriceps: "Cuádriceps",
+  hamstring: "Isquiotibiales",
+  adductors: "Aductores",
+  calves: "Pantorrillas",
+  neck: "Cuello",
+  knees: "Rodillas",
+  ankles: "Tobillos",
+  tibialis: "Tibial Anterior",
+  feet: "Pies",
+  hands: "Manos",
+  head: "Cabeza",
+  hair: "Cabello",
+};
+
 export const EQUIPMENT_LABELS: Record<string, string> = {
   assisted: "Asistido",
   band: "Bandas de resistencia",
@@ -1443,9 +1481,9 @@ export const COACH_ACCESS_LABELS = {
    * appear on the same screen. Naming the free one separately is what lets a screen say
    * "this is free" without a disclaimer paragraph.
    */
-  assistantName: "Symmetry",
-  assistantOpen: "Abrir Symmetry",
-  assistantAriaLabel: "Abrir el asistente de entrenamiento Symmetry",
+  assistantName: "Cronos",
+  assistantOpen: "Abrir Cronos",
+  assistantAriaLabel: "Abrir el asistente de entrenamiento Cronos",
 
   // ---- shifts -----------------------------------------------------------
   /**
@@ -1474,7 +1512,7 @@ export const COACH_ACCESS_LABELS = {
    */
   premiumRequiredTitle: "Coach humano",
   premiumRequiredBody:
-    "El coach en persona es la parte premium. Symmetry, el asistente de IA, es gratis y sigue disponible para ti ahora mismo.",
+    "El coach en persona es la parte premium. Cronos, el asistente de IA, es gratis y sigue disponible para ti ahora mismo.",
 
   /**
    * Shown between shifts.
@@ -1571,7 +1609,7 @@ export const COACH_ACCESS_LABELS = {
    */
   upgradeTitle: "Coach en persona",
   upgradeBody:
-    "Symmetry, el asistente de IA, ya es tuyo gratis. El coach en persona es el siguiente paso.",
+    "Cronos, el asistente de IA, ya es tuyo gratis. El coach en persona es el siguiente paso.",
   upgradeBenefits: [
     "Revisa tu técnica con vídeo y ajusta tus Loads.",
     "Te escribe una rutina para tus fechas y tu nivel.",
@@ -1582,9 +1620,9 @@ export const COACH_ACCESS_LABELS = {
   /** Between shifts, premium. Leads with the time, because the athlete is not refused. */
   backAtTitle: "Ahora no hay turno",
   backAt: (hour: number, minute: number): string =>
-    `Tu coach vuelve a las ${pad2(hour)}:${pad2(minute)}. Mientras tanto, Symmetry está disponible.`,
+    `Tu coach vuelve a las ${pad2(hour)}:${pad2(minute)}. Mientras tanto, Cronos está disponible.`,
   backAtUnknown:
-    "Tu coach todavía no tiene turno anunciado. Symmetry está disponible mientras tanto.",
+    "Tu coach todavía no tiene turno anunciado. Cronos está disponible mientras tanto.",
 
   requestTitle: "Coach disponible",
   requestBody: "Tu coach está en turno ahora mismo.",
@@ -1605,19 +1643,19 @@ export const COACH_ACCESS_LABELS = {
 } as const;
 
 /**
- * Copy for the Symmetry sheet and the routine wizard.
+ * Copy for the Cronos sheet and the routine wizard.
  *
  * Separate from {@link COACH_ACCESS_LABELS} because that object is about *tiers* -- who
  * may use what -- and every string in it is a gate. This one is about the interface a
  * free athlete uses every day, and mixing them would make the gate copy impossible to
  * find again.
  */
-export const SYMMETRY_LABELS = {
-  fabAriaLabel: "Abrir Symmetry",
-  sheetAriaLabel: "Symmetry, asistente de entrenamiento",
-  sheetTitle: "Symmetry",
+export const CRONOS_LABELS = {
+  fabAriaLabel: "Abrir Cronos",
+  sheetAriaLabel: "Cronos, asistente de entrenamiento",
+  sheetTitle: "Cronos",
   close: "Cerrar",
-  closeAriaLabel: "Cerrar Symmetry",
+  closeAriaLabel: "Cerrar Cronos",
   tabChat: "Chat",
   tabGenerate: "Generar rutina",
 
@@ -1628,7 +1666,7 @@ export const SYMMETRY_LABELS = {
    * see a bar and cannot diagnose. "Es una IA" alone is the version nobody reads.
    */
   disclaimer:
-    "Symmetry es una IA de apoyo. No ve tu técnica ni sustituye a un médico o un entrenador.",
+    "Cronos es una IA de apoyo. No ve tu técnica ni sustituye a un médico o un entrenador.",
 
   // ---- wizard ------------------------------------------------------------
   goalLabel: "Objetivo",
@@ -1650,7 +1688,7 @@ export const SYMMETRY_LABELS = {
   next: "Siguiente",
   back: "← Editar parámetros",
 
-  generating: "Symmetry está diseñando tu rutina…",
+  generating: "Cronos está diseñando tu rutina…",
   cancel: "Cancelar",
 
   /** Shown inline when generation fails. Paired with `retry`. */
@@ -1688,7 +1726,7 @@ export const SYMMETRY_LABELS = {
  * Copy for the coach portal -- the screen a signed-in coach sees at `/coach/portal`.
  *
  * A fourth block, and separate from all three above on purpose. `COACH_ACCESS_LABELS` is
- * about *tiers*: what an athlete is allowed. `SYMMETRY_LABELS` is the free assistant. This
+ * about *tiers*: what an athlete is allowed. `CRONOS_LABELS` is the free assistant. This
  * one is a work surface, used by a coach and not by an athlete, and it is the only one of
  * the four whose audience is a member of staff.
  *
@@ -1832,7 +1870,7 @@ export const COACH_PORTAL_LABELS = {
   historyEmpty: "No tiene rutinas guardadas.",
   historyAuthoredByCoach: "Tu rutina",
   historyAuthoredByAthlete: "Rutina del atleta",
-  historyAuthoredByAi: "Rutina generada con Symmetry",
+  historyAuthoredByAi: "Rutina generada con Cronos",
 
   /** The check-in section has no table behind it yet; see the Block 5 TODO. */
   checkinsPending:
@@ -1910,6 +1948,16 @@ function lookup(dictionary: Record<string, string>, value: string): string {
 
 export function translateBodyPart(value: string): string {
   return lookup(BODY_PART_LABELS, value);
+}
+
+/**
+ * The name of a muscle group, for the weekly coverage card.
+ *
+ * Falls back to the raw slug, like every other translation here: a muscle the
+ * dictionary does not know yet shows its slug rather than an empty row.
+ */
+export function translateMuscle(value: string): string {
+  return lookup(MUSCLE_LABELS_ES, value);
 }
 
 export function translateTarget(value: string): string {

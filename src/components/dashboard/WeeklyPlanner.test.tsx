@@ -24,7 +24,7 @@ const INITIAL_ASSIGNMENTS: WeeklyAssignment[] = [
 afterEach(() => cleanup());
 
 describe("WeeklyPlanner", () => {
-  it("renders the 7-day strip with Spanish weekday names", () => {
+  it("renders the day carousel with the seven weekday letters", () => {
     render(
       <WeeklyPlanner
         routines={ROUTINES}
@@ -42,7 +42,7 @@ describe("WeeklyPlanner", () => {
     expect(screen.getByText("D")).toBeTruthy();
   });
 
-  it("renders routine assignments under their day", () => {
+  it("renders the routines of the day the carousel selects", () => {
     render(
       <WeeklyPlanner
         routines={ROUTINES}
@@ -53,6 +53,10 @@ describe("WeeklyPlanner", () => {
     );
     expect(screen.getByText("Full Body A")).toBeTruthy();
     expect(screen.getByText("Full Body B")).toBeTruthy();
+    // The week is read one day at a time: "Cardio" is planned for Tuesday, and
+    // the card shows the day the carousel has selected.
+    expect(screen.queryByText("Cardio")).toBeNull();
+    fireEvent.click(screen.getByRole("tab", { name: "Martes" }));
     expect(screen.getByText("Cardio")).toBeTruthy();
   });
 

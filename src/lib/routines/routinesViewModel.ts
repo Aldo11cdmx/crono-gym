@@ -15,6 +15,13 @@ export interface WeeklyAssignment {
   routineId: string;
   dayIndex: number;
   order: number;
+  /**
+   * Nombre de sesión del día (ej. "Lunes: Empuje - Pecho/Hombro").
+   *
+   * Ausente cuando el día es descanso o no tiene nombre asignado. Opcional
+   * para no romper consumidores existentes del modelo.
+   */
+  title?: string;
 }
 
 const MAX_HISTORY = 20;

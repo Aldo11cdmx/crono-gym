@@ -84,18 +84,27 @@ export async function saveRoutine(
      * the table does not have yet. PostgREST rejects the whole insert when it
      * is handed a column it cannot find, so a routine would stop saving
      * entirely. The grouping is written when the column lands.
+     *
+     * The day a movement belongs to comes from the movement itself when the
+     * draft is a weekly plan, and from the draft otherwise. The day label is
+     * the name the athlete gave that day, which is what turns a list of
+     * movements into "Lunes: Empuje Pro" in the planner.
      */
-    const rows = draft.items.map((item) => ({
-      routine_id: routineId as string,
-      exercise_id: item.exercise.id,
-      target_sets: item.target_sets,
-      rest_seconds: item.rest_seconds,
-      order_index: item.order_index,
-      day_index: draft.dayIndex,
-      day_label: draft.dayLabel,
-      target_reps_min: item.target_reps_min,
-      target_reps_max: item.target_reps_max,
-    }));
+    const rows = draft.items.map((item) => {
+      const dayIndex = item.dayIndex ?? draft.dayIndex;
+      const dayLabel = draft.dayLabels?.[dayIndex] ?? draft.dayLabel;
+      return {
+        routine_id: routineId as string,
+        exercise_id: item.exercise.id,
+        target_sets: item.target_sets,
+        rest_seconds: item.rest_seconds,
+        order_index: item.order_index,
+        day_index: dayIndex,
+        day_label: dayLabel,
+        target_reps_min: item.target_reps_min,
+        target_reps_max: item.target_reps_max,
+      };
+    });
 
     const result = await supabase.from("routine_exercises").insert(rows);
     if (result.error) {

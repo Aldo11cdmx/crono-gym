@@ -20,7 +20,6 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ACCENT, GLASS, MOTION, RADIUS, TEXT, Z_INDEX } from "@/design/tokens";
 import { SHELL_LABELS } from "@/lib/i18n";
 import { TRAIN_PATH } from "./navItems";
-import { NAV_CONTENT_HEIGHT, PILL_GAP } from "./AppShell";
 
 /** Maximum visible characters of a routine name, ellipsis included. */
 export const ROUTINE_NAME_MAX = 20;
@@ -115,7 +114,7 @@ const elapsed = formatElapsed(elapsedMs);
           position: "fixed",
           left: "50%",
           transform: `translateX(-50%) translateY(${phase === "enter" && !reducedMotion ? 8 : 0}px)`,
-          bottom: `calc(${NAV_CONTENT_HEIGHT}px + env(safe-area-inset-bottom, 0px) + ${PILL_GAP}px)`,
+          bottom: `calc(5rem + env(safe-area-inset-bottom, 0px))`,
           zIndex: Z_INDEX.pill,
           display: "flex",
           alignItems: "center",
@@ -127,8 +126,8 @@ const elapsed = formatElapsed(elapsedMs);
           backgroundColor: GLASS.fillRaised,
           border: `1px solid ${accent}`,
           color: TEXT.primary,
-          backdropFilter: "blur(24px) saturate(140%)",
-          WebkitBackdropFilter: "blur(24px) saturate(140%)",
+          backdropFilter: "blur(20px) saturate(160%)",
+          WebkitBackdropFilter: "blur(20px) saturate(160%)",
           boxShadow: GLASS.shadow,
           cursor: "pointer",
           opacity: phase === "leave" ? 0 : 1,

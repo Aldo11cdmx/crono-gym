@@ -56,6 +56,9 @@ import {
   TEXT,
   TYPE,
   Z_INDEX,
+  DANGER,
+  STATUS,
+  SURFACE,
 } from "@/design/tokens";
 import { useRoutines, type RoutineWithExercises } from "@/hooks/useGymData";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
@@ -98,6 +101,7 @@ const LABELS = {
   libraryAria: "Abrir biblioteca",
   edit: "Editar",
   deleteAria: "Eliminar rutina",
+  delete: "Eliminar",
   favoriteAria: "Destacar rutina",
   namePlaceholder: "Nombre de la rutina",
   descPlaceholder: "Descripción (opcional)",
@@ -694,6 +698,40 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
                 marginTop: SPACE.md,
               }}
             >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingTop: SPACE.sm,
+                  paddingBottom: SPACE.xs,
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: TYPE.subhead.size,
+                    lineHeight: TYPE.subhead.lineHeight,
+                    fontWeight: TYPE.subhead.weight,
+                    color: TEXT.secondary,
+                    margin: 0,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Mis Plantillas
+                </h2>
+                <span
+                  style={{
+                    fontSize: TYPE.caption.size,
+                    lineHeight: TYPE.caption.lineHeight,
+                    color: TEXT.tertiary,
+                    fontFamily: TYPE.mono.font,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {visibleRoutines.length} {visibleRoutines.length === 1 ? "plantilla" : "plantillas"}
+                </span>
+              </div>
               {visibleRoutines.map((routine) => (
                 <RoutineCard
                   key={routine.id}
@@ -1097,53 +1135,92 @@ function WeeklyVolumeCoverage({
             gap: SPACE.xs,
           }}
         >
-          {coverage.muscles.map((m) => (
-            <div
-              key={m.slug}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: SPACE.sm,
-              }}
-            >
+          {coverage.muscles.map((m) => {
+            const maxVolume = 16;
+            const progressPct = Math.min(100, Math.max(8, Math.round((m.displayedSets / maxVolume) * 100)));
+            return (
               <div
+                key={m.slug}
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  gap: SPACE.xs,
-                  flex: 1,
+                  flexDirection: "column",
+                  gap: 4,
+                  padding: `${SPACE.xs} 0`,
                 }}
               >
-                <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>{m.label}</span>
-                {m.lowVolume && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: SPACE.sm,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: SPACE.xs,
+                      flex: 1,
+                    }}
+                  >
+                    <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>{m.label}</span>
+                    {m.lowVolume && (
+                      <span
+                        style={{
+                          fontSize: TYPE.caption.size,
+                          fontWeight: TYPE.caption.weight,
+                          color: ACCENT.text,
+                          background: ACCENT.subtle,
+                          borderRadius: RADIUS.chip,
+                          padding: "2px 6px",
+                        }}
+                      >
+                        {LABELS.lowVolumeBadge}
+                      </span>
+                    )}
+                  </div>
                   <span
                     style={{
                       fontSize: TYPE.caption.size,
-                      fontWeight: TYPE.caption.weight,
-                      color: ACCENT.text,
-                      background: ACCENT.subtle,
-                      borderRadius: RADIUS.chip,
-                      padding: "2px 6px",
+                      color: TEXT.secondary,
+                      fontFamily: TYPE.mono.font,
+                      fontVariantNumeric: "tabular-nums",
+                      minWidth: 60,
+                      textAlign: "right",
                     }}
                   >
-                    {LABELS.lowVolumeBadge}
+                    {m.displayedSets} series{m.displayedSets !== m.rawSets && deloadActive && ` (orig: ${m.rawSets})`}
                   </span>
-                )}
+                </div>
+                {/* Barra fina de progreso estilo Apple Health */}
+                <div
+                  role="progressbar"
+                  aria-valuenow={m.displayedSets}
+                  aria-valuemin={0}
+                  aria-valuemax={maxVolume}
+                  aria-label={`Volumen de ${m.label}`}
+                  style={{
+                    width: "100%",
+                    height: 4,
+                    borderRadius: RADIUS.pill,
+                    background: SURFACE.sunken,
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${progressPct}%`,
+                      height: "100%",
+                      borderRadius: RADIUS.pill,
+                      background: m.lowVolume ? STATUS.warning.base : ACCENT.base,
+                      transition: `width ${MOTION.normal} ${MOTION.easeOut}`,
+                    }}
+                  />
+                </div>
               </div>
-              <span
-                style={{
-                  fontSize: TYPE.caption.size,
-                  color: TEXT.secondary,
-                  fontFamily: FONT_SANS,
-                  minWidth: 60,
-                  textAlign: "right",
-                }}
-              >
-                {m.displayedSets} series{m.displayedSets !== m.rawSets && deloadActive && ` (orig: ${m.rawSets})`}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -1291,7 +1368,10 @@ function RoutineCard({
     <div
       style={{
         ...SURFACE_STYLE,
-        borderRadius: RADIUS.surface,
+        borderRadius: RADIUS.card,
+        backgroundColor: GLASS.fillRaised,
+        border: `1px solid ${GLASS.border}`,
+        boxShadow: GLASS.shadow,
         padding: SPACE.card,
         position: "relative",
         overflow: "hidden",
@@ -1488,11 +1568,13 @@ export function ActionMenu({
   anchorRect,
   onDuplicate,
   onShare,
+  onDelete,
   onClose,
 }: {
   anchorRect: DOMRect;
   onDuplicate: () => void;
   onShare: () => void;
+  onDelete?: () => void;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -1543,6 +1625,23 @@ export function ActionMenu({
           <Share2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />
           {LABELS.share}
         </button>
+        {onDelete && (
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              onDelete();
+              onClose();
+            }}
+            style={{
+              ...ACTION_MENU_ITEM_STYLE,
+              color: DANGER.text,
+            }}
+          >
+            <Trash2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />
+            {LABELS.delete}
+          </button>
+        )}
       </div>
     </>
   );

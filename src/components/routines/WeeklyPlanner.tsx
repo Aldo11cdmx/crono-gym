@@ -647,7 +647,7 @@ export function WeeklyPlanner({
                    * shrink rather than push Saturday and Sunday off the screen,
                    * and they keep the 44px of height a tap needs.
                    */
-                  minWidth: 36,
+                  minWidth: MOTION.minTouchTarget,
                   maxWidth: MOTION.minTouchTarget,
                   minHeight: MOTION.minTouchTarget,
                   height: MOTION.minTouchTarget,
@@ -667,7 +667,7 @@ export function WeeklyPlanner({
                       ? ACCENT.subtle
                       : GLASS.fill,
                   border: `1px solid ${isSelected ? ACCENT.border : GLASS.border}`,
-                  boxShadow: isSelected ? ACCENT.ring : "none",
+                  boxShadow: isSelected ? `0 0 12px ${ACCENT.glow}, ${ACCENT.ring}` : "none",
                   cursor: "pointer",
                   flex: "1 1 0",
                 }}
@@ -693,7 +693,7 @@ export function WeeklyPlanner({
         <div
           style={{
             ...SURFACE_RAISED,
-            borderRadius: RADIUS.surface,
+            borderRadius: RADIUS.card,
             border: `1px solid ${GLASS.border}`,
             padding: SPACE.md,
             display: "flex",

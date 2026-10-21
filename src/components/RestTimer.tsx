@@ -58,7 +58,6 @@ import {
   DIAGRAM,
   GLASS,
   MOTION,
-  NUMERIC,
   RADIUS,
   SCRIM,
   SPACE,
@@ -422,7 +421,7 @@ const numeralTextStyle: CSSProperties = {
   fontFamily: TYPE.mono.font,
   fontSize: TYPE.title2.size,
   fontWeight: TYPE.mono.weight,
-  fontVariantNumeric: NUMERIC.align,
+  fontVariantNumeric: "tabular-nums",
   color: TEXT.primary,
 };
 
@@ -489,7 +488,7 @@ const barButtonStyle: CSSProperties = {
 /** The minimized rest: a bar above the navigation, not a screen. */
 const barStyle: CSSProperties = {
   position: "fixed",
-  bottom: SPACE.md,
+  bottom: "5rem",
   left: "50%",
   transform: "translateX(-50%)",
   zIndex: Z_INDEX.sheet,
@@ -498,7 +497,9 @@ const barStyle: CSSProperties = {
   gap: SPACE.xs,
   padding: `${SPACE.xs} ${SPACE.sm}`,
   borderRadius: RADIUS.pill,
-  background: SURFACE.overlay,
+  background: GLASS.fillRaised,
+  backdropFilter: "blur(20px) saturate(160%)",
+  WebkitBackdropFilter: "blur(20px) saturate(160%)",
   border: `1px solid ${GLASS.borderStrong}`,
   boxShadow: GLASS.shadow,
 };
@@ -507,7 +508,7 @@ const barTimeStyle: CSSProperties = {
   fontFamily: TYPE.mono.font,
   fontSize: TYPE.subhead.size,
   fontWeight: TYPE.mono.weight,
-  fontVariantNumeric: NUMERIC.align,
+  fontVariantNumeric: "tabular-nums",
   color: TEXT.primary,
   padding: `0 ${SPACE.sm}`,
 };

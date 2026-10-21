@@ -77,6 +77,11 @@ export interface SetTableProps {
   previousKg?: number | null;
   previousReps?: number | null;
   /**
+   * Last session's RPE for the best set. Shown in the PREVIA column as
+   * "@7 40 x 10" -- attenuated history, grey and non-interactive.
+   */
+  previousRpe?: number | null;
+  /**
    * The exercise's name, for the record badge's title.
    *
    * Optional because the table is also rendered where no single exercise is in
@@ -147,6 +152,11 @@ export interface SetTableProps {
   onRemove: (index: number) => void;
   onDuplicate: (index: number) => void;
   onAdd: () => void;
+  /**
+   * Fired when the last set of this exercise is marked complete. The caller
+   * moves the session on to the next exercise.
+   */
+  onLastSetComplete?: () => void;
 }
 
 const KIND_ICON: Record<SetKind, typeof Flame> = {
@@ -162,6 +172,7 @@ export function SetTable({
   sets,
   previousKg,
   previousReps,
+  previousRpe,
   exerciseName,
   allTimeBestKg,
   allTimeBestReps,
@@ -176,6 +187,7 @@ export function SetTable({
   onRemove,
   onDuplicate,
   onAdd,
+  onLastSetComplete,
 }: SetTableProps) {
   const reducedMotion = useReducedMotion();
 
@@ -263,6 +275,10 @@ export function SetTable({
     }
 
     onChange(index, { ...entry, completed: completing });
+
+    if (completing && index === sets.length - 1) {
+      onLastSetComplete?.();
+    }
   };
 
   /**
@@ -303,12 +319,13 @@ export function SetTable({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
-      <ColumnHeadings />
+      <ColumnHeadings hasPrevious={previousKg !== null && previousKg !== undefined} />
 
       {previousKg !== null && previousKg !== undefined && (
         <PreviousRow
           weight={formatWeight(previousKg)}
           reps={previousReps ?? null}
+          rpe={previousRpe ?? null}
         />
       )}
 
@@ -404,6 +421,48 @@ export function SetTable({
             )}
 
             <div style={gridStyle}>
+              <div style={{ minWidth: 0 }}>
+                <CellLabel>Serie</CellLabel>
+                <span
+                  style={{
+                    fontFamily: TYPE.mono.font,
+                    fontSize: TYPE.mono.size,
+                    fontWeight: TYPE.mono.weight,
+                    fontVariantNumeric: NUMERIC.align,
+                    color: TEXT.primary,
+                  }}
+                >
+                  {index + 1}
+                </span>
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <CellLabel>Previa</CellLabel>
+                {previousKg !== null && previousKg !== undefined ? (
+                  <span
+                    style={{
+                      fontFamily: TYPE.mono.font,
+                      fontSize: TYPE.mono.size,
+                      fontWeight: TYPE.mono.weight,
+                      fontVariantNumeric: NUMERIC.align,
+                      color: TEXT.tertiary,
+                      opacity: 0.7,
+                    }}
+                  >
+                    {previousRpe != null ? `@${previousRpe} ` : ""}
+                    {formatWeight(previousKg)}
+                    {previousReps === null ? "" : ` × ${previousReps}`}
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: TYPE.caption.size,
+                      color: TEXT.disabled,
+                    }}
+                  >
+                    —
+                  </span>
+                )}
+              </div>
               <div style={{ minWidth: 0 }}>
                 <CellLabel>Peso</CellLabel>
                 {isBodyweight ? (
@@ -621,25 +680,38 @@ export function SetTable({
 function PreviousRow({
   weight,
   reps,
+  rpe,
 }: {
   weight: string;
   reps: number | null;
+  rpe?: number | null;
 }) {
   return (
     <div
+      role="group"
+      aria-label="Previa de la sesion anterior"
       style={{
         display: "flex",
         alignItems: "center",
         gap: SPACE.sm,
         padding: `${SPACE.sm} ${SPACE.md}`,
         borderRadius: RADIUS.control,
-        // A sunken well rather than glass: this row is behind the real ones in time, and
-        // the surface should say so.
         background: SURFACE.sunken,
         border: `1px solid ${GLASS.border}`,
       }}
     >
-      <span style={{ ...setNumberStyle, color: TEXT.disabled }}>Anterior</span>
+      <span style={{ ...setNumberStyle, color: TEXT.disabled }}>PREVIA</span>
+      {rpe != null ? (
+        <span
+          style={{
+            ...monoStyle,
+            color: TEXT.tertiary,
+            opacity: 0.7,
+          }}
+        >
+          @{rpe}{" "}
+        </span>
+      ) : null}
       <span style={{ ...monoStyle, color: TEXT.tertiary }}>
         {weight}
         {reps === null ? "" : ` × ${reps}`}
@@ -658,11 +730,13 @@ function PreviousRow({
  * an unlabelled unbordered column of numbers is four identical boxes. "Peso" over the
  * stepper is what distinguishes the weight from the reps at a glance.
  */
-function ColumnHeadings() {
+function ColumnHeadings({ hasPrevious }: { hasPrevious: boolean }) {
   return (
     <div style={{ ...gridStyle, padding: `0 ${SPACE.md}` }}>
-      <span style={headingStyle}>Peso</span>
-      <span style={headingStyle}>Reps</span>
+      <span style={headingStyle}>SERIE</span>
+      {hasPrevious && <span style={headingStyle}>PREVIA</span>}
+      <span style={headingStyle}>KG</span>
+      <span style={headingStyle}>REPES</span>
       <span style={headingStyle}>RPE</span>
     </div>
   );
@@ -902,7 +976,7 @@ const headerRow: CSSProperties = {
 
 const gridStyle: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr)",
+  gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1.4fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr)",
   gap: SPACE.sm,
 };
 

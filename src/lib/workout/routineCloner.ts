@@ -25,7 +25,7 @@
  * Supersets
  * ---------
  * A group id marks exercises that are performed together -- "A then B,
- * back to back", the way Hevy and Symmetry write it. The group id is a
+ * back to back", the way Hevy and Cronos write it. The group id is a
  * *relationship*, not an identity: it says which exercises belong together,
  * and it means the same thing in the template and in every run of it. So it
  * is carried across verbatim.

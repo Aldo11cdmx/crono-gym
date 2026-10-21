@@ -1,6 +1,6 @@
-﻿import { Flame, Flag, Layers, TrendingUp } from 'lucide-react'
+import { Flame, Flag, Layers, TrendingUp } from 'lucide-react'
 import { SET_KINDS, type SetKind } from '../../../lib/workout/setKind'
-import { RADIUS, TEXT } from '../../../design/tokens'
+import { RADIUS, GLASS, TEXT } from '../../../design/tokens'
 
 const KIND_ICON: Record<SetKind, typeof Flame> = {
   normal: TrendingUp,
@@ -27,7 +27,7 @@ export function SetTypeSelector({ kind, onChange }: { kind: SetKind; onChange: (
         width: 40,
         height: 40,
         borderRadius: RADIUS.pill,
-        border: '1px solid rgba(255,255,255,0.12)',
+        border: '1px solid ' + GLASS.border,
         color: TEXT.primary,
       }}
     >

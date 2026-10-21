@@ -1,4 +1,4 @@
-﻿/**
+/**
  * localSession.ts — the single owner of the local role.
  *
  * This module wraps the real Supabase session and adds one thing the server does

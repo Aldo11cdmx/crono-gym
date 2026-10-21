@@ -28,6 +28,7 @@ import {
   RefreshCw,
   Check,
   Dumbbell,
+  Settings,
 } from "lucide-react";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
@@ -276,7 +277,7 @@ function SessionHeader({
         }}
         onClick={onGear}
       >
-        ⚙️
+        <Settings size={18} strokeWidth={1.5} aria-hidden="true" />
       </button>
     </header>
   );

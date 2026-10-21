@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
-import { ActiveWorkout } from "./components/ActiveWorkout";
+import { ActiveWorkoutView } from "./components/workout/ActiveWorkoutView";
 import { AuthModal } from "./components/AuthModal";
 import { CronosLogo } from "./components/CronosLogo";
 import { BrandLockup } from "./components/shell/BrandLockup";
@@ -361,7 +361,7 @@ const [libraryLoaded, setLibraryLoaded] = useState(false);
 
   const source = routines.find((r) => r.id === session.routineId);
   return (
-    <ActiveWorkout
+    <ActiveWorkoutView
       userId={userId}
       routineId={session.routineId}
       routineTitle={session.title}

@@ -1,5 +1,5 @@
-﻿import { Check } from 'lucide-react'
-import { STATUS, RADIUS } from '../../../design/tokens'
+import { Check } from 'lucide-react'
+import { STATUS, RADIUS, GLASS, TEXT } from '../../../design/tokens'
 
 export function SetRow({
   index,
@@ -22,9 +22,9 @@ export function SetRow({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        border: completed ? '1px solid ' + STATUS.success.border : '1px solid rgba(255,255,255,0.12)',
+        border: completed ? '1px solid ' + STATUS.success.border : '1px solid ' + GLASS.border,
         background: completed ? STATUS.success.muted : 'transparent',
-        color: completed ? STATUS.success.text : 'rgba(255,255,255,0.4)',
+        color: completed ? STATUS.success.text : TEXT.tertiary,
       }}
     >
       <Check size={16} />

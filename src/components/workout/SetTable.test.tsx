@@ -59,9 +59,11 @@ function row(n: number): HTMLElement {
   return screen.getByRole("group", { name: SET_LOGGER_LABELS.setNumber(n) });
 }
 
-/** The `Anterior` row, which is a caption rather than a labelled control. */
+/** The `PREVIA` row, which is a caption rather than a labelled control. */
 function previousRow(): HTMLElement {
-  return screen.getByText("Anterior").closest("div")!;
+  return screen
+    .getByRole("group", { name: "Previa de la sesion anterior" })
+    .closest("div")!;
 }
 
 function cell(row_: HTMLElement, label: string): HTMLInputElement {
@@ -75,14 +77,14 @@ function setRows(container: HTMLElement): HTMLElement[] {
   );
 }
 
-describe("the Anterior row", () => {
+describe("the PREVIA row", () => {
   it("appears when there is a previous set, and not when there is not", () => {
     const { unmount } = renderTable({ previousKg: 95, previousReps: 5 });
-    expect(screen.getByText("Anterior")).toBeTruthy();
+    expect(screen.getAllByText("PREVIA").length).toBeGreaterThan(0);
     unmount();
 
     renderTable({ previousKg: null });
-    expect(screen.queryByText("Anterior")).toBeNull();
+    expect(screen.queryByText("PREVIA")).toBeNull();
   });
 
   it("puts the weight and the reps in the same mono run", () => {
@@ -91,6 +93,12 @@ describe("the Anterior row", () => {
     // One run, not "95" and "5" in separate cells: the pair is a single fact about a
     // single set, and splitting it invites reading the reps against the wrong weight.
     expect(previousRow().textContent).toContain("95 × 5");
+  });
+
+  it("includes the RPE when provided", () => {
+    renderTable({ previousKg: 95, previousReps: 5, previousRpe: 8 });
+
+    expect(previousRow().textContent).toContain("@8 95 × 5");
   });
 
   it("says so when the reps were never recorded", () => {
@@ -122,16 +130,16 @@ describe("the Anterior row", () => {
 });
 
 describe("the column headings", () => {
-  it("labels all three columns once, outside the rows", () => {
-    const { container } = renderTable();
+  it("labels all five columns once, outside the rows", () => {
+    const { container } = renderTable({ previousKg: 95, previousReps: 5 });
 
-    // The cells are unbordered by design, and three identical unlabelled boxes in a row is
+    // The cells are unbordered by design, and five identical unlabelled boxes in a row is
     // not a table, it is a row of boxes. Counted outside the set groups because each row
-    // repeats "Peso" over its own cell.
+    // repeats its own label over its own cell.
     const headings = screen
-      .getAllByText(/^(Peso|Reps|RPE)$/)
+      .getAllByText(/^(SERIE|PREVIA|KG|REPES|RPE)$/)
       .filter((el) => !el.closest("[role='group']"));
-    expect(headings.map((el) => el.textContent)).toEqual(["Peso", "Reps", "RPE"]);
+    expect(headings.map((el) => el.textContent)).toEqual(["SERIE", "PREVIA", "KG", "REPES", "RPE"]);
     expect(container).toBeTruthy();
   });
 });
@@ -431,7 +439,7 @@ describe("no previous session", () => {
   it("still renders the sets, and offers no reference to compare them against", () => {
     renderTable({ previousKg: undefined, previousReps: undefined });
 
-    expect(screen.queryByText("Anterior")).toBeNull();
+    expect(screen.queryByText("PREVIA")).toBeNull();
     expect(row(1)).toBeTruthy();
     expect(row(3)).toBeTruthy();
   });

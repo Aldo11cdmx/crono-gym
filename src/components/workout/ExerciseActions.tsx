@@ -1,5 +1,5 @@
 /**
- * ExerciseActions.tsx ó the five things you can do to the exercise in front of you.
+ * ExerciseActions.tsx ‚Äî the five things you can do to the exercise in front of you.
  *
  * A pill row, and every chip is the same size and weight. That is deliberate: these are
  * not a primary action plus some secondary ones, they are one verb each at the same
@@ -28,13 +28,13 @@ export const EXERCISE_ACTIONS = [
   { id: "nota", label: "Nota", Icon: NotebookPen },
   { id: "cambiar", label: "Cambiar", Icon: Repeat2 },
   { id: "ajustar", label: "Ajustar", Icon: SlidersHorizontal },
-  { id: "maquina", label: "M·quina / Equipo", Icon: Activity },
+  { id: "maquina", label: "M√°quina / Equipo", Icon: Activity },
   { id: "maneral", label: "Maneral / Accesorio", Icon: Cog },
 ] as const;
 export type ExerciseActionId = (typeof EXERCISE_ACTIONS)[number]["id"];
 
 /** Said by a chip that has no handler yet, so its tap is not a mystery. */
-export const ACTION_PENDING_TEXT = "TodavÌa no disponible";
+export const ACTION_PENDING_TEXT = "Todav√≠a no disponible";
 
 export interface ExerciseActionsProps {
   /**
@@ -100,8 +100,8 @@ export function ExerciseActions({
               // Loud on purpose. If this line is ever reached in a shipped build it should
               // be findable rather than silently swallowed.
               console.warn(
-                `[cronos] ExerciseActions: "${id}" todavÌa no est· conectado. ` +
-                  "Se conectar· con el Hub.",
+                `[cronos] ExerciseActions: "${id}" todav√≠a no est√° conectado. ` +
+                  "Se conectar√° con el Hub.",
               );
             }}
             style={{
@@ -124,7 +124,7 @@ export function ExerciseActions({
             <Icon size={15} aria-hidden="true" />
             {text}
             {!handler && (
-              // Visually hidden rather than a visible "prÛximamente" badge: five badges
+              // Visually hidden rather than a visible "pr√≥ximamente" badge: five badges
               // across the row would bury the four chips that do work.
               <span id={pendingId} style={visuallyHidden}>
                 {ACTION_PENDING_TEXT}

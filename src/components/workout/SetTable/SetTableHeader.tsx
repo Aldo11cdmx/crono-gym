@@ -1,5 +1,5 @@
-﻿import { SET_LOGGER_LABELS } from '../../../lib/i18n'
-import { SPACE } from '../../../design/tokens'
+import { SET_LOGGER_LABELS } from '../../../lib/i18n'
+import { SPACE, TEXT, TYPE } from '../../../design/tokens'
 
 const headerStyle = {
   display: 'grid',
@@ -11,9 +11,9 @@ const headerStyle = {
 }
 
 const cellStyle = {
-  fontSize: '10px',
-  lineHeight: '14px',
-  color: 'rgba(255,255,255,0.45)',
+  fontSize: TYPE.label.size,
+  lineHeight: TYPE.label.size,
+  color: TEXT.tertiary,
   textAlign: 'center' as const,
 }
 

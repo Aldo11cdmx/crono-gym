@@ -51,7 +51,7 @@ const ROW = exercise("row", "Remo con barra");
  * A routine with a superset in it.
  *
  * The squat stands alone. The bench and the row share a group, the way a
- * routine written the way Hevy and Symmetry write them would: the bench is
+ * routine written the way Hevy and Cronos write them would: the bench is
  * performed, then the row, back to back.
  */
 function routine(): RoutineTemplate {

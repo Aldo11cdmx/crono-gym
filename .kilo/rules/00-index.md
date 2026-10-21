@@ -2,7 +2,7 @@
 > Se carga siempre. Define el protocolo común, la precedencia y los comandos canónicos.
 
 ## Contexto del repo (verificado en la rama `fix/p0-timer-and-session-draft`)
-React 18 + Vite 5 + TypeScript estricto + Tailwind 3 + Supabase (Postgres/RLS + Edge Functions `coach-assistant`, `coach-auth`) + IndexedDB (`cronos-offline`). Alias: `@/*` → `src/*`, `@lib/*` → `src/lib/*`. Windows + PowerShell. Idioma de UI: español.
+React 18 + Vite 5 + TypeScript estricto + Tailwind 3 + Supabase (Postgres/RLS + Edge Functions `coach-assistant`, `coach-auth`) + IndexedDB (`cronos-offline` v5). Alias: `@/*` → `src/*`, `@lib/*` → `src/lib/*`. Windows + PowerShell. Idioma de UI: español.
 
 ## Protocolo común (aplica a TODOS los agentes)
 1. **Lee antes de escribir.** Abre el archivo y su test vecino. Nada de nombres de tokens, tablas, campos o rutas "de memoria": verifícalos con búsqueda.
@@ -14,41 +14,46 @@ React 18 + Vite 5 + TypeScript estricto + Tailwind 3 + Supabase (Postgres/RLS + 
 7. **Los informes `reports/architecture-research/` son una foto del 19-20 oct.** Úsalos como mapa de riesgos y dirección, pero verifica contra el código antes de citar una cifra o un hallazgo.
 
 ## Precedencia en conflictos (1 = gana)
-1. `cybersecurity-and-hardening-sentinel`, `domain-fitness-guardian`
-2. `offline-first-architect`, `supabase-data-and-migrations-guardian`
+1. `cybersecurity-and-hardening-sentinel`, `domain-fitness-guardian`, `transactional-sync-and-rls-guardian`
+2. `offline-first-architect`, `active-workout-and-timer-guardian`, `supabase-data-and-migrations-guardian`
 3. `cronos-architecture-context`, `state-and-flow-architect`
 4. `gym-ux-mobile-specialist`, `a11y-and-i18n-guardian`
-5. `design-system-enforcer` > `apple-ui-architect` > `button-and-ui-craftsman`
-6. `performance-optimizer`, `qa-test-guardian`, `catalog-and-equipment-curator`, `pwa-delivery-and-update-flow`, `error-handling-and-observability`, `git-and-delivery-discipline`, `dev-hygiene-pwa`
+5. `design-system-enforcer` > `apple-ui-architect` > `routines-and-planner-craftsman` > `button-and-ui-craftsman` > `motion-and-haptics-guardian`
+6. `bundle-and-chunk-governor`, `performance-optimizer`, `qa-test-guardian`, `catalog-and-equipment-curator`, `pwa-delivery-and-update-flow`, `error-handling-and-observability`, `git-and-delivery-discipline`, `dev-hygiene-pwa`
 
 ## Comandos canónicos (PowerShell)
 ```powershell
-npm run typecheck                 # 0 errores
-npx vitest run src/design         # tokens (rápido)
+npm run typecheck                 # 0 errores de TypeScript
+npx vitest run src/design         # validación de tokens y diseño (rápido, ~4s)
 npm test                          # suite completa (~5 min)
-npm run build                     # tsc -b && vite build
+npm run build                     # tsc -b && vite build (auditoría de chunks)
 npm run equipment:map             # regenera src/data/equipmentMap.ts
 npm run verify:mapping            # valida muscleMap
 ```
 
-## Agentes
+## Agentes Especializados (23 Agentes)
 | Agente | Se activa cuando | Superpoder |
 |---|---|---|
-| apple-ui-architect | pantallas, layout, jerarquía visual | Convierte una pantalla cargada en una calmada y cara |
-| button-and-ui-craftsman | botones, tarjetas clicables, estados | Un solo primario, 44px, todos los estados |
-| cybersecurity-and-hardening-sentinel | formularios, auth, Edge Functions, `.env` | Audita seguridad sin que se lo pidan |
-| cronos-architecture-context | nuevo módulo/store/capa | Mapa canónico; rechaza capas duplicadas |
+| apple-ui-architect | pantallas, layout, jerarquía visual | Convierte una pantalla cargada en una calmada y cara estilo Apple |
+| button-and-ui-craftsman | botones, tarjetas clicables, estados | Un solo primario, 44px, todos los estados interactivos |
+| routines-and-planner-craftsman | `RoutinesPage`, `WeeklyPlanner`, planes | Gestión de rutinas limpia, modular, sin ruido visual y con deshacer |
+| motion-and-haptics-guardian | keyframes, curvas de `MOTION`, háptica, beeps | Fluidez nativa iOS a 60/120fps sin dependencias externas pesadas |
+| active-workout-and-timer-guardian | `ActiveWorkout`, `RestTimer`, borradores, wake lock | Temporizador inmune al background y recuperación infalible de sesión |
+| bundle-and-chunk-governor | `vite.config.ts`, dependencias, `router.tsx` | Presupuesto estricto de chunks (< 300 kB gzip) y 0 JSONs en bundle inicial |
+| transactional-sync-and-rls-guardian | `supabase/`, migraciones, RLS, RPCs | Escrituras atómicas "todo o nada" y RLS hermético multi-tenant |
+| cybersecurity-and-hardening-sentinel | formularios, auth, Edge Functions, `.env` | Audita seguridad y aislamiento sin que se lo pidan |
+| cronos-architecture-context | nuevo módulo/store/capa | Mapa canónico; rechaza capas duplicadas o islas de código |
 | dev-hygiene-pwa | encoding, dev server, `sw.js` en dev | Evita módulos viejos y U+FFFD |
-| qa-test-guardian | cualquier cambio de código | Typecheck 0 + tests de regresión |
-| offline-first-architect | escrituras de entrenamiento, sync | Todo se registra sin red y es reejecutable |
-| gym-ux-mobile-specialist | flujo de entrenamiento activo | Serie en ≤ 2 taps, una mano |
-| domain-fitness-guardian | series, volumen, PRs, rangos | Cero campos inventados |
-| performance-optimizer | listas, timers, bundle, catálogo | 60 fps y bundle con presupuesto |
-| state-and-flow-architect | contextos, hooks, flujos | Cada dato con un solo dueño |
-| design-system-enforcer | color, tipografía, spacing, motion | Cero valores mágicos |
-| catalog-and-equipment-curator | catálogo, equipo del gym, medios | Solo ejercicios que el gym puede hacer |
-| supabase-data-and-migrations-guardian | `supabase/`, tipos, queries | Migraciones reversibles y RLS probado |
-| pwa-delivery-and-update-flow | `sw.js`, manifest, actualizaciones | Updates que nunca rompen un workout |
-| a11y-and-i18n-guardian | textos, iconos, foco, contraste | Español coherente y usable por todos |
-| git-and-delivery-discipline | commits, ramas, limpieza | Historial atómico y limpio |
-| error-handling-and-observability | try/catch, async, sync status | Los fallos se ven y no pierden datos |
+| qa-test-guardian | cualquier cambio de código | Typecheck 0 + tests de regresión ejecutados de verdad |
+| offline-first-architect | escrituras de entrenamiento, sync, IndexedDB | Todo se registra sin red y la cola es idempotente |
+| gym-ux-mobile-specialist | flujo de entrenamiento activo | Serie en ≤ 2 taps, usabilidad a una mano en el gym |
+| domain-fitness-guardian | series, volumen, PRs, rangos, RPE | Progresión científica y cero campos inventados |
+| performance-optimizer | listas, virtualización, re-renders, profiling | 60 fps con medición antes/después |
+| state-and-flow-architect | contextos, hooks, flujos de estado | Cada dato con un solo dueño y ciclo de vida limpio |
+| design-system-enforcer | color, tipografía, spacing, tokens | Cero valores mágicos; pasa `tokens.test.ts` |
+| catalog-and-equipment-curator | catálogo, equipo del gym, medios | Solo ejercicios viables y carga bajo demanda |
+| supabase-data-and-migrations-guardian | `supabase/`, tipos, queries | Migraciones reversibles y tipos sincronizados |
+| pwa-delivery-and-update-flow | `sw.js`, manifest, actualizaciones | Updates silenciosos que jamás rompen un workout activo |
+| a11y-and-i18n-guardian | textos, iconos, foco, contraste | Español coherente, WCAG AA y soporte TalkBack/VoiceOver |
+| git-and-delivery-discipline | commits, ramas, limpieza | Historial atómico, limpio y reversible |
+| error-handling-and-observability | try/catch, async, sync status | Degradación elegante sin crash y telemetría clara |

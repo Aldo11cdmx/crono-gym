@@ -13,7 +13,7 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Zap } from "lucide-react";
+import { Zap, X } from "lucide-react";
 import { useActiveSession, type ActiveSession } from "@/context/ActiveSessionContext";
 import { useElapsedMs, formatElapsed } from "@/hooks/useElapsedMs";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -47,7 +47,7 @@ export { formatElapsed };
 type Phase = "idle" | "enter" | "leave";
 
 export function ActiveWorkoutPill() {
-  const { session } = useActiveSession();
+  const { session, discardSession } = useActiveSession();
   const reducedMotion = useReducedMotion();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -107,7 +107,18 @@ const elapsed = formatElapsed(elapsedMs);
       // value differs, so a per-second aria-label would still be one word a
       // minute rather than one announcement a second.
       aria-label={SHELL_LABELS.pillAriaLabel(shown.title, elapsed)}
-      onClick={() => navigate(TRAIN_PATH)}
+      onClick={(e) => {
+        if (e.altKey || e.shiftKey) {
+          e.preventDefault();
+          discardSession?.();
+          return;
+        }
+        navigate(TRAIN_PATH);
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        discardSession?.();
+      }}
       className="cronos-pill"
       style={
         {
@@ -168,6 +179,34 @@ const elapsed = formatElapsed(elapsedMs);
         }}
       >
         {elapsed}
+      </span>
+      <span
+        role="button"
+        tabIndex={0}
+        aria-label="Descartar sesión activa"
+        title="Descartar sesión activa"
+        onClick={(e) => {
+          e.stopPropagation();
+          discardSession?.();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.stopPropagation();
+            discardSession?.();
+          }
+        }}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginLeft: 4,
+          padding: 2,
+          borderRadius: RADIUS.round,
+          color: TEXT.tertiary,
+          cursor: "pointer",
+        }}
+      >
+        <X size={14} aria-hidden="true" strokeWidth={2} />
       </span>
     </button>
   );

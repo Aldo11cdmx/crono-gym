@@ -27,6 +27,7 @@
 
 import {
   Check,
+  Plus,
   Circle,
   EllipsisVertical,
   LayoutList,
@@ -537,6 +538,7 @@ export function WeeklyPlanner({
    * than promising an action that would do nothing. Today is the exception:
    * the athlete can still start a session from scratch.
    */
+  const hasNoRoutine = selectedItems.length === 0;
   const canStart = isTodayEmpty
     ? Boolean(onStartToday ?? onStartDay)
     : selectedItems.length > 0 && Boolean(onStartDay ?? onStartToday);
@@ -824,8 +826,8 @@ export function WeeklyPlanner({
               >
                 <button
                   type="button"
-                  onClick={handlePrimaryAction}
-                  disabled={!canStart}
+                  onClick={hasNoRoutine && !(isTodayEmpty && onStartToday) ? () => setEditing(true) : handlePrimaryAction}
+                  disabled={!canStart && !hasNoRoutine}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -835,16 +837,22 @@ export function WeeklyPlanner({
                     padding: `0 ${SPACE.md}`,
                     borderRadius: RADIUS.control,
                     border: "none",
-                    backgroundColor: canStart ? ACCENT.base : TEXT.disabled,
-                    color: canStart ? TEXT.onAccent : TEXT.tertiary,
+                    backgroundColor: (canStart || hasNoRoutine) ? ACCENT.base : TEXT.disabled,
+                    color: (canStart || hasNoRoutine) ? TEXT.onAccent : TEXT.tertiary,
                     fontFamily: FONT_SANS,
                     fontSize: TYPE.subhead.size,
                     fontWeight: TYPE.subhead.weight,
-                    cursor: canStart ? "pointer" : "default",
+                    cursor: (canStart || hasNoRoutine) ? "pointer" : "default",
                   }}
                 >
-                  <Play size={16} strokeWidth={1.5} aria-hidden="true" />
-                  {isTodayEmpty ? LABELS.startToday : LABELS.start}
+                  {hasNoRoutine && !(isTodayEmpty && onStartToday) ? (
+                    <Plus size={16} strokeWidth={1.5} aria-hidden="true" />
+                  ) : (
+                    <Play size={16} strokeWidth={1.5} aria-hidden="true" />
+                  )}
+                  {hasNoRoutine
+                    ? (isTodayEmpty && onStartToday ? LABELS.startToday : "+ Asignar Rutina")
+                    : LABELS.start}
                 </button>
 
                 <button

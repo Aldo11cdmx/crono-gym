@@ -101,6 +101,8 @@ export interface ActiveSessionValue {
   restoreDraft: () => void;
   /** Throws the unfinished session away. */
   discardDraft: () => void;
+  /** Desecha y limpia por completo la sesión activa y cualquier borrador huérfano. */
+  discardSession?: () => void;
   /** The id a recovered session writes under; null before the recovery. */
   recoveredLogId: string | null;
   /**
@@ -200,21 +202,50 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     setRecoverableDraft(null);
   }, []);
 
+  const discardSession = useCallback(() => {
+    const draft = draftRef.current;
+    if (draft) {
+      void deleteDraft(draft.logId);
+    }
+    if (recoveredLogId) {
+      void deleteDraft(recoveredLogId);
+    }
+    setSession(null);
+    setRecoverableDraft(null);
+    setRecoveredLogId(null);
+    setPendingRestEndsAt(null);
+    setWarmups([]);
+    try {
+      localStorage.removeItem("cronos_active_session");
+      localStorage.removeItem("active_workout");
+      localStorage.removeItem("active_session");
+      localStorage.removeItem("cronos_workout_draft");
+    } catch {
+      // ignore
+    }
+  }, [recoveredLogId]);
+
   const discardDraft = useCallback(() => {
     const draft = draftRef.current;
-    if (!draft) return;
-    void deleteDraft(draft.logId);
+    if (draft) {
+      void deleteDraft(draft.logId);
+    }
+    if (recoveredLogId) {
+      void deleteDraft(recoveredLogId);
+    }
     setRecoverableDraft(null);
-    // A discarded session has no rest to resume.
     setPendingRestEndsAt(null);
-    // The session that was recovered is not happening, so its clock goes
-    // back to now: the pill must not count a discarded session as running.
-    setSession((current) =>
-      current && current.startedAt === draft.startedAt
-        ? { ...current, startedAt: new Date().toISOString() }
-        : current,
-    );
-  }, []);
+    setSession(null);
+    setRecoveredLogId(null);
+    try {
+      localStorage.removeItem("cronos_active_session");
+      localStorage.removeItem("active_workout");
+      localStorage.removeItem("active_session");
+      localStorage.removeItem("cronos_workout_draft");
+    } catch {
+      // ignore
+    }
+  }, [recoveredLogId]);
 
   const start = useCallback((routine: { id: string; title: string } | null) => {
     setSession({
@@ -232,12 +263,27 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const end = useCallback(() => {
+    const draft = draftRef.current;
+    if (draft) {
+      void deleteDraft(draft.logId);
+    }
+    if (recoveredLogId) {
+      void deleteDraft(recoveredLogId);
+    }
     setSession(null);
-    // Ending the session drops any pending request with it. A ramp asked for thirty
-    // seconds before the workout was saved has nowhere to land, and applying it to the
-    // *next* session would be a set appearing out of nowhere with no user action.
     setWarmups([]);
-  }, []);
+    setRecoverableDraft(null);
+    setRecoveredLogId(null);
+    setPendingRestEndsAt(null);
+    try {
+      localStorage.removeItem("cronos_active_session");
+      localStorage.removeItem("active_workout");
+      localStorage.removeItem("active_session");
+      localStorage.removeItem("cronos_workout_draft");
+    } catch {
+      // ignore
+    }
+  }, [recoveredLogId]);
 
   const enqueueWarmup = useCallback((request: Omit<WarmupRequest, "id">) => {
     // A monotonic counter rather than a random id or the index: two ramps asked for in the
@@ -268,6 +314,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       rehydrate,
       restoreDraft,
       discardDraft,
+      discardSession,
       recoveredLogId,
       pendingRestEndsAt,
     }),

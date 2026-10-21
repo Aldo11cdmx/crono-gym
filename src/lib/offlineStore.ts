@@ -220,6 +220,12 @@ export async function loadRecoverableDraft(userId: string): Promise<SessionDraft
       const request = db.transaction(DRAFT_STORE, "readonly").objectStore(DRAFT_STORE).getAll();
       request.onsuccess = () => {
         const rows = (request.result ?? []) as SessionDraft[];
+        // Limpiar borradores zombis que ya fueron finalizados
+        for (const row of rows) {
+          if (row.userId === userId && row.finalized) {
+            void deleteDraft(row.logId);
+          }
+        }
         const candidate = rows
           .filter((d) => d.userId === userId && !d.finalized && d.items.length > 0)
           .sort((a, b) => b.updatedAt - a.updatedAt)[0];

@@ -738,7 +738,6 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
                   routine={routine}
                   onStart={() => handleStart(routine)}
                   onEdit={() => openEdit(routine)}
-                  onDelete={() => handleDelete(routine)}
                   onOpenActionMenu={(e) =>
                     setActionMenuTarget({ routine, anchorRect: (e.currentTarget as HTMLElement).getBoundingClientRect() })
                   }
@@ -937,7 +936,8 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
         <ActionMenu
           anchorRect={actionMenuTarget.anchorRect}
           onDuplicate={() => handleDuplicate(actionMenuTarget.routine)}
-           onShare={() => void handleShare(actionMenuTarget.routine)}
+          onShare={() => void handleShare(actionMenuTarget.routine)}
+          onDelete={() => handleDelete(actionMenuTarget.routine)}
           onClose={() => setActionMenuTarget(null)}
         />
       )}
@@ -1350,12 +1350,11 @@ function EmptyState({ onNew, onTemplate }: { onNew: () => void; onTemplate: () =
 }
 
 function RoutineCard({
-  routine, onStart, onEdit, onDelete, onOpenActionMenu, onToggleFavorite, isFavoritePending,
+  routine, onStart, onEdit, onOpenActionMenu, onToggleFavorite, isFavoritePending,
 }: {
   routine: RoutineWithExercises;
   onStart: () => void;
   onEdit: () => void;
-  onDelete: () => void;
   onOpenActionMenu: (e: { currentTarget: HTMLElement }) => void;
   onToggleFavorite: () => void;
   isFavoritePending: boolean;
@@ -1449,38 +1448,42 @@ function RoutineCard({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm, marginTop: SPACE.sm }}>
+          {/* Botón secundario neutro/glass para no competir con el Plan Semanal */}
           <button
             type="button"
             onClick={onStart}
             style={{
-              flex: 1,
+              flex: "0 0 auto",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               gap: SPACE.xs,
-              padding: `${SPACE.sm} ${SPACE.lg}`,
+              padding: `${SPACE.sm} ${SPACE.md}`,
               borderRadius: RADIUS.control,
-              backgroundColor: ACCENT.base,
-              color: TEXT.onAccent,
+              background: GLASS.fill,
+              border: `1px solid ${GLASS.border}`,
+              color: TEXT.primary,
               fontFamily: FONT_SANS,
               fontSize: TYPE.subhead.size,
               fontWeight: TYPE.subhead.weight,
-              border: "none",
               cursor: "pointer",
+              transition: `background-color ${MOTION.fast} ${MOTION.standard}`,
             }}
           >
-            <Play style={{ width: 16, height: 16 }} strokeWidth={1.5} /> {LABELS.start}
+            <Play style={{ width: 14, height: 14 }} strokeWidth={1.5} color={ACCENT.text} /> {LABELS.start}
           </button>
 
+          {/* Acciones secundarias discretas (basura movida a ActionMenu) */}
           <div style={{ display: "inline-flex", gap: SPACE.xs }}>
             <button
               type="button"
               onClick={onEdit}
               aria-label={LABELS.edit}
+              title={LABELS.edit}
               style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
                 width: 36, height: 36, borderRadius: RADIUS.control,
-                border: `1px solid ${GLASS.border}`, background: SOLID.card,
+                border: `1px solid ${GLASS.border}`, background: GLASS.fill,
                 color: TEXT.secondary, cursor: "pointer",
               }}
             >
@@ -1491,45 +1494,33 @@ function RoutineCard({
               onClick={onToggleFavorite}
               disabled={isFavoritePending}
               aria-label={LABELS.favoriteAria}
+              title={LABELS.favoriteAria}
               style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
                 width: 36, height: 36, borderRadius: RADIUS.control,
-                border: `1px solid ${GLASS.border}`, background: SOLID.card,
+                border: `1px solid ${GLASS.border}`, background: GLASS.fill,
                 color: routine.is_favorite ? ACCENT.text : TEXT.tertiary,
                 cursor: "pointer", opacity: isFavoritePending ? 0.5 : 1,
               }}
             >
               <StarIcon style={{ width: 14, height: 14 }} strokeWidth={1.5} />
             </button>
-             <button
-               type="button"
-               onClick={onDelete}
-               aria-label={LABELS.deleteAria}
-               style={{
-                 display: "inline-flex", alignItems: "center", justifyContent: "center",
-                 width: 36, height: 36, borderRadius: RADIUS.control,
-                 border: `1px solid ${GLASS.border}`, background: SOLID.card,
-                 color: TEXT.tertiary, cursor: "pointer",
-               }}
-             >
-               <Trash2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-             </button>
-             <button
-               type="button"
-               onClick={onOpenActionMenu}
-               aria-label={LABELS.menuAria}
-               title={LABELS.menuAria}
-               style={{
-                 display: "inline-flex", alignItems: "center", justifyContent: "center",
-                 width: 36, height: 36, borderRadius: RADIUS.control,
-                 border: `1px solid ${GLASS.border}`, background: SOLID.card,
-                 color: TEXT.secondary, cursor: "pointer",
-               }}
-             >
-               <MoreHorizontal style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-             </button>
-           </div>
-         </div>
+            <button
+              type="button"
+              onClick={onOpenActionMenu}
+              aria-label={LABELS.menuAria}
+              title={LABELS.menuAria}
+              style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 36, height: 36, borderRadius: RADIUS.control,
+                border: `1px solid ${GLASS.border}`, background: GLASS.fill,
+                color: TEXT.secondary, cursor: "pointer",
+              }}
+            >
+              <MoreHorizontal style={{ width: 14, height: 14 }} strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
        </div>
      </div>
     );

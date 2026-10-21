@@ -62,6 +62,7 @@ import { useOfflineSync } from "../hooks/useOfflineSync";
 import {
   newSessionId,
   saveDraft,
+  deleteDraft,
   type DraftExercise,
   type FinalizePayload,
 } from "../lib/offlineStore";
@@ -1927,6 +1928,7 @@ export function ActiveWorkout({
     });
 
     void queueAndSync(payload);
+    void deleteDraft(activeLogId);
     end();
     onFinished();
   }

@@ -84,7 +84,8 @@ create table public.completed_sets (
   weight     numeric,
   reps       integer,
   rpe        numeric,
-  is_warmup  boolean not null default false
+  is_warmup  boolean not null default false,
+  notes      text
 );
 
 create index idx_completed_sets_log_id on public.completed_sets (log_id);

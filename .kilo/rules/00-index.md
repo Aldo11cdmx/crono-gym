@@ -19,7 +19,8 @@ React 18 + Vite 5 + TypeScript estricto + Tailwind 3 + Supabase (Postgres/RLS + 
 3. `cronos-architecture-context`, `state-and-flow-architect`
 4. `gym-ux-mobile-specialist`, `a11y-and-i18n-guardian`
 5. `design-system-enforcer` > `apple-ui-architect` > `routines-and-planner-craftsman` > `button-and-ui-craftsman` > `motion-and-haptics-guardian`
-6. `bundle-and-chunk-governor`, `performance-optimizer`, `qa-test-guardian`, `catalog-and-equipment-curator`, `pwa-delivery-and-update-flow`, `error-handling-and-observability`, `git-and-delivery-discipline`, `dev-hygiene-pwa`
+6. `bundle-and-chunk-governor`, `performance-optimizer`, `qa-test-guardian`, `catalog-and-equipment-curator`, `pwa-delivery-and-update-flow`, `error-handling-and-observability | try/catch, async, sync status | Degradación elegante sin crash y telemetría clara |
+| code-simplifier-and-pruner | añadir código, abstracciones, migraciones, eliminación | Mínima complejidad razonable, reutilización, eliminación segura de código muerto |
 
 ## Comandos canÃ³nicos (PowerShell)
 ```powershell
@@ -56,4 +57,5 @@ npm run verify:mapping            # valida muscleMap
 | pwa-delivery-and-update-flow | `sw.js`, manifest, actualizaciones | Updates silenciosos que jamÃ¡s rompen un workout activo |
 | a11y-and-i18n-guardian | textos, iconos, foco, contraste | EspaÃ±ol coherente, WCAG AA y soporte TalkBack/VoiceOver |
 | git-and-delivery-discipline | commits, ramas, limpieza | Historial atÃ³mico, limpio y reversible |
-| error-handling-and-observability | try/catch, async, sync status | DegradaciÃ³n elegante sin crash y telemetrÃ­a clara |
+| error-handling-and-observability | try/catch, async, sync status | Degradación elegante sin crash y telemetría clara |
+| code-simplifier-and-pruner | añadir código, abstracciones, migraciones, eliminación | Mínima complejidad razonable, reutilización, eliminación segura de código muerto |

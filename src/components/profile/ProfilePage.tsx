@@ -35,6 +35,7 @@ import { GymSettingsTrigger } from "@/components/workout/GymSettingsTrigger";
 import { ImportWizard } from "@/components/import/ImportWizard";
 import { DeveloperGate } from "@/components/profile/DeveloperGate";
 import { FeatureFlagSwitch } from "@/components/profile/FeatureFlagSwitch";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { useProfile, useBodyMetrics } from "@/hooks/useProfile";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { useLocalState } from "@/hooks/useLocalState";
@@ -188,19 +189,10 @@ export function ProfilePage() {
         style={heroCardStyle}
       >
         <div style={heroBodyStyle}>
-          <span
-            aria-hidden="true"
-            style={avatarStyle}
-          >
-            <span style={avatarTextStyle}>{initialsOf(profile.display_name)}</span>
-          </span>
+          <UserAvatar name={profile.display_name || "mich"} size={64} />
           <div style={{ minWidth: 0, flex: 1 }}>
             <h1 style={heroTitleStyle}>{PROFILE_LABELS.title}</h1>
-            <p style={{ ...mutedStyle, margin: `${SPACE.xs} 0 0` }}>{profile.display_name || email || PROFILE_LABELS.notSet}</p>
             <div style={{ display: "flex", gap: SPACE.xs, marginTop: SPACE.sm, flexWrap: "wrap" }}>
-              <span style={badgeStyle}>
-                {BADGE_ROLE[session.role] ?? session.role} · {EXPERIENCE_BADGE[profile.experience_level] ?? profile.experience_level}
-              </span>
               <span style={badgeProStyle}>
                 {PROFILE_LABELS.badgePro}
               </span>
@@ -508,12 +500,6 @@ function BiometricTabContent({
                 : profile.unit_system === "imperial"
                   ? `${kgToLb(profile.weight_kg)} lb`
                   : `${profile.weight_kg} kg`}
-            </dd>
-          </div>
-          <div>
-            <dt style={readoutLabelStyle}>{PROFILE_LABELS.bodyMassIndex}</dt>
-            <dd style={readoutValueStyle}>
-              {bmi === null ? PROFILE_LABELS.notSet : `${bmi} · ${bmiBand(bmi)}`}
             </dd>
           </div>
         </dl>
@@ -941,40 +927,6 @@ const heroTitleStyle: CSSProperties = {
   fontSize: TYPE.hero.size,
   fontWeight: TYPE.hero.weight,
   color: TEXT.primary,
-};
-
-const avatarStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 64,
-  height: 64,
-  flexShrink: 0,
-  borderRadius: RADIUS.round,
-  backgroundColor: ACCENT.subtle,
-  color: ACCENT.text,
-  boxShadow: ACCENT.ring,
-};
-
-const avatarTextStyle: CSSProperties = {
-  fontSize: TYPE.display.size,
-  fontWeight: TYPE.display.weight,
-  fontVariantNumeric: NUMERIC.align,
-};
-
-const badgeStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: SPACE.xs,
-  padding: `0 ${SPACE.sm}`,
-  height: MOTION.minTouchTarget,
-  borderRadius: RADIUS.pill,
-  border: `1px solid ${GLASS.borderStrong}`,
-  backgroundColor: GLASS.fill,
-  fontSize: TYPE.caption.size,
-  fontWeight: 600,
-  color: TEXT.secondary,
-  cursor: "default",
 };
 
 const badgeProStyle: CSSProperties = {

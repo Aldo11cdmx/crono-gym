@@ -1,5 +1,5 @@
 /**
- * CoachFloatingButton.tsx — the way into Symmetry from anywhere in the app.
+ * CoachFloatingButton.tsx — the way into Cronos from anywhere in the app.
  *
  * Mounted once, in the shell, rather than on each screen. The alternative is a button per
  * route and six chances for one of them to be missing; the button is the product's main
@@ -7,7 +7,7 @@
  * a doorway nobody finds.
  *
  * Three rules decide when it exists, and all three are the same rule read from different
- * sides: Symmetry is a feature *for an athlete*, so the button exists exactly when there is
+ * sides: Cronos is a feature *for an athlete*, so the button exists exactly when there is
  * an athlete, and not on the one screen that already has its own way in.
  *
  *  1. **Not while signed out.** The assistant reads the athlete's own records; with no
@@ -31,8 +31,8 @@ import { ACCENT, TEXT, Z_INDEX } from "@/design/tokens";
 import { supabase } from "@lib/supabase";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { SYMMETRY_LABELS as T } from "@/lib/i18n";
-import { SymmetryBottomSheet } from "./SymmetryBottomSheet";
+import { CRONOS_LABELS as T } from "@/lib/i18n";
+import { CronosBottomSheet } from "./CronosBottomSheet";
 
 /** The route the button must not appear on. Exported so a test can assert against it. */
 export const COACH_PORTAL_PATH = "/coach/portal";
@@ -123,7 +123,7 @@ export function CoachFloatingButton({ userId }: CoachFloatingButtonProps = {}) {
         half-finished wizard would reappear a week later, inside a conversation.
       */}
       {open && (
-        <SymmetryBottomSheet
+        <CronosBottomSheet
           open
           onClose={() => setOpen(false)}
           userId={answer}

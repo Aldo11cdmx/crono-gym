@@ -45,7 +45,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import { SymmetryRadar } from "@/components/ranks/SymmetryRadar";
+import { CronosRadar } from "@/components/ranks/CronosRadar";
 import {
   ACCENT,
   GLASS,
@@ -221,7 +221,7 @@ export function AnatomicalRanksPage({
         <>
           <HeroHeader map={map} onSelectMuscle={openDetail} />
 
-          <SymmetryRadar map={map} />
+          <CronosRadar map={map} />
 
           <Smartbar
             mode={mode}

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { sanitizeBrandName, getSubstitutions, getAllSubstitutions } from './cronosDataLoader'
 
 describe('cronosDataLoader', () => {

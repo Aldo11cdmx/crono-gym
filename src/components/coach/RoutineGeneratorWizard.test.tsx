@@ -180,7 +180,7 @@ describe("RoutineGeneratorWizard · generando", () => {
     fireEvent.click(screen.getByText("Siguiente"));
 
     const status = await screen.findByRole("status");
-    expect(status.textContent).toContain("Symmetry está diseñando tu rutina");
+    expect(status.textContent).toContain("Cronos está diseñando tu rutina");
     release();
   });
 

@@ -12,8 +12,8 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { SymmetryBottomSheet } from "./SymmetryBottomSheet";
-import { SYMMETRY_LABELS as T } from "@/lib/i18n";
+import { CronosBottomSheet } from "./CronosBottomSheet";
+import { CRONOS_LABELS as T } from "@/lib/i18n";
 
 /**
  * Typed mocks rather than `vi.fn(() => <div/>)`.
@@ -40,9 +40,9 @@ vi.mock("@/context/GymSettingsContext", () => ({
   useGymSettings: () => ({ inventory: {}, barType: "olympic", customBarKg: 20 }),
 }));
 
-function renderSheet(overrides: Partial<Parameters<typeof SymmetryBottomSheet>[0]> = {}) {
+function renderSheet(overrides: Partial<Parameters<typeof CronosBottomSheet>[0]> = {}) {
   const props = { open: true, onClose: vi.fn(), userId: "u1", ...overrides };
-  const view = render(<SymmetryBottomSheet {...props} />);
+  const view = render(<CronosBottomSheet {...props} />);
   return { ...view, props };
 }
 
@@ -54,7 +54,7 @@ afterEach(() => {
 
 // -------------------------------------------------------------- opening
 
-describe("SymmetryBottomSheet · abrir y cerrar", () => {
+describe("CronosBottomSheet · abrir y cerrar", () => {
   it("no monta nada mientras está cerrada", () => {
     renderSheet({ open: false });
 
@@ -161,7 +161,7 @@ describe("SymmetryBottomSheet · abrir y cerrar", () => {
 
 // ------------------------------------------------------------ focus trap
 
-describe("SymmetryBottomSheet · trampa de foco", () => {
+describe("CronosBottomSheet · trampa de foco", () => {
   it("Tab desde el último control vuelve al primero", () => {
     renderSheet();
 
@@ -216,7 +216,7 @@ describe("SymmetryBottomSheet · trampa de foco", () => {
 
 // ------------------------------------------------------------------ tabs
 
-describe("SymmetryBottomSheet · pestañas", () => {
+describe("CronosBottomSheet · pestañas", () => {
   it("monta la conversación en la pestaña de chat", () => {
     renderSheet();
 
@@ -265,7 +265,7 @@ describe("SymmetryBottomSheet · pestañas", () => {
 
 // --------------------------------------------------------------- chrome
 
-describe("SymmetryBottomSheet · marco", () => {
+describe("CronosBottomSheet · marco", () => {
   it("muestra el nombre del asistente, el aviso y las dos pestañas", () => {
     renderSheet();
 

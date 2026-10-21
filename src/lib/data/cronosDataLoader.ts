@@ -1,4 +1,4 @@
-﻿import predefinedWorkoutPlans from '@/data/symmetry/predefined_workout_plans_v2.json'
+import predefinedWorkoutPlans from '@/data/symmetry/predefined_workout_plans_v2.json'
 import esData from '@/data/symmetry/es.json'
 import substitutionTables from '@/data/symmetry/substitution_tables.json'
 

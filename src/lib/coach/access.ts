@@ -3,7 +3,7 @@
  *
  * The product has two tiers that look like one feature and behave nothing alike:
  *
- *  - **Symmetry**, the AI assistant, is free for every signed-in athlete. It is
+ *  - **Cronos**, the AI assistant, is free for every signed-in athlete. It is
  *    never gated, never expires, and reading whether it is available must not cost a
  *    database round trip -- a paywall on the free tier is just a slow no.
  *  - **A human coach** is premium, and only reachable inside a shift.

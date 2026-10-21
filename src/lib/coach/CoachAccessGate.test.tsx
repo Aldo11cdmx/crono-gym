@@ -21,7 +21,7 @@
  *  - **The PIN form's disabled state.** A lockout that leaves the button enabled invites
  *    a coach to keep guessing and burns the attempt budget the server is protecting.
  *
- * The free tier is asserted through these gates too: nothing in this file gates Symmetry,
+ * The free tier is asserted through these gates too: nothing in this file gates Cronos,
  * and a `PremiumGate` wrapped around the assistant is exactly the regression worth a test.
  */
 
@@ -610,7 +610,7 @@ describe("gates composed", () => {
   });
 
   it("leaves the free assistant ungated", async () => {
-    // Nothing in this file gates Symmetry, and the regression this guards is the one the
+    // Nothing in this file gates Cronos, and the regression this guards is the one the
     // copy already promises against: a free athlete who cannot open the assistant has been
     // shipped a paywall by accident.
     mockAuth({ isUnlocked: false });

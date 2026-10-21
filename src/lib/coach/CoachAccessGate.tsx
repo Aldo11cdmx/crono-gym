@@ -63,7 +63,7 @@ export interface PremiumGateProps {
 /**
  * Renders `children` only for an athlete with the premium tier active.
  *
- * Wrapped around the *human* coach surfaces and never around Symmetry. Vía A is free, and
+ * Wrapped around the *human* coach surfaces and never around Cronos. Vía A is free, and
  * a free athlete who cannot open the assistant has been shipped a paywall by accident.
  */
 export function PremiumGate({ profile, children, fallback }: PremiumGateProps) {

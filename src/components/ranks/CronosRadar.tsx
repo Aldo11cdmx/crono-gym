@@ -1,5 +1,5 @@
 /**
- * SymmetryRadar.tsx — a collapsible body-symmetry radar chart.
+ * CronosRadar.tsx — a collapsible body-symmetry radar chart.
  *
  * Renders a six-axis polygon radar showing the athlete's strongest rank score
  * per major body block (Pecho, Espalda, Hombros, Brazos, Piernas, Core).
@@ -62,12 +62,12 @@ export const BODY_BLOCKS: BodyBlock[] = [
 /** Minimum score spread (0-100) before the symmetry alert fires. */
 const IMBALANCE_THRESHOLD = 15;
 
-interface SymmetryRadarProps {
+interface CronosRadarProps {
   map: RankMap;
   defaultExpanded?: boolean;
 }
 
-export function SymmetryRadar({ map, defaultExpanded = false }: SymmetryRadarProps) {
+export function CronosRadar({ map, defaultExpanded = false }: CronosRadarProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const reducedMotion = useReducedMotion();
 
@@ -134,7 +134,7 @@ export function SymmetryRadar({ map, defaultExpanded = false }: SymmetryRadarPro
   );
 }
 
-interface SymmetryBlock {
+interface CronosBlock {
   key: string;
   label: string;
   score: number;
@@ -143,16 +143,16 @@ interface SymmetryBlock {
   rankLabel: string;
 }
 
-interface SymmetryData {
-  blocks: SymmetryBlock[];
+interface CronosData {
+  blocks: CronosBlock[];
   maxScore: number;
   minScore: number;
   spread: number;
   imbalanceWarning: string | null;
 }
 
-function computeBlockScores(map: RankMap): SymmetryData {
-  const blocks: SymmetryBlock[] = [];
+function computeBlockScores(map: RankMap): CronosData {
+  const blocks: CronosBlock[] = [];
 
   for (const block of BODY_BLOCKS) {
     let bestScore = 0;
@@ -208,7 +208,7 @@ function computeBlockScores(map: RankMap): SymmetryData {
   };
 }
 
-function RadarChart({ data, reducedMotion }: { data: SymmetryData; reducedMotion: boolean }) {
+function RadarChart({ data, reducedMotion }: { data: CronosData; reducedMotion: boolean }) {
   const size = 200;
   const center = size / 2;
   const outerRadius = size / 2 - 24;

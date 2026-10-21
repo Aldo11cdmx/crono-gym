@@ -26,7 +26,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type Reac
 import { Minus, Plus } from "lucide-react";
 import { ACCENT, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
-import { SYMMETRY_LABELS as T } from "@/lib/i18n";
+import { CRONOS_LABELS as T } from "@/lib/i18n";
 import {
   RoutineGenerationError,
   generateRoutine,

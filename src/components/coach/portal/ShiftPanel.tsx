@@ -5,7 +5,7 @@
  * reason is worth stating because the surrounding code invites the opposite reading.
  *
  * `useCoachAccess` and `ShiftGate` are the athlete's side: they read `profiles.is_premium`
- * and the coach's local clock to decide whether an athlete may use Symmetry right now.
+ * and the coach's local clock to decide whether an athlete may use Cronos right now.
  * Nothing here consults either. A shift belongs to the *desk*, not to a coach -- no column
  * in `coaches` assigns one to a person -- so at 03:00 this coach may be perfectly on duty
  * on a roster nobody has modelled, and a clock saying otherwise must not lock them out of

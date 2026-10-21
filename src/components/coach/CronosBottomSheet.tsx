@@ -1,5 +1,5 @@
 /**
- * SymmetryBottomSheet.tsx — the assistant, in a sheet over whatever the athlete is doing.
+ * CronosBottomSheet.tsx — the assistant, in a sheet over whatever the athlete is doing.
  *
  * A sheet rather than a route, and the reason is that the athlete is usually *in the
  * middle of something*. Asking "¿subo peso?" while the set logger is open means the
@@ -39,7 +39,7 @@ import {
 import { X } from "lucide-react";
 import { ACCENT, MOTION, RADIUS, SPACE, TEXT, Z_INDEX } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { SYMMETRY_LABELS as T } from "@/lib/i18n";
+import { CRONOS_LABELS as T } from "@/lib/i18n";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { useCoachContext } from "@/hooks/useCoach";
 import type { Exercise } from "@/types/supabase";
@@ -47,9 +47,9 @@ import { CoachChat } from "./CoachChat";
 import { RoutineGeneratorWizard } from "./RoutineGeneratorWizard";
 
 /** The two tabs. A discriminant, so a tab cannot be set to a number that does not exist. */
-export type SymmetryTab = "chat" | "generate";
+export type CronosTab = "chat" | "generate";
 
-export interface SymmetryBottomSheetProps {
+export interface CronosBottomSheetProps {
   open: boolean;
   onClose: () => void;
   /**
@@ -73,7 +73,7 @@ export interface SymmetryBottomSheetProps {
   catalog?: Pick<Exercise, "id" | "body_part">[];
   exerciseNames?: Readonly<Record<string, string>>;
   /** The tab to open on. Defaults to the conversation. */
-  initialTab?: SymmetryTab;
+  initialTab?: CronosTab;
 }
 
 /** Focusable, in DOM order. Matches what `querySelectorAll` returns, so order is honest. */
@@ -83,7 +83,7 @@ const FOCUSABLE =
 /** How far a downward drag has to go before it counts as a dismissal, in px. */
 const SWIPE_DISMISS_PX = 64;
 
-export function SymmetryBottomSheet({
+export function CronosBottomSheet({
   open,
   onClose,
   userId,
@@ -91,8 +91,8 @@ export function SymmetryBottomSheet({
   catalog = [],
   exerciseNames,
   initialTab = "chat",
-}: SymmetryBottomSheetProps) {
-  const [tab, setTab] = useState<SymmetryTab>(initialTab);
+}: CronosBottomSheetProps) {
+  const [tab, setTab] = useState<CronosTab>(initialTab);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const dragStartRef = useRef<number | null>(null);

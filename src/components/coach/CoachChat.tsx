@@ -256,7 +256,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
         try {
           args = JSON.parse(tc.function.arguments);
         } catch {
-          setProposedRoutineError("Respuesta no válida de Symmetry.");
+          setProposedRoutineError("Respuesta no válida de Cronos.");
           return;
         }
         const parsed = parseRoutinePayload(JSON.stringify(args));
@@ -710,7 +710,7 @@ function ProposedRoutineCard({
       }}
     >
       <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: ACCENT.text }}>
-        Symmetry propuso una rutina
+        Cronos propuso una rutina
       </p>
       <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
         {routine.name} · {routine.days.length} día{routine.days.length === 1 ? "" : "s"}

@@ -14,11 +14,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { CoachFloatingButton } from "./CoachFloatingButton";
-import { SYMMETRY_LABELS as T } from "@/lib/i18n";
+import { CRONOS_LABELS as T } from "@/lib/i18n";
 
 const sheetMock = vi.fn<(props: Record<string, unknown>) => null>(() => null);
-vi.mock("./SymmetryBottomSheet", () => ({
-  SymmetryBottomSheet: (props: Record<string, unknown>) => {
+vi.mock("./CronosBottomSheet", () => ({
+  CronosBottomSheet: (props: Record<string, unknown>) => {
     sheetMock(props);
     // Honours `open` the way the real sheet does, so "closed" is observable in the tree
     // and not only in the prop. A mock that always rendered would make the closed case
@@ -110,7 +110,7 @@ describe("CoachFloatingButton · dónde aparece", () => {
     expect(screen.queryByTestId("coach-fab")).toBeNull();
   });
 
-  it("se anuncia con un nombre que dice quién es Symmetry", () => {
+  it("se anuncia con un nombre que dice quién es Cronos", () => {
     renderAt("/");
 
     // Not "chat" or "help": an icon-only button has to say what it opens, and the athlete

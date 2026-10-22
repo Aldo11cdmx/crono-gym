@@ -40,6 +40,10 @@ export default defineConfig({
     // The DOM suite uses Testing Library's auto-cleanup, which needs a global
     // afterEach; declaring globals here keeps every suite consistent.
     globals: false,
+    env: {
+      VITE_SUPABASE_URL: "https://example.supabase.co",
+      VITE_SUPABASE_ANON_KEY: "anon-key-for-tests",
+    },
     restoreMocks: true,
   },
 });

@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { Award, NotebookPen, Sparkles, Trash2 } from "lucide-react";
 import { ACCENT, MOTION, RADIUS, SCRIM, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
+import { FatigueAlertCard } from "@/components/FatigueAlertCard";
 import { COACH_LABELS as T, UNRANKED_REASONS } from "@/lib/i18n";
 import type { CoachContext, CoachNote } from "@/lib/coach/types";
 import { useCoachContext, useCoachNotes } from "@/hooks/useCoach";
@@ -98,6 +99,7 @@ export function CoachHub({ userId }: CoachHubProps) {
         onAdd={notes.addNote}
         onRemove={(id) => void notes.removeNote(id)}
       />
+    <FatigueAlertCard status="normal" muscle="chest" />
     </div>
   );
 }

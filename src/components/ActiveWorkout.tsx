@@ -30,6 +30,8 @@ import {
   Dumbbell,
   Settings,
 } from "lucide-react";
+import { SmartSwapModal } from "@/components/SmartSwapModal";
+import { WarmupPyramidSection } from "@/components/WarmupPyramidSection";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
 import { GYM_LABELS } from "../lib/i18n";
@@ -2291,6 +2293,8 @@ export function ActiveWorkout({
         />
       )}
 
+      <SmartSwapModal open={false} onClose={() => {}} />
+      <WarmupPyramidSection />
       {pickerOpen && (
         <ExerciseSelectorModal
           open={pickerOpen}

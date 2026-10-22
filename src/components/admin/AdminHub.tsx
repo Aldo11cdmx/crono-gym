@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { TYPE } from "@/design/tokens";
 import { GlassButton } from "@/components/ui/GlassButton";
 
 export function AdminHub() {
@@ -22,11 +23,11 @@ export function AdminHub() {
 
   return (
     <GlassCard style={{ padding: 20 }}>
-      <h2 style={{ fontSize: 18, marginBottom: 12 }}>Admin Ã‚Â· Anuncios</h2>
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="TÃƒÂ­tulo" style={{ width: "100%", marginBottom: 8 }} />
+      <h2 style={{ fontSize: TYPE.body.size, marginBottom: 12 }}>Admin · Anuncios</h2>
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título" style={{ width: "100%", marginBottom: 8 }} />
       <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Mensaje" style={{ width: "100%", marginBottom: 8 }} />
       <select value={kind} onChange={(e) => setKind(e.target.value as any)} style={{ marginBottom: 8 }}>
-        <option value="promo">PromociÃƒÂ³n</option>
+        <option value="promo">Promoción</option>
         <option value="notice">Aviso</option>
         <option value="event">Evento</option>
       </select>

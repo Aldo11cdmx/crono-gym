@@ -9,20 +9,11 @@
  */
 
 import { useCallback, useState } from "react";
-import { Settings } from "lucide-react";
 import type { PlannedExercise } from "../../hooks/useGymData";
 import type { DraftExercise } from "../../lib/offlineStore";
 import { useActiveSession } from "../../context/ActiveSessionContext";
 import { ActiveWorkout } from "../ActiveWorkout";
 import { WorkoutSummaryModal } from "./WorkoutSummaryModal";
-import {
-  GLASS,
-  RADIUS,
-  SPACE,
-  TEXT,
-  TYPE,
-  Z_INDEX,
-} from "../../design/tokens";
 
 export interface ActiveWorkoutViewProps {
   userId: string;
@@ -55,98 +46,23 @@ export function ActiveWorkoutView({
     onFinished();
   }, [end, onFinished]);
 
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-      }}
-    >
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: Z_INDEX.sticky,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: SPACE.md,
-          padding: `${SPACE.sm} ${SPACE.lg}`,
-          borderBottom: `1px solid ${GLASS.border}`,
-          background: GLASS.fillRaised,
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: TYPE.mono.font,
-            fontSize: TYPE.mono.size,
-            fontWeight: TYPE.mono.weight,
-            color: TEXT.primary,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {new Date(startedAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </div>
-        <button
-          type="button"
-          aria-label="Ajustes"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minWidth: 40,
-            minHeight: 40,
-            borderRadius: RADIUS.chip,
-            border: `1px solid ${GLASS.borderStrong}`,
-            background: "transparent",
-            color: TEXT.secondary,
-            cursor: "pointer",
-          }}
-        >
-          <Settings
-            size={18}
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-        </button>
-        <button
-          type="button"
-          onClick={handleFinish}
-          aria-label="Terminar entrenamiento"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: SPACE.xs,
-            minHeight: 40,
-            padding: `0 ${SPACE.lg}`,
-            borderRadius: RADIUS.chip,
-            border: `1px solid ${GLASS.borderStrong}`,
-            background: "transparent",
-            color: TEXT.primary,
-            fontSize: TYPE.subhead.size,
-            fontWeight: TYPE.subhead.weight,
-            cursor: "pointer",
-          }}
-        >
-          Terminar
-        </button>
-      </header>
+   return (
+     <div
+       style={{
+         display: "flex",
+         flexDirection: "column",
+         minHeight: "100vh",
+       }}
+     >
+       <ActiveWorkout
+         userId={userId}
+         routineId={routineId}
+         routineTitle={routineTitle}
+         planned={planned}
+         onFinished={handleFinish}
+       />
 
-      <ActiveWorkout
-        userId={userId}
-        routineId={routineId}
-        routineTitle={routineTitle}
-        planned={planned}
-        onFinished={handleFinish}
-      />
-
-      <WorkoutSummaryModal
+       <WorkoutSummaryModal
         isOpen={summaryOpen}
         onClose={() => setSummaryOpen(false)}
         routineTitle={routineTitle}

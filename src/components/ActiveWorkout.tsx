@@ -120,6 +120,7 @@ interface SessionHeaderProps {
   superset?: SupersetInfo | null;
   startedAt: string | null;
   onGear: () => void;
+  onTerminate?: () => void;
 }
 
 function SessionHeader({
@@ -127,6 +128,7 @@ function SessionHeader({
   superset,
   startedAt,
   onGear,
+  onTerminate,
 }: SessionHeaderProps) {
   const GEAR = GYM_LABELS.triggerAriaLabel(GYM_LABELS.defaultTriggerContext);
 
@@ -188,6 +190,30 @@ function SessionHeader({
           </div>
         )}
       </div>
+      {onTerminate && (
+        <button
+          type="button"
+          onClick={onTerminate}
+          aria-label="Terminar entrenamiento"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: SPACE.xs,
+            minHeight: MOTION.minTouchTarget,
+            padding: `0 ${SPACE.lg}`,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${GLASS.borderStrong}`,
+            background: "transparent",
+            color: TEXT.primary,
+            fontSize: TYPE.subhead.size,
+            fontWeight: TYPE.subhead.weight,
+            cursor: "pointer",
+          }}
+        >
+          Terminar
+        </button>
+      )}
       <button
         type="button"
         aria-label={GEAR}
@@ -1193,8 +1219,8 @@ function EquipmentInspectionSheet({
                 {[equipment, ...alternatives]
                   .filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i)
                   .map((e) => (
-                    <button
-                      key={e.id}
+       <button
+                       key={e.id}
                       type="button"
                       onClick={() => {
                         setSelected(e);
@@ -2104,9 +2130,10 @@ export function ActiveWorkout({
                 : ""
             }
             superset={selectedSuperset}
-            startedAt={session?.startedAt ?? null}
-            onGear={() => setGearOpen(true)}
-          />
+             startedAt={session?.startedAt ?? null}
+             onGear={() => setGearOpen(true)}
+             onTerminate={onFinished}
+           />
 
           {carouselItems.length > 0 && (
             <div

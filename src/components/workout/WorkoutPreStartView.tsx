@@ -40,6 +40,7 @@ import { muscleDefinition } from "../../lib/muscleMap";
 import { estimateMinutes } from "../../lib/routines/routineDraftModel";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { GlassButton, GlassCard } from "@/components/ui";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { ACCENT, GLASS, RADIUS, SPACE, SURFACE, TEXT, TYPE } from "../../design/tokens";
 
 /**
@@ -351,7 +352,7 @@ function ExerciseList({ planned }: { planned: readonly PlannedExercise[] }) {
                 textOverflow: "ellipsis",
               }}
             >
-              {exercise.exercise.name}
+              {getExerciseDisplayName(exercise.exercise)}
             </span>
             <span
               style={{

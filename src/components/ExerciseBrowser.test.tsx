@@ -104,7 +104,7 @@ describe("ExerciseBrowser", () => {
   it("renders exercise card names after loading", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     expect(screen.getByText("Squat")).toBeTruthy();
   });
@@ -112,7 +112,7 @@ describe("ExerciseBrowser", () => {
   it("renders selection checkboxes on each card", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     expect(screen.getAllByRole("button", { name: /Seleccionar/i }).length).toBeGreaterThan(0);
   });
@@ -120,7 +120,7 @@ describe("ExerciseBrowser", () => {
   it("shows the Floating Action Dock after selecting an exercise", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     fireEvent.click(screen.getAllByRole("button", { name: "Seleccionar" })[0]);
     await waitFor(() => {
@@ -133,7 +133,7 @@ describe("ExerciseBrowser", () => {
     const onAdd = vi.fn();
     render(<ExerciseBrowser onAdd={onAdd} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     fireEvent.click(screen.getAllByRole("button", { name: "Seleccionar" })[0]);
     await waitFor(() => {
@@ -148,7 +148,7 @@ describe("ExerciseBrowser", () => {
   it("clears selection when Clear is clicked in the dock", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     fireEvent.click(screen.getAllByRole("button", { name: "Seleccionar" })[0]);
     await waitFor(() => {
@@ -164,7 +164,7 @@ describe("ExerciseBrowser", () => {
     const onAdd = vi.fn();
     render(<ExerciseBrowser onAdd={onAdd} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     const selectButtons = screen.getAllByRole("button", { name: /Seleccionar/i });
     fireEvent.click(selectButtons[0]);
@@ -184,7 +184,7 @@ describe("ExerciseBrowser", () => {
       <ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} isAdded={() => false} />,
     );
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     fireEvent.click(screen.getAllByRole("button", { name: "Seleccionar" })[0]);
     await waitFor(() => {
@@ -200,7 +200,7 @@ describe("ExerciseBrowser", () => {
   it("filters exercises when the Pecho chip is clicked", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     fireEvent.click(screen.getByRole("button", { name: "Pecho" }));
     await waitFor(() => {
@@ -212,7 +212,7 @@ describe("ExerciseBrowser", () => {
   it("opens the detail sheet when a card's detail button is clicked", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     const detailButtons = screen.getAllByLabelText("Ver detalles");
     fireEvent.click(detailButtons[0]);
@@ -224,7 +224,7 @@ describe("ExerciseBrowser", () => {
   it("renders 'GIF de referencia' badge on each card", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     expect(screen.getAllByText("GIF de referencia").length).toBeGreaterThan(0);
   });
@@ -233,7 +233,7 @@ describe("ExerciseBrowser", () => {
     const onClose = vi.fn();
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={onClose} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     fireEvent.click(screen.getByLabelText("Cerrar"));
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -242,7 +242,7 @@ describe("ExerciseBrowser", () => {
   it("shows empty state when the search matches nothing", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     const searchInput = screen.getByPlaceholderText(/Buscar/i);
     fireEvent.change(searchInput, {
@@ -256,7 +256,7 @@ describe("ExerciseBrowser", () => {
   it("opens FilterSheet when the Equipamiento y objetivo button is clicked", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     fireEvent.click(screen.getByText("Equipamiento y objetivo"));
     await waitFor(() => {
@@ -267,7 +267,7 @@ describe("ExerciseBrowser", () => {
   it("clears filters when Limpiar todo is clicked", async () => {
     render(<ExerciseBrowser onAdd={vi.fn()} onClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+      expect(screen.getByText("Press de banca con barra")).toBeTruthy();
     });
     // Apply a filter first
     fireEvent.click(screen.getByRole("button", { name: "Pecho" }));

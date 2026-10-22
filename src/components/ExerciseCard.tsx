@@ -16,6 +16,7 @@ import {
 import { ACCENT, GLASS, SOLID, SURFACE_ROLE, TEXT } from "@/design/tokens";
 import { resolveMedia } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface ExerciseCardProps {
   exercise: Exercise;
@@ -42,6 +43,7 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
   const { src, failed, onLoad, onError } = useMediaSrc(media);
+  const displayName = getExerciseDisplayName(exercise);
 
   return (
     <div
@@ -62,7 +64,7 @@ export function ExerciseCard({
         {!failed && media.url ? (
           <img
             src={src}
-            alt={`Animación de ${exercise.name}`}
+            alt={`Animación de ${displayName}`}
             loading="lazy"
             onLoad={onLoad}
             onError={onError}
@@ -95,7 +97,7 @@ export function ExerciseCard({
             className="truncate text-sm font-medium"
             style={{ color: TEXT.primary }}
           >
-            {exercise.name}
+            {displayName}
           </h3>
           <div className="mt-1 flex flex-wrap gap-1 text-[11px]">
             <span
@@ -123,7 +125,7 @@ export function ExerciseCard({
             className="truncate text-sm font-medium"
             style={{ color: TEXT.primary }}
           >
-            {exercise.name}
+            {displayName}
           </h3>
           <div className="mt-1 flex flex-wrap gap-1 text-[11px]">
             <span

@@ -1,13 +1,16 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { ExercisePickerModal } from './ExercisePickerModal'
+
+afterEach(cleanup)
 
 const exercises = [
   { id: '1', name: 'Bench Press', body_part: 'Pecho', equipment: 'Barra' } as any,
   { id: '2', name: 'Curl', body_part: 'Brazos', equipment: 'Mancuernas' } as any,
+  { id: '3', name: 'band wrist curl', body_part: 'Antebrazos', equipment: 'Banda' } as any,
 ]
 
 describe('ExercisePickerModal', () => {
@@ -51,5 +54,34 @@ describe('ExercisePickerModal', () => {
       />
     )
     expect(container.innerHTML).toBe('')
+  })
+
+  it('shows the Spanish name of a catalog exercise', () => {
+    render(
+      <ExercisePickerModal
+        open={true}
+        onClose={() => {}}
+        exercises={exercises}
+        onSelect={() => {}}
+      />
+    )
+    expect(screen.getAllByText('Curl de muñeca con banda').length).toBeGreaterThan(0)
+  })
+
+  it('finds an exercise by the Spanish name shown in the card', () => {
+    render(
+      <ExercisePickerModal
+        open={true}
+        onClose={() => {}}
+        exercises={exercises}
+        onSelect={() => {}}
+      />
+    )
+    const search = screen.getByLabelText('Buscar ejercicio')
+    // Accents are optional in the query: "muneca" must find "muñeca".
+    fireEvent.change(search, { target: { value: 'muneca' } })
+
+    expect(screen.getAllByText('Curl de muñeca con banda').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Bench Press')).toBeNull()
   })
 })

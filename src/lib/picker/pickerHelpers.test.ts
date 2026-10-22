@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import type { Exercise } from "@/types/supabase";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
   normaliseQuery,
   expandQuery,
@@ -101,6 +102,13 @@ describe("searchExercises", () => {
     expect(results[0].name).toBe("Barbell Back Squat");
   });
 
+  it("finds exercises by the Spanish name shown in the card", () => {
+    // "Barbell Bench Press" is displayed as "Press de banca con barra".
+    const results = searchExercises(SAMPLE_EXERCISES, "banca con barra");
+    expect(results).toHaveLength(1);
+    expect(results[0].name).toBe("Barbell Bench Press");
+  });
+
   it("finds exercises by Spanish alias 'fondos'", () => {
     const results = searchExercises(SAMPLE_EXERCISES, "fondos");
     expect(results).toHaveLength(1);
@@ -164,15 +172,17 @@ describe("filterExercises", () => {
 });
 
 describe("sortExercises", () => {
-  it("sorts by name alphabetically", () => {
+  it("sorts by the Spanish display name shown in the card", () => {
     const results = sortExercises(SAMPLE_EXERCISES, "name");
-    expect(results.map((e) => e.name)).toEqual([
+    expect(results.map((e) => getExerciseDisplayName(e))).toEqual([
+      // The three names the catalog has no translation for keep their original
+      // spelling; the rest sort by their Spanish label.
       "Barbell Back Squat",
-      "Barbell Bench Press",
-      "Barbell Deadlift",
-      "Dumbbell Bench Press",
       "Dumbbell Shoulder Press",
       "Parallel Bar Dips",
+      "Peso muerto con barra",
+      "Press de banca con barra",
+      "Press de banca con mancuernas",
     ]);
   });
 

@@ -52,6 +52,7 @@ import {
   translateEquipment,
   translateTarget,
 } from "../lib/i18n";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import type { PickerFilters } from "@/lib/picker/pickerHelpers";
 import {
   ACCENT,
@@ -761,7 +762,9 @@ function BrowserExerciseCard({
           className="flex items-start justify-between gap-2"
           style={{ color: TEXT.primary }}
         >
-          <h3 className="truncate text-sm font-medium">{exercise.name}</h3>
+          <h3 className="truncate text-sm font-medium">
+            {getExerciseDisplayName(exercise)}
+          </h3>
         </div>
 
         <div className="mt-1.5 flex flex-wrap gap-1">

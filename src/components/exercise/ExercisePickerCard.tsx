@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { Exercise } from '@/types/supabase'
 import { useMediaSrc } from '@/lib/media/useMediaSrc'
+import { getExerciseDisplayName } from '@/utils/exerciseTranslation'
 
 interface ExercisePickerCardProps {
   exercise: Exercise
@@ -70,7 +71,7 @@ export function ExercisePickerCard({
         )}
       </div>
       <div className='flex-1'>
-        <p className='line-clamp-2 text-xs font-medium text-neutral-100'>{exercise.name}</p>
+        <p className='line-clamp-2 text-xs font-medium text-neutral-100'>{getExerciseDisplayName(exercise)}</p>
         <p className='mt-1 text-[10px] text-neutral-400'>
           {(exercise as any).body_part} • {(exercise as any).equipment}
         </p>

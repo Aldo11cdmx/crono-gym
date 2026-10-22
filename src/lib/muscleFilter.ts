@@ -14,6 +14,7 @@
 
 import type { Slug } from "react-muscle-highlighter";
 import { muscleMatchLevel, muscleDefinition, type MatchLevel } from "./muscleMap";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** Minimal shape this module needs; avoids importing the whole DB row type. */
 export interface FilterableExercise {
@@ -56,14 +57,39 @@ export interface EmptyCause {
   action: string;
 }
 
-/** Parses the URL fragment used to persist the selection across navigation. */
+/** Text as the user types it: without accents, without case. */
+function normaliseText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+/**
+ * Whether an exercise matches the text query.
+ *
+ * The card shows the Spanish display name, so that is the name the query has to
+ * match. The catalog name stays as a second chance, so a search in the original
+ * English still lands instead of silently returning nothing.
+ */
+function matchesQuery(exercise: FilterableExercise, query: string): boolean {
+  return (
+    normaliseText(exercise.name).includes(query) ||
+    normaliseText(getExerciseDisplayName(exercise)).includes(query)
+  );
+}
+
+/**
+ * Parses the URL fragment used to persist the selection across navigation.
+ */
 export function applyBaseFilters<T extends FilterableExercise>(
   exercises: T[],
   filters: BaseFilters,
 ): T[] {
-  const q = filters.query.trim().toLowerCase();
+  const q = normaliseText(filters.query);
   return exercises.filter((e) => {
-    if (q && !e.name.toLowerCase().includes(q)) return false;
+    if (q && !matchesQuery(e, q)) return false;
     if (filters.bodyPart !== "all" && e.body_part !== filters.bodyPart) return false;
     if (filters.equipment !== "all" && e.equipment !== filters.equipment) return false;
     if (filters.target !== "all" && e.target !== filters.target) return false;

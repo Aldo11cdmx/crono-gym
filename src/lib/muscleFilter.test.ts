@@ -203,6 +203,24 @@ describe("combination with base filters", () => {
     // rather than silently matching by accident.
     expect(base).toHaveLength(0);
   });
+
+  it("matches the query against the Spanish name shown in the card", () => {
+    // The card shows "Curl de muñeca con banda", so "muneca" (no accent) has to
+    // find it: the query is matched against the display name, not the catalog one.
+    const forearm: FilterableExercise[] = [
+      { id: "w1", name: "band wrist curl", body_part: "lower arms", target: "forearms", equipment: "band" },
+    ];
+    const base = applyBaseFilters(forearm, { ...EMPTY_BASE_FILTERS, query: "muneca" });
+    expect(ids(base)).toEqual(["w1"]);
+  });
+
+  it("still matches the query against the catalog name", () => {
+    const forearm: FilterableExercise[] = [
+      { id: "w1", name: "band wrist curl", body_part: "lower arms", target: "forearms", equipment: "band" },
+    ];
+    const base = applyBaseFilters(forearm, { ...EMPTY_BASE_FILTERS, query: "wrist" });
+    expect(ids(base)).toEqual(["w1"]);
+  });
 });
 
 // ------------------------------------------------------------- URL state

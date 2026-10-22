@@ -26,7 +26,7 @@ function makeExercise(overrides: Partial<Exercise> & Pick<Exercise, "id" | "name
 const SAMPLE = makeExercise({ id: "ex-1", name: "Barbell Bench Press" });
 
 describe("ExerciseCard", () => {
-  it("renders the exercise name", () => {
+  it("renders the exercise name in Spanish", () => {
     render(
       <ExerciseCard
         exercise={SAMPLE}
@@ -35,7 +35,8 @@ describe("ExerciseCard", () => {
         onOpenDetail={vi.fn()}
       />,
     );
-    expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+    expect(screen.getByText("Press de banca con barra")).toBeTruthy();
+    expect(screen.queryByText("Barbell Bench Press")).toBeNull();
   });
 
   it("shows check icon when selected", () => {
@@ -144,6 +145,6 @@ describe("ExerciseCard", () => {
         view="list"
       />,
     );
-    expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+    expect(screen.getByText("Press de banca con barra")).toBeTruthy();
   });
 });

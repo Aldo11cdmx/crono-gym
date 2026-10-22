@@ -7,14 +7,15 @@
  *
  * Search behaviour:
  *  - The query is normalized (strip accents, lowercase, collapse whitespace).
- *  - It is matched against the exercise's name, body_part, target and equipment
- *    fields, all in their raw English form.
+ *  - It is matched against the exercise's display name (the Spanish one shown in
+ *    the card), the body_part, the target and the equipment fields.
  *  - An alias map translates common Spanish terms to their English equivalent
  *    so that "fondos" finds "Parallel Bar Dips", "press de banca" finds
  *    "Barbell Bench", etc.
  */
 
 import type { Exercise } from "@/types/supabase";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface PickerFilters {
   /** Active slug selections from the muscle anatomy map. */
@@ -39,9 +40,11 @@ export type SortKey = "name" | "popularity";
 /**
  * Alias map: Spanish search terms → English keywords that appear in catalog names.
  *
- * This is a *search* alias map, not a display map — display names stay in English
- * from the upstream dataset. The keys are normalized (lowercase, no accents) so
- * the lookup is accent-insensitive.
+ * This is a *search* alias map for the words a user types that do not appear
+ * verbatim in the Spanish display name ("patada" for kickbacks, "muerto" for
+ * deadlift). Display names come from the Spanish catalog translation.
+ * The keys are normalized (lowercase, no accents) so the lookup is
+ * accent-insensitive.
  */
 const SEARCH_ALIASES: Record<string, string[]> = {
   fondos: ["dips", "parallel"],
@@ -124,8 +127,11 @@ export function matchesQuery(text: string, terms: string[]): boolean {
 }
 
 /**
- * Filters exercises by a text query, matching against name, body_part, target
- * and equipment. Spanish aliases are expanded so "fondos" finds "Dips".
+ * Filters exercises by a text query, matching against the display name, the
+ * body_part, the target and the equipment fields. The display name is the
+ * Spanish one shown in the card, so a query in Spanish finds what the user
+ * sees; the catalog name is still matched too, and the Spanish aliases are
+ * expanded so "fondos" finds "Dips".
  * Results are NOT sorted — callers apply sort after filtering.
  */
 export function searchExercises(exercises: Exercise[], query: string): Exercise[] {
@@ -134,6 +140,7 @@ export function searchExercises(exercises: Exercise[], query: string): Exercise[
 
   return exercises.filter((e) => {
     return (
+      matchesQuery(getExerciseDisplayName(e), terms) ||
       matchesQuery(e.name, terms) ||
       matchesQuery(e.body_part, terms) ||
       matchesQuery(e.target, terms) ||
@@ -165,8 +172,8 @@ export function filterExercises(
 /**
  * Sorts a list of exercises.
  *
- * `name` sorts alphabetically by the raw catalog name (English, since that is
- * what the dataset ships).
+ * `name` sorts alphabetically by the Spanish display name, which is the name
+ * the card shows.
  * `popularity` sorts primary muscle matches first, preserving original order
  * within each group — used by the muscle-map view to surface the best matches.
  */
@@ -176,7 +183,9 @@ export function sortExercises(
   primaryIds?: Set<string>,
 ): Exercise[] {
   if (sortBy === "name") {
-    return [...exercises].sort((a, b) => a.name.localeCompare(b.name));
+    return [...exercises].sort((a, b) =>
+      getExerciseDisplayName(a).localeCompare(getExerciseDisplayName(b), "es"),
+    );
   }
 
   // "popularity": primary matches first (stable), then the rest in original order.

@@ -17,7 +17,7 @@ import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import { resolveMedia } from "@/lib/media/mediaResolver";
 import { MUSCLE_DEFINITIONS, muscleMatchLevel, type MatchLevel } from "@/lib/muscleMap";
 import { MuscleSelector } from "@/components/MuscleSelector";
-import { getExerciseName } from "@/lib/routines/routineDraftModel";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
   ACCENT,
   GLASS,
@@ -148,7 +148,15 @@ export function ExercisePickerModal({
   const filtered = useMemo(() => {
     const q = normalise(query);
     const result = exercises.filter((ex) => {
-      if (q && !normalise(ex.name).includes(q)) return false;
+      // The card shows the Spanish display name, so that is what the query has
+      // to match; the catalog name stays as a second chance.
+      if (
+        q &&
+        !normalise(ex.name).includes(q) &&
+        !normalise(getExerciseDisplayName(ex)).includes(q)
+      ) {
+        return false;
+      }
       if (selectedMuscles.length > 0) {
         const matched = selectedMuscles.some(
           (slug) => muscleMatchLevel(ex, slug) !== null,
@@ -161,7 +169,9 @@ export function ExercisePickerModal({
       }
       return true;
     });
-    return result.sort((a, b) => a.name.localeCompare(b.name));
+    return result.sort((a, b) =>
+      getExerciseDisplayName(a).localeCompare(getExerciseDisplayName(b), "es"),
+    );
   }, [exercises, query, selectedMuscles, selectedEquipment]);
 
   const handleSelect = useCallback(
@@ -573,7 +583,7 @@ const PickerCard = memo(function PickerCard({
   );
   const { src, failed, onLoad, onError } = useMediaSrc(media);
   const badges = useMemo(() => muscleBadges(exercise), [exercise]);
-  const name = getExerciseName(exercise);
+  const name = getExerciseDisplayName(exercise);
 
   return (
     <button

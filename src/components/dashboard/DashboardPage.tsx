@@ -46,6 +46,7 @@ import { VolumeSparkline } from "@/components/ui/VolumeSparkline";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useElapsedMs, formatElapsed } from "@/hooks/useElapsedMs";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
   useActiveSetProgress,
   type ActiveSetProgress,
@@ -1322,9 +1323,9 @@ function PersonalRecords({
                       whiteSpace: "nowrap",
                       maxWidth: "100%",
                     }}
-                    title={pr.exerciseName}
+                    title={getExerciseDisplayName({ name: pr.exerciseName })}
                   >
-                    {pr.exerciseName}
+                    {getExerciseDisplayName({ name: pr.exerciseName })}
                   </span>
                   <span
                     style={{

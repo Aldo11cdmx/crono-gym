@@ -699,7 +699,7 @@ function BrowserExerciseCard({
         {!failed && media.url ? (
           <img
             src={src}
-            alt={`Animación de ${exercise.name}`}
+            alt={`Animación de ${getExerciseDisplayName(exercise)}`}
             loading="lazy"
             onLoad={onLoad}
             onError={onError}

@@ -11,6 +11,7 @@
 
 import type { Exercise } from "@/types/supabase";
 import { isAvailableInMyGym } from "@/data/myGymEquipment";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface SwapCandidate {
   exercise: Exercise;
@@ -95,8 +96,11 @@ function rankCandidates(
     if (withEquipmentFilter && a.equipmentAvailable !== b.equipmentAvailable) {
       return a.equipmentAvailable ? -1 : 1;
     }
-    // Alphabetical tiebreaker.
-    return a.exercise.name.localeCompare(b.exercise.name, "es");
+    // Alphabetical tiebreaker, on the Spanish label the list shows.
+    return getExerciseDisplayName(a.exercise).localeCompare(
+      getExerciseDisplayName(b.exercise),
+      "es",
+    );
   });
 }
 

@@ -74,6 +74,16 @@ describe("the heading", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Sentadilla trasera" })).toBeTruthy();
   });
 
+  it("names the exercise with its Spanish label", () => {
+    renderStage({ exercise: exercise({ name: "barbell bench press" }) });
+
+    // The stage reads in the same vocabulary as the rest of the app.
+    expect(screen.getByRole("region", { name: "Press de banca con barra" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Press de banca con barra" }),
+    ).toBeTruthy();
+  });
+
   it("joins target, body part and equipment with middots", () => {
     renderStage();
 

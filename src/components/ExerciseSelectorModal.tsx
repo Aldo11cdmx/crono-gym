@@ -23,6 +23,7 @@ import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import type { CatalogExercise } from "@/lib/catalog/types";
 import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { translateBodyPart } from "@/lib/i18n";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
   ACCENT,
   GLASS,
@@ -45,6 +46,15 @@ export interface ExerciseSelectorModalProps {
 
 const ITEM_HEIGHT = 112;
 const THUMB_SIZE = 48;
+
+/** Lowercase, accent-free, so "Máquina" and "maquina" are the same token. */
+function normaliseText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
 function ExerciseSelectorModal({
   open,
@@ -79,14 +89,33 @@ function ExerciseSelectorModal({
     };
   }, [open, reloadToken]);
 
+  /**
+   * The Spanish name of every catalog row, resolved once per catalog load.
+   *
+   * The list is virtualized over more than a thousand exercises and the query
+   * is re-evaluated on every keystroke, so the lookup is done up front instead
+   * of once per row per keypress.
+   */
+  const displayNames = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const row of catalog ?? []) map.set(row.id, getExerciseDisplayName(row));
+    return map;
+  }, [catalog]);
+
   const filtered = useMemo(() => {
-    const q = query.toLowerCase();
+    const q = normaliseText(query);
     const rows = catalog ?? [];
     return rows.filter((ex) => {
       if (onlyCronos && ex.availableInCronosGym !== true) return false;
-      return q === "" || ex.name.toLowerCase().includes(q);
+      if (q === "") return true;
+      // The card shows the Spanish name, so that is what the query has to
+      // match; the catalog name stays as a second chance.
+      return (
+        normaliseText(ex.name).includes(q) ||
+        normaliseText(displayNames.get(ex.id) ?? ex.name).includes(q)
+      );
     });
-  }, [catalog, query, onlyCronos]);
+  }, [catalog, displayNames, query, onlyCronos]);
 
   const suggestions = useMemo(
     () =>
@@ -359,6 +388,7 @@ function ExerciseSelectorModal({
                   const suggestion = suggestions.get(ex.id);
                   const primary = suggestion?.primary ?? null;
                   const machineImg = primary?.views?.[0]?.src;
+                  const displayName = displayNames.get(ex.id) ?? ex.name;
                   return (
                     <div
                       key={ex.id}
@@ -384,7 +414,7 @@ function ExerciseSelectorModal({
                       }}
                       onClick={() => handleSelect(ex)}
                       role="option"
-                      aria-label={ex.name}
+                      aria-label={displayName}
                     >
                       {/* Miniatura GIF 48 × 48 */}
                       <div
@@ -401,7 +431,7 @@ function ExerciseSelectorModal({
                         {ex.gif_url ? (
                           <img
                             src={resolveMediaUrl(ex.gif_url)}
-                            alt={`Animación de ${ex.name}`}
+                            alt={`Animación de ${displayName}`}
                             style={{
                               width: "100%",
                               height: "100%",
@@ -440,7 +470,7 @@ function ExerciseSelectorModal({
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {ex.name}
+                          {displayName}
                         </div>
                         <div
                           style={{

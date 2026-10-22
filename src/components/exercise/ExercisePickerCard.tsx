@@ -65,7 +65,7 @@ export function ExercisePickerCard({
       </div>
       <div className='mb-2 aspect-square overflow-hidden rounded bg-neutral-900/50'>
         {resolvedSrc ? (
-          <img src={resolvedSrc as any} alt={exercise.name} className='h-full w-full object-cover' loading='lazy' />
+          <img src={resolvedSrc as any} alt={getExerciseDisplayName(exercise)} className='h-full w-full object-cover' loading='lazy' />
         ) : (
           <div className='flex h-full w-full items-center justify-center text-xs text-neutral-600'>Sin imagen</div>
         )}

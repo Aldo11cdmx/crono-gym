@@ -143,6 +143,15 @@ describe("ExerciseHub wiring", () => {
     expect(getByText(TEST_EXERCISE.name)).toBeTruthy();
   });
 
+  it("names the exercise with its Spanish label", () => {
+    vi.mocked(useExerciseHubData).mockReturnValue({
+      ...LOADED_DATA,
+      exercise: { ...TEST_EXERCISE, name: "barbell bench press" },
+    });
+    const { getByText } = renderHub("/ejercicio/ex-1");
+    expect(getByText("Press de banca con barra")).toBeTruthy();
+  });
+
   it("shows a loading notice while the catalog is loading", () => {
     vi.mocked(useExerciseHubData).mockReturnValue(LOADING_DATA);
     const { getByText } = renderHub("/ejercicio/ex-1");

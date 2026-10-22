@@ -39,6 +39,7 @@ import {
 } from "@/lib/ai/routineGenerator";
 import { saveGeneratedRoutine } from "@/lib/routines/saveGeneratedRoutine";
 import type { Exercise } from "@/types/supabase";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** The three steps, as a discriminant rather than a number so no transition is accidental. */
 type Step = "params" | "generating" | "preview";
@@ -432,7 +433,9 @@ function PreviewStep({
                     <span style={{ color: TEXT.primary }}>
                       {unresolved.includes(exercise.exerciseId)
                         ? T.unknownExercise
-                        : (exerciseNames[exercise.exerciseId] ?? exercise.exerciseId)}
+                        : getExerciseDisplayName({
+                            name: exerciseNames[exercise.exerciseId] ?? exercise.exerciseId,
+                          })}
                     </span>
                     <span style={{ color: TEXT.tertiary }}>
                       {T.prescription(exercise.sets, exercise.repsMin, exercise.repsMax)}

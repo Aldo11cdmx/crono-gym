@@ -4,6 +4,7 @@ import { supabase } from "@lib/supabase";
 import { ExerciseBrowser } from "./ExerciseBrowser";
 import type { Exercise } from "@/types/supabase";
 import type { RoutineWithExercises } from "../hooks/useGymData";
+import { getExerciseName } from "../lib/routines/routineDraftModel";
 
 const DEFAULT_REST = 90;
 
@@ -313,7 +314,7 @@ function RoutineForm({
             key={item.exercise.id}
             className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-neutral-950/40 px-3 py-2"
           >
-            <span className="min-w-0 flex-1 truncate text-sm">{item.exercise.name}</span>
+            <span className="min-w-0 flex-1 truncate text-sm">{getExerciseName(item.exercise)}</span>
             <Stepper
               label="Series"
               value={item.target_sets}
@@ -444,7 +445,7 @@ function RoutineCard({
           {routine.exercises.length === 0 && <li>Sin ejercicios</li>}
           {routine.exercises.map((item) => (
             <li key={item.exercise.id} className="flex items-center justify-between gap-2">
-              <span className="truncate">{item.exercise.name}</span>
+              <span className="truncate">{getExerciseName(item.exercise)}</span>
               <span className="shrink-0 tabular-nums text-neutral-500">
                 {item.target_sets}×{item.rest_seconds}s
               </span>

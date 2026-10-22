@@ -23,6 +23,7 @@ import { useCoachContext, useCoachNotes } from "@/hooks/useCoach";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { CoachChat } from "./CoachChat";
 import { RANGES_PATH } from "@/components/shell/navItems";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface CoachHubProps {
   userId: string;
@@ -557,7 +558,7 @@ function RecommendationRow({
 }) {
   const heading =
     recommendation.kind === "exercise_swap"
-      ? recommendation.exerciseName
+      ? getExerciseDisplayName({ name: recommendation.exerciseName })
       : T.recommendationAreas[recommendation.area] ?? recommendation.area;
 
   /*

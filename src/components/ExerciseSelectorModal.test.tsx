@@ -97,6 +97,29 @@ describe("ExerciseSelectorModal", () => {
     expect(screen.queryByText("Sentadilla")).toBeNull();
   });
 
+  it("muestra el nombre en español del ejercicio del catálogo", async () => {
+    loadCatalogMock.mockResolvedValue([row("4", "band wrist curl")]);
+    render(<ExerciseSelectorModal open onClose={() => undefined} onSelect={() => undefined} />);
+
+    expect(await screen.findByText("Curl de muñeca con banda")).toBeDefined();
+  });
+
+  it("filtra por el nombre en español que muestra la tarjeta", async () => {
+    loadCatalogMock.mockResolvedValue([
+      row("4", "band wrist curl"),
+      row("5", "barbell bench press"),
+    ]);
+    render(<ExerciseSelectorModal open onClose={() => undefined} onSelect={() => undefined} />);
+
+    await screen.findByText("Curl de muñeca con banda");
+    fireEvent.change(screen.getByPlaceholderText("Buscar ejercicio…"), {
+      target: { value: "muneca" },
+    });
+
+    expect(screen.getByText("Curl de muñeca con banda")).toBeDefined();
+    expect(screen.queryByText("Press de banca con barra")).toBeNull();
+  });
+
   it("entrega el ejercicio elegido al pulsar una tarjeta", async () => {
     const onSelect = vi.fn();
     render(<ExerciseSelectorModal open onClose={() => undefined} onSelect={onSelect} />);

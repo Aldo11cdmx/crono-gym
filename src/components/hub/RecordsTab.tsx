@@ -32,6 +32,7 @@ import { HUB_PROGRESS_LABELS, HUB_RECORDS_LABELS } from "@/lib/i18n";
 import { GLASS, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import type { SexKey } from "@/lib/ranks/rankConfig";
 import type { Exercise } from "@/types/supabase";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface RecordsTabProps {
   exercise: Exercise;
@@ -81,7 +82,7 @@ export function RecordsTab({
     <div style={column}>
       <div
         role="group"
-        aria-label={HUB_RECORDS_LABELS.gridAriaLabel(exercise.name)}
+        aria-label={HUB_RECORDS_LABELS.gridAriaLabel(getExerciseDisplayName(exercise))}
         style={grid}
       >
         <Tile

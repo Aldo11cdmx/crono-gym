@@ -95,6 +95,13 @@ describe("getExerciseName", () => {
     expect(getExerciseName(EXERCISE)).toBe("Press banca");
   });
 
+  it("returns the Spanish label of a catalog exercise", () => {
+    // The app's single vocabulary for an exercise name: the Spanish one.
+    expect(getExerciseName({ ...EXERCISE, name: "Barbell Bench Press" })).toBe(
+      "Press de banca con barra",
+    );
+  });
+
   it("falls back to the id when the name is blank", () => {
     const unnamed: Exercise = { ...EXERCISE, name: "" };
     expect(getExerciseName(unnamed)).toBe("#0001");

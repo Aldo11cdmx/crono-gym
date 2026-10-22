@@ -16,6 +16,7 @@ import { ArrowLeftRight, X, Dumbbell } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
 import type { DraftExercise } from "@/lib/routines/routineDraftModel";
 import { getExerciseName, getRepLabel } from "@/lib/routines/routineDraftModel";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { translateBodyPart, translateEquipment, translateTarget } from "@/lib/i18n";
 import {
   findSwapCandidates,
@@ -100,7 +101,10 @@ export function ExerciseSwapModal({
     const lower = query.toLowerCase();
     return candidates.filter(
       (c) =>
+        // The card shows the Spanish name, so the query has to match it; the
+        // catalog name stays as a second chance.
         c.exercise.name.toLowerCase().includes(lower) ||
+        getExerciseDisplayName(c.exercise).toLowerCase().includes(lower) ||
         translateBodyPart(c.exercise.body_part).toLowerCase().includes(lower) ||
         translateTarget(c.exercise.target).toLowerCase().includes(lower),
     );
@@ -237,7 +241,7 @@ export function ExerciseSwapModal({
                 fontFamily: FONT_SANS,
               }}
             >
-              {source.exercise.name} · {getRepLabel(source)} ·{" "}
+              {getExerciseName(source.exercise)} · {getRepLabel(source)} ·{" "}
               {translateEquipment(source.exercise.equipment)}
             </span>
           </div>

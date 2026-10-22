@@ -14,6 +14,7 @@ import {
   translateTarget,
   translateEquipment,
 } from "@/lib/i18n";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
   GLASS,
   RADIUS,
@@ -36,6 +37,7 @@ export function ExerciseDetailSheet({
 }: ExerciseDetailSheetProps) {
   const media = resolveMedia("exercise-gif", exercise?.id ?? "", exercise?.gif_url ?? "");
   const { src, failed, onLoad, onError } = useMediaSrc(media);
+  const displayName = exercise ? getExerciseDisplayName(exercise) : "";
   if (!exercise || !isOpen) return null;
 
   return (
@@ -63,7 +65,7 @@ export function ExerciseDetailSheet({
 
         <div className="flex items-center justify-between">
           <h2 style={{ color: TEXT.primary }} className="text-xl font-semibold">
-            {exercise.name}
+            {displayName}
           </h2>
           <button
             type="button"
@@ -83,7 +85,7 @@ export function ExerciseDetailSheet({
           {!failed && media.url ? (
             <img
               src={src}
-              alt={`Animación de ${exercise.name}`}
+              alt={`Animación de ${displayName}`}
               className="h-full w-full object-contain"
               onLoad={onLoad}
               onError={onError}

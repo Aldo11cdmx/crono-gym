@@ -10,6 +10,7 @@ import { BookOpen, Dumbbell, RefreshCcw, X } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
 import { resolveMedia } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 interface ExercisePanelProps {
   exercise: Exercise;
@@ -28,12 +29,13 @@ export function ExercisePanel({
 }: ExercisePanelProps) {
   const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
   const { src, failed, onLoad, onError } = useMediaSrc(media);
+  const displayName = getExerciseDisplayName(exercise);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/60 shadow-glass">
       <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
         <div className="min-w-0">
-          <h3 className="truncate text-sm font-semibold text-neutral-50">{exercise.name}</h3>
+          <h3 className="truncate text-sm font-semibold text-neutral-50">{displayName}</h3>
           <p className="mt-0.5 truncate text-[11px] text-neutral-500">
             {exercise.body_part} · {exercise.target} · {exercise.equipment}
           </p>
@@ -53,7 +55,7 @@ export function ExercisePanel({
           <img
             key={media.key}
             src={src}
-            alt={`Animación de ${exercise.name}`}
+            alt={`Animación de ${displayName}`}
             className="h-full w-full object-contain"
             onLoad={onLoad}
             onError={onError}

@@ -26,6 +26,7 @@ import type { ExerciseSession } from "@/lib/exercise/exerciseHistory";
 import { HUB_PROGRESS_LABELS } from "@/lib/i18n";
 import { GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import type { Exercise } from "@/types/supabase";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** Which series the chart draws. */
 export type HubMetric = "topWeight" | "estimate" | "volume";
@@ -130,7 +131,7 @@ export function ProgressionTab({
           <ProgressChart
             points={points}
             label={HUB_PROGRESS_LABELS.chartAriaLabel(
-              exercise.name,
+              getExerciseDisplayName(exercise),
               HUB_PROGRESS_LABELS.metrics[metric],
             )}
             unit={metric === "volume" ? unitLabel : unit}
@@ -142,7 +143,7 @@ export function ProgressionTab({
       <PlateauAlert sessions={sessions} formatWeight={formatWeight} now={now} />
 
       <HistoryTable
-        exerciseName={exercise.name}
+        exerciseName={getExerciseDisplayName(exercise)}
         sessions={sessions}
         open={historyOpen}
         onToggle={() => setHistoryOpen((v) => !v)}

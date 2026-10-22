@@ -40,6 +40,7 @@ import type { Slug } from "react-muscle-highlighter";
 import type { Exercise } from "@/types/supabase";
 import { resolveMedia } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface DemoTabProps {
   exercise: Exercise;
@@ -102,17 +103,18 @@ function Media({ exercise }: { exercise: Exercise }) {
   const gif = typeof exercise.gif_url === "string" ? exercise.gif_url.trim() : "";
   const media = resolveMedia("exercise-gif", exercise.id, gif);
   const { src, failed, onLoad, onError } = useMediaSrc(media);
+  const name = getExerciseDisplayName(exercise);
 
   return (
     <div style={mediaFrame}>
       {gif === "" || failed ? (
         <div style={placeholder}>
-          <span>{`Sin demostración para ${exercise.name}`}</span>
+          <span>{`Sin demostración para ${name}`}</span>
         </div>
       ) : (
         <img
           src={src}
-          alt={`Demostración de ${exercise.name}`}
+          alt={`Demostración de ${name}`}
           loading="eager"
           decoding="async"
           width={640}
@@ -177,11 +179,13 @@ function MusclePanel({
     };
   }, [exercise.target, exercise.body_part]);
 
+  const name = getExerciseDisplayName(exercise);
+
   return (
-    <section aria-label={HUB_DEMO_LABELS.musclesAriaLabel(exercise.name)} style={panel}>
+    <section aria-label={HUB_DEMO_LABELS.musclesAriaLabel(name)} style={panel}>
       <MuscleReadonlyMap
         counts={counts}
-        label={HUB_DEMO_LABELS.musclesAriaLabel(exercise.name)}
+        label={HUB_DEMO_LABELS.musclesAriaLabel(name)}
       />
 
       <dl style={definitionList}>

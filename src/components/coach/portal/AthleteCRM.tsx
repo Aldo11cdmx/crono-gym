@@ -41,6 +41,7 @@ import { useAthletePRs } from "@/hooks/useAthletePRs";
 import { useMuscleRanks } from "@/hooks/useMuscleRanks";
 import { supabase } from "@lib/supabase";
 import type { Exercise, Routine, RoutineExercise } from "@/types/supabase";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** How many routines the history section shows. */
 const HISTORY_LIMIT = 10;
@@ -122,7 +123,7 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
      */
     const names = new Map<string, string>();
     for (const exercise of (catalog.data ?? []) as Pick<Exercise, "id" | "name">[]) {
-      if (exercise.name) names.set(exercise.id, exercise.name);
+      if (exercise.name) names.set(exercise.id, getExerciseDisplayName(exercise));
     }
 
     const byRoutine = new Map<string, RoutineExercise[]>();
@@ -198,7 +199,9 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
             <ul className="flex flex-col gap-2" style={listStyle}>
               {prs.map((pr) => (
                 <li key={pr.exerciseId} className="flex items-baseline justify-between gap-3">
-                  <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>{pr.exerciseName}</span>
+                  <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                    {getExerciseDisplayName({ name: pr.exerciseName })}
+                  </span>
                   <span style={{ fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
                     {formatKg(pr.weightKg)}
                     {pr.reps !== null ? ` × ${pr.reps}` : ""}

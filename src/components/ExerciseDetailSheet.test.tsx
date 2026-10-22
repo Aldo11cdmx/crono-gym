@@ -32,7 +32,8 @@ describe("ExerciseDetailSheet", () => {
         onClose={vi.fn()}
       />,
     );
-    expect(screen.getByText("Barbell Bench Press")).toBeTruthy();
+    // The sheet shows the Spanish label, the app's single vocabulary.
+    expect(screen.getByText("Press de banca con barra")).toBeTruthy();
   });
 
   it("renders null when exercise is null", () => {

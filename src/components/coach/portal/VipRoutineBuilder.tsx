@@ -48,6 +48,7 @@ import {
 import type { Exercise } from "@/types/supabase";
 
 import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** How many search hits to offer before the list stops being a list. */
 const MAX_HITS = 8;
@@ -368,7 +369,12 @@ function ExercisePicker({
 
     const out: Exercise[] = [];
     for (const candidate of exercises) {
-      if (normaliseExerciseName(candidate.name).includes(wanted)) {
+      // The card shows the Spanish name, so the query has to match it; the
+      // catalog name stays as a second chance.
+      if (
+        normaliseExerciseName(candidate.name).includes(wanted) ||
+        normaliseExerciseName(getExerciseDisplayName(candidate)).includes(wanted)
+      ) {
         out.push(candidate);
         if (out.length >= MAX_HITS) break;
       }
@@ -392,7 +398,7 @@ function ExercisePicker({
       <p style={hintStyle}>
         {exercise.exerciseId === ""
           ? T.builderNoExerciseChosen
-          : (pickedName ?? exercise.exerciseId)}
+          : getExerciseDisplayName({ name: pickedName ?? exercise.exerciseId })}
       </p>
 
       <div className="flex items-end gap-2">
@@ -433,7 +439,7 @@ function ExercisePicker({
                 }}
                 style={hitStyle}
               >
-                {hit.name}
+                {getExerciseDisplayName(hit)}
               </button>
             </li>
           ))}

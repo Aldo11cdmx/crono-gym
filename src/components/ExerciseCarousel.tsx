@@ -50,6 +50,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SUPERSET_LABELS } from "@/lib/i18n";
 import { getSupersetInfo } from "@/lib/workout/supersetUtils";
 import { resolveMediaUrl } from "@/lib/media/mediaResolver";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { SupersetBadge } from "./workout/SupersetBadge";
 import { SupersetBar } from "./workout/SupersetBar";
 
@@ -173,6 +174,7 @@ export function ExerciseCarousel({
            * ordinary bubble ordinary.
            */
           const superset = getSupersetInfo(items, index);
+          const displayName = getExerciseDisplayName(item.exercise);
 
           return (
             <button
@@ -188,7 +190,7 @@ export function ExerciseCarousel({
               // A grouped exercise adds its place in the group, because "sentadilla, 1 de
               // 6" does not say that it is the first of two exercises that are performed
               // together, and that is exactly what the athlete needs to know mid-set.
-              aria-label={`${item.exercise.name}, ${index + 1} de ${items.length}, ${item.done} de ${item.total} series${
+              aria-label={`${displayName}, ${index + 1} de ${items.length}, ${item.done} de ${item.total} series${
                 superset
                   ? `, ${SUPERSET_LABELS.tabAriaLabel(superset.label, superset.position, superset.total)}`
                   : ""
@@ -393,7 +395,7 @@ export function ExerciseCarousel({
                    color: selected ? ACCENT.text : complete ? STATUS.success.text : TEXT.tertiary,
                 }}
               >
-                {shortName(item.exercise.name)}
+                {shortName(displayName)}
               </span>
 
               {/*
@@ -488,6 +490,10 @@ function exerciseGif(exercise: Exercise): string {
 /**
  * Strips the catalog's equipment prefix ("Barbell Bench Press - Neutral Grip")
  * so the bubble label stays readable in 68px.
+ *
+ * The label is the Spanish display name, where the equipment already sits at
+ * the end ("Press de banca con barra"), so there is no prefix left to strip and
+ * the ellipsis does the narrowing instead.
  */
 function shortName(name: string): string {
   const cleaned = name.replace(/^(barbell|dumbbell|cable|kettlebell|weighted)\s+/i, "");

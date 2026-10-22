@@ -215,6 +215,16 @@ describe("naming a bubble", () => {
     renderStrip([item("o", "Weighted", 0, 3)], "o");
     expect(bubbleByLabel("Weighted")).toBeTruthy();
   });
+
+  it("names the bubble with the Spanish label", () => {
+    renderStrip([item("w", "band wrist curl", 0, 3)], "w");
+
+    // The strip reads in the same vocabulary as the rest of the app.
+    expect(bubbleByLabel("Curl de muñeca con banda")).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: /^Curl de muñeca con banda, 1 de 1, 0 de 3 series$/ }),
+    ).toBeTruthy();
+  });
 });
 
 describe("missing media", () => {

@@ -23,6 +23,7 @@ import {
   SCRIM,
   Z_INDEX,
 } from "../../design/tokens";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface WorkoutSummaryModalProps {
   isOpen: boolean;
@@ -290,7 +291,9 @@ export function WorkoutSummaryModal({
                         color: TEXT.primary,
                       }}
                     >
-                      <span style={{ flex: 1, minWidth: 0 }}>{e.exercise.name}</span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        {getExerciseDisplayName(e.exercise)}
+                      </span>
                       <span
                         style={{
                           fontFamily: TYPE.mono.font,

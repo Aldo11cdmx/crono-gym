@@ -29,6 +29,7 @@ import { toDisplayWeight } from "@/lib/exercise/exerciseMetrics";
 import { useExerciseHubData } from "@/hooks/useExerciseHubData";
 import { useHubChips } from "@/hooks/useHubChips";
 import { useActiveSession } from "@/context/ActiveSessionContext";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { ExerciseHubHeader } from "./ExerciseHubHeader";
 import { HubPanel, HubTabs, isHubTabId, type HubTabId } from "./HubTabs";
 import { DemoTab } from "./DemoTab";
@@ -101,7 +102,7 @@ export function ExerciseHub() {
     convert,
   });
 
-  const name = data.exercise?.name ?? "";
+  const name = data.exercise ? getExerciseDisplayName(data.exercise) : "";
   const body = useMemo(() => {
     if (data.catalogError) return <Notice tone="down" text={data.catalogError} />;
     if (data.loadingExercise) return <Notice tone="neutral" text={HUB_LABELS.loading} />;

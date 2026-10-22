@@ -90,11 +90,19 @@ import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
 import { resolveMedia, resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 const DEFAULT_REST = 90;
 const PERSIST_DEBOUNCE_MS = 400;
 export const UNDO_WINDOW_MS = 5000;
 
+/**
+ * Strips the catalog's equipment prefix ("Barbell Bench Press - Neutral Grip")
+ * so the header label stays short.
+ *
+ * The label is the Spanish display name, where the equipment already sits at
+ * the end ("Press de banca con barra"), so there is no prefix left to strip.
+ */
 function shortName(name: string): string {
   const cleaned = name.replace(/^(barbell|dumbbell|cable|kettlebell|weighted)\s+/i, "");
   const withoutSuffix = cleaned.replace(/\s+-\s+.*$/, "");
@@ -708,7 +716,7 @@ function ExerciseStage({
         {media.url && !failed ? (
           <img
             src={src}
-            alt={`Demo de ${exercise.name}`}
+            alt={`Demo de ${getExerciseDisplayName(exercise)}`}
             onLoad={onLoad}
             onError={onError}
             style={{
@@ -2122,13 +2130,13 @@ export function ActiveWorkout({
       ) : (
         <>
           <SessionHeader
-            exerciseLabel={
-              selected
-                ? `${items.findIndex((i) => i.key === selected.key) + 1}/${items.length} ${shortName(
-                    selected.exercise.name,
-                  )}`
-                : ""
-            }
+              exerciseLabel={
+                selected
+                  ? `${items.findIndex((i) => i.key === selected.key) + 1}/${items.length} ${shortName(
+                      getExerciseDisplayName(selected.exercise),
+                    )}`
+                  : ""
+              }
             superset={selectedSuperset}
              startedAt={session?.startedAt ?? null}
              onGear={() => setGearOpen(true)}

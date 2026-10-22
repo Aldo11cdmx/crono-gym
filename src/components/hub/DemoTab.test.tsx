@@ -196,4 +196,18 @@ describe("DemoTab warm-up ramp", () => {
     const { getByText } = renderTab({ metrics: METRICS, sessionActive: true });
     expect(getByText(/Todavía no has registrado series/i)).toBeTruthy();
   });
+
+  it("names the missing demo with the Spanish label", () => {
+    const { getByText } = render(
+      <DemoTab
+        exercise={{ ...EXERCISE, name: "barbell bench press" }}
+        sessions={[]}
+        metrics={METRICS}
+        loading={false}
+        error={null}
+        formatWeight={(kg) => `${kg} kg`}
+      />,
+    );
+    expect(getByText("Sin demostración para Press de banca con barra")).toBeTruthy();
+  });
 });

@@ -33,6 +33,7 @@ import { TARGET_LABELS, BODY_PART_LABELS, EQUIPMENT_LABELS } from "../../lib/i18
 import type { Exercise } from "@/types/supabase";
 import { resolveMedia } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 export interface ExerciseStageProps {
   exercise: Exercise;
@@ -71,9 +72,10 @@ export function ExerciseStage({
   navPrev,
   navNext,
 }: ExerciseStageProps) {
+  const displayName = getExerciseDisplayName(exercise);
   return (
     <section
-      aria-label={exercise.name}
+      aria-label={displayName}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -158,7 +160,7 @@ export function ExerciseStage({
             color: TEXT.primary,
           }}
         >
-          {exercise.name}
+          {displayName}
         </h2>
 
         <p
@@ -230,7 +232,7 @@ export function ExerciseStage({
             textUnderlineOffset: 3,
           }}
         >
-          Quitar {exercise.name} de la sesión
+          Quitar {displayName} de la sesión
         </button>
       )}
 
@@ -273,7 +275,7 @@ function ExerciseMedia({ exercise }: { exercise: Exercise }) {
           src={src}
           onLoad={onLoad}
           onError={onError}
-          alt={`Demostración de ${exercise.name}`}
+          alt={`Demostración de ${getExerciseDisplayName(exercise)}`}
           // `eager` rather than `lazy`: this is above the fold and above the set table,
           // and a lazy image that has not loaded when the athlete looks up is a blank
           // frame in the most-watched 300ms of the screen.
@@ -301,7 +303,7 @@ function ExerciseMedia({ exercise }: { exercise: Exercise }) {
           }}
         />
       ) : (
-        <MediaPlaceholder name={exercise.name} />
+        <MediaPlaceholder name={getExerciseDisplayName(exercise)} />
       )}
     </div>
   );

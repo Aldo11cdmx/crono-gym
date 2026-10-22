@@ -50,6 +50,7 @@ import {
   USER_TIPS_MAX,
 } from "@/lib/exercise/userTips";
 import { GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** The most official tips rendered. The catalog can carry more. */
 const MAX_VISIBLE_TIPS = 8;
@@ -73,6 +74,7 @@ export function TechniqueTips({ exercise }: TechniqueTipsProps) {
   const official = instructions.slice(0, MAX_VISIBLE_TIPS);
   const hiddenCount = instructions.length - official.length;
   const regionId = `technique-tips-${exercise.id}`;
+  const name = getExerciseDisplayName(exercise);
 
   const addMine = (e: FormEvent) => {
     e.preventDefault();
@@ -95,7 +97,7 @@ export function TechniqueTips({ exercise }: TechniqueTipsProps) {
   };
 
   return (
-    <section aria-label={HUB_DEMO_LABELS.tipsAriaLabel(exercise.name)} style={panel}>
+    <section aria-label={HUB_DEMO_LABELS.tipsAriaLabel(name)} style={panel}>
       <h3 style={title}>
         <button
           type="button"
@@ -122,7 +124,7 @@ export function TechniqueTips({ exercise }: TechniqueTipsProps) {
       </h3>
 
       {open ? (
-        <div id={regionId} role="region" aria-label={HUB_DEMO_LABELS.tipsAriaLabel(exercise.name)} style={region}>
+        <div id={regionId} role="region" aria-label={HUB_DEMO_LABELS.tipsAriaLabel(name)} style={region}>
           {official.length > 0 ? (
             <ul
               aria-label={HUB_DEMO_LABELS.tipsOfficialAriaLabel}

@@ -14,6 +14,7 @@
  */
 
 import type { Exercise } from "@/types/supabase";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** One movement in the draft, with its prescription. */
 export interface DraftExercise {
@@ -210,12 +211,14 @@ export function isSavableDraft(draft: RoutineDraft): boolean {
 /**
  * Human-readable display name for an exercise.
  *
- * Falls back to the raw id when the name is missing, so a card never renders
- * an empty label from a malformed row.
+ * The Spanish label is the app's single vocabulary for an exercise name, so it
+ * is the one every screen shows. Falls back to the raw id when the name is
+ * missing, so a card never renders an empty label from a malformed row.
  */
 export function getExerciseName(exercise: Exercise): string {
-  return exercise.name && exercise.name.trim() !== ""
-    ? exercise.name
+  const displayName = getExerciseDisplayName(exercise);
+  return displayName && displayName.trim() !== ""
+    ? displayName
     : `#${exercise.id}`;
 }
 

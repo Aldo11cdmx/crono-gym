@@ -107,6 +107,49 @@ describe("ExerciseSwapModal", () => {
     expect(screen.getByText(/Press de banca/)).toBeTruthy();
   });
 
+  it("names the source exercise with its Spanish label", () => {
+    const source: DraftExercise = {
+      ...SOURCE_DRAFT,
+      exercise: makeExercise({ id: "e-bench-en", name: "barbell bench press" }),
+    };
+    render(
+      <ExerciseSwapModal
+        isOpen={true}
+        source={source}
+        allExercises={CATALOG}
+        onReplace={vi.fn()}
+        onDismiss={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/Press de banca con barra/)).toBeTruthy();
+  });
+
+  it("finds a candidate by the Spanish label it shows", () => {
+    const catalog: Exercise[] = [
+      ...CATALOG,
+      makeExercise({
+        id: "e-fly-en",
+        name: "cable incline fly",
+        body_part: "chest",
+        target: "pectorals",
+        equipment: "cable",
+      }),
+    ];
+    render(
+      <ExerciseSwapModal
+        isOpen={true}
+        source={SOURCE_DRAFT}
+        allExercises={catalog}
+        onReplace={vi.fn()}
+        onDismiss={vi.fn()}
+      />,
+    );
+    const search = screen.getByPlaceholderText("Buscar ejercicio…");
+    fireEvent.change(search, { target: { value: "inclinadas" } });
+    expect(screen.getByText("Aperturas inclinadas en polea")).toBeTruthy();
+    expect(screen.queryByText("Press inclinado")).toBeNull();
+  });
+
   it("lists only same-muscle alternatives (excludes different muscle)", () => {
     render(
       <ExerciseSwapModal

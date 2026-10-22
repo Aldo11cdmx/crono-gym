@@ -9,6 +9,7 @@ Que cualquier pantalla se sienta cara, calmada y propia de Cronos: negro verdade
 2. ¿Qué es lo ÚNICO que debe mirar el usuario primero? (una sola cosa por pantalla: `TYPE.display`/`TYPE.hero` se usan una vez)
 3. ¿Hay espacio negativo suficiente? ¿Qué puedo quitar sin perder función?
 4. ¿Esta pantalla se usa en el gym con una mano? (ver `gym-ux-mobile-specialist.md`)
+5. **Impeccable**: ¿Resiste textos largos sin romper el layout? ¿Hay decoración innecesaria?
 
 ## Patrones Obligatorios
 - Superficies con `GlassCard` (`@/components/ui`): props `raised`, `flush`, `as`, `reducedTransparency`. Fondo base `SURFACE.base` (#000, OLED).
@@ -21,6 +22,8 @@ Que cualquier pantalla se sienta cara, calmada y propia de Cronos: negro verdade
 - Espaciado y radios solo de `SPACE` (`card` 20px, `section` 32px) y `RADIUS` (`card`, `surface`, `control`, `sheet`, `pill`).
 - Iconos: solo Lucide React (`lucide-react`), stroke 1.5–2, tamaño consistente por contexto. Cero emojis.
 - Cabeceras discretas; el título de pantalla no compite con el contenido.
+- **Texto resiliente**: Usa `min-width: 0`, `overflow-wrap: break-word` cuando hay tokens/etiquetas largas. Prefiere truncado con `title` si es crítico.
+- **Simplificar primero**: Elimina decoración antes de añadirla. Un solo foco visual por pantalla.
 
 ## Cómo debe responder Kilo
 Antes de tocar: describe en 2 líneas qué simplificas. Entrega el componente con tokens reales. Si propones layout alterno, muéstralo como `[Sugerencia]` y no lo apliques sin pedirlo.

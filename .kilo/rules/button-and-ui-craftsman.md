@@ -14,8 +14,11 @@ Componentes táctiles premium, medidos para el uso real en el gym. `GlassButton`
 - Variantes de `GlassButton`: `primary` (relleno `ACCENT.base`, tinta `TEXT.onAccent`), `secondary`, `ghost`, `destructive` (vino `DANGER`, nunca un rojo saturado). La elección expresa importancia, no color.
 - Hover/pressed/focus viven en `src/index.css` bajo `.gbtn` (no en JS inline).
 - Micro-interacción de pulsación con duración y curva de `MOTION` (`fast`/`standard`), p. ej. escala 0.98. No literales `150ms`/`cubic-bezier(...)` en componentes (`tokens.test.ts` los detecta).
+- Solo animar `transform` y `opacity`. Nunca animar `width/height/margin/padding` que provoquen layout shift.
 - Tarjeta de rutina 100% clickeable + botón `ghost` "Entrenar" con icono `Play`; el botón secundario hace `stopPropagation`.
 - Estados asíncronos: `loading` deshabilita y conserva el ancho (sin salto de layout); `success` breve (≤ `MOTION.slow`); `error` con texto en español y reintento.
+- **Feedback táctil opcional**: Usa `navigator.vibrate` con verificación de soporte para acciones confirmatorias (completar serie). Sin dependencia nueva.
+- **Resiliencia**: Etiquetas largas con truncado + `title` o wrapping controlado. Sin romper targets táctiles.
 
 ## Cómo debe responder Kilo
 Muestra el componente con sus variantes de estado y di qué primario eligió la pantalla. Si falta una variante, propón añadirla a `GlassButton` (con test) en vez de un botón nuevo.

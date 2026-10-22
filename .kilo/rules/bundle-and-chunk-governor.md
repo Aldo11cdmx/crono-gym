@@ -43,6 +43,7 @@ Siempre que se modifique un import o dependencia, Kilo debe reportar:
 - Detecta imports estáticos accidentales de JSONs grandes y los convierte automáticamente a carga asíncrona diferida.
 - Revisa el árbol de dependencias (`package.json`) y propone eliminar paquetes redundantes o muertos.
 - Configura compresión moderna (Brotli / Gzip) y cache-control inmutable para assets con hash.
+- **Sin dependencias innecesarias**: No añadas librerías para micro-utilidades nativas del navegador (fechas, animaciones, validación trivial). Justifica con tamaño y alternativa nativa.
 
 ## Anti-patrones
 - `import catalog from "@/data/exercisesCatalog.json"` en cualquier archivo que se ejecute en el arranque.

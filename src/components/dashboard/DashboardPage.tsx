@@ -1,7 +1,7 @@
 /**
- * DashboardPage.tsx — Cronos Gym home dashboard.
+ * DashboardPage.tsx â€” Cronos Gym home dashboard.
  *
- * "Precision in Motion" — a training cockpit that fuses glass-optical
+ * "Precision in Motion" â€” a training cockpit that fuses glass-optical
  * surfaces, sport instrumentation, editorial typography and a technical
  * muscle map into a single focused screen.
  *
@@ -82,7 +82,7 @@ const EMPTY_MUSCLE_COUNTS = new Map<Slug, number>();
 
 /** Invitation shown under the anatomy when no routine is selected. */
 const ANATOMY_IDLE_HINT =
-  "Elige una rutina para ver los músculos que trabajará";
+  "Elige una rutina para ver los mÃºsculos que trabajarÃ¡";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,7 +93,7 @@ export interface DashboardPageProps {
 }
 
 // ---------------------------------------------------------------------------
-// Glass surface primitive — Level-1 card
+// Glass surface primitive â€” Level-1 card
 // ---------------------------------------------------------------------------
 
 interface GlassSurfaceProps {
@@ -175,7 +175,7 @@ function GlassSurface({
 }
 
 // ---------------------------------------------------------------------------
-// InstrumentationChip — compact data pair with icon
+// InstrumentationChip â€” compact data pair with icon
 // ---------------------------------------------------------------------------
 
 function InstrumentationChip({
@@ -230,7 +230,7 @@ function InstrumentationChip({
 }
 
 // ---------------------------------------------------------------------------
-// TrainingCockpit — the Hero component
+// TrainingCockpit â€” the Hero component
 // ---------------------------------------------------------------------------
 
 function TrainingCockpit({
@@ -272,8 +272,8 @@ function TrainingCockpit({
   sessionState: "idle" | "scheduled" | "in-progress" | "completed";
 }) {
   const reduced = useReducedMotion();
-  // The one clock in the app. A null start — no session, or a session that
-  // has already ended — reads as zero and runs no interval, so a finished
+  // The one clock in the app. A null start â€” no session, or a session that
+  // has already ended â€” reads as zero and runs no interval, so a finished
   // session never keeps ticking here.
   const elapsedMs = useElapsedMs(activeStartedAt);
   const badgeText =
@@ -282,7 +282,7 @@ function TrainingCockpit({
       : sessionState === "completed"
         ? "COMPLETADA"
         : sessionState === "scheduled"
-          ? "SESIÓN PROGRAMADA"
+          ? "SESIÃ“N PROGRAMADA"
           : "PREPARADO";
 
   const badgeColor =
@@ -297,7 +297,7 @@ function TrainingCockpit({
   const title =
     sessionState === "completed" && completedSession
       ? completedSession.title
-      : (routineTitle ?? "Sesión libre");
+      : (routineTitle ?? "SesiÃ³n libre");
 
   const cta =
     sessionState === "completed"
@@ -376,7 +376,7 @@ function TrainingCockpit({
             HOY
           </span>
           <span style={{ color: TEXT.tertiary, fontSize: TYPE.caption.size }}>
-            ·
+            Â·
           </span>
           <span
             style={{
@@ -390,7 +390,7 @@ function TrainingCockpit({
             {dayName ? `${dayName.toUpperCase()}` : ""}
           </span>
           <span style={{ color: TEXT.tertiary, fontSize: TYPE.caption.size }}>
-            ·
+            Â·
           </span>
           <span
             style={{
@@ -406,7 +406,7 @@ function TrainingCockpit({
         </div>
 
         {/*
-         * Elapsed time — the running session's vital sign. Rendered only
+         * Elapsed time â€” the running session's vital sign. Rendered only
          * while a session is actually in progress: the clock is derived
          * from `startedAt` via the app's single clock, and a session that
          * has ended (its context entry is gone) reads as zero and runs no
@@ -505,7 +505,7 @@ function TrainingCockpit({
                     margin: 0,
                   }}
                 >
-                  Sesión completada hoy · {completedSession.durationMin} min ·{" "}
+                  SesiÃ³n completada hoy Â· {completedSession.durationMin} min Â·{" "}
                   {completedSession.setCount} series de trabajo
                 </p>
               ) : (
@@ -542,7 +542,7 @@ function TrainingCockpit({
                   margin: 0,
                 }}
               >
-                Rutina del día
+                Rutina del dÃ­a
               </h1>
               <p
                 style={{
@@ -629,7 +629,7 @@ function TrainingCockpit({
         )}
 
         {/*
-         * Set progress bar — the same completed/planned pair as the chip,
+         * Set progress bar â€” the same completed/planned pair as the chip,
          * as a bar. Real data only: both numbers come from the draft the
          * workout screen writes, so nothing here is invented to fill space.
          */}
@@ -669,7 +669,7 @@ function TrainingCockpit({
             </div>
           )}
 
-        {/* Single CTA — full width on mobile for thumb-friendly tap */}
+        {/* Single CTA â€” full width on mobile for thumb-friendly tap */}
         <div style={{ marginTop: SPACE.sm }}>
           {loading ? (
             <div
@@ -721,7 +721,7 @@ function TrainingCockpit({
       </div>
 
       {/*
-       * Right: anatomical visualization — always present.
+       * Right: anatomical visualization â€” always present.
        *
        * The brief's rule: the diagram never disappears for lack of
        * information. Without a routine it renders the complete figure
@@ -740,7 +740,7 @@ function TrainingCockpit({
           <MuscleReadonlyMap
             counts={anatomyCounts}
             idleHint={anatomyIdleHint}
-            label="Torso anatómico"
+            label="Torso anatÃ³mico"
             aspectRatio={120 / 192}
           />
         </div>
@@ -750,7 +750,7 @@ function TrainingCockpit({
 }
 
 // ---------------------------------------------------------------------------
-// ConsistencyRing — weekly progress ring with streak
+// ConsistencyRing â€” weekly progress ring with streak
 // ---------------------------------------------------------------------------
 
 function ConsistencyRing({
@@ -921,7 +921,7 @@ function ConsistencyRing({
                     color: TEXT.tertiary,
                   }}
                 >
-                  Récord semanal
+                  RÃ©cord semanal
                 </div>
               </div>
               {volumeTrend && totalVolume !== null && totalVolume > 0 && (
@@ -956,7 +956,7 @@ function ConsistencyRing({
                    * volume: the sparkline is the trailing
                    * week, day by day, and the delta is the
                    * same week against the one before it.
-                   * Both are the real numbers — a week with
+                   * Both are the real numbers â€” a week with
                    * no volume hides the whole stat rather
                    * than drawing a graph with nothing in it.
                    * The delta keeps a neutral colour: a down
@@ -992,7 +992,7 @@ function ConsistencyRing({
 }
 
 // ---------------------------------------------------------------------------
-// WeeklyRhythm — 7-day timeline (Mon→Sun, single row)
+// WeeklyRhythm â€” 7-day timeline (Monâ†’Sun, single row)
 // ---------------------------------------------------------------------------
 
 function WeeklyRhythm({
@@ -1130,7 +1130,7 @@ function WeeklyRhythm({
                         color: STATUS.progression.text,
                       }}
                     >
-                      •
+                      â€¢
                     </span>
                   )}
                 </div>
@@ -1164,7 +1164,7 @@ function WeeklyRhythm({
                 margin: 0,
               }}
             >
-              Cuando registres tus entrenamientos, aquí podrás ver tu
+              Cuando registres tus entrenamientos, aquÃ­ podrÃ¡s ver tu
               constancia semanal.
             </p>
           </div>
@@ -1175,7 +1175,7 @@ function WeeklyRhythm({
 }
 
 // ---------------------------------------------------------------------------
-// PersonalRecords — editorial PR list
+// PersonalRecords â€” editorial PR list
 // ---------------------------------------------------------------------------
 
 function PersonalRecords({
@@ -1200,7 +1200,7 @@ function PersonalRecords({
         }}
       >
         <h2 style={{ ...TYPE.title2, color: TEXT.secondary, margin: 0 }}>
-          Récords recientes
+          RÃ©cords recientes
         </h2>
 
         {loading ? (
@@ -1256,8 +1256,8 @@ function PersonalRecords({
                 margin: 0,
               }}
             >
-              Registra una sesión para empezar a construir tu historial.
-              Tus mejores cargas y repeticiones aparecerán aquí al
+              Registra una sesiÃ³n para empezar a construir tu historial.
+              Tus mejores cargas y repeticiones aparecerÃ¡n aquÃ­ al
               completar entrenamientos.
             </p>
             {onStart && (
@@ -1389,7 +1389,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   // The running session's set progress, read from the draft the workout
   // screen persists. Zeros unless a session is actually active, and it
   // only ever counts sets from the draft whose startedAt matches the
-  // running session — a stale draft is another workout, not this one.
+  // running session â€” a stale draft is another workout, not this one.
   const setProgress = useActiveSetProgress(userId, data.activeSession);
   const activeStartedAt = data.activeSession?.startedAt ?? null;
 
@@ -1443,14 +1443,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       style={{
         /*
          * Radial red accent gradient at the top, composited over the true-black
-         * canvas. `ACCENT.muted` is 12% tint — a glow, not a wash — and fades to
+         * canvas. `ACCENT.muted` is 12% tint â€” a glow, not a wash â€” and fades to
          * transparent so it never competes with the card chrome. The canvas sits
          * beneath so OLED pixels stay off outside the halo.
          */
         background: `radial-gradient(circle at top, ${ACCENT.muted} 0%, transparent 60%), ${SURFACE_ROLE.canvas}`,
       }}
     >
-      {/* Recoverable error — shown only when a source failed and is not loading */}
+      {/* Recoverable error â€” shown only when a source failed and is not loading */}
       {firstError !== null && !data.loading && (
         <GlassSurface
           raised
@@ -1491,7 +1491,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         </GlassSurface>
       )}
 
-      {/* Hero — Training Cockpit */}
+      {/* Hero â€” Training Cockpit */}
       <TrainingCockpit
         loading={data.loading}
         greeting={data.greeting}
@@ -1509,10 +1509,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         sessionState={sessionState}
       />
 
-      {/* Bento grid — mobile: 1 column (touch-priority order), desktop: 3 columns */}
+      {/* Bento grid â€” mobile: 1 column (touch-priority order), desktop: 3 columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        {/* Mobile order: 1=Esta Semana, 2=Consistencia, 3=Récords */}
-        {/* Desktop order: 1=Consistencia, 2=Esta Semana, 3=Récords */}
+        {/* Mobile order: 1=Esta Semana, 2=Consistencia, 3=RÃ©cords */}
+        {/* Desktop order: 1=Consistencia, 2=Esta Semana, 3=RÃ©cords */}
         <div className="order-1 lg:order-2">
           <WeeklyRhythm
             loading={data.loading}

@@ -133,8 +133,8 @@ function Media({ exercise }: { exercise: Exercise }) {
  * once. An exercise the athlete has never trained lights nothing, which is the honest
  * answer: the panel is showing what they have trained, not what the movement could train.
  *
- * `countMuscleSets` is the same call `PreWorkoutSummary` makes, deliberately. Two counts on
- * the same screen is how a summary and a figure end up disagreeing while both look
+ * `countMuscleSets` is the same call `WorkoutPreStartView` makes, deliberately. Two counts
+ * on the same screen is how a summary and a figure end up disagreeing while both look
  * authoritative.
  */
 function MusclePanel({

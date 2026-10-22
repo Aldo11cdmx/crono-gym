@@ -203,7 +203,7 @@ function RecoverHarness() {
 
 /** Through the pre-workout gate and into the logger. */
 function tapStart() {
-  fireEvent.click(screen.getByRole("button", { name: /Empezar/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Iniciar Entrenamiento/ }));
 }
 
 /** The row for set number n, resolved through its accessible group name. */

@@ -84,6 +84,7 @@ import { kgToLb } from "../lib/profile";
 import { getNextSupersetTargetIndex, getSupersetInfo } from "../lib/workout/supersetUtils";
 import type { SupersetInfo } from "../lib/workout/supersetUtils";
 import { SupersetBadge } from "./workout/SupersetBadge";
+import { WorkoutPreStartView } from "./workout/WorkoutPreStartView";
 import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
@@ -106,79 +107,6 @@ function toNumber(value: string): number | null {
 }
 
 /** ------------------------------------------------------------------ headers */
-
-interface PreWorkoutGateProps {
-  routineTitle: string;
-  plannedCount: number;
-  onStart: () => void;
-}
-
-function PreWorkoutGate({
-  routineTitle,
-  plannedCount,
-  onStart,
-}: PreWorkoutGateProps) {
-  return (
-    <section
-      role="region"
-      aria-label="Resumen previo al entrenamiento"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: SPACE.lg,
-        padding: SPACE.card,
-        borderRadius: RADIUS.surface,
-        border: `1px dashed ${GLASS.borderStrong}`,
-        background: SOLID.card,
-        textAlign: "center",
-        maxWidth: "560px",
-        margin: "0 auto",
-      }}
-    >
-      <h2
-        style={{
-          margin: 0,
-          fontSize: TYPE.title.size,
-          fontWeight: TYPE.title.weight,
-          color: TEXT.primary,
-        }}
-      >
-        {routineTitle}
-      </h2>
-      <p
-        style={{
-          margin: 0,
-          fontSize: TYPE.body.size,
-          color: TEXT.secondary,
-        }}
-      >
-        {plannedCount} ejercicio{plannedCount !== 1 ? "s" : ""} planeados.
-      </p>
-      <button
-        type="button"
-        onClick={onStart}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: SPACE.sm,
-          minHeight: MOTION.minTouchTarget,
-          padding: `${SPACE.sm} ${SPACE.lg}`,
-          borderRadius: RADIUS.control,
-          border: `1px solid ${STATUS.progression.base}`,
-          background: STATUS.progression.base,
-          color: TEXT.onAccent,
-          fontSize: TYPE.subhead.size,
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
-      >
-        Empezar
-      </button>
-    </section>
-  );
-}
 
 interface SessionHeaderProps {
   exerciseLabel: string;
@@ -2087,10 +2015,20 @@ export function ActiveWorkout({
       )}
 
       {showSummary ? (
-        <PreWorkoutGate
+        <WorkoutPreStartView
           routineTitle={routineTitle}
-          plannedCount={planned.length}
+          planned={planned}
           onStart={() => setStarted(true)}
+          /*
+           * Leaving the pre-workout screen ends the session.
+           *
+           * The session was opened when the routine was chosen, so the clock is already
+           * running and the pill is already counting it. An athlete who backs out of
+           * the preview has not trained anything, and a session that keeps counting
+           * behind the dashboard is the zombie session the recovery flow keeps having
+           * to clean up.
+           */
+          onExit={end}
         />
       ) : items.length === 0 ? (
         <section
@@ -2135,8 +2073,17 @@ export function ActiveWorkout({
               minHeight: MOTION.minTouchTarget,
               padding: `${SPACE.sm} ${SPACE.lg}`,
               borderRadius: RADIUS.control,
-              border: `1px solid ${STATUS.progression.base}`,
-              background: STATUS.progression.base,
+              /*
+               * The accent, not a status colour.
+               *
+               * `STATUS.progression` is the "the load went up" signal and is painted
+               * in cyan for exactly that reason; using it as the fill of an action
+               * button made a second colour mean "do this" on the same screen as the
+               * red that means it everywhere else. This is the only action on the empty
+               * state, so it is the one primary, and the primary is the accent.
+               */
+              border: `1px solid ${ACCENT.base}`,
+              background: ACCENT.base,
               color: TEXT.onAccent,
               fontSize: TYPE.subhead.size,
               fontWeight: 600,

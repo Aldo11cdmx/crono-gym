@@ -78,19 +78,6 @@ const BADGE_ROLE: Record<string, string> = {
   coach: PROFILE_LABELS.badgeCoach,
 };
 
-const EXPERIENCE_BADGE: Record<string, string> = {
-  beginner: PROFILE_LABELS.badgeBeginner,
-  intermediate: PROFILE_LABELS.badgeIntermediate,
-  advanced: PROFILE_LABELS.badgeAdvanced,
-};
-
-function initialsOf(name: string | null): string {
-  if (!name || !name.trim()) return "—";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 function formatDateShort(iso: string): string {
   const date = new Date(iso);
   return date.toLocaleDateString("es-ES", { month: "short", day: "numeric" });
@@ -262,7 +249,6 @@ export function ProfilePage() {
           energy={energy}
           bodyMetrics={bodyMetrics}
           age={age}
-          bmi={bmi}
           saving={saving}
           update={update}
         />
@@ -430,7 +416,6 @@ function BiometricTabContent({
   energy,
   bodyMetrics,
   age,
-  bmi,
   saving,
   update,
 }: {
@@ -439,7 +424,6 @@ function BiometricTabContent({
   energy: EnergyReport | null;
   bodyMetrics: ReturnType<typeof useBodyMetrics>;
   age: number | null;
-  bmi: number | null;
   saving: boolean;
   update: (patch: Partial<Profile>) => Promise<boolean>;
 }) {

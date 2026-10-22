@@ -1,11 +1,11 @@
 /**
- * localSession.ts — the single owner of the local role.
+ * localSession.ts â€” the single owner of the local role.
  *
  * This module wraps the real Supabase session and adds one thing the server does
  * not yet provide: a *local* role. It reads that role from Dexie (`localState`),
  * never from the JWT, and the contract is explicit about what that means:
  *
- *   The local role is NOT security. It is a UX switch — it decides which
+ *   The local role is NOT security. It is a UX switch â€” it decides which
  *   developer-only chrome renders. The real boundary is the server: RLS on
  *   `profiles.role`, the coach's own authenticated account, and whatever the
  *   Edge Functions enforce. When real auth with roles ships, this file is the
@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import { LOCAL_STATE_STORE, tx } from "./idb";
 
-export type Role = "athlete" | "developer" | "coach";
+export type Role = "athlete" | "developer" | "coach" | "admin";
 
 /** The key under which the role row is stored. */
 export const LOCAL_STATE_KEY = "cronos-local-state-v1";

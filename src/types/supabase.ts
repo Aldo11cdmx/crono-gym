@@ -134,7 +134,7 @@ export interface Database {
           /** Which day of the routine this belongs to. Zero-based. */
           day_index: number;
           /**
-           * The day's name as its author wrote it -- "Pecho y espalda", not "Día 2".
+           * The day's name as its author wrote it -- "Pecho y espalda", not "DÃƒÂ­a 2".
            *
            * Empty rather than null for the pre-migration rows, so the read path is one
            * `string` with no coalesce: a routine with no day names is still a routine,
@@ -207,6 +207,54 @@ export interface Database {
           started_at?: string;
           completed_at?: string | null;
           journal_notes?: string | null;
+        };
+        Relationships: ForeignKey[];
+      };
+      user_roles: {
+        Row: {
+          user_id: string;
+          role: 'athlete' | 'coach' | 'admin' | 'developer';
+          granted_by: string | null;
+          granted_at: string;
+        };
+        Insert: {
+          user_id: string;
+          role: 'athlete' | 'coach' | 'admin' | 'developer';
+          granted_by?: string | null;
+          granted_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          role?: 'athlete' | 'coach' | 'admin' | 'developer';
+          granted_by?: string | null;
+          granted_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+      role_audit_log: {
+        Row: {
+          id: number;
+          user_id: string | null;
+          role: 'athlete' | 'coach' | 'admin' | 'developer';
+          action: string;
+          actor: string | null;
+          at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id?: string | null;
+          role: 'athlete' | 'coach' | 'admin' | 'developer';
+          action: string;
+          actor?: string | null;
+          at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: string | null;
+          role?: 'athlete' | 'coach' | 'admin' | 'developer';
+          action?: string;
+          actor?: string | null;
+          at?: string;
         };
         Relationships: ForeignKey[];
       };
@@ -638,6 +686,8 @@ export type RoutineExercise = Database["public"]["Tables"]["routine_exercises"][
 export type WorkoutLog = Database["public"]["Tables"]["workout_logs"]["Row"];
 export type CompletedSet = Database["public"]["Tables"]["completed_sets"]["Row"];
 export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+export type AppRole = 'athlete' | 'coach' | 'admin' | 'developer';
+export type UserRoleRow = Database["public"]["Tables"]["user_roles"]["Row"];
 export type BodyweightEntry = Database["public"]["Tables"]["bodyweight_entries"]["Row"];
 export type BodyMeasurement = Database["public"]["Tables"]["body_measurements"]["Row"];
 export type SessionCheckin = Database["public"]["Tables"]["session_checkins"]["Row"];

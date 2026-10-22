@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./lib/router";
 import { ActiveSessionProvider } from "./context/ActiveSessionContext";
+import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { GymSettingsProvider } from "./context/GymSettingsContext";
 // Before `./index.css` on purpose. The stylesheet reads `--cronos-*` custom properties, and
 // a generated sheet that lands after it is a sheet that resolves to its fallback for a
@@ -17,6 +18,7 @@ registerServiceWorker({ enabled: !import.meta.env.DEV });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
+    <GlobalErrorBoundary>
     {/* Outside the router because `AppShell` reads it, and the shell is a
         descendant of the router rather than an ancestor. */}
     <ActiveSessionProvider>
@@ -26,5 +28,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <RouterProvider router={router} />
       </GymSettingsProvider>
     </ActiveSessionProvider>
+    </GlobalErrorBoundary>
   </React.StrictMode>
 );

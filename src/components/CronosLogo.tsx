@@ -7,10 +7,13 @@
  * glance and holds up as a 16px favicon-sized chip.
  *
  * Inline SVG rather than an asset file: no extra request, no icon-font
- * dependency, and the gradient follows the theme automatically.
+ * dependency, and the gradient follows the theme automatically. The one thing it
+ * does not do is read the theme at runtime -- see the note on the gradient below.
  */
 
 import { useId } from "react";
+
+import { LOGO_GRADIENT } from "@/design/logoGradient";
 
 interface CronosLogoProps {
   /** Rendered size in pixels; the mark is square. */
@@ -24,7 +27,7 @@ export function CronosLogo({ size = 32, showWordmark = false, className = "" }: 
   // useId keeps the gradient ids unique when the mark is rendered more than
   // once on a page, otherwise the second instance paints with the first's stops.
   const raw = useId();
-  const gradientId = `cronos-gold-${raw.replace(/[^a-zA-Z0-9]/g, "")}`;
+  const gradientId = `cronos-logo-${raw.replace(/[^a-zA-Z0-9]/g, "")}`;
 
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
@@ -38,10 +41,24 @@ export function CronosLogo({ size = 32, showWordmark = false, className = "" }: 
         className="shrink-0"
       >
         <defs>
+          {/*
+           * The brand gradient, in red. The old one ran gold -> amber -> burnt orange,
+           * which was the same family as the accent used to be, so the mark and the
+           * primary action were one colour. Two stops are enough now: a lighter tint at
+           * the top-left where a light would hit it, and the accent itself at the
+           * bottom-right.
+           *
+           * Written as literals rather than `var(--cronos-accent-base)` on purpose: this
+           * is an SVG paint server, and resolving a custom property inside a gradient
+           * stop works in every current browser but silently fails to that gradient --
+           * the mark falls back to no paint at all -- in enough older WebViews that it is
+           * not worth the risk on the one asset that must never fail. `logoGradient.ts`
+           * owns these values and the design test checks them against `ACCENT`.
+           */}
           <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ffd27a" />
-            <stop offset="45%" stopColor="#ff9f0a" />
-            <stop offset="100%" stopColor="#e07407" />
+            <stop offset="0%" stopColor={LOGO_GRADIENT.light} />
+            <stop offset="55%" stopColor={LOGO_GRADIENT.base} />
+            <stop offset="100%" stopColor={LOGO_GRADIENT.deep} />
           </linearGradient>
         </defs>
 

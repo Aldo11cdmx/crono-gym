@@ -16,21 +16,65 @@
  */
 
 import type { Exercise } from "@/types/supabase";
-import type { SetEntry } from "../components/SetLoggerRow";
-
-const DB_NAME = "cronos-offline";
-const DB_VERSION = 1;
-const DRAFT_STORE = "drafts";
-const QUEUE_STORE = "queue";
+import type { SetEntry } from "./workout/types";
+import { normalizeSetEntry } from "./workout/setKind";
+import { newInstanceId } from "./workout/instanceId";
+import { DRAFT_STORE, QUEUE_STORE, openDb, tx } from "./idb";
 
 export interface DraftExercise {
   key: string;
   exercise: Exercise;
   restSeconds: number;
+  /**
+   * The identity of this exercise within this session.
+   *
+   * The key is the catalog id and is shared by every session that runs the
+   * exercise; this is the id of *this* execution of it, and it is what the
+   * tracker follows from the first tap to the last. It travels with the draft
+   * so that a reloaded session is still the same execution and not a new one.
+   */
+  instanceId?: string;
+  /**
+   * The superset this exercise belongs to, or null when it stands alone.
+   *
+   * Optional and nullable because both are real answers: a draft written
+   * before supersets existed has no grouping to carry, and an exercise that
+   * is not in a group says so with null rather than by being absent.
+   */
+  groupId?: string | null;
+  /**
+   * The sets of this exercise, each one carrying its own type.
+   *
+   * The type of a set -- `normal`, `warmup`, `failure` or `drop` -- travels in
+   * `SetEntry.kind`, which is the single source of truth for it across the
+   * whole app: the chip row renders it, the tonnage counts on it, and the
+   * sync payload derives the database's warm-up flag from it. A second copy of
+   * it on the draft would be a second answer to the same question, and the two
+   * would disagree the first time a set was edited.
+   *
+   * A draft written before the kind chips shipped carries only the legacy
+   * `is_warmup` flag; `normalizeSetEntry` maps that shape onto `kind` on read,
+   * so the old draft is migrated rather than lost.
+   */
   sets: SetEntry[];
 }
 
-/** A full in-progress or just-finished session, persisted locally. */
+/**
+ * A full in-progress or just-finished session, persisted locally.
+ *
+ * v2 adds the two things a reload needs to put the athlete back exactly
+ * where they were: the deadline of the rest that was running, and the
+ * exercise that was on screen. Both are optional, because a draft written
+ * before v2 is still a valid draft and has to keep working -- the
+ * normaliser in `normalizeDraft` simply leaves them out.
+ *
+ * The type of each set does not live here either: it travels inside
+ * `SetEntry.kind` -- `normal` | `warmup` | `failure` | `drop` -- which is the
+ * single source of truth for it, and it is normalised on read by
+ * `normalizeSetEntry`. A draft written before the kind chips shipped carries
+ * `is_warmup: boolean` instead, and is mapped onto the current shape rather
+ * than lost.
+ */
 export interface SessionDraft {
   /** Client-generated; also used as the Supabase `workout_logs.id`. */
   logId: string;
@@ -43,6 +87,24 @@ export interface SessionDraft {
   /** Set once the user finishes; still synced until the queue drains. */
   finalized: boolean;
   updatedAt: number;
+  /**
+   * When the rest that was running ends, in epoch milliseconds.
+   *
+   * A deadline rather than a remaining count, because a count is only true
+   * at the moment it was written: the tab may be throttled, asleep or
+   * closed, and a rest ends at a moment, not after a number of ticks. It is
+   * the same reason the timer itself reads the wall clock.
+   *
+   * Absent when no rest was running.
+   */
+  restEndsAt?: number;
+  /**
+   * The exercise that was on screen, as the item key in `items`.
+   *
+   * Absent in a draft written before v2; `null` when there is no selection
+   * to speak of.
+   */
+  selectedKey?: string | null;
 }
 
 /** One completed set, shaped to match the `completed_sets` columns. */
@@ -53,6 +115,20 @@ export interface QueuedSet {
   reps: number | null;
   rpe: number | null;
   is_warmup: boolean;
+  /**
+   * What the athlete wrote about this set, or null.
+   *
+   * `20261003040000_exercise_hub_notes.sql`. Optional rather than required so a queue
+   * written by an older build still replays: the column was added with no default, so an
+   * omitted key and an explicit null are the same thing to PostgREST, and making this
+   * required would only mean rewriting every payload already sitting on a device.
+   *
+   * Not on `SetEntry`. That shape is the live editing state of a form and its fields are
+   * strings because a half-typed weight must survive; a note is optional free text that is
+   * written once and never edited in place, so it enters at the persistence boundary
+   * alongside `is_warmup`, which is derived the same way.
+   */
+  notes?: string | null;
 }
 
 export interface FinalizePayload {
@@ -81,69 +157,14 @@ export interface QueueOp {
 }
 
 // ---------------------------------------------------------------- IndexedDB
-
-let dbPromise: Promise<IDBDatabase | null> | null = null;
-
-function openDb(): Promise<IDBDatabase | null> {
-  if (dbPromise) return dbPromise;
-
-  dbPromise = new Promise((resolve) => {
-    // Absent in SSR and in some hardened browsers.
-    if (typeof indexedDB === "undefined") {
-      resolve(null);
-      return;
-    }
-    try {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(DRAFT_STORE)) {
-          // Keyed by logId so a single active session per device is enough.
-          db.createObjectStore(DRAFT_STORE, { keyPath: "logId" });
-        }
-        if (!db.objectStoreNames.contains(QUEUE_STORE)) {
-          const store = db.createObjectStore(QUEUE_STORE, { keyPath: "id" });
-          store.createIndex("createdAt", "createdAt");
-        }
-      };
-
-      request.onsuccess = () => resolve(request.result);
-      // Private browsing and blocked storage land here; never throw at the user.
-      request.onerror = () => resolve(null);
-      request.onblocked = () => resolve(null);
-    } catch {
-      resolve(null);
-    }
-  });
-
-  return dbPromise;
-}
-
-function tx<T>(
-  store: string,
-  mode: IDBTransactionMode,
-  run: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T | null> {
-  return openDb().then(
-    (db) =>
-      new Promise<T | null>((resolve) => {
-        if (!db) {
-          resolve(null);
-          return;
-        }
-        try {
-          const transaction = db.transaction(store, mode);
-          const request = run(transaction.objectStore(store));
-          request.onsuccess = () => resolve(request.result ?? null);
-          request.onerror = () => resolve(null);
-          transaction.onerror = () => resolve(null);
-        } catch {
-          resolve(null);
-        }
-      }),
-  );
-}
+/*
+ * The database name, version and upgrade handler live in `./idb`. This module used
+ * to declare its own `DB_VERSION = 1` while `rankHistory` opened the same database
+ * at v2, so whichever opened second got a `VersionError`, swallowed it, and
+ * silently stopped queueing workouts. Owning the schema in one place is what
+ * removes that class of bug; the degrade-to-`null` contract is unchanged and is now
+ * `idb.ts`'s.
+ */
 
 // ---------------------------------------------------------------- drafts
 
@@ -151,9 +172,39 @@ export async function saveDraft(draft: SessionDraft): Promise<void> {
   await tx(DRAFT_STORE, "readwrite", (store) => store.put(draft));
 }
 
+/**
+ * Repairs a draft written by an older build.
+ *
+ * Drafts are durable: a session opened before the set-kind chips shipped still
+ * sits in IndexedDB with `is_warmup: boolean` and no `kind`, and it will be
+ * offered back for recovery the next time the app opens. `normalizeSetEntry`
+ * maps that shape onto the current one, including the legacy warm-up flag.
+ *
+ * The v2 fields are normalised rather than trusted. IndexedDB is durable, so
+ * a value written by an older build -- or half-written by a session that died
+ * mid-save -- has to survive the trip to the timer: a rest deadline that is
+ * not a number is no rest at all, and a selection that is not a string is no
+ * selection.
+ */
+function normalizeDraft(draft: SessionDraft): SessionDraft {
+  return {
+    ...draft,
+    restEndsAt:
+      typeof draft.restEndsAt === "number" && Number.isFinite(draft.restEndsAt)
+        ? draft.restEndsAt
+        : undefined,
+    selectedKey: typeof draft.selectedKey === "string" ? draft.selectedKey : null,
+    items: (draft.items ?? []).map((item) => ({
+      ...item,
+      sets: (item.sets ?? []).map((set, index) => normalizeSetEntry(set, index)),
+    })),
+  };
+}
+
 /** Loads a specific draft by session id. */
 export async function loadDraft(logId: string): Promise<SessionDraft | null> {
-  return tx<SessionDraft>(DRAFT_STORE, "readonly", (store) => store.get(logId));
+  const draft = await tx<SessionDraft>(DRAFT_STORE, "readonly", (store) => store.get(logId));
+  return draft ? normalizeDraft(draft) : null;
 }
 
 /**
@@ -169,10 +220,16 @@ export async function loadRecoverableDraft(userId: string): Promise<SessionDraft
       const request = db.transaction(DRAFT_STORE, "readonly").objectStore(DRAFT_STORE).getAll();
       request.onsuccess = () => {
         const rows = (request.result ?? []) as SessionDraft[];
+        // Limpiar borradores zombis que ya fueron finalizados
+        for (const row of rows) {
+          if (row.userId === userId && row.finalized) {
+            void deleteDraft(row.logId);
+          }
+        }
         const candidate = rows
           .filter((d) => d.userId === userId && !d.finalized && d.items.length > 0)
           .sort((a, b) => b.updatedAt - a.updatedAt)[0];
-        resolve(candidate ?? null);
+        resolve(candidate ? normalizeDraft(candidate) : null);
       };
       request.onerror = () => resolve(null);
     } catch {
@@ -226,23 +283,10 @@ export async function queueLength(): Promise<number> {
 /**
  * Session UUID, generated locally so the identifier exists offline.
  *
- * `crypto.randomUUID` needs a secure context; the fallback keeps the app
- * usable over plain http on a LAN.
+ * The one implementation lives in `workout/instanceId`, because a session's
+ * draft id and a session's execution ids are the same kind of thing: an
+ * identity that exists before the server has heard of it.
  */
 export function newSessionId(): string {
-  const c = globalThis.crypto;
-  if (c && typeof c.randomUUID === "function") return c.randomUUID();
-
-  const bytes = new Uint8Array(16);
-  if (c && typeof c.getRandomValues === "function") {
-    c.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < 16; i += 1) bytes[i] = Math.floor(Math.random() * 256);
-  }
-  // Version 4, variant 1.
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-  const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return newInstanceId();
 }

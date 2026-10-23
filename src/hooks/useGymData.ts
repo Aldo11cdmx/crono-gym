@@ -1,16 +1,43 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@lib/supabase";
+import { sanitizeIds } from "@lib/supabaseUtils";
 import type { Exercise, Routine, RoutineExercise, WorkoutLog } from "@/types/supabase";
 
 export interface PlannedExercise {
   exercise: Exercise;
   target_sets: number;
   rest_seconds: number;
+  /**
+   * Which day of the routine this belongs to. Zero-based.
+   *
+   * Read from `routine_exercises.day_index`. Nullable for rows written before
+   * the column existed — callers fall back to treating everything as day one.
+   */
+  dayIndex: number | null;
+  /**
+   * The coach's own name for the day — "Pecho y espalda", not "Day 1".
+   *
+   * Read from `routine_exercises.day_label`. Empty string when unnamed.
+   */
+  dayLabel: string;
+  /**
+   * The superset this exercise belongs to, when it is in one.
+   *
+   * Read from `routine_exercises.group_id`, the column that arrives with the
+   * superset migration. Until then every row reads as "no group", which is the
+   * truth: nothing has ever grouped two of these exercises. The field is
+   * optional so a routine written before the grouping existed is still a
+   * routine rather than a broken one.
+   */
+  groupId?: string | null;
 }
 
 export interface RoutineWithExercises extends Routine {
   exercises: PlannedExercise[];
 }
+
+/** Returned by a write: false means the server refused and local state was rolled back. */
+export type WriteResult = boolean;
 
 export interface WeekPoint {
   label: string;
@@ -49,63 +76,224 @@ export function useRoutines(userId: string | null) {
   const [routines, setRoutines] = useState<RoutineWithExercises[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * Ids with a favourite write in flight.
+   *
+   * A set rather than a boolean: the star is per-row, and a single global flag would
+   * disable every other row's star for the duration of one write. It also gives the
+   * UI something honest to render -- a disabled star reads as "unavailable", a
+   * spinner reads as "saving".
+   */
+  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
+  /**
+   * In-flight favourite writes, keyed by routine id.
+   *
+   * A ref rather than state because this is coordination, not render state: it must
+   * be readable synchronously inside `toggleFavorite` on the very next tap, and a
+   * `useState` value would still hold the previous render's chain there.
+   */
+  const writesInFlight = useRef(new Map<string, Promise<WriteResult>>());
+
+  /**
+   * The list as the writes see it.
+   *
+   * `setRoutines`'s updater is not a getter. React may defer running it, and under
+   * StrictMode it runs it twice, so reading a routine's current value out of the
+   * updater's closure produced `false` for every write: the value sent to the server
+   * was whatever the variable happened to hold when the request was built, not the
+   * value being flipped. A ref mirror is updated eagerly, which is what makes the
+   * flip correct, and it keeps two rapid taps agreeing with each other.
+   */
+  const routinesRef = useRef<RoutineWithExercises[]>([]);
+
+  /** Applies an update to both the mirror and the rendered state. */
+  const applyRoutines = useCallback((next: RoutineWithExercises[]) => {
+    routinesRef.current = next;
+    setRoutines(next);
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!userId) {
-      setRoutines([]);
+      applyRoutines([]);
       return;
     }
     setLoading(true);
     setError(null);
-    const [routineRes, linkRes, exerciseRes] = await Promise.all([
-      supabase.from("routines").select("*").eq("user_id", userId),
-      supabase.from("routine_exercises").select("*"),
-      supabase.from("exercises").select("*"),
-    ]);
+    const routineRes = await supabase.from("routines").select("*").eq("user_id", userId);
     if (routineRes.error) {
       setError(routineRes.error.message);
-      setRoutines([]);
-      setLoading(false);
-      return;
-    }
-    if (linkRes.error || exerciseRes.error) {
-      setError((linkRes.error ?? exerciseRes.error)!.message);
-      setRoutines([]);
+      applyRoutines([]);
       setLoading(false);
       return;
     }
 
     const rows = (routineRes.data ?? []) as Routine[];
-    const links = (linkRes.data ?? []) as RoutineExercise[];
-    const catalog = new Map<string, Exercise>(
-      ((exerciseRes.data ?? []) as Exercise[]).map((e) => [e.id, e]),
-    );
+    const routineIds = rows.map((row) => row.id);
+
+    /*
+     * The links of *these* routines, with the exercise each one points at.
+     *
+     * It used to be three parallel reads: the routines, every link in the
+     * table and every exercise in the table. Two of them were unbounded -- a
+     * routine of four exercises made the app download 1,324 exercises and
+     * every link every user had ever written. Now the links are read for
+     * these routines only, and the exercise each link points at comes with
+     * them, so the read is as long as the routines on screen.
+     */
+    const linkRes =
+      routineIds.length === 0
+        ? { data: [], error: null }
+        : await supabase
+            .from("routine_exercises")
+            .select("*, exercises(*)")
+            .in("routine_id", routineIds);
+    if (linkRes.error) {
+      setError(linkRes.error.message);
+      applyRoutines([]);
+      setLoading(false);
+      return;
+    }
+
+    /*
+     * `group_id` is read through a widened row type on purpose: the column
+     * arrives with the superset migration, and the read has to work both
+     * before and after it without a second code path. `select("*")` returns
+     * whatever the table has, so the moment the column exists this reads it
+     * and the day before it reads nothing.
+     *
+     * `exercises` is the row the link points at, delivered with the link.
+     */
+    const links = (linkRes.data ?? []) as unknown as (RoutineExercise & {
+      group_id?: string | null;
+      exercises: Exercise | null;
+    })[];
     const byRoutine = new Map<string, PlannedExercise[]>();
     for (const link of [...links].sort((a, b) => a.order_index - b.order_index)) {
-      const exercise = catalog.get(link.exercise_id);
+      const exercise = link.exercises;
       if (!exercise) continue;
       const list = byRoutine.get(link.routine_id) ?? [];
       list.push({
         exercise,
         target_sets: link.target_sets,
         rest_seconds: link.rest_seconds,
+        dayIndex: link.day_index ?? null,
+        dayLabel: link.day_label ?? "",
+        groupId: link.group_id ?? null,
       });
       byRoutine.set(link.routine_id, list);
     }
 
-    setRoutines(
+    applyRoutines(
       rows
         .map((r) => ({ ...r, exercises: byRoutine.get(r.id) ?? [] }))
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
     );
     setLoading(false);
-  }, [userId]);
+  }, [userId, applyRoutines]);
+
+  /**
+   * Flips a routine's favourite flag, optimistically.
+   *
+   * The row updates before the request resolves, because a star that waits on a
+   * round trip feels broken -- the tap is the feedback. If the server refuses, the
+   * row is restored and `error` carries the reason; the alternative is a star that
+   * silently reverts on the next render with nothing to explain why.
+   *
+   * The update is filtered by `user_id` as well as `id`. RLS already scopes the read,
+   * but the write is the thing being defended here: a routine id is a uuid that an
+   * athlete can put in their own payload, and the `.eq("user_id", userId)` is what
+   * makes a row belonging to somebody else update zero rows instead of one.
+   *
+   * Writes are serialised per id. Two rapid taps reading the same optimistic row
+   * would both compute the same target and the second tap -- meant to unstar --
+   * would leave the routine starred. Chaining on the previous write makes the
+   * second read the first write's settled value.
+   *
+   * @returns whether the server accepted the change.
+   */
+  const toggleFavorite = useCallback(
+    async (routineId: string): Promise<WriteResult> => {
+      if (!userId) return false;
+
+      const previous = writesInFlight.current.get(routineId) ?? Promise.resolve(true);
+      const run = previous.then(async (): Promise<WriteResult> => {
+        const row = routinesRef.current.find((r) => r.id === routineId);
+        // A missing row is not a failure to report: the routine was deleted or the
+        // account changed between render and tap, and there is nothing to write.
+        if (!row) return false;
+        const target = !row.is_favorite;
+        applyRoutines(
+          routinesRef.current.map((r) => (r.id === routineId ? { ...r, is_favorite: target } : r)),
+        );
+
+        setPendingIds((current) => new Set(current).add(routineId));
+
+        const { error: writeError } = await supabase
+          .from("routines")
+          .update({ is_favorite: target })
+          .eq("id", routineId)
+          .eq("user_id", userId);
+
+        setPendingIds((current) => {
+          const next = new Set(current);
+          next.delete(routineId);
+          return next;
+        });
+
+        if (writeError) {
+          applyRoutines(
+            routinesRef.current.map((r) =>
+              r.id === routineId ? { ...r, is_favorite: !target } : r,
+            ),
+          );
+          setError(writeError.message);
+          return false;
+        }
+
+        setError(null);
+        return true;
+      });
+
+      // Registered before awaiting, so a tap arriving during this write chains onto
+      // it rather than starting a second one.
+      writesInFlight.current.set(routineId, run);
+      try {
+        return await run;
+      } finally {
+        // Only clear if this is still the chain's tail: a write queued behind this
+        // one has already replaced the entry.
+        if (writesInFlight.current.get(routineId) === run) {
+          writesInFlight.current.delete(routineId);
+        }
+      }
+    },
+    [userId, applyRoutines],
+  );
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  return { routines, loading, error, refresh };
+  return { routines, loading, error, refresh, toggleFavorite, pendingIds };
+}
+
+/**
+ * Favourite routines, newest first.
+ *
+ * Derived from the list `useRoutines` already holds rather than issued as its own
+ * query: the rows are the same rows, and the home dashboard's card and the library's
+ * list are on screen together. A second read of `routines` would be a second copy of
+ * the same data that can disagree with the first.
+ */
+export function useFavorites(userId: string | null) {
+  const { routines, loading, error, toggleFavorite, pendingIds } = useRoutines(userId);
+
+  const favorites = useMemo(
+    () => routines.filter((r) => r.is_favorite),
+    [routines],
+  );
+
+  return { favorites, loading, error, toggleFavorite, pendingIds };
 }
 
 /** Aggregates logged workouts into the metrics shown on the progress view. */
@@ -154,7 +342,7 @@ export function useProgress(userId: string | null) {
         .select("log_id,weight,reps,is_warmup")
         .in(
           "log_id",
-          [...ids],
+          sanitizeIds([...ids]),
         );
       for (const row of (setData ?? []) as {
         log_id: string;
@@ -242,4 +430,9 @@ function dayKey(date: Date): string {
 export function formatWeight(value: number | null): string {
   if (value === null) return "—";
   return Number.isInteger(value) ? `${value} kg` : `${value.toFixed(1)} kg`;
+}
+
+/** Volumen con separador de millares, p. ej. `12,557 kg`. */
+export function formatVolume(kg: number): string {
+  return `${new Intl.NumberFormat("es-MX").format(Math.round(kg))} kg`;
 }

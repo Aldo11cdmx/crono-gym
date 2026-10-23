@@ -1,5 +1,5 @@
-﻿/**
- * MuscleSelector.tsx â€” interactive anatomy map.
+/**
+ * MuscleSelector.tsx €€” interactive anatomy map.
  *
  * Built on `react-muscle-highlighter` (MIT), which supplies the body geometry.
  * This component owns the product behaviour: the Spanish legend, the OLED/amber
@@ -36,18 +36,41 @@ import {
 } from "../lib/muscleMap";
 import { selectionSides, selectionLabels } from "../lib/muscleFilter";
 import { lighten } from "../lib/ranks/rankColors";
+import { ACCENT, DIAGRAM, MOTION } from "../design/tokens";
 import { MUSCLE_FILTER_LABELS as T } from "../lib/i18n";
 
 // --- OLED palette ---------------------------------------------------------
-/** Unselected but trainable: barely lit, just enough to read the silhouette. */
-const BASE_FILL = "#15151a";
-const BASE_STROKE = "rgba(255,255,255,0.18)";
-/** No exercises in the catalog: recedes into the background. */
-const INERT_FILL = "#0a0a0c";
-const INERT_STROKE = "rgba(255,255,255,0.07)";
-/** Selected: the amber the rest of the product uses. */
-const SELECTED_FILL = "#ff9f0a";
-const SELECTED_STROKE = "#ffd27a";
+/**
+ * The map's own four-state palette, and it is local rather than taken from `tokens`.
+ *
+ * These are silhouette values, not roles: a muscle that is neither selected nor in the
+ * catalog has to sit *between* the canvas and the selection, and no general surface token
+ * happens to land there. The selected pair, though, is the product's accent and is taken
+ * from it -- the map is how an athlete picks which muscles to train, so a muscle picked
+ * here should be the same red as the button that will act on it.
+ *
+ * `DIAGRAM.selectedStroke` is a lighter tint of the fill rather than `ACCENT.text`, because it
+ * has to survive *on* the fill: at equal luminance the region would read as one flat
+ * silhouette with no edge.
+ */
+const BASE_FILL = DIAGRAM.regionFill;
+/**
+ * A region with exercises in the catalog.
+ *
+ * `DIAGRAM.regionStroke` rather than an alpha written here: the map used to draw a body
+ * in seven different greys, and on a diagram where weight is supposed to mean something,
+ * seven arbitrary values means there is nothing consistent for an athlete to learn.
+ */
+const BASE_STROKE = DIAGRAM.regionStroke;
+/**
+ * No exercises in the catalog: recedes into the background.
+ *
+ * Its edge is `DIAGRAM.inert` -- the same value as the rest ring's track and the
+ * carousel's inactive dot. Those were 0.07, 0.08 and 0.08, which is one role written
+ * three times with a rounding difference, not three roles.
+ */
+const INERT_FILL = DIAGRAM.inertFill;
+const INERT_STROKE = DIAGRAM.inert;
 
 /** Slug -> CSS selector. Slugs are valid identifiers; `lower-back` is fine. */
 function pathSelector(scopeId: string, slug: Slug): string {
@@ -125,7 +148,7 @@ export function MuscleSelector({
       MUSCLE_DEFINITIONS.map((muscle) => {
         const isSelected = selectedSet.has(muscle.slug);
         const override = colorByMuscle?.get(muscle.slug);
-        const fill = override ?? (!muscle.enabled ? INERT_FILL : isSelected ? SELECTED_FILL : BASE_FILL);
+        const fill = override ?? (!muscle.enabled ? INERT_FILL : isSelected ? DIAGRAM.selectedFill : BASE_FILL);
         return {
           slug: muscle.slug,
           styles: {
@@ -133,7 +156,7 @@ export function MuscleSelector({
             stroke: !muscle.enabled
               ? INERT_STROKE
               : isSelected
-                ? SELECTED_STROKE
+                ? DIAGRAM.selectedStroke
                 : BASE_STROKE,
             strokeWidth: isSelected ? 2 : 1,
           },
@@ -170,10 +193,10 @@ const hoverRules = hoverTargets
       .map((slug) => {
         const hoverFill = readOnly
           ? lighten(colorByMuscle?.get(slug) ?? BASE_FILL, 0.12)
-          : "#2f2f38";
+          : DIAGRAM.regionHoverFill;
         const glow = readOnly
-          ? (colorByMuscle?.get(slug) ?? "rgba(255, 159, 10, 0.35)")
-          : "rgba(255, 159, 10, 0.35)";
+          ? (colorByMuscle?.get(slug) ?? ACCENT.glow)
+          : ACCENT.glow;
         return `${pathSelector(scopeId, slug)}:hover {\n  fill: ${hoverFill} !important;\n  filter: drop-shadow(0 0 6px ${glow});\n}`;
       })
       .join("\n");
@@ -184,16 +207,16 @@ const hoverRules = hoverTargets
       .join(",\n");
 
     return [
-      `#${scopeId} path { transition: fill 140ms ease, filter 140ms ease; }`,
+      `#${scopeId} path { transition: fill ${MOTION.fast} ${MOTION.standard}, filter ${MOTION.fast} ${MOTION.standard}; }`,
       hoverRules,
       selectedRules
-        ? `${selectedRules} {\n  filter: drop-shadow(0 0 10px rgba(255, 159, 10, 0.75));\n}`
+        ? `${selectedRules} {\n  filter: drop-shadow(0 0 10px ${DIAGRAM.selectedGlow});\n}`
         : "",
       // Must come after the hover rule and be at least as specific, otherwise
       // hovering a selected muscle overwrites its fill with the hover grey and
       // the selection appears to drop out.
       selectedRules
-        ? `${selectedRules}:hover {\n  fill: ${SELECTED_FILL} !important;\n  filter: drop-shadow(0 0 14px rgba(255, 159, 10, 0.9));\n}`
+        ? `${selectedRules}:hover {\n  fill: ${DIAGRAM.selectedFill} !important;\n  filter: drop-shadow(0 0 14px ${DIAGRAM.selectedHoverGlow});\n}`
         : "",
       inertRule ? `${inertRule} {\n  pointer-events: none;\n  cursor: default;\n}` : "",
     ]
@@ -245,11 +268,11 @@ const hoverRules = hoverTargets
                 {hiddenSelection && (
                   <span
                     aria-hidden="true"
-                    title="Hay mÃºsculos seleccionados en la otra vista"
+                    title="Hay más músculos seleccionados en la otra vista"
                     className="h-1.5 w-1.5 rounded-full bg-accent"
                   />
                 )}
-                {hiddenSelection && <span className="sr-only">(selecciÃ³n en la otra vista)</span>}
+                {hiddenSelection && <span className="sr-only">(selección en la otra vista)</span>}
               </button>
             );
           })}
@@ -273,7 +296,7 @@ const hoverRules = hoverTargets
             data={data}
             side={side}
             scale={0.82}
-            border="rgba(255,255,255,0.22)"
+            border={DIAGRAM.figureStroke}
             defaultFill={BASE_FILL}
             defaultStroke={BASE_STROKE}
             defaultStrokeWidth={1}
@@ -319,7 +342,7 @@ const hoverRules = hoverTargets
                 {renderBadge?.(slug)}
                 {active && onOtherSide && (
                   <span aria-hidden="true" className="text-[9px] text-accent/70">
-                    {side === "front" ? "Â· espalda" : "Â· frente"}
+                    {side === "front" ? "· espalda" : "· frente"}
                   </span>
                 )}
               </button>

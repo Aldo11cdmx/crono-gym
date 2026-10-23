@@ -46,8 +46,6 @@ const EXERCISES: FilterableExercise[] = [
   { id: "e13", name: "Caminata en cinta", body_part: "cardio", target: "cardiovascular system", equipment: "machine" },
 ];
 
-const DUMBBELL_ONLY = (equipment: string) => equipment === "dumbbell";
-
 function ids(list: FilterableExercise[]): string[] {
   return list.map((e) => e.id);
 }
@@ -193,22 +191,6 @@ describe("combination with base filters", () => {
     expect(ids(results)).toEqual(["e1"]);
   });
 
-  it("respects the gym filter with an injected matcher", () => {
-    const base = applyBaseFilters(
-      EXERCISES,
-      { ...EMPTY_BASE_FILTERS, onlyMyGym: true },
-      { isMyGymEquipment: DUMBBELL_ONLY },
-    );
-    const { results } = filterByMuscles(base, ["chest"]);
-    // e2 is the only dumbbell chest exercise in the fixture.
-    expect(ids(results)).toEqual(["e2"]);
-  });
-
-  it("does nothing for onlyMyGym when no matcher is supplied", () => {
-    const base = applyBaseFilters(EXERCISES, { ...EMPTY_BASE_FILTERS, onlyMyGym: true });
-    expect(base.length).toBe(EXERCISES.length);
-  });
-
   it("ignores a warm-up-only distinction (not a filter concern)", () => {
     // Sanity: applyBaseFilters is attribute-only and must not reorder.
     const base = applyBaseFilters(EXERCISES, EMPTY_BASE_FILTERS);
@@ -220,6 +202,24 @@ describe("combination with base filters", () => {
     // Catalog values are lowercase; an uppercase filter must match nothing
     // rather than silently matching by accident.
     expect(base).toHaveLength(0);
+  });
+
+  it("matches the query against the Spanish name shown in the card", () => {
+    // The card shows "Curl de muñeca con banda", so "muneca" (no accent) has to
+    // find it: the query is matched against the display name, not the catalog one.
+    const forearm: FilterableExercise[] = [
+      { id: "w1", name: "band wrist curl", body_part: "lower arms", target: "forearms", equipment: "band" },
+    ];
+    const base = applyBaseFilters(forearm, { ...EMPTY_BASE_FILTERS, query: "muneca" });
+    expect(ids(base)).toEqual(["w1"]);
+  });
+
+  it("still matches the query against the catalog name", () => {
+    const forearm: FilterableExercise[] = [
+      { id: "w1", name: "band wrist curl", body_part: "lower arms", target: "forearms", equipment: "band" },
+    ];
+    const base = applyBaseFilters(forearm, { ...EMPTY_BASE_FILTERS, query: "wrist" });
+    expect(ids(base)).toEqual(["w1"]);
   });
 });
 
@@ -368,15 +368,6 @@ describe("explainEmpty", () => {
   });
 
   
-
-  it("blames the gym filter when it is the culprit", () => {
-    const filters: BaseFilters = { ...EMPTY_BASE_FILTERS, onlyMyGym: true };
-    const base = applyBaseFilters(EXERCISES, filters, { isMyGymEquipment: () => false });
-    const cause = explainEmpty(base, EXERCISES, [], filters, MUSCLE_FILTER_LABELS, {
-      isMyGymEquipment: () => false,
-    });
-    expect(cause?.label).toBe("Solo mi gym");
-  });
 
   it("returns null when nothing is active, so the UI can stay generic", () => {
     const cause = explainEmpty([], [], [], EMPTY_BASE_FILTERS, MUSCLE_FILTER_LABELS);

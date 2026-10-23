@@ -61,36 +61,30 @@ export async function pushSession(payload: FinalizePayload): Promise<void> {
     throw new Error("Esta sesión pertenece a otra cuenta");
   }
 
-  // 1. Create or update the log under the client-generated id.
-  const { error: logError } = await supabase.from("workout_logs").upsert(
-    {
-      id: payload.logId,
-      user_id: payload.userId,
-      routine_id: payload.routineId,
-      started_at: payload.startedAt,
-      completed_at: payload.completedAt,
-      journal_notes: payload.notes,
-    },
-    { onConflict: "id" },
-  );
-  if (logError) throw new Error(logError.message);
+  const setsJson = payload.sets.map((set) => ({
+    exercise_id: set.exercise_id,
+    set_number: set.set_number,
+    weight: set.weight === null ? null : set.weight,
+    reps: set.reps === null ? null : set.reps,
+    rpe: set.rpe === null ? null : set.rpe,
+    is_warmup: set.is_warmup,
+    notes: set.notes ?? null,
+  }));
 
-  // 2. Replace the set rows wholesale. Partial retries are idempotent.
-  const { error: deleteError } = await supabase
-    .from("completed_sets")
-    .delete()
-    .eq("log_id", payload.logId);
-  if (deleteError) throw new Error(deleteError.message);
+  const { error } = await (supabase as any).rpc("finalize_session", {
+    p_log_id: payload.logId,
+    p_user_id: payload.userId,
+    p_routine_id: payload.routineId,
+    p_name: payload.notes ?? null,
+    p_started_at: payload.startedAt,
+    p_ended_at: payload.completedAt,
+    p_duration_seconds: null,
+    p_notes: payload.notes,
+    p_sets: setsJson,
+  });
 
-  if (payload.sets.length > 0) {
-    const rows = payload.sets.map((set) => ({ ...set, log_id: payload.logId }));
-    const { error: insertError } = await supabase.from("completed_sets").insert(rows);
-    if (insertError) throw new Error(insertError.message);
-  }
+  if (error) throw new Error(error.message);
 
-  // The rows now exist, so anything reading training history can refetch. Fired
-  // last: announcing earlier would make consumers query before the data landed
-  // and settle on stale numbers.
   notifyTrainingDataChanged();
 }
 
@@ -130,6 +124,13 @@ export async function drainQueue(): Promise<SyncResult> {
       // A permission or validation error will repeat forever; drop it and let
       // the app show the message instead of retrying on every online event.
       if (!retryable) {
+        // Keep payload in queue for manual review if auth/permission related
+        if (message.includes("not_owner") || message.includes("not_authenticated") || message.toLowerCase().includes("rls") || message.toLowerCase().includes("permission")) {
+          result.errors.push(
+            `Sesión ${op.payload.logId.slice(0, 8)} bloqueada: ${message} (se mantiene en cola para revisión)`,
+          );
+          break;
+        }
         await removeFromQueue(op.id);
         result.errors.push(
           `Sesión ${op.payload.logId.slice(0, 8)} descartada: ${message}`,

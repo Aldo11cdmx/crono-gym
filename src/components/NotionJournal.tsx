@@ -133,7 +133,7 @@ function JournalBlock({
       <select
         value={block.type}
         onChange={(e) => onChangeType(block.id, e.target.value as BlockType)}
-        className="self-start rounded-md border border-white/10 bg-neutral-950/60 px-1.5 py-1 text-[11px] text-neutral-400 outline-none focus:border-accent"
+        className="self-start rounded-md border border-white/10 bg-neutral-950/60 px-1.5 py-1 text-[11px] text-neutral-400"
       >
         {toolbar.map((t) => (
           <option key={t.type} value={t.type}>{t.label}</option>
@@ -146,7 +146,7 @@ function JournalBlock({
           onChange={(e) => onChange(block.id, e.target.value)}
           placeholder="Escribe..."
           rows={1}
-          className="w-full resize-none rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+          className="w-full resize-none rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
         />
         <button
           type="button"

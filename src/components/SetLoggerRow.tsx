@@ -1,74 +1,87 @@
-import { TrendingDown, TrendingUp, Undo2 } from "lucide-react";
+/**
+ * SetLoggerRow.tsx — one logged set: kind, load, reps, RPE, completion.
+ *
+ * Colour comes from `STATUS` in `design/tokens.ts` and from nowhere else. That
+ * used to be a table of Tailwind classes -- `text-emerald-300` for a load
+ * increase, `text-amber-300` for a deload -- and it drifted: the increase green
+ * is the exact hue `tokens.ts` documents as excluded from this product because a
+ * deuteranope folds it into the deload amber sitting one card below. The token
+ * table already solved that, so this file now reads it instead of re-deciding.
+ */
+
+import type { CSSProperties, ReactNode } from "react";
+import { Copy, Flag, Flame, Layers, Trash2, TrendingUp, TrendingDown, Undo2 } from "lucide-react";
+import {
+  SET_LOGGER_LABELS,
+  SET_TYPE_LABELS,
+} from "../lib/i18n";
+import { SET_KINDS, type SetKind } from "../lib/workout/setKind";
 import type { OverloadDecision, OverloadTarget } from "../lib/overload";
+import type { BarType } from "../lib/workout/weightUtils";
+import type { SetEntry } from "../lib/workout/types";
+import { WeightStepper } from "./workout/WeightStepper";
+import {
+  ACCENT,
+  DANGER,
+  GLASS,
+  MOTION,
+  NUMERIC,
+  RADIUS,
+  SPACE,
+  STATUS,
+  SURFACE_ROLE,
+  TEXT,
+  TYPE,
+} from "../design/tokens";
 
-export interface SetEntry {
-  set_number: number;
-  weight: string;
-  reps: string;
-  rpe: string;
-  is_warmup: boolean;
-  completed: boolean;
-}
+export type { SetEntry };
 
-interface SetLoggerRowProps {
+export interface SetLoggerRowProps {
   entry: SetEntry;
   index: number;
   onChange: (entry: SetEntry) => void;
   onRemove: () => void;
-  /** "Última vez: 80 kg x 8 @8" — shown on the opening set only. */
-  previousLabel?: string;
+  /** Copies this row's weight, reps and RPE into a new row below. */
+  onDuplicate: () => void;
+  /** Previous session's working set, in kg. Feeds the stepper's reference. */
+  previousKg?: number;
+  previousReps?: number;
   /** Progressive-overload target, or null when there is nothing to suggest. */
   suggestion?: OverloadTarget | null;
-  onApplySuggestion?: () => void;
+  barType?: BarType;
 }
 
 /**
- * Visual treatment per decision.
+ * The tone a decision lends the row, drawn from the status table.
  *
- * A load increase and a deload both change the weight, but they mean opposite
- * things, so they must not share a colour: green reads as "go harder" and amber
- * as "back off". A flat chip would make the advice ambiguous.
+ * A load increase and a deload both move the weight but mean opposite things, so
+ * they must not share a colour -- that is the entire reason `progression` is cyan
+ * and not green. `hold` deliberately gets no status at all: "maintain the load" is
+ * the absence of news and should look like it.
  */
-const DECISION_STYLE: Record<
-  Exclude<OverloadDecision, "first_time">,
-  { icon: typeof TrendingUp; chip: string; border: string; label: string }
-> = {
-  increase: {
-    icon: TrendingUp,
-    chip: "text-emerald-300",
-    border: "border-emerald-500/30 bg-emerald-500/10",
-    label: "Progresión",
-  },
-  double_progression: {
-    icon: TrendingUp,
-    chip: "text-accent",
-    border: "border-accent/25 bg-accent/5",
-    label: "Suma una rep",
-  },
-  hold: {
-    icon: TrendingUp,
-    chip: "text-neutral-300",
-    border: "border-white/10 bg-white/[0.03]",
-    label: "Mantén",
-  },
-  deload: {
-    icon: TrendingDown,
-    chip: "text-amber-300",
-    border: "border-amber-500/30 bg-amber-500/10",
-    label: "Descanso activo",
-  },
-  stalled: {
-    icon: TrendingDown,
-    chip: "text-amber-300",
-    border: "border-amber-500/30 bg-amber-500/10",
-    label: "Estancado",
-  },
-  return_from_break: {
-    icon: Undo2,
-    chip: "text-sky-300",
-    border: "border-sky-500/30 bg-sky-500/10",
-    label: "Vuelta tras pausa",
-  },
+const DECISION_TONE: Partial<Record<OverloadDecision, (typeof STATUS)[keyof typeof STATUS]>> = {
+  increase: STATUS.progression,
+  double_progression: STATUS.progression,
+  deload: STATUS.warning,
+  stalled: STATUS.warning,
+  return_from_break: STATUS.comeback,
+};
+
+const DECISION_ICON: Partial<Record<OverloadDecision, typeof TrendingUp>> = {
+  increase: TrendingUp,
+  double_progression: TrendingUp,
+  deload: TrendingDown,
+  stalled: TrendingDown,
+  return_from_break: Undo2,
+};
+
+const KIND_ICON: Record<SetKind, typeof Flame> = {
+  // A failure set is a good day, not a cold one: an icon that reads as "worse"
+  // on the row you worked hardest for is exactly backwards.
+  normal: TrendingUp,
+  warmup: Flame,
+  failure: Flag,
+  drop: Layers,
 };
 
 export function SetLoggerRow({
@@ -76,98 +89,254 @@ export function SetLoggerRow({
   index,
   onChange,
   onRemove,
-  previousLabel,
+  onDuplicate,
+  previousKg,
+  previousReps,
   suggestion,
-  onApplySuggestion,
+  barType,
 }: SetLoggerRowProps) {
   const decision =
     suggestion && suggestion.decision !== "first_time" ? suggestion.decision : null;
-  const style = decision ? DECISION_STYLE[decision] : null;
-  const Icon = style?.icon ?? TrendingUp;
+  const tone = decision ? DECISION_TONE[decision] : null;
+  const Icon = (decision ? DECISION_ICON[decision] : null) ?? TrendingUp;
+
+  const setLabel = SET_LOGGER_LABELS.setNumber(index + 1);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-neutral-950/40 p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-accent">Serie {index + 1}</span>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="text-xs text-neutral-500 hover:text-red-400"
+    <div
+      role="group"
+      aria-label={SET_LOGGER_LABELS.setNumber(index + 1)}
+      style={{
+        borderRadius: RADIUS.control,
+        borderWidth: "1px",
+        borderStyle: "solid",
+        padding: "12px",
+        background: GLASS.fill,
+        borderColor: tone ? tone.border : GLASS.border,
+      }}
+    >
+      <div style={rowStyle}>
+        <span
+          style={{
+            fontSize: TYPE.label.size,
+            fontWeight: 600,
+            letterSpacing: TYPE.label.tracking,
+            color: ACCENT.text,
+          }}
         >
-          Eliminar
-        </button>
+          {setLabel}
+        </span>
+
+        <div style={{ flex: 1 }} />
+
+        <IconButton
+          onClick={onDuplicate}
+          ariaLabel={SET_LOGGER_LABELS.duplicateAriaLabel(index + 1)}
+          title={SET_LOGGER_LABELS.duplicateAriaLabel(index + 1)}
+        >
+          <Copy size={14} aria-hidden="true" />
+        </IconButton>
+
+        <IconButton
+          onClick={onRemove}
+          ariaLabel={SET_LOGGER_LABELS.removeAriaLabel(index + 1)}
+          title={SET_LOGGER_LABELS.removeAriaLabel(index + 1)}
+          color={DANGER.text}
+        >
+          <Trash2 size={14} aria-hidden="true" />
+        </IconButton>
       </div>
 
-      {previousLabel && (
-        <p className="mt-1.5 text-[11px] text-neutral-500">{previousLabel}</p>
-      )}
+      <div
+        role="group"
+        aria-label={SET_LOGGER_LABELS.setTypeGroupAriaLabel}
+        style={{ ...rowStyle, marginTop: SPACE.xs, flexWrap: "wrap" }}
+      >
+        {SET_KINDS.map((kind) => {
+          const KindIcon = KIND_ICON[kind];
+          const selected = entry.kind === kind;
+          return (
+            <button
+              key={kind}
+              type="button"
+              aria-pressed={selected}
+              aria-label={SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS[kind], index + 1)}
+              onClick={() => onChange({ ...entry, kind })}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                minHeight: "28px",
+                padding: "2px 10px",
+                borderRadius: RADIUS.pill,
+                borderWidth: "1px",
+                borderStyle: "solid",
+                fontSize: TYPE.label.size,
+                fontWeight: 600,
+                cursor: "pointer",
+                color: selected ? TEXT.onAccent : TEXT.secondary,
+                background: selected ? ACCENT.base : "transparent",
+                borderColor: selected ? ACCENT.base : GLASS.border,
+              }}
+            >
+              <KindIcon size={11} aria-hidden="true" />
+              {SET_TYPE_LABELS[kind]}
+            </button>
+          );
+        })}
+      </div>
 
-      {suggestion && decision && style && (
-        <div className={`mt-2 rounded-lg border px-3 py-2 ${style.border}`}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold">
-              <Icon className="h-3 w-3" />
-              <span className={style.chip}>{suggestion.delta}</span>
-              <span className="font-normal text-neutral-500">{style.label}</span>
-            </span>
-            {onApplySuggestion && (
-              <button
-                type="button"
-                onClick={onApplySuggestion}
-                className="rounded-md bg-accent/20 px-2.5 py-1 text-[10px] font-semibold text-accent transition hover:bg-accent/30"
-              >
-                Usar objetivo
-              </button>
-            )}
-          </div>
-          <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">
-            {suggestion.reason}
-          </p>
+      {suggestion && decision && (
+        <div style={{ ...rowStyle, marginTop: SPACE.sm, flexWrap: "wrap" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "2px 8px",
+              borderRadius: RADIUS.pill,
+              fontSize: TYPE.label.size,
+              fontWeight: 600,
+              color: tone?.text ?? TEXT.secondary,
+              background: tone?.muted ?? "transparent",
+              border: `1px solid ${tone?.border ?? "transparent"}`,
+            }}
+          >
+            <Icon size={11} aria-hidden="true" />
+            {SET_LOGGER_LABELS.deltaChip(suggestion.delta)}
+          </span>
+          {/* The rationale itself lives inside the stepper, next to the chip that
+              applies it. Repeating it here would say the same sentence twice on
+              one card. */}
           {!suggestion.estimateConfident && (
-            <p className="mt-1 text-[10px] text-amber-400/80">
-              El 1RM estimado no es fiable con este número de reps.
-            </p>
+            <span style={{ fontSize: TYPE.label.size, color: STATUS.warning.text }}>
+              {SET_LOGGER_LABELS.lowConfidence}
+            </span>
           )}
         </div>
       )}
 
-      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Field
-          label="Peso (kg)"
-          value={entry.weight}
-          onChange={(v) => onChange({ ...entry, weight: v })}
+      <div style={{ marginTop: SPACE.sm }}>
+        <WeightStepper
+          value={Number.parseFloat(entry.weight) || 0}
+          onChange={(kg) => onChange({ ...entry, weight: String(kg) })}
+          suggestedKg={suggestion?.weight ?? undefined}
+          suggestionReason={suggestion?.reason}
+          previousKg={previousKg}
+          previousReps={previousReps}
+          barType={barType}
+          min={0}
+          // The reference is a one-tap autofill, not a caption: re-typing the
+          // same two numbers for the opening set of every session is the most
+          // repeated piece of typing in the whole logger.
+          onApplyPrevious={
+            previousKg === undefined
+              ? undefined
+              : (kg, reps) =>
+                  onChange({
+                    ...entry,
+                    weight: String(kg),
+                    reps: reps === null ? entry.reps : String(reps),
+                  })
+          }
+          // Applying a target is more than a weight: the engine's rep count comes
+          // with it, and leaving the old reps behind would have the row claiming
+          // one thing while the lifter trains another.
+          onApplySuggestion={
+            suggestion
+              ? (kg) => onChange({ ...entry, weight: String(kg), reps: String(suggestion.reps) })
+              : undefined
+          }
         />
+      </div>
+
+      <div style={{ ...gridStyle, marginTop: SPACE.sm }}>
         <Field
-          label="Repeticiones"
+          label={SET_LOGGER_LABELS.repsLabel}
           value={entry.reps}
           onChange={(v) => onChange({ ...entry, reps: v })}
         />
         <Field
-          label="RPE"
+          label={SET_LOGGER_LABELS.rpeLabel}
           value={entry.rpe}
           onChange={(v) => onChange({ ...entry, rpe: v })}
         />
-        <label className="flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm">
-          <input
-            type="checkbox"
-            checked={entry.is_warmup}
-            onChange={(e) => onChange({ ...entry, is_warmup: e.target.checked })}
-            className="accent-accent"
-          />
-          Calentamiento
-        </label>
       </div>
 
       <button
         type="button"
         onClick={() => onChange({ ...entry, completed: !entry.completed })}
-        className={`mt-2 w-full rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-          entry.completed ? "bg-emerald-500/20 text-emerald-300" : "bg-accent text-neutral-950"
-        } hover:brightness-110`}
+        aria-label={SET_LOGGER_LABELS.completeAriaLabel(index + 1, entry.completed)}
+        aria-pressed={entry.completed}
+        style={{
+          width: "100%",
+          minHeight: MOTION.minTouchTarget,
+          marginTop: SPACE.sm,
+          borderRadius: RADIUS.control,
+          borderWidth: "1px",
+          borderStyle: "solid",
+          fontSize: TYPE.body.size,
+          fontWeight: 600,
+          cursor: "pointer",
+          color: entry.completed ? STATUS.success.text : TEXT.onAccent,
+          background: entry.completed ? STATUS.success.muted : ACCENT.base,
+          borderColor: entry.completed ? STATUS.success.border : ACCENT.base,
+        }}
       >
-        {entry.completed ? "Serie completada" : "Marcar completada"}
+        {entry.completed
+          ? SET_LOGGER_LABELS.completed
+          : SET_LOGGER_LABELS.complete}
       </button>
     </div>
+  );
+}
+
+const rowStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "6px",
+};
+
+const gridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: SPACE.sm,
+};
+
+function IconButton({
+  onClick,
+  ariaLabel,
+  title,
+  color,
+  children,
+}: {
+  onClick: () => void;
+  ariaLabel: string;
+  title: string;
+  color?: string;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      title={title}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minWidth: "32px",
+        minHeight: "32px",
+        borderRadius: RADIUS.sm,
+        border: `1px solid ${GLASS.border}`,
+        background: "transparent",
+        color: color ?? TEXT.tertiary,
+        cursor: "pointer",
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -181,16 +350,34 @@ function Field({
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1 block text-[11px] text-neutral-400">{label}</span>
+    <label style={{ display: "block", minWidth: 0 }}>
+      <span
+        style={{
+          display: "block",
+          marginBottom: "4px",
+          fontSize: TYPE.label.size,
+          color: TEXT.tertiary,
+        }}
+      >
+        {label}
+      </span>
       <input
         type="number"
         inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+        style={{
+          width: "100%",
+          minHeight: MOTION.minTouchTarget,
+          padding: "8px 12px",
+          borderRadius: RADIUS.control,
+          border: `1px solid ${GLASS.borderStrong}`,
+          background: SURFACE_ROLE.well,
+          color: TEXT.primary,
+          fontSize: TYPE.body.size,
+          fontVariantNumeric: NUMERIC.align,
+        }}
       />
     </label>
   );
 }
-

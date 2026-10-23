@@ -16,8 +16,9 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { MuscleRankDetail } from "./MuscleRankDetail";
 import { buildRankMap, type MuscleRank } from "../lib/ranks/buildRankMap";
 import type { ExerciseRow, SetRow } from "../lib/ranks/muscleScore";
-import { rankById } from "../lib/ranks/rankConfig";
+import { rankById, VOLUME_RULES } from "../lib/ranks/rankConfig";
 import type { RankHistoryRecord } from "../lib/ranks/rankHistory";
+import { RANK_LABELS as T } from "../lib/i18n";
 
 const NOW = new Date("2026-06-01T12:00:00.000Z");
 
@@ -140,11 +141,13 @@ describe("MuscleRankDetail", () => {
     render(<MuscleRankDetail entry={entry} history={[]} onClose={() => undefined} />);
 
     expect(screen.getByText(String(entry.score))).toBeTruthy();
-    expect(screen.getByText(entry.rank.label)).toBeTruthy();
+    expect(screen.getAllByText(entry.rank.label).length).toBeGreaterThan(0);
     expect(screen.getByText(/Fuerza/)).toBeTruthy();
     expect(screen.getByText(/Volumen/)).toBeTruthy();
-    // The scorer's own contributions, not a hand-written summary.
-    expect(screen.getByText("Press de banca")).toBeTruthy();
+    // The scorer's own contributions, not a hand-written summary. Now also named
+    // by the 1RM section, so the assertion is that it appears at all rather than
+    // that it appears once.
+    expect(screen.getAllByText("Press de banca").length).toBeGreaterThan(0);
   });
 
   it("reports the gap to the next rank when there is one", () => {
@@ -231,5 +234,157 @@ describe("MuscleRankDetail", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /Ver ejercicios/i }));
     expect(onBrowse).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * The three things the panel was computing and never showing.
+ *
+ * `decayFactor`, `daysSinceLastSet` and `bestSet` were all produced by the scorer,
+ * typed, documented and asserted in `muscleScore.test.ts` -- and rendered nowhere.
+ * A muscle decaying for three months looked exactly like one trained yesterday, and
+ * the 1RM was an unsourced number the user had to take on faith.
+ *
+ * Every fixture below is a real `buildRankMap` result rather than a hand-built
+ * `MuscleRank`, so these tests fail if the panel's claims drift from the scorer's.
+ */
+describe("MuscleRankDetail score breakdown", () => {
+  it("states each half's share of the score, not just its percentage", () => {
+    // "Fuerza 68%" on its own reads as "68% of the score is strength", which is
+    // not what the engine computes. The weight is the part that was missing.
+    render(<MuscleRankDetail entry={trainedEntry()} history={[]} onClose={() => undefined} />);
+
+    expect(screen.getByText(T.strengthWeight)).toBeTruthy();
+    expect(screen.getByText(T.volumeWeight)).toBeTruthy();
+    expect(T.strengthWeight).toBe("70% del puntaje");
+    expect(T.volumeWeight).toBe("30% del puntaje");
+  });
+
+  it("names the real percentages the scorer produced", () => {
+    const entry = trainedEntry();
+    render(<MuscleRankDetail entry={trainedEntry()} history={[]} onClose={() => undefined} />);
+
+    expect(
+      screen.getByText(`${Math.round(entry.detail.strength!.volumePercent)}%`),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(`${Math.round(entry.detail.volume.volumePercent)}%`),
+    ).toBeTruthy();
+  });
+});
+
+describe("MuscleRankDetail estimated 1RM", () => {
+  it("shows the set the number came from, with the arithmetic worked through", () => {
+    const entry = trainedEntry();
+    render(<MuscleRankDetail entry={trainedEntry()} history={[]} onClose={() => undefined} />);
+
+    expect(screen.getByText(T.oneRepMaxTitle)).toBeTruthy();
+    expect(screen.getByText(T.oneRepMaxFormula)).toBeTruthy();
+
+    const best = [...entry.detail.contributions].sort(
+      (a, b) => b.estimatedOneRepMax - a.estimatedOneRepMax,
+    )[0];
+    // The figure on screen and the figure behind the rank are the same number.
+    expect(screen.getByText(`${best.estimatedOneRepMax.toFixed(1)} kg`)).toBeTruthy();
+    expect(
+      screen.getByText(
+        T.oneRepMaxFormulaHint(
+          best.bestSet!.weight,
+          best.bestSet!.reps,
+          best.estimatedOneRepMax,
+        ),
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(T.oneRepMaxBestSet(best.bestSet!.weight, best.bestSet!.reps)),
+    ).toBeTruthy();
+  });
+
+  it("says so plainly when no set can support an estimate", () => {
+    // Forced rather than engineered: a classified muscle always has at least one
+    // contribution, so the scorer cannot produce this state. The panel still has to
+    // survive it -- a zero-weight set yields a 0 estimated 1RM, and "0.0 kg 1RM"
+    // reads as a measurement of nothing.
+    const entry = trainedEntry();
+    const noEstimate: MuscleRank = {
+      ...entry,
+      detail: {
+        ...entry.detail,
+        contributions: entry.detail.contributions.map((c) => ({
+          ...c,
+          estimatedOneRepMax: 0,
+          bestSet: null,
+        })),
+      },
+    };
+
+    render(<MuscleRankDetail entry={noEstimate} history={[]} onClose={() => undefined} />);
+    expect(screen.getByText(T.oneRepMaxNoSet)).toBeTruthy();
+    expect(screen.queryByText(/0\.0 kg/)).toBeNull();
+  });
+});
+
+describe("MuscleRankDetail inactivity decay", () => {
+  /** Real history whose most recent set is `idleDays` old. */
+  function entryIdleFor(idleDays: number): MuscleRank {
+    const sets: SetRow[] = Array.from({ length: 8 }, (_, i) => ({
+      exerciseId: "press",
+      weight: 90,
+      reps: 5,
+      isWarmup: false,
+      // Eight sessions ending `idleDays` ago.
+      performedAt: daysAgo(idleDays + i * 4),
+    }));
+    const map = buildRankMap({
+      sets,
+      exercises: EXERCISES,
+      context: { bodyweightKg: 80, sex: "male", now: NOW },
+    });
+    return map.muscles.get("chest")!;
+  }
+
+  it("stays quiet for a muscle trained inside the grace period", () => {
+    // An indicator on every muscle would be noise on the common case.
+    const entry = entryIdleFor(10);
+    expect(entry.detail.volume.decayFactor).toBe(1);
+
+    render(<MuscleRankDetail entry={entry} history={[]} onClose={() => undefined} />);
+    expect(screen.getByText(T.decayNone)).toBeTruthy();
+    expect(screen.queryByText(/al \d+% por no entrenar/)).toBeNull();
+  });
+
+  it("says so once the muscle has been idle past the threshold, with the cause", () => {
+    const entry = entryIdleFor(VOLUME_RULES.decayAfterDays + 30);
+    expect(entry.detail.volume.decayFactor).toBeLessThan(1);
+    expect(entry.detail.volume.daysSinceLastSet).toBeGreaterThan(VOLUME_RULES.decayAfterDays);
+
+    render(<MuscleRankDetail entry={entry} history={[]} onClose={() => undefined} />);
+
+    const percent = Math.round(entry.detail.volume.decayFactor * 100);
+    // The whole sentence, because the duration and the multiplier share one node:
+    // asserting them apart would pass even if the panel had swapped their order.
+    expect(
+      screen.getByText(
+        `${T.decayDays(VOLUME_RULES.decayAfterDays + 30)} · ${T.decayLost(percent)}`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it("never claims a decay for a muscle with no history at all", () => {
+    const entry = emptyEntry();
+    expect(entry.detail.volume.daysSinceLastSet).toBeNull();
+
+    render(<MuscleRankDetail entry={entry} history={[]} onClose={() => undefined} />);
+    // "0 days since your last set" would be a lie about a muscle never trained.
+    expect(screen.queryByText(/Última serie hace/)).toBeNull();
+  });
+
+  it("drops the indicator again once the muscle is trained", () => {
+    // The decay is a property of the history, not a latch on the panel.
+    const entry = trainedEntry();
+    expect(entry.detail.volume.decayFactor).toBe(1);
+
+    render(<MuscleRankDetail entry={entry} history={[]} onClose={() => undefined} />);
+    expect(screen.getByText(T.decayNone)).toBeTruthy();
   });
 });

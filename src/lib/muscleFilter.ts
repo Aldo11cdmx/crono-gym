@@ -14,6 +14,7 @@
 
 import type { Slug } from "react-muscle-highlighter";
 import { muscleMatchLevel, muscleDefinition, type MatchLevel } from "./muscleMap";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 /** Minimal shape this module needs; avoids importing the whole DB row type. */
 export interface FilterableExercise {
@@ -30,7 +31,6 @@ export interface BaseFilters {
   bodyPart: string;
   equipment: string;
   target: string;
-  onlyMyGym: boolean;
 }
 
 export const EMPTY_BASE_FILTERS: BaseFilters = {
@@ -38,7 +38,6 @@ export const EMPTY_BASE_FILTERS: BaseFilters = {
   bodyPart: "all",
   equipment: "all",
   target: "all",
-  onlyMyGym: false,
 };
 
 /**
@@ -58,36 +57,42 @@ export interface EmptyCause {
   action: string;
 }
 
-/**
- * Decides whether a piece of equipment counts for "Solo mi gym".
- *
- * Supplied by the caller rather than imported, so this module stays free of the
- * gym's equipment dataset and a pure filter stays a pure function. Defaults to
- * allowing everything, which is the correct behaviour when the caller does not
- * care about the gym filter at all.
- */
-export type EquipmentMatcher = (equipment: string) => boolean;
-
-const ALLOW_ANY_EQUIPMENT: EquipmentMatcher = () => true;
-
-export interface BaseFilterOptions {
-  isMyGymEquipment?: EquipmentMatcher;
+/** Text as the user types it: without accents, without case. */
+function normaliseText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
-/** Applies the non-anatomy filters. */
+/**
+ * Whether an exercise matches the text query.
+ *
+ * The card shows the Spanish display name, so that is the name the query has to
+ * match. The catalog name stays as a second chance, so a search in the original
+ * English still lands instead of silently returning nothing.
+ */
+function matchesQuery(exercise: FilterableExercise, query: string): boolean {
+  return (
+    normaliseText(exercise.name).includes(query) ||
+    normaliseText(getExerciseDisplayName(exercise)).includes(query)
+  );
+}
+
+/**
+ * Parses the URL fragment used to persist the selection across navigation.
+ */
 export function applyBaseFilters<T extends FilterableExercise>(
   exercises: T[],
   filters: BaseFilters,
-  options: BaseFilterOptions = {},
 ): T[] {
-  const q = filters.query.trim().toLowerCase();
-  const matcher = options.isMyGymEquipment ?? ALLOW_ANY_EQUIPMENT;
+  const q = normaliseText(filters.query);
   return exercises.filter((e) => {
-    if (q && !e.name.toLowerCase().includes(q)) return false;
+    if (q && !matchesQuery(e, q)) return false;
     if (filters.bodyPart !== "all" && e.body_part !== filters.bodyPart) return false;
     if (filters.equipment !== "all" && e.equipment !== filters.equipment) return false;
     if (filters.target !== "all" && e.target !== filters.target) return false;
-    if (filters.onlyMyGym && !matcher(e.equipment)) return false;
     return true;
   });
 }
@@ -103,6 +108,17 @@ export function toggleMuscle(selection: Slug[], slug: Slug): Slug[] {
     ? selection.filter((s) => s !== slug)
     : [...selection, slug];
 }
+
+/**
+ * URL key holding the anatomy selection, so it survives close/reopen and can be
+ * handed between screens by a link.
+ *
+ * Lives here rather than in `ExerciseBrowser` because there are now two writers:
+ * the browser mirrors its own selection, and the ranks view sends the user to the
+ * catalog with a muscle already chosen. A key that only one of them knows about
+ * is a filter that works from one screen and not the other.
+ */
+export const MUSCLE_PARAM = "musculos";
 
 /** Parses the URL fragment used to persist the selection across navigation. */
 export function parseMuscleParam(raw: string | null): Slug[] {
@@ -189,7 +205,6 @@ export function explainEmpty<T extends FilterableExercise>(
   selection: Slug[],
   filters: BaseFilters,
   labels: EmptyStateLabels,
-  options: BaseFilterOptions = {},
 ): EmptyCause | null {
   if (baseFiltered.length > 0) {
     // Only the anatomy filter can be at fault here.
@@ -203,7 +218,7 @@ export function explainEmpty<T extends FilterableExercise>(
   // Nothing survives the base filters. Bisect one attribute at a time: the
   // cheapest way to find the culprit without rendering every combination.
   const without = (patch: Partial<BaseFilters>): boolean =>
-    applyBaseFilters(allExercises, { ...filters, ...patch }, options).length > 0;
+    applyBaseFilters(allExercises, { ...filters, ...patch }).length > 0;
 
   const q = filters.query.trim();
   if (q !== "" && without({ query: "" })) {
@@ -227,13 +242,6 @@ export function explainEmpty<T extends FilterableExercise>(
     return {
       message: `Sin ejercicios de ${filters.bodyPart}.`,
       label: filters.bodyPart,
-      action: labels.suggestDropEverything,
-    };
-  }
-  if (filters.onlyMyGym && without({ onlyMyGym: false })) {
-    return {
-      message: "Sin ejercicios con el equipamiento de tu gym.",
-      label: "Solo mi gym",
       action: labels.suggestDropEverything,
     };
   }

@@ -1,0 +1,24 @@
+# Cronos — local Supabase configuration.
+#
+# Only the settings this project actually depends on are declared. Supabase ships a
+# full default file; replacing it with a minimal one keeps the surface readable, and
+# any key left out falls back to the CLI's built-in default.
+
+project_id = "cronos"
+
+[functions.coach-assistant]
+# The function verifies the caller's JWT itself before doing any work, and derives
+# the user id from the verified token rather than from the request body. Leaving
+# this true means the platform rejects an unauthenticated call before the function
+# is even invoked, so an invalid token never reaches the handler.
+verify_jwt = true
+
+[functions.coach-auth]
+# The same reason, and it matters more here: this function holds the PIN gate, so an
+# anonymous call must never reach the handler at all -- not even to be turned into a 401.
+#
+# True is also what lets the handler treat the bearer token as an identity without a
+# second verification step. `verify_jwt = false` would still work, because the handler
+# resolves the caller with `auth.getUser(token)`, but that is defence in depth: the
+# gateway check is free and the handler's is the one that can be forgotten.
+verify_jwt = true

@@ -1,0 +1,4038 @@
+{
+  "$doc": [
+    "Tablas A y B de sustitución por equipo de los 80 planes del onboarding (SAT-5624, spec §7). Las lee el resolver de la app (SAT-5627) y el validador de planes (SAT-5623, regla coverage_b). La app copia este fichero byte a byte: lo que se firma es lo que se sirve.",
+    "Forma. tableA y tableB son listas de filas {exerciseId, destinos}. Los destinos van en 'substitutes' (A) o 'upgrades' (B), ORDENADOS: el resolver coge el primero cuyo requiredEquipment tenga el usuario entero (EquipmentClassifier.satisfies, noEquipment es universal). requiredEquipment usa el enum Equipment de la app y es igual al equipmentUsed del catálogo; si alguien lo cambia en el admin, validate_substitution_tables sale en rojo.",
+    "Una lista vacía es una respuesta revisada: no hay sustituto válido, el ejercicio se cae y se registra (spec §7). Una fila que falta en la tabla A es un error de cobertura.",
+    "Tabla A: el usuario no tiene un ítem que pide el ejercicio. Una fila por ejercicio con equipo del pool (exercise_patterns.json). Tabla B: plan noeq/cal y el usuario tiene mancuernas o barra; sube como mucho 3 compuestos por sesión.",
+    "injuryExclusions: por cada InjuryType de la app, los ids del pool que el resolver quita cuando el usuario marca esa lesión (spec §8). Se quitan y no se reemplazan. hipPain no quita nada por decisión de producto. Están las 6 lesiones del enum y ninguna más.",
+    "Lo que garantiza este fichero (validate_substitution_tables contra producción): ids core y dentro del pool, sin repetidos ni autorreferencias, mismo split que el origen, nivel N nunca pasa a E, el destino admite los mismos modos (tiempo y reps) que el origen, en A el destino no pide todo lo del origen, en B el origen es de peso corporal y la subida usa mancuernas o barra sin encadenar.",
+    "Lo que queda en el resolver: saltar un destino que ya esté en la sesión, el techo del 20 % de sustituciones por sesión, y volver a pasar lesiones y alternativaLigera después de sustituir.",
+    "content_sha256 es la huella de formatVersion, pool, tableA y tableB (compute_content_sha256). La version termina siempre en sus 8 primeros caracteres. 'frozen' exige la firma de Mauro sobre esa huella y open_items vacío.",
+    "La firma de Mauro es su hoja de revisión del 1-oct-2026, https://docs.google.com/spreadsheets/d/14iCLQb7DTXNTewUuCnEt-oGavRezRVlv3GAy1-Mgs60. approval.content_sha256 es la huella de esta versión, que sale de esa hoja."
+  ],
+  "formatVersion": 1,
+  "version": "2026-10-06-6b7510e1",
+  "content_sha256": "6b7510e1bb8dd766f0d6b484203577f24954e5a0813c63baa214b0fa0789224c",
+  "status": "frozen",
+  "approval": {
+    "approved_by": "Mauro",
+    "approved_at": "2026-10-01",
+    "content_sha256": "6b7510e1bb8dd766f0d6b484203577f24954e5a0813c63baa214b0fa0789224c"
+  },
+  "open_items": [],
+  "pool": {
+    "source": "SAT-5792 adjunto bloque-y-nivel-2026-10-01.json (SAT-5618), el mismo fichero que irá a mobile-app tools/plans/exercise_patterns.json",
+    "sha256": "cfd4d93de95580ab7f257d9a189dd0a2f018c7b3c71ca293262c531d4ddd7b75"
+  },
+  "tableA": [
+    {
+      "exerciseId": 1,
+      "substitutes": [
+        {
+          "exerciseId": 2,
+          "requiredEquipment": [
+            "legPress"
+          ]
+        },
+        {
+          "exerciseId": 72329,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72352,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 6,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1885,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 2,
+      "substitutes": [
+        {
+          "exerciseId": 1885,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1,
+          "requiredEquipment": [
+            "barbells",
+            "squatRack"
+          ]
+        },
+        {
+          "exerciseId": 6,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4312,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 82,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 5,
+      "substitutes": [
+        {
+          "exerciseId": 85,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 104,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 41,
+          "requiredEquipment": [
+            "backExtensionBench"
+          ]
+        },
+        {
+          "exerciseId": 4305,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 6,
+      "substitutes": [
+        {
+          "exerciseId": 30928,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 2,
+          "requiredEquipment": [
+            "legPress"
+          ]
+        },
+        {
+          "exerciseId": 1,
+          "requiredEquipment": [
+            "barbells",
+            "squatRack"
+          ]
+        },
+        {
+          "exerciseId": 4312,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 82,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 7,
+      "substitutes": [
+        {
+          "exerciseId": 1933,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 8,
+      "substitutes": [
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 91,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1871,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 9,
+      "substitutes": [
+        {
+          "exerciseId": 55,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 3444,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 10,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3442,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 10,
+      "substitutes": [
+        {
+          "exerciseId": 34,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 9,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 55,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 1886,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 11,
+      "substitutes": [
+        {
+          "exerciseId": 1945,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 743,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1847,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        },
+        {
+          "exerciseId": 4294,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94159,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 12,
+      "substitutes": [
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1883,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4254,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 13,
+      "substitutes": [
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 14,
+      "substitutes": [
+        {
+          "exerciseId": 81,
+          "requiredEquipment": [
+            "inclineBench",
+            "smithMachine"
+          ]
+        },
+        {
+          "exerciseId": 47,
+          "requiredEquipment": [
+            "barbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 8,
+          "requiredEquipment": [
+            "dumbbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 92,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 17,
+      "substitutes": [
+        {
+          "exerciseId": 74,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 22,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 18,
+      "substitutes": [
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 12,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 19,
+      "substitutes": [
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 3435,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 21,
+      "substitutes": [
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 22,
+      "substitutes": [
+        {
+          "exerciseId": 17,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 47,
+          "requiredEquipment": [
+            "barbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 23,
+      "substitutes": [
+        {
+          "exerciseId": 4280,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 112,
+          "requiredEquipment": [
+            "crossoverCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 24,
+      "substitutes": [
+        {
+          "exerciseId": 64,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4280,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 25,
+      "substitutes": [
+        {
+          "exerciseId": 30464,
+          "requiredEquipment": [
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 24,
+          "requiredEquipment": [
+            "ezBar"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 26,
+      "substitutes": [
+        {
+          "exerciseId": 4280,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 112,
+          "requiredEquipment": [
+            "crossoverCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 27,
+      "substitutes": [
+        {
+          "exerciseId": 1943,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 31,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 1836,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 3438,
+          "requiredEquipment": [
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 28,
+      "substitutes": [
+        {
+          "exerciseId": 3432,
+          "requiredEquipment": [
+            "ezBar",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 3420,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 27,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 29,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 29,
+      "substitutes": [
+        {
+          "exerciseId": 50,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 1943,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 31,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 3438,
+          "requiredEquipment": [
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 31,
+      "substitutes": [
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 3432,
+          "requiredEquipment": [
+            "ezBar",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1837,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 34,
+      "substitutes": [
+        {
+          "exerciseId": 10,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3442,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 55,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 3444,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 37,
+      "substitutes": [
+        {
+          "exerciseId": 3435,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 41,
+      "substitutes": [
+        {
+          "exerciseId": 85,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 5,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 4305,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1070,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 104,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 43,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3435,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 45,
+      "substitutes": [
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 66,
+          "requiredEquipment": [
+            "dumbbells",
+            "preacherCurlBench"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 46,
+      "substitutes": [
+        {
+          "exerciseId": 73,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 90,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 47,
+      "substitutes": [
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 81,
+          "requiredEquipment": [
+            "inclineBench",
+            "smithMachine"
+          ]
+        },
+        {
+          "exerciseId": 92,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 48,
+      "substitutes": [
+        {
+          "exerciseId": 91,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 47,
+          "requiredEquipment": [
+            "barbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 8,
+          "requiredEquipment": [
+            "dumbbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 1906,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 50,
+      "substitutes": [
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 3432,
+          "requiredEquipment": [
+            "ezBar",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1837,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 51,
+      "substitutes": [
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 12,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 55,
+      "substitutes": [
+        {
+          "exerciseId": 9,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 3444,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 34,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 10,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 64,
+      "substitutes": [
+        {
+          "exerciseId": 24,
+          "requiredEquipment": [
+            "ezBar"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1830,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 66,
+      "substitutes": [
+        {
+          "exerciseId": 45,
+          "requiredEquipment": [
+            "ezBar",
+            "preacherCurlBench"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 73,
+      "substitutes": [
+        {
+          "exerciseId": 46,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 90,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 74,
+      "substitutes": [
+        {
+          "exerciseId": 17,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 91,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 77,
+      "substitutes": [
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3445,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 78,
+      "substitutes": [
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 79,
+      "substitutes": [
+        {
+          "exerciseId": 12,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 51,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 80,
+      "substitutes": [
+        {
+          "exerciseId": 1939,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 17,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 91,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 81,
+      "substitutes": [
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 47,
+          "requiredEquipment": [
+            "barbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 92,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 17,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 83,
+      "substitutes": [
+        {
+          "exerciseId": 1913,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1857,
+          "requiredEquipment": [
+            "smithMachine"
+          ]
+        },
+        {
+          "exerciseId": 4312,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 82,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72329,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 85,
+      "substitutes": [
+        {
+          "exerciseId": 41,
+          "requiredEquipment": [
+            "backExtensionBench"
+          ]
+        },
+        {
+          "exerciseId": 5,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 1070,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 104,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4305,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 90,
+      "substitutes": [
+        {
+          "exerciseId": 73,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 91,
+      "substitutes": [
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 8,
+          "requiredEquipment": [
+            "dumbbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 81,
+          "requiredEquipment": [
+            "inclineBench",
+            "smithMachine"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 92,
+      "substitutes": [
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 81,
+          "requiredEquipment": [
+            "inclineBench",
+            "smithMachine"
+          ]
+        },
+        {
+          "exerciseId": 47,
+          "requiredEquipment": [
+            "barbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 100,
+      "substitutes": [
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 12,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 101,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 102,
+      "substitutes": []
+    },
+    {
+      "exerciseId": 103,
+      "substitutes": [
+        {
+          "exerciseId": 72337,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1896,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 4324,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72372,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 104,
+      "substitutes": [
+        {
+          "exerciseId": 85,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 5,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 41,
+          "requiredEquipment": [
+            "backExtensionBench"
+          ]
+        },
+        {
+          "exerciseId": 4305,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 111,
+      "substitutes": [
+        {
+          "exerciseId": 1933,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 112,
+      "substitutes": [
+        {
+          "exerciseId": 26,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 1830,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 23,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 741,
+      "substitutes": [
+        {
+          "exerciseId": 30930,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1896,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72337,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 4324,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72372,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 743,
+      "substitutes": [
+        {
+          "exerciseId": 1945,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3418,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1951,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1847,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        },
+        {
+          "exerciseId": 1934,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1070,
+      "substitutes": [
+        {
+          "exerciseId": 85,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 5,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 41,
+          "requiredEquipment": [
+            "backExtensionBench"
+          ]
+        },
+        {
+          "exerciseId": 4305,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1804,
+      "substitutes": [
+        {
+          "exerciseId": 45,
+          "requiredEquipment": [
+            "ezBar",
+            "preacherCurlBench"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 26,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1830,
+      "substitutes": [
+        {
+          "exerciseId": 30464,
+          "requiredEquipment": [
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 112,
+          "requiredEquipment": [
+            "crossoverCable"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1836,
+      "substitutes": [
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 3432,
+          "requiredEquipment": [
+            "ezBar",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1837,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1837,
+      "substitutes": [
+        {
+          "exerciseId": 3438,
+          "requiredEquipment": [
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 1888,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 27,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 29,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1838,
+      "substitutes": [
+        {
+          "exerciseId": 72337,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1896,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 4324,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72372,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1846,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 3445,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1847,
+      "substitutes": [
+        {
+          "exerciseId": 1945,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 743,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4294,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1927,
+          "requiredEquipment": [
+            "noEquipment",
+            "pullUpBar"
+          ]
+        },
+        {
+          "exerciseId": 3418,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1857,
+      "substitutes": [
+        {
+          "exerciseId": 1,
+          "requiredEquipment": [
+            "barbells",
+            "squatRack"
+          ]
+        },
+        {
+          "exerciseId": 83,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 2,
+          "requiredEquipment": [
+            "legPress"
+          ]
+        },
+        {
+          "exerciseId": 1885,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1869,
+      "substitutes": [
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1871,
+      "substitutes": [
+        {
+          "exerciseId": 8,
+          "requiredEquipment": [
+            "dumbbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 81,
+          "requiredEquipment": [
+            "inclineBench",
+            "smithMachine"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1878,
+      "substitutes": [
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 1883,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 78,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1883,
+      "substitutes": [
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1884,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 3445,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1885,
+      "substitutes": [
+        {
+          "exerciseId": 2,
+          "requiredEquipment": [
+            "legPress"
+          ]
+        },
+        {
+          "exerciseId": 72329,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72352,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1,
+          "requiredEquipment": [
+            "barbells",
+            "squatRack"
+          ]
+        },
+        {
+          "exerciseId": 4312,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1886,
+      "substitutes": [
+        {
+          "exerciseId": 55,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 10,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3444,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3442,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1888,
+      "substitutes": [
+        {
+          "exerciseId": 3438,
+          "requiredEquipment": [
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 94125,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 27,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 29,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1943,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1906,
+      "substitutes": [
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 81,
+          "requiredEquipment": [
+            "inclineBench",
+            "smithMachine"
+          ]
+        },
+        {
+          "exerciseId": 47,
+          "requiredEquipment": [
+            "barbells",
+            "inclineBench"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1910,
+      "substitutes": [
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 26,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 1938,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1912,
+      "substitutes": [
+        {
+          "exerciseId": 30464,
+          "requiredEquipment": [
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 24,
+          "requiredEquipment": [
+            "ezBar"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1927,
+      "substitutes": [
+        {
+          "exerciseId": 1945,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 743,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1847,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        },
+        {
+          "exerciseId": 4294,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 3418,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1938,
+      "substitutes": [
+        {
+          "exerciseId": 30464,
+          "requiredEquipment": [
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 24,
+          "requiredEquipment": [
+            "ezBar"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1943,
+      "substitutes": [
+        {
+          "exerciseId": 3432,
+          "requiredEquipment": [
+            "ezBar",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 3438,
+          "requiredEquipment": [
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1888,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1945,
+      "substitutes": [
+        {
+          "exerciseId": 743,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 3418,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1951,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1847,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        },
+        {
+          "exerciseId": 1934,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3420,
+      "substitutes": [
+        {
+          "exerciseId": 50,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 1943,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 31,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3427,
+      "substitutes": [
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 3435,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3432,
+      "substitutes": [
+        {
+          "exerciseId": 1943,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 27,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 29,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3435,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3438,
+      "substitutes": [
+        {
+          "exerciseId": 1888,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 94125,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 27,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 29,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1943,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3441,
+      "substitutes": [
+        {
+          "exerciseId": 3438,
+          "requiredEquipment": [
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 1888,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 27,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 29,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3442,
+      "substitutes": [
+        {
+          "exerciseId": 34,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 9,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 55,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 1886,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3444,
+      "substitutes": [
+        {
+          "exerciseId": 9,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 55,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 4277,
+          "requiredEquipment": [
+            "dumbbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 34,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 3445,
+      "substitutes": [
+        {
+          "exerciseId": 3435,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 37,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 4248,
+      "substitutes": []
+    },
+    {
+      "exerciseId": 4277,
+      "substitutes": [
+        {
+          "exerciseId": 9,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 3444,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 34,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 55,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 1834,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 4279,
+      "substitutes": []
+    },
+    {
+      "exerciseId": 4280,
+      "substitutes": [
+        {
+          "exerciseId": 24,
+          "requiredEquipment": [
+            "ezBar"
+          ]
+        },
+        {
+          "exerciseId": 23,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 4293,
+      "substitutes": [
+        {
+          "exerciseId": 1945,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 743,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 1847,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        },
+        {
+          "exerciseId": 4294,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94159,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 4313,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 3445,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 4314,
+      "substitutes": [
+        {
+          "exerciseId": 3435,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 4315,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 3427,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 101,
+          "requiredEquipment": [
+            "latPulldown"
+          ]
+        },
+        {
+          "exerciseId": 3445,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 30464,
+      "substitutes": [
+        {
+          "exerciseId": 25,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 1938,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 1830,
+          "requiredEquipment": [
+            "hiLoPulleyCable"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 30930,
+      "substitutes": [
+        {
+          "exerciseId": 741,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 1896,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72337,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 4324,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 72372,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 30939,
+      "substitutes": [
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 3432,
+          "requiredEquipment": [
+            "ezBar",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 4265,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1837,
+          "requiredEquipment": [
+            "dipBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 52411,
+      "substitutes": [
+        {
+          "exerciseId": 1945,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 743,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 3418,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 3421,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 54600,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 52424,
+      "substitutes": [
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 54632,
+      "substitutes": [
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 91,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 54634,
+      "substitutes": [
+        {
+          "exerciseId": 14,
+          "requiredEquipment": [
+            "dumbbells",
+            "inclineBench"
+          ]
+        },
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 91,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 740,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 67347,
+      "substitutes": [
+        {
+          "exerciseId": 115200,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 12,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 68682,
+      "substitutes": [
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 94245,
+          "requiredEquipment": [
+            "pullUpBar"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 94245,
+      "substitutes": [
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1878,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 94255,
+      "substitutes": [
+        {
+          "exerciseId": 4255,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1919,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        },
+        {
+          "exerciseId": 1945,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 743,
+          "requiredEquipment": [
+            "hiLoPulleyCable",
+            "ropeCable"
+          ]
+        },
+        {
+          "exerciseId": 3418,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 122653,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 122659,
+      "substitutes": [
+        {
+          "exerciseId": 19,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 100,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 18,
+          "requiredEquipment": [
+            "rowCable"
+          ]
+        },
+        {
+          "exerciseId": 1804,
+          "requiredEquipment": [
+            "commercialGymWeightMachines"
+          ]
+        },
+        {
+          "exerciseId": 4253,
+          "requiredEquipment": [
+            "noEquipment"
+          ]
+        }
+      ]
+    }
+  ],
+  "tableB": [
+    {
+      "exerciseId": 72329,
+      "upgrades": [
+        {
+          "exerciseId": 1,
+          "requiredEquipment": [
+            "barbells",
+            "squatRack"
+          ]
+        },
+        {
+          "exerciseId": 102,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 4312,
+      "upgrades": [
+        {
+          "exerciseId": 83,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1896,
+      "upgrades": [
+        {
+          "exerciseId": 741,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 72337,
+      "upgrades": [
+        {
+          "exerciseId": 741,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 94233,
+      "upgrades": [
+        {
+          "exerciseId": 5,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 85,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 740,
+      "upgrades": [
+        {
+          "exerciseId": 48,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        },
+        {
+          "exerciseId": 8,
+          "requiredEquipment": [
+            "dumbbells",
+            "flatBench"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1901,
+      "upgrades": [
+        {
+          "exerciseId": 21,
+          "requiredEquipment": [
+            "barbells"
+          ]
+        },
+        {
+          "exerciseId": 12,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1834,
+      "upgrades": [
+        {
+          "exerciseId": 34,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1882,
+      "upgrades": [
+        {
+          "exerciseId": 28,
+          "requiredEquipment": [
+            "dumbbells"
+          ]
+        },
+        {
+          "exerciseId": 4248,
+          "requiredEquipment": [
+            "barbells",
+            "flatBench"
+          ]
+        }
+      ]
+    },
+    {
+      "exerciseId": 1933,
+      "upgrades": []
+    }
+  ],
+  "injuryExclusions": {
+    "backPain": [
+      5,
+      21,
+      41,
+      85,
+      4305,
+      94233
+    ],
+    "kneePain": [
+      1,
+      2,
+      6,
+      83,
+      1857,
+      1885,
+      1937,
+      4312,
+      30465,
+      30928,
+      68661,
+      68662,
+      72329,
+      72352,
+      72376,
+      114551,
+      115190,
+      115214
+    ],
+    "hipPain": [],
+    "elbowPain": [
+      8,
+      14,
+      28,
+      31,
+      47,
+      48,
+      50,
+      80,
+      81,
+      1837,
+      1888,
+      3420,
+      3432,
+      3438,
+      3441
+    ],
+    "shoulderPain": [
+      10,
+      34,
+      1834,
+      3442,
+      4292,
+      54627
+    ],
+    "wristPain": [
+      8,
+      14,
+      47,
+      48,
+      81,
+      92
+    ]
+  }
+}

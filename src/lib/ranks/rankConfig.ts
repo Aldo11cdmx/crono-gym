@@ -34,7 +34,9 @@ export interface RankDefinition {
    *
    * Chosen for contrast against true-black OLED (`neutral.950 = #000000`) rather
    * than for hue prettiness. Every value clears 4.5:1 against black for the
-   * label text drawn on top of it.
+   * label text drawn on top of it, with one documented exception: `obsidian` is
+   * a near-black fill that is separated from `elite` on lightness instead, and
+   * therefore carries a light label rather than dark ink.
    */
   color: string;
   /** Lighter variant for strokes and glows on a black background. */
@@ -76,7 +78,10 @@ export const RANKS: RankDefinition[] = [
     id: "bronze",
     label: "Bronce",
     minScore: 12,
-    color: "#c2660a",
+    // 5.74:1 on black. A muted copper rather than the saturated orange this used
+    // to be: the ladder now runs through desaturated metallics, and a fully
+    // saturated orange next to `#9ca3af` silver read as a different family.
+    color: "#b07a4f",
     borderColor: "#d97706",
     glyph: "●",
     description: "Primeros meses de trabajo constante.",
@@ -94,7 +99,8 @@ export const RANKS: RankDefinition[] = [
     id: "gold",
     label: "Oro",
     minScore: 46,
-    color: "#e8b923",
+    // 11.73:1 on black. Warmer and lighter than the old #e8b923.
+    color: "#f2b84b",
     borderColor: "#ffd27a",
     glyph: "★",
     description: "Fuerza notable y volumen bien programado.",
@@ -103,7 +109,16 @@ export const RANKS: RankDefinition[] = [
     id: "platinum",
     label: "Platino",
     minScore: 64,
-    color: "#0ea5e9",
+    // 12.76:1 on black, the lightest fill in the ladder.
+    //
+    // Sits close to Gold in *luminance*, and a luminance-only comparison calls the
+    // two the same colour. They are not: measured in Lab, the worst-case
+    // separation across the three dichromacies is ΔE 43.9, because amber and pale
+    // cyan sit far apart in hue and it is hue that survives every form of colour
+    // vision deficiency. `worstCaseCvdDeltaE` in rankColors.ts is what asserts
+    // that, rather than a contrast ratio, which is a text-legibility metric and
+    // answers the wrong question here.
+    color: "#9fd3d6",
     borderColor: "#7dd3fc",
     glyph: "⬟",
     description: "Rendimiento alto y muy constante.",
@@ -112,7 +127,9 @@ export const RANKS: RankDefinition[] = [
     id: "diamond",
     label: "Diamante",
     minScore: 80,
-    color: "#a5b4fc",
+    // 10.09:1 on black. A saturated azure, moved away from the violet family the
+    // ladder reserves for Elite and Obsidiana.
+    color: "#7db7ff",
     borderColor: "#c7d2fe",
     glyph: "⬢",
     description: "Fuerza avanzada, cerca de Elite.",
@@ -121,8 +138,19 @@ export const RANKS: RankDefinition[] = [
     id: "elite",
     label: "Élite",
     minScore: 88,
-    color: "#fb7185",
-    borderColor: "#fecdd3",
+    // Violet, not rose. The old #fb7185 was the one saturated red the ladder
+    // shipped, which a protanope cannot separate from the dark neutrals; #8B5CF6
+    // is 4.96:1 on black, so it still clears the fill floor the earned ranks all
+    // clear, and it is a hue nothing else in the ladder uses below it.
+    color: "#8B5CF6",
+    // 3.69:1 on black. Clears the WCAG 1.4.11 non-text floor of 3:1 for a
+    // stroke, but NOT the 4.5:1 floor `rankColors.test.ts` currently asserts for
+    // every borderColor. Left as approved rather than quietly lightened; that
+    // assertion is a pending decision, not an oversight.
+    borderColor: "#7C3AED",
+    // The label on this fill is dark ink, not near-white: `labelFor` in
+    // rankColors.ts resolves #0a0a0c at 4.67:1 where #f5f5f7 would reach only
+    // 3.89:1, so the ladder's per-rank ink choice already lands on the right one.
     glyph: "✦",
     description: "Nivel comparativo alto, propio de competición.",
   },
@@ -130,8 +158,15 @@ export const RANKS: RankDefinition[] = [
     id: "obsidian",
     label: "Obsidiana",
     minScore: 95,
-    color: "#a855f7",
-    borderColor: "#d8b4fe",
+    // Near-black with a violet cast, not a bright violet. Obsidiana has to be
+    // separable from Elite, and Elite is #8B5CF6: two violets of the same
+    // lightness collapse into one another under every dichromacy, so the top
+    // rank is moved apart on the only axis that survives -- lightness.
+    color: "#0F0A1E",
+    borderColor: "#DDD6FE",
+    // Label on this fill is the light violet #DDD6FE, not dark ink: a near-black
+    // fill cannot carry dark text, and `labelFor` in rankColors.ts resolves it to
+    // the light end of the scale on its own.
     glyph: "✷",
     description: "Nivel excepcional en ese músculo.",
   },

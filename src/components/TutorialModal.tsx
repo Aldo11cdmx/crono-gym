@@ -7,6 +7,9 @@
 
 import { X } from "lucide-react";
 import type { Exercise } from "@/types/supabase";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 interface TutorialModalProps {
   exercise: Exercise;
@@ -15,13 +18,17 @@ interface TutorialModalProps {
 
 export function TutorialModal({ exercise, onClose }: TutorialModalProps) {
   const steps = exercise.instructions ?? [];
+  const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
+  const displayName = getExerciseDisplayName(exercise);
+
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      aria-label={`Tutorial de ${exercise.name}`}
+      aria-label={`Tutorial de ${displayName}`}
       onClick={onClose}
     >
       <div
@@ -30,7 +37,7 @@ export function TutorialModal({ exercise, onClose }: TutorialModalProps) {
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold">{exercise.name}</h2>
+            <h2 className="text-base font-semibold">{displayName}</h2>
             <p className="mt-0.5 text-[11px] text-neutral-500">
               {exercise.body_part} · {exercise.target}
             </p>
@@ -46,11 +53,13 @@ export function TutorialModal({ exercise, onClose }: TutorialModalProps) {
         </div>
 
         <div className="mb-4 aspect-video w-full overflow-hidden rounded-xl bg-neutral-950">
-          {exercise.gif_url && (
+          {media.url && !failed && (
             <img
-              src={exercise.gif_url}
-              alt={`Animación de ${exercise.name}`}
+              src={src}
+              alt={`Animación de ${displayName}`}
               className="h-full w-full object-contain"
+              onLoad={onLoad}
+              onError={onError}
             />
           )}
         </div>

@@ -17,13 +17,19 @@
  *
  * Everything degrades to a no-op if IndexedDB is unavailable, exactly like
  * `offlineStore`: a missing timeline must never break the map.
+ *
+ * The database name, version and upgrade handler belong to `../idb`, which both
+ * this module and `offlineStore` share. They previously each declared their own
+ * version of the same `cronos-offline` database — this one at v2, the other at v1 —
+ * and IndexedDB rejects the lower open with a `VersionError` that both modules
+ * swallowed. The symptom was a silently dead workout queue, not a crash.
  */
 
-const DB_NAME = "cronos-offline";
-/** Bumped to add the rank stores; existing stores are left untouched. */
-const DB_VERSION = 2;
-const RANK_HISTORY_STORE = "rankHistory";
-const LAST_RANKS_STORE = "lastRanks";
+import {
+  LAST_RANKS_STORE,
+  RANK_HISTORY_STORE,
+  tx,
+} from "../idb";
 
 /** One recorded rank change. */
 export interface RankHistoryRecord {
@@ -45,68 +51,6 @@ export interface LastRanksRecord {
   rank: string;
   score: number;
   updatedAt: string;
-}
-
-let dbPromise: Promise<IDBDatabase | null> | null = null;
-
-function openDb(): Promise<IDBDatabase | null> {
-  if (dbPromise) return dbPromise;
-
-  dbPromise = new Promise((resolve) => {
-    if (typeof indexedDB === "undefined") {
-      resolve(null);
-      return;
-    }
-    try {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(RANK_HISTORY_STORE)) {
-          const store = db.createObjectStore(RANK_HISTORY_STORE, { keyPath: "id" });
-          store.createIndex("day", "day");
-          store.createIndex("slug", "slug");
-        }
-        if (!db.objectStoreNames.contains(LAST_RANKS_STORE)) {
-          db.createObjectStore(LAST_RANKS_STORE, { keyPath: "slug" });
-        }
-      };
-
-      request.onsuccess = () => resolve(request.result);
-      // A version-2 open blocked by another tab is not an error worth surfacing.
-      request.onerror = () => resolve(null);
-      request.onblocked = () => resolve(null);
-    } catch {
-      resolve(null);
-    }
-  });
-
-  return dbPromise;
-}
-
-function tx<T>(
-  store: string,
-  mode: IDBTransactionMode,
-  run: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T | null> {
-  return openDb().then(
-    (db) =>
-      new Promise<T | null>((resolve) => {
-        if (!db) {
-          resolve(null);
-          return;
-        }
-        try {
-          const transaction = db.transaction(store, mode);
-          const request = run(transaction.objectStore(store));
-          request.onsuccess = () => resolve(request.result ?? null);
-          request.onerror = () => resolve(null);
-          transaction.onerror = () => resolve(null);
-        } catch {
-          resolve(null);
-        }
-      }),
-  );
 }
 
 /** `YYYY-MM-DD` in UTC, so timeline grouping never depends on the local clock. */

@@ -1,0 +1,26 @@
+{
+  "//": [
+    "Isolates these functions from the app's `tsconfig.json`.",
+    "",
+    "Without it Deno picks up the root config, which `include`s only `src` and pulls in",
+    "no ambient Node types. `deno check` then fails to resolve rather than reporting on",
+    "the code, and the usual response is to skip typechecking -- which is how",
+    "`recordUsage` ended up typed as `number | null` while every caller passed a promise,",
+    "writing a token count of `{}` into every usage row. Nothing caught it because the",
+    "functions are not part of the app's typecheck at all.",
+    "",
+    "Run it as part of any change to a function:",
+    "  npx deno check supabase/functions/",
+    "  npx deno test --allow-env --allow-net supabase/functions/"
+  ],
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "lib": ["deno.ns", "dom", "dom.iterable", "esnext"]
+  },
+  "fmt": {
+    "lineWidth": 100
+  }
+}

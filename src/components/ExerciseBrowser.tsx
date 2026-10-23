@@ -1,26 +1,43 @@
+/**
+ * ExerciseBrowser.tsx — the exercise catalog browser with multi-select.
+ *
+ * Uses a Floating Action Dock (`SelectionBar`) that appears at the bottom of
+ * the viewport when one or more exercises are selected. The dock's "Add" button
+ * fires `onAdd` with the array of selected `Exercise` objects.
+ *
+ * Filter state is owned by this component (query, body_part, equipment, target,
+ * muscle slugs). The muscle-map filter reuses `filterByMuscles` from
+ * `muscleFilter.ts` because that function needs the `MatchLevel` type from
+ * `react-muscle-highlighter`.
+ */
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Slug } from "react-muscle-highlighter";
-import { supabase } from "@lib/supabase";
-import { loadExercises } from "@services/seedExercises";
+import { useSearchParams } from "react-router-dom";
 import type { Exercise } from "../types/supabase";
+import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { toExercises } from "@/lib/catalog/exerciseAdapter";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import {
   Search,
   Dumbbell,
-  Target,
-  Activity,
   X,
   AlertCircle,
-  CloudDownload,
-  Building2,
   PersonStanding,
+  Filter,
+  Check,
 } from "lucide-react";
-import { MY_GYM_EQUIPMENT_TAGS } from "../data/myGymEquipment";
 import { MuscleSelector } from "./MuscleSelector";
+import { ExerciseDetailSheet } from "./ExerciseDetailSheet";
+import { FilterSheet } from "./FilterSheet";
+import { SelectionBar } from "./SelectionBar";
 import { enabledSlugs, muscleDefinition } from "../lib/muscleMap";
 import {
   applyBaseFilters,
   explainEmpty,
   filterByMuscles,
+  MUSCLE_PARAM,
   muscleCounts,
   parseMuscleParam,
   serializeMuscleParam,
@@ -33,23 +50,30 @@ import {
   sortBySpanishLabel,
   translateBodyPart,
   translateEquipment,
-  translateOption,
   translateTarget,
 } from "../lib/i18n";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import type { PickerFilters } from "@/lib/picker/pickerHelpers";
+import {
+  ACCENT,
+  GLASS,
+  RADIUS,
+  SCRIM,
+  SOLID,
+  STATUS,
+  SURFACE_ROLE,
+  TEXT,
+} from "@/design/tokens";
 
 const BODY_PARTS = BODY_PART_FILTER_VALUES;
 
-/** URL key holding the anatomy selection, so it survives close/reopen. */
-const MUSCLE_PARAM = "musculos";
-
-/** Where the currently displayed catalog came from. */
-type Source = "supabase" | "fallback";
-
 export function ExerciseBrowser({
-  onSelect,
+  onAdd,
+  isAdded,
   onClose,
 }: {
-  onSelect: (ex: Exercise) => void;
+  onAdd?: (exercises: Exercise[]) => void;
+  isAdded?: (exerciseId: string) => boolean;
   onClose: () => void;
 }) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -59,16 +83,15 @@ export function ExerciseBrowser({
   const [target, setTarget] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [source, setSource] = useState<Source>("supabase");
-  const [onlyMyGym, setOnlyMyGym] = useState(false);
+  const [detailExercise, setDetailExercise] = useState<Exercise | null>(null);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Multi-selection of muscles. Seeded from the URL so returning to the browser
-  // keeps the anatomy filter, which is the whole point of a filter the user set
-  // deliberately.
-  const [muscles, setMuscles] = useState<Slug[]>(() => {
-    if (typeof window === "undefined") return [];
-    return parseMuscleParam(new URLSearchParams(window.location.search).get(MUSCLE_PARAM));
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [muscles, setMuscles] = useState<Slug[]>(() =>
+    parseMuscleParam(searchParams.get(MUSCLE_PARAM)),
+  );
   const [showAnatomy, setShowAnatomy] = useState(() => muscles.length > 0);
 
   useEffect(() => {
@@ -78,37 +101,25 @@ export function ExerciseBrowser({
       setLoading(true);
       setError(null);
 
-      // Preferred path: the seeded table.
-      const { data, error: dbError } = await supabase
-        .from("exercises")
-        .select("*")
-        .order("id", { ascending: true });
-
-      const rows = (data ?? []) as Exercise[];
-      if (!alive) return;
-
-      if (!dbError && rows.length > 0) {
-        setExercises(rows);
-        setSource("supabase");
-        setLoading(false);
-        return;
-      }
-
-      // Empty table or an RLS/network failure: fall back to the dataset so the
-      // catalog is usable regardless of seeding state.
-      const reason = dbError ? dbError.message : "La tabla exercises está vacía";
+      /*
+       * The catalog comes from the device.
+       *
+       * It used to be `select *` from the `exercises` table, with a 16 MB
+       * fetch of the whole dataset as the fallback. Both downloaded the same
+       * 1,324 exercises the app already ships with, on every visit to the
+       * library. Now the catalog is read from the device copy, which is
+       * downloaded once and kept.
+       */
       try {
-        const fallback = await loadExercises();
+        const rows = toExercises(await loadCatalog());
         if (!alive) return;
-        setExercises(fallback);
-        setSource("fallback");
-        setError(`Mostrando el catálogo en caché (${fallback.length}). ${reason}.`);
-      } catch (fallbackError) {
+        setExercises(rows);
+      } catch (err) {
         if (!alive) return;
         setExercises([]);
         setError(
           `No se pudo cargar el catálogo: ${
-            fallbackError instanceof Error ? fallbackError.message : reason
+            err instanceof Error ? err.message : "error desconocido"
           }`,
         );
       } finally {
@@ -122,8 +133,6 @@ export function ExerciseBrowser({
     };
   }, []);
 
-  // Sorted by the Spanish label so the dropdown reads naturally; filtering
-  // still uses the raw catalog value.
   const equipmentOptions = useMemo(() => {
     const s = new Set<string>();
     exercises.forEach((e) => s.add(e.equipment));
@@ -136,15 +145,13 @@ export function ExerciseBrowser({
   }, [exercises]);
 
   const filters: BaseFilters = useMemo(
-    () => ({ query, bodyPart, equipment, target, onlyMyGym }),
-    [query, bodyPart, equipment, target, onlyMyGym],
+    () => ({ query, bodyPart, equipment, target }),
+    [query, bodyPart, equipment, target],
   );
 
-  const gymMatcher = useCallback((value: string) => MY_GYM_EQUIPMENT_TAGS.has(value), []);
-
   const baseFiltered = useMemo(
-    () => applyBaseFilters(exercises, filters, { isMyGymEquipment: gymMatcher }),
-    [exercises, filters, gymMatcher],
+    () => applyBaseFilters(exercises, filters),
+    [exercises, filters],
   );
 
   const { results: filtered, levelById } = useMemo(
@@ -157,30 +164,32 @@ export function ExerciseBrowser({
     [baseFiltered],
   );
 
-  // Mirror the selection into the URL without adding history entries, so a
-  // reload or a link share keeps the filter but Back still leaves the modal.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const serialized = serializeMuscleParam(muscles);
-    if (serialized) params.set(MUSCLE_PARAM, serialized);
-    else params.delete(MUSCLE_PARAM);
-    const queryString = params.toString();
-    window.history.replaceState(
-      null,
-      "",
-      `${window.location.pathname}${queryString ? `?${queryString}` : ""}`,
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        const serialized = serializeMuscleParam(muscles);
+        if (serialized) next.set(MUSCLE_PARAM, serialized);
+        else next.delete(MUSCLE_PARAM);
+        return next;
+      },
+      { replace: true },
     );
-  }, [muscles]);
+  }, [muscles, setSearchParams]);
 
   const emptyCause = useMemo(
     () =>
       filtered.length === 0 && !loading
-        ? explainEmpty(baseFiltered, exercises, muscles, filters, T, {
-            isMyGymEquipment: gymMatcher,
-          })
+        ? explainEmpty(baseFiltered, exercises, muscles, filters, T)
         : null,
-    [filtered.length, loading, baseFiltered, exercises, muscles, filters, gymMatcher],
+    [
+      filtered.length,
+      loading,
+      baseFiltered,
+      exercises,
+      muscles,
+      filters,
+    ],
   );
 
   const onSelectMuscle = useCallback((next: Slug[]) => setMuscles(next), []);
@@ -193,22 +202,82 @@ export function ExerciseBrowser({
     [muscles],
   );
 
+  const pickerFilters: PickerFilters = useMemo(
+    () => ({
+      muscles: [],
+      bodyPart,
+      equipment,
+      target,
+    }),
+    [bodyPart, equipment, target],
+  );
+
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleAdd = useCallback(() => {
+    if (!onAdd) return;
+    const toAdd = exercises.filter((e) => selectedIds.has(e.id));
+    onAdd(toAdd);
+    setSelectedIds(new Set());
+  }, [exercises, selectedIds, onAdd]);
+
+  const handleClear = useCallback(() => setSelectedIds(new Set()), []);
+
+  const canAddMore = useMemo(
+    () =>
+      onAdd !== undefined &&
+      [...selectedIds].some((id) => !(isAdded?.(id) ?? false)),
+    [selectedIds, onAdd, isAdded],
+  );
+
   function clearFilters() {
     setQuery("");
     setBodyPart("all");
     setEquipment("all");
     setTarget("all");
-    setOnlyMyGym(false);
     setMuscles([]);
   }
 
+  const sheetRadius = RADIUS.card;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center">
-      <div className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-neutral-900/70 shadow-glass backdrop-blur-md sm:h-[85vh] sm:rounded-2xl">
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ backgroundColor: SCRIM.modal }}
+    >
+      <div
+        className="relative flex w-full max-w-6xl flex-col overflow-hidden backdrop-blur-md"
+        style={{
+          backgroundColor: SURFACE_ROLE.popover,
+          border: `1px solid ${GLASS.border}`,
+          boxShadow: GLASS.shadow,
+          borderRadius: sheetRadius,
+          maxHeight: "92vh",
+        }}
+      >
+        {/* ---- Header ---- */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{
+            borderBottom: `1px solid ${GLASS.border}`,
+            backgroundColor: GLASS.fillRaised,
+          }}
+        >
           <div>
-            <h2 className="text-lg font-semibold text-neutral-50">Biblioteca de Ejercicios</h2>
-            <p className="text-xs text-neutral-400">
+            <h2
+              style={{ color: TEXT.primary }}
+              className="text-lg font-semibold"
+            >
+              Biblioteca de Ejercicios
+            </h2>
+            <p style={{ color: TEXT.secondary }} className="text-xs">
               {loading
                 ? "Busca y filtra para agregar a tu entrenamiento."
                 : T.resultsMany(filtered.length)}
@@ -218,164 +287,224 @@ export function ExerciseBrowser({
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="rounded-lg p-1.5 text-neutral-400 transition hover:bg-white/5 hover:text-neutral-100"
+            className="rounded-xl p-1.5 text-neutral-400 opacity-60 transition hover:opacity-100"
+            style={{ color: TEXT.tertiary }}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="space-y-3 border-b border-white/10 bg-neutral-950/40 px-5 py-3">
+        {/* ---- Search + body-part chips ---- */}
+        <div
+          className="px-5 py-3"
+          style={{
+            borderBottom: `1px solid ${GLASS.border}`,
+            backgroundColor: GLASS.fill,
+          }}
+        >
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+              style={{ color: TEXT.tertiary }}
+            />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Busqueda por nombre..."
-              className="w-full rounded-lg border border-white/10 bg-neutral-950/60 py-2 pl-9 pr-3 text-sm outline-none focus:border-accent"
+              placeholder="Buscar por nombre, objetivo o equipo..."
+              className="w-full rounded-xl border-0 py-2 pl-9 pr-3 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none"
+              style={{
+                backgroundColor: SURFACE_ROLE.well,
+                borderColor: GLASS.border,
+                color: TEXT.primary,
+              }}
             />
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <FilterSelect
-              label="Parte del cuerpo"
-              icon={<Activity className="h-3.5 w-3.5" />}
-              value={bodyPart}
-              options={BODY_PARTS}
-              onChange={setBodyPart}
-              translate={translateBodyPart}
-            />
-            <FilterSelect
-              label="Equipamiento"
-              icon={<Dumbbell className="h-3.5 w-3.5" />}
-              value={equipment}
-              options={["all", ...equipmentOptions]}
-              onChange={setEquipment}
-            />
-            <FilterSelect
-              label="Objetivo"
-              icon={<Target className="h-3.5 w-3.5" />}
-              value={target}
-              options={["all", ...targetOptions]}
-              onChange={setTarget}
-              translate={translateTarget}
-            />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs text-neutral-500">
-              {filtered.length} de {exercises.length} ejercicios
-              {source === "fallback" ? " (caché local)" : ""}
-            </span>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowAnatomy((v) => !v)}
-                aria-pressed={showAnatomy}
-                aria-controls="anatomy-panel"
-                className={`flex min-h-[32px] items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition ${
-                  showAnatomy || muscles.length > 0
-                    ? "border-accent bg-accent/15 text-accent"
-                    : "border-white/10 text-neutral-300 hover:border-white/25"
-                }`}
-              >
-                <PersonStanding className="h-3.5 w-3.5" />
-                {muscles.length > 0 ? T.openWithSelection(muscles.length) : T.open}
-              </button>
-              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-neutral-300">
-                <input
-                  type="checkbox"
-                  checked={onlyMyGym}
-                  onChange={(e) => setOnlyMyGym(e.target.checked)}
-                  className="accent-accent"
-                />
-                <Building2 className="h-3.5 w-3.5" />
-                Solo mi gym
-              </label>
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="text-xs text-neutral-400 underline-offset-2 hover:underline"
-              >
-                {T.clearAll}
-              </button>
-            </div>
           </div>
 
-          {(activeMuscles.length > 0 ||
-            equipment !== "all" ||
-            query.trim() !== "" ||
-            bodyPart !== "all" ||
-            target !== "all") && (
-            <ActiveFilterChips
-              muscles={activeMuscles.map((d) => d.slug)}
-              onRemoveMuscle={(slug) => setMuscles((prev) => toggleMuscle(prev, slug))}
-              equipment={equipment}
-              onClearEquipment={() => setEquipment("all")}
-              query={query}
-              onClearQuery={() => setQuery("")}
-              bodyPart={bodyPart}
-              onClearBodyPart={() => setBodyPart("all")}
-              target={target}
-              onClearTarget={() => setTarget("all")}
-              onClearAll={clearFilters}
-            />
-          )}
+          {/* Body-part chip strip */}
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {BODY_PARTS.map((part) => {
+              const isActive = bodyPart === part;
+              return (
+                <button
+                  key={part}
+                  type="button"
+                  onClick={() => setBodyPart(part)}
+                  aria-pressed={isActive}
+                  className="rounded-full border px-3 py-1 text-xs font-medium opacity-70 transition hover:opacity-100"
+                  style={{
+                    backgroundColor: isActive ? ACCENT.muted : "transparent",
+                    borderColor: isActive ? ACCENT.base : GLASS.border,
+                    color: isActive ? TEXT.primary : TEXT.tertiary,
+                    borderWidth: "1px",
+                    borderStyle: "solid",
+                  }}
+                >
+                  {part === "all" ? "Todos" : translateBodyPart(part)}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
+        {/* ---- Secondary filter row ---- */}
+        <div
+          className="flex items-center justify-between gap-3 px-5 py-3"
+          style={{
+            borderBottom: `1px solid ${GLASS.border}`,
+            backgroundColor: GLASS.fillRaised,
+          }}
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setFilterSheetOpen(true)}
+              className="flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium opacity-70 transition hover:opacity-100"
+              style={{
+                backgroundColor: "transparent",
+                borderColor: GLASS.border,
+                color: TEXT.secondary,
+              }}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              Equipamiento y objetivo
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAnatomy((v) => !v)}
+              aria-pressed={showAnatomy}
+              aria-controls="anatomy-panel"
+              className="flex min-h-[32px] items-center gap-1.5 rounded-xl border px-3 py-1 text-xs opacity-70 transition hover:opacity-100"
+              style={{
+                backgroundColor:
+                  showAnatomy || muscles.length > 0
+                    ? ACCENT.muted
+                    : "transparent",
+                borderColor:
+                  showAnatomy || muscles.length > 0
+                    ? ACCENT.base
+                    : GLASS.border,
+                color:
+                  showAnatomy || muscles.length > 0
+                    ? TEXT.primary
+                    : TEXT.tertiary,
+              }}
+            >
+              <PersonStanding className="h-3.5 w-3.5" />
+              {muscles.length > 0
+                ? T.openWithSelection(muscles.length)
+                : "Cuerpo"}
+            </button>
+          </div>
+
+          <span
+            className="text-xs"
+            style={{
+              color: TEXT.tertiary,
+              opacity: loading ? 0.6 : 1,
+            }}
+          >
+            {filtered.length} de {exercises.length} ejercicios
+          </span>
+        </div>
+
+        {/* ---- Active filter chips ---- */}
+        {(activeMuscles.length > 0 ||
+          equipment !== "all" ||
+          query.trim() !== "" ||
+          bodyPart !== "all" ||
+          target !== "all") && (
+          <ActiveFilterChips
+            muscles={activeMuscles.map((d) => d.slug)}
+            onRemoveMuscle={(slug) =>
+              setMuscles((prev) => toggleMuscle(prev, slug))
+            }
+            equipment={equipment}
+            onClearEquipment={() => setEquipment("all")}
+            query={query}
+            onClearQuery={() => setQuery("")}
+            bodyPart={bodyPart}
+            onClearBodyPart={() => setBodyPart("all")}
+            target={target}
+            onClearTarget={() => setTarget("all")}
+            onClearAll={clearFilters}
+          />
+        )}
+
+        {/* ---- Content area ---- */}
         <div className="flex min-h-0 flex-1">
           {showAnatomy && (
             <div
               id="anatomy-panel"
-              className="w-full shrink-0 overflow-y-auto border-b border-white/10 bg-neutral-950/40 p-4 sm:w-80 sm:border-b-0 sm:border-r"
+              className="w-full shrink-0 overflow-y-auto p-4 sm:w-80"
+              style={{
+                borderTop: `1px solid ${GLASS.border}`,
+                backgroundColor: GLASS.fill,
+              }}
             >
-              <MuscleSelector selected={muscles} onChange={onSelectMuscle} counts={counts} />
+              <MuscleSelector
+                selected={muscles}
+                onChange={onSelectMuscle}
+                counts={counts}
+              />
             </div>
           )}
           <div className="min-w-0 flex-1 overflow-y-auto p-5">
             {error && (
               <div
-                className={`mb-4 flex items-start gap-2 rounded-lg border px-4 py-3 text-sm ${
-                  source === "fallback"
-                    ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
-                    : "border-red-500/30 bg-red-500/10 text-red-300"
-                }`}
+                className="mb-4 flex items-start gap-2 rounded-xl border px-4 py-3 text-sm"
+                style={{
+                  borderColor: STATUS.error.border,
+                  backgroundColor: STATUS.error.muted,
+                  color: STATUS.error.text,
+                }}
               >
                 <span className="mt-0.5 shrink-0">
-                  {source === "fallback" ? (
-                    <CloudDownload className="h-4 w-4" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4" />
-                  )}
+                  <AlertCircle className="h-4 w-4" />
                 </span>
                 <span>{error}</span>
               </div>
             )}
             {loading ? (
-              <div className="text-center text-neutral-500">Cargando catalogo...</div>
+              <div
+                className="py-12 text-center"
+                style={{ color: TEXT.tertiary }}
+              >
+                Cargando catálogo...
+              </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center text-neutral-500">
+              <div
+                className="py-12 text-center"
+                style={{ color: TEXT.tertiary }}
+              >
                 {emptyCause ? (
                   <>
                     <p>{emptyCause.message}</p>
                     <button
                       type="button"
                       onClick={clearFilters}
-                      className="mt-2 text-xs text-accent underline-offset-2 hover:underline"
+                      className="mt-2 text-xs underline-offset-2 hover:underline"
+                      style={{ color: ACCENT.text }}
                     >
                       {emptyCause.action}
                     </button>
                   </>
                 ) : (
-                  "Sin resultados para esta busqueda."
+                  "Sin resultados para esta búsqueda."
                 )}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((ex) => (
-                  <ExerciseCard
+                  <BrowserExerciseCard
                     key={ex.id}
                     exercise={ex}
                     level={levelById.get(ex.id)}
-                    onSelect={onSelect}
+                    selected={selectedIds.has(ex.id)}
+                    onToggleSelect={toggleSelection}
+                    alreadyAdded={isAdded?.(ex.id) ?? false}
+                    onOpenDetail={() => setDetailExercise(ex)}
                   />
                 ))}
               </div>
@@ -383,16 +512,40 @@ export function ExerciseBrowser({
           </div>
         </div>
       </div>
+
+      <FilterSheet
+        isOpen={filterSheetOpen}
+        onClose={() => setFilterSheetOpen(false)}
+        filters={pickerFilters}
+        onChange={(next) => {
+          setBodyPart(next.bodyPart);
+          setEquipment(next.equipment);
+          setTarget(next.target);
+          setFilterSheetOpen(false);
+        }}
+        bodyPartOptions={BODY_PARTS}
+        equipmentOptions={["all", ...equipmentOptions]}
+        targetOptions={["all", ...targetOptions]}
+      />
+
+      <ExerciseDetailSheet
+        exercise={detailExercise}
+        isOpen={detailExercise !== null}
+        onClose={() => setDetailExercise(null)}
+      />
+
+      {selectedIds.size > 0 && onAdd && (
+        <SelectionBar
+          selectedCount={selectedIds.size}
+          canAddMore={canAddMore}
+          onAdd={handleAdd}
+          onClear={handleClear}
+        />
+      )}
     </div>
   );
 }
 
-/**
- * Removable chips for every active filter.
- *
- * Each chip names the filter it removes. The anatomy chips are listed separately
- * from the dropdown ones so the user can tell which came from the body map.
- */
 function ActiveFilterChips({
   muscles,
   onRemoveMuscle,
@@ -419,12 +572,25 @@ function ActiveFilterChips({
   onClearAll: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5 border-t border-white/5 pt-2.5">
-      <span className="text-[11px] text-neutral-600">Filtros activos:</span>
+    <div
+      className="flex flex-wrap items-center gap-1.5 px-5 py-2.5"
+      style={{
+        borderTop: `1px solid ${GLASS.border}`,
+        backgroundColor: GLASS.fill,
+      }}
+    >
+      <span style={{ color: TEXT.tertiary, fontSize: "11px" }}>
+        Filtros activos:
+      </span>
       {muscles.map((slug) => {
         const label = muscleDefinition(slug)?.label ?? slug;
         return (
-          <FilterChip key={slug} label={label} removeLabel={T.chipRemove(label)} onRemove={() => onRemoveMuscle(slug)} />
+          <FilterChip
+            key={slug}
+            label={label}
+            removeLabel={T.chipRemove(label)}
+            onRemove={() => onRemoveMuscle(slug)}
+          />
         );
       })}
       {bodyPart !== "all" && (
@@ -458,7 +624,8 @@ function ActiveFilterChips({
       <button
         type="button"
         onClick={onClearAll}
-        className="ml-1 text-[11px] text-neutral-500 underline-offset-2 hover:text-neutral-300 hover:underline"
+        className="ml-1 text-[11px] underline-offset-2 hover:underline"
+        style={{ color: TEXT.tertiary }}
       >
         {T.clearAll}
       </button>
@@ -476,13 +643,21 @@ function FilterChip({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 py-0.5 pl-2.5 pr-1 text-[11px] text-accent">
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px]"
+      style={{
+        backgroundColor: ACCENT.muted,
+        borderColor: ACCENT.border,
+        color: ACCENT.text,
+      }}
+    >
       {label}
       <button
         type="button"
         onClick={onRemove}
         aria-label={removeLabel}
-        className="rounded-full p-0.5 transition hover:bg-accent/25"
+        className="rounded-full p-0.5 text-neutral-500 opacity-60 transition hover:opacity-100"
+        style={{ color: ACCENT.text }}
       >
         <X className="h-3 w-3" />
       </button>
@@ -490,116 +665,140 @@ function FilterChip({
   );
 }
 
-function FilterSelect({
-  label,
-  icon,
-  value,
-  options,
-  onChange,
-  translate,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-  translate?: (v: string) => string;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1 flex items-center gap-1.5 text-xs text-neutral-400">
-        {icon}
-        {label}
-      </span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
-      >
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {translate ? translate(o) : translateOption(o)}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function ExerciseCard({
-  exercise,
-  level,
-  onSelect,
-}: {
+interface BrowserExerciseCardProps {
   exercise: Exercise;
   level?: "primary" | "secondary";
-  onSelect: (ex: Exercise) => void;
-}) {
-  const [imgError, setImgError] = useState(false);
-  const [showSteps, setShowSteps] = useState(false);
-  const steps = exercise.instructions ?? [];
+  selected: boolean;
+  onToggleSelect: (id: string) => void;
+  alreadyAdded: boolean;
+  onOpenDetail: () => void;
+}
+
+function BrowserExerciseCard({
+  exercise,
+  level,
+  selected,
+  onToggleSelect,
+  alreadyAdded,
+  onOpenDetail,
+}: BrowserExerciseCardProps) {
+  const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
+  const { src, failed, onLoad, onError } = useMediaSrc(media);
+
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-neutral-950/40 transition hover:border-accent/50">
-      <div className="relative aspect-video bg-neutral-900">
-        {!imgError ? (
+    <div
+      className="group overflow-hidden rounded-xl border transition"
+      style={{
+        backgroundColor: SURFACE_ROLE.card,
+        borderColor: selected ? ACCENT.base : GLASS.border,
+        boxShadow: selected ? ACCENT.ring : GLASS.shadow,
+      }}
+    >
+      {/* GIF thumbnail */}
+      <div className="relative aspect-video">
+        {!failed && media.url ? (
           <img
-            src={exercise.gif_url}
-            alt={`Animación de ${exercise.name}`}
+            src={src}
+            alt={`Animación de ${getExerciseDisplayName(exercise)}`}
             loading="lazy"
-            onError={() => setImgError(true)}
+            onLoad={onLoad}
+            onError={onError}
             className="h-full w-full object-contain"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-neutral-600">
+          <div
+            className="flex h-full w-full items-center justify-center"
+            style={{ color: TEXT.tertiary }}
+          >
             <Dumbbell className="h-8 w-8" />
           </div>
         )}
         {level === "secondary" && (
-          <span className="absolute left-2 top-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] text-neutral-400">
+          <span
+            className="absolute left-2 top-2 rounded-md px-1.5 py-0.5 text-[10px]"
+            style={{ backgroundColor: GLASS.fill, color: TEXT.tertiary }}
+          >
             Estimula también
           </span>
         )}
+        <span
+          className="absolute bottom-2 left-2 rounded-md px-1.5 py-0.5 text-[10px]"
+          style={{ backgroundColor: SOLID.card, color: TEXT.secondary }}
+        >
+          GIF de referencia
+        </span>
+        {/* Detail trigger (invisible button overlay on the image) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenDetail();
+          }}
+          aria-label="Ver detalles"
+          className="absolute inset-0 rounded-xl"
+        />
+        {/* Selection checkbox */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!alreadyAdded) onToggleSelect(exercise.id);
+          }}
+          aria-label={selected ? "Deseleccionar" : "Seleccionar"}
+          className="absolute top-2 right-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all"
+          style={{
+            borderColor: selected ? ACCENT.base : TEXT.disabled,
+            backgroundColor: selected ? ACCENT.base : SOLID.card,
+            color: TEXT.onAccent,
+            opacity: alreadyAdded && !selected ? 0.4 : 1,
+          }}
+        >
+          {selected && <Check className="h-3.5 w-3.5" />}
+        </button>
       </div>
+
       <div className="p-3">
-        <h3 className="truncate text-sm font-medium text-neutral-100">{exercise.name}</h3>
-        <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-neutral-400">
-          <span className="rounded-md bg-white/5 px-1.5 py-0.5">
+        <div
+          className="flex items-start justify-between gap-2"
+          style={{ color: TEXT.primary }}
+        >
+          <h3 className="truncate text-sm font-medium">
+            {getExerciseDisplayName(exercise)}
+          </h3>
+        </div>
+
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          <span
+            className="rounded-full px-1.5 py-0.5 text-[11px]"
+            style={{
+              backgroundColor: GLASS.fill,
+              color: TEXT.tertiary,
+            }}
+          >
             {translateBodyPart(exercise.body_part)}
           </span>
-          <span className="rounded-md bg-white/5 px-1.5 py-0.5">
+          <span
+            className="rounded-full px-1.5 py-0.5 text-[11px]"
+            style={{
+              backgroundColor: GLASS.fill,
+              color: TEXT.tertiary,
+            }}
+          >
             {translateTarget(exercise.target)}
           </span>
-          <span className="rounded-md bg-white/5 px-1.5 py-0.5">
+          <span
+            className="rounded-full px-1.5 py-0.5 text-[11px]"
+            style={{
+              backgroundColor: GLASS.fill,
+              color: TEXT.tertiary,
+            }}
+          >
             {translateEquipment(exercise.equipment)}
           </span>
         </div>
-        {steps.length > 0 && (
-          <div className="mt-2">
-            <button
-              type="button"
-              onClick={() => setShowSteps((v) => !v)}
-              aria-expanded={showSteps}
-              className="text-[11px] text-neutral-500 underline-offset-2 transition hover:text-neutral-300 hover:underline"
-            >
-              {showSteps ? "Ocultar instrucciones" : `Instrucciones (${steps.length})`}
-            </button>
-            {showSteps && (
-              <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-[11px] leading-relaxed text-neutral-400">
-                {steps.map((step, i) => (
-                  <li key={i}>{step}</li>
-                ))}
-              </ol>
-            )}
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={() => onSelect(exercise)}
-          className="mt-2 w-full rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-neutral-950 transition hover:brightness-110"
-        >
-          Agregar al entrenamiento
-        </button>
       </div>
     </div>
   );
 }
+
+;

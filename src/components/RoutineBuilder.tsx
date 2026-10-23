@@ -4,6 +4,7 @@ import { supabase } from "@lib/supabase";
 import { ExerciseBrowser } from "./ExerciseBrowser";
 import type { Exercise } from "@/types/supabase";
 import type { RoutineWithExercises } from "../hooks/useGymData";
+import { getExerciseName } from "../lib/routines/routineDraftModel";
 
 const DEFAULT_REST = 90;
 
@@ -65,18 +66,23 @@ export function RoutineBuilder({
     setDraft((prev) => ({ ...prev, ...changes }));
   }
 
-  function addExercise(exercise: Exercise) {
-    setDraft((prev) =>
-      prev.items.some((i) => i.exercise.id === exercise.id)
-        ? prev
-        : {
-            ...prev,
-            items: [
-              ...prev.items,
-              { exercise, target_sets: 3, rest_seconds: DEFAULT_REST },
-            ],
-          },
-    );
+  function addExercises(exercises: Exercise[]) {
+    setDraft((prev) => {
+      const existing = new Set(prev.items.map((i) => i.exercise.id));
+      const fresh = exercises.filter((e) => !existing.has(e.id));
+      if (fresh.length === 0) return prev;
+      return {
+        ...prev,
+        items: [
+          ...prev.items,
+          ...fresh.map((exercise) => ({
+            exercise,
+            target_sets: 3,
+            rest_seconds: DEFAULT_REST,
+          })),
+        ],
+      };
+    });
   }
 
   function updateItem(index: number, changes: Partial<PlanItem>) {
@@ -243,11 +249,12 @@ export function RoutineBuilder({
 
       {browsing && (
         <ExerciseBrowser
-          onSelect={(ex) => {
-            addExercise(ex);
+          onAdd={(selected) => {
+            addExercises(selected);
             setBrowsing(false);
           }}
           onClose={() => setBrowsing(false)}
+          isAdded={(id) => draft.items.some((i) => i.exercise.id === id)}
         />
       )}
     </div>
@@ -283,7 +290,7 @@ function RoutineForm({
             value={draft.title}
             onChange={(e) => onPatch({ title: e.target.value })}
             placeholder="Push Day"
-            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
           />
         </label>
         <label className="block">
@@ -293,7 +300,7 @@ function RoutineForm({
             value={draft.description}
             onChange={(e) => onPatch({ description: e.target.value })}
             placeholder="Opcional"
-            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
           />
         </label>
       </div>
@@ -307,7 +314,7 @@ function RoutineForm({
             key={item.exercise.id}
             className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-neutral-950/40 px-3 py-2"
           >
-            <span className="min-w-0 flex-1 truncate text-sm">{item.exercise.name}</span>
+            <span className="min-w-0 flex-1 truncate text-sm">{getExerciseName(item.exercise)}</span>
             <Stepper
               label="Series"
               value={item.target_sets}
@@ -438,7 +445,7 @@ function RoutineCard({
           {routine.exercises.length === 0 && <li>Sin ejercicios</li>}
           {routine.exercises.map((item) => (
             <li key={item.exercise.id} className="flex items-center justify-between gap-2">
-              <span className="truncate">{item.exercise.name}</span>
+              <span className="truncate">{getExerciseName(item.exercise)}</span>
               <span className="shrink-0 tabular-nums text-neutral-500">
                 {item.target_sets}×{item.rest_seconds}s
               </span>

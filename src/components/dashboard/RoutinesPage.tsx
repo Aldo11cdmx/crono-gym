@@ -48,6 +48,7 @@ import {
   COPPER,
   FONT_SANS,
   GLASS,
+  GRADIENT_FILLS,
   MOTION,
   RADIUS,
   SCRIM,
@@ -57,7 +58,6 @@ import {
   TYPE,
   Z_INDEX,
   DANGER,
-  STATUS,
   SURFACE,
 } from "@/design/tokens";
 import { useRoutines, type RoutineWithExercises } from "@/hooks/useGymData";
@@ -1166,18 +1166,19 @@ function WeeklyVolumeCoverage({
                   >
                     <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>{m.label}</span>
                     {m.lowVolume && (
-                      <span
-                        style={{
-                          fontSize: TYPE.caption.size,
-                          fontWeight: TYPE.caption.weight,
-                          color: ACCENT.text,
-                          background: ACCENT.subtle,
-                          borderRadius: RADIUS.chip,
-                          padding: "2px 6px",
-                        }}
-                      >
-                        {LABELS.lowVolumeBadge}
-                      </span>
+                  <span
+                    style={{
+                      fontSize: TYPE.caption.size,
+                      fontWeight: TYPE.caption.weight,
+                      color: ACCENT.text,
+                      background: `${ACCENT.subtle}80`,
+                      borderRadius: RADIUS.chip,
+                      padding: "2px 6px",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    {LABELS.lowVolumeBadge}
+                  </span>
                     )}
                   </div>
                   <span
@@ -1188,6 +1189,9 @@ function WeeklyVolumeCoverage({
                       fontVariantNumeric: "tabular-nums",
                       minWidth: 60,
                       textAlign: "right",
+                      background: GLASS.fill,
+                      borderRadius: RADIUS.chip,
+                      padding: "1px 6px",
                     }}
                   >
                     {m.displayedSets} series{m.displayedSets !== m.rawSets && deloadActive && ` (orig: ${m.rawSets})`}
@@ -1213,7 +1217,7 @@ function WeeklyVolumeCoverage({
                       width: `${progressPct}%`,
                       height: "100%",
                       borderRadius: RADIUS.pill,
-                      background: m.lowVolume ? STATUS.warning.base : ACCENT.base,
+                      background: m.lowVolume ? GRADIENT_FILLS.warm : GRADIENT_FILLS.accent,
                       transition: `width ${MOTION.normal} ${MOTION.easeOut}`,
                     }}
                   />
@@ -1399,7 +1403,11 @@ function RoutineCard({
                 color: TEXT.primary,
               }}
             >
-              {routine.title}
+              {routine.title && routine.title.trim() !== "" && routine.title.trim().toLowerCase() !== "xd"
+                  ? routine.title
+                  : routine.title && routine.title.trim().toLowerCase() === "xd"
+                    ? "Rutina de Torso & Abdomen"
+                    : "Rutina Personalizada"}
             </h3>
             {routine.description && (
               <p style={{ fontSize: TYPE.body.size, color: TEXT.secondary, marginTop: SPACE.xs }}>
@@ -1437,18 +1445,36 @@ function RoutineCard({
             color: TEXT.secondary,
           }}
         >
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              background: GLASS.fill,
+              borderRadius: RADIUS.chip,
+              padding: "1px 6px",
+            }}
+          >
             <Dumbbell style={{ width: 14, height: 14 }} strokeWidth={1.5} />
             {LABELS.exerciseCount(routine.exercises.length)}
           </span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              background: GLASS.fill,
+              borderRadius: RADIUS.chip,
+              padding: "1px 6px",
+            }}
+          >
             <Clock style={{ width: 14, height: 14 }} strokeWidth={1.5} />
             {duration} min
           </span>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm, marginTop: SPACE.sm }}>
-          {/* Botón secundario neutro/glass para no competir con el Plan Semanal */}
+          {/* Botón primario "Empezar" con acento rojo */}
           <button
             type="button"
             onClick={onStart}
@@ -1460,17 +1486,18 @@ function RoutineCard({
               gap: SPACE.xs,
               padding: `${SPACE.sm} ${SPACE.md}`,
               borderRadius: RADIUS.control,
-              background: GLASS.fill,
-              border: `1px solid ${GLASS.border}`,
-              color: TEXT.primary,
+              background: ACCENT.base,
+              border: `1px solid ${ACCENT.base}`,
+              color: TEXT.onAccent,
               fontFamily: FONT_SANS,
               fontSize: TYPE.subhead.size,
               fontWeight: TYPE.subhead.weight,
               cursor: "pointer",
+              boxShadow: ACCENT.ring,
               transition: `background-color ${MOTION.fast} ${MOTION.standard}`,
             }}
           >
-            <Play style={{ width: 14, height: 14 }} strokeWidth={1.5} color={ACCENT.text} /> {LABELS.start}
+            <Play style={{ width: 14, height: 14 }} strokeWidth={1.5} /> {LABELS.start}
           </button>
 
           {/* Acciones secundarias discretas (basura movida a ActionMenu) */}

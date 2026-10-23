@@ -84,7 +84,7 @@ describe("WeeklyPlanner (extended)", () => {
     expect(restLabels.length).toBeGreaterThan(0);
   });
 
-  it("renders undo/redo buttons disabled initially", () => {
+  it("does not render undo/redo buttons when there is no history", () => {
     render(
       <WeeklyPlanner
         routines={ROUTINES}
@@ -93,10 +93,8 @@ describe("WeeklyPlanner (extended)", () => {
         todayIndex={0}
       />,
     );
-    const undoBtn = screen.getByLabelText("Deshacer");
-    const redoBtn = screen.getByLabelText("Rehacer");
-    expect(undoBtn.hasAttribute("disabled")).toBe(true);
-    expect(redoBtn.hasAttribute("disabled")).toBe(true);
+    expect(screen.queryByLabelText("Deshacer")).toBeNull();
+    expect(screen.queryByLabelText("Rehacer")).toBeNull();
   });
 
   it("calls onChange after a reorder drag", async () => {

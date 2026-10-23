@@ -10,7 +10,7 @@
  * that stylesheet reads, since a mismatch is the whole bug.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useEffect, useRef } from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -28,17 +28,6 @@ import {
   ActiveSessionProvider,
   useActiveSession,
 } from "@/context/ActiveSessionContext";
-
-/*
- * The button, stubbed.
- *
- * What is being pinned here is the *wiring* -- that the shell is the thing that mounts it.
- * Its own rules (which routes, which users) are tested where it lives; asserting those
- * again from here would only be testing that the shell renders its children.
- */
-vi.mock("../coach/CoachFloatingButton", () => ({
-  CoachFloatingButton: () => <div data-testid="coach-fab-slot" />,
-}));
 
 afterEach(cleanup);
 
@@ -97,16 +86,6 @@ describe("AppShell", () => {
     renderShell({ path: "/rutinas" });
     expect(screen.getByText("Vista rutinas")).toBeDefined();
     expect(screen.queryByText("Vista inicio")).toBeNull();
-  });
-
-  it("monta el acceso al asistente en toda pantalla", () => {
-    // The shell is the only place it is mounted, so a button per screen would be six
-    // chances for one of them to be missing. This pins the single mount point.
-    for (const path of ["/", "/rutinas", "/entrenar", "/rangos", "/perfil"]) {
-      const view = renderShell({ path });
-      expect(screen.getByTestId("coach-fab-slot"), `faltaba en ${path}`).toBeDefined();
-      view.unmount();
-    }
   });
 
   it("does not render the session pill when no session is running", () => {

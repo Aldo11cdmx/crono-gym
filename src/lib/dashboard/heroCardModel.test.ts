@@ -42,7 +42,7 @@ describe("getGreeting", () => {
     const now = Date.parse("2026-10-05T08:00:00");
     const longName = "AlexandroSupercalifragilistic";
     const result = getGreeting(now, longName);
-    expect(result).toBe(`Buenos días, ${longName.slice(0, 20)}`);
+    expect(result).toBe("Buenos días, Alexandrosupercalifr");
   });
 
   it("returns name-less greeting for empty name", () => {

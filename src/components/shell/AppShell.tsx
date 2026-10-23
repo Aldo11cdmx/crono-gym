@@ -21,7 +21,6 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BottomNav } from "./BottomNav";
 import { ActiveWorkoutPill } from "./ActiveWorkoutPill";
 import { SideNav } from "../nav/SideNav";
-import { CoachFloatingButton } from "../coach/CoachFloatingButton";
 import { SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from "./navItems";
 import { useSideNavCollapsed } from "./useSideNavCollapsed";
 
@@ -96,14 +95,6 @@ export function AppShell() {
       <SideNav collapsed={collapsed} onToggleCollapsed={toggle} />
       <BottomNav />
       <ActiveWorkoutPill />
-
-      {/*
-        Last, so it stacks over the navigation and the pill, and after the outlet so that
-        opening the assistant never re-mounts the screen underneath it. It renders nothing
-        without a signed-in athlete and nothing on the coach portal; both are its own
-        rules, tested there.
-      */}
-      <CoachFloatingButton />
     </div>
   );
 }

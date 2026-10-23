@@ -669,6 +669,19 @@ export const STATUS = {
 export type StatusName = keyof typeof STATUS;
 
 /**
+ * Gradient fills for progress bars and accent fills.
+ *
+ * Declared after STATUS and ACCENT so they can reference those hues without
+ * forward-reference problems. The `80` hex suffix is 50% opacity on the same hue.
+ */
+export const GRADIENT_FILLS = {
+  /** Warning amber fade, for low-volume progress bars. */
+  warm: `linear-gradient(90deg, ${STATUS.warning.base}, ${STATUS.warning.base}80)`,
+  /** Accent red fade, for on-volume progress bars. */
+  accent: `linear-gradient(90deg, ${ACCENT.base}, ${ACCENT.base}80)`,
+} as const;
+
+/**
  * Heatmap palette for the volume/intensity map mode.
  *
  * Four tints that communicate training volume without violating the

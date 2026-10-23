@@ -589,26 +589,28 @@ export function WeeklyPlanner({
               {LABELS.deloadBadge}
             </span>
           )}
-          <div style={{ display: "flex", gap: SPACE.xs }}>
-            <button
-              aria-label={LABELS.undo}
-              title={LABELS.undo}
-              onClick={handleUndo}
-              disabled={!canUndo}
-              style={actionButtonStyle(canUndo)}
-            >
-              <Undo2 size={16} strokeWidth={1.5} />
-            </button>
-            <button
-              aria-label={LABELS.redo}
-              title={LABELS.redo}
-              onClick={handleRedo}
-              disabled={!canRedo}
-              style={actionButtonStyle(canRedo)}
-            >
-              <Redo2 size={16} strokeWidth={1.5} />
-            </button>
-          </div>
+          {(canUndo || canRedo) && (
+            <div style={{ display: "flex", gap: SPACE.xs }}>
+              <button
+                aria-label={LABELS.undo}
+                title={LABELS.undo}
+                onClick={handleUndo}
+                disabled={!canUndo}
+                style={actionButtonStyle(canUndo)}
+              >
+                <Undo2 size={16} strokeWidth={1.5} />
+              </button>
+              <button
+                aria-label={LABELS.redo}
+                title={LABELS.redo}
+                onClick={handleRedo}
+                disabled={!canRedo}
+                style={actionButtonStyle(canRedo)}
+              >
+                <Redo2 size={16} strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Carrusel de días */}
@@ -851,7 +853,7 @@ export function WeeklyPlanner({
                     <Play size={16} strokeWidth={1.5} aria-hidden="true" />
                   )}
                   {hasNoRoutine
-                    ? (isTodayEmpty && onStartToday ? LABELS.startToday : "+ Asignar Rutina")
+                    ? (isTodayEmpty && onStartToday ? LABELS.startToday : "Asignar rutina")
                     : LABELS.start}
                 </button>
 

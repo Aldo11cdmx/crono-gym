@@ -453,22 +453,7 @@ export function ExerciseCarousel({
             >
               <Plus size={20} strokeWidth={2.5} aria-hidden="true" />
             </span>
-            <span
-              style={{
-                width: "100%",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                textAlign: "center",
-                fontSize: TYPE.label.size,
-                lineHeight: TYPE.label.lineHeight,
-                fontWeight: TYPE.label.weight,
-                color: TEXT.secondary,
-              }}
-            >
-              +
-            </span>
-          </button>
+            </button>
         )}
       </div>
     </div>

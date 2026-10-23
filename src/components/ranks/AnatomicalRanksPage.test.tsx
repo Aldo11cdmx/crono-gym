@@ -138,15 +138,6 @@ describe("AnatomicalRanksPage", () => {
     expect(within(legend).getByRole("button", { name: /Pecho/ })).toBeTruthy();
   });
 
-  it("lists all seven earned ranks in the ladder with their thresholds", async () => {
-    await renderView();
-    expect(screen.getByText("Leyenda")).toBeTruthy();
-    for (const label of ["Bronce", "Plata", "Oro", "Platino", "Diamante", "Élite", "Obsidiana"]) {
-      expect(screen.getAllByText(new RegExp(label)).length).toBeGreaterThan(0);
-    }
-    expect(screen.queryByText(/Sin clasificar/)).toBeNull();
-  });
-
   it("opens the detail panel for a muscle and closes it again", async () => {
     await renderView();
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -300,31 +291,9 @@ describe("AnatomicalRanksPage", () => {
     expect(screen.getByText("Mantenimiento")).toBeTruthy();
   });
 
-  it("filters the muscle matrix by rank chip", async () => {
-    await renderView();
-
-    const bronzeChip = screen.getByText("Bronce").closest("button");
-    expect(bronzeChip).toBeTruthy();
-    fireEvent.click(bronzeChip!);
-
-    const matrix = screen.getByText("Matriz de músculos").closest("section")!;
-    const cards = within(matrix).queryAllByText(/pts/);
-    const bronzeGlyphs = within(matrix).queryAllByText("●");
-    expect(bronzeGlyphs.length).toBe(cards.length);
-  });
-
   it("shows the symmetry radar and its title", async () => {
     await renderView();
     expect(screen.getByText("Simetría de fuerza")).toBeTruthy();
   });
 
-  it("opens the detail panel from a heatmap-mode card", async () => {
-    await renderView();
-    const modeGroup = screen.getByRole("radiogroup", { name: /Cambiar vista del mapa/ });
-    fireEvent.click(within(modeGroup).getByRole("radio", { name: "Volumen semanal" }));
-
-    expect(screen.queryByRole("dialog")).toBeNull();
-    const cards = screen.getAllByRole("button", { name: /series\/sem|pts/ });
-    expect(cards.length).toBeGreaterThan(0);
-  });
 });

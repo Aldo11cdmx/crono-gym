@@ -1287,6 +1287,33 @@ export const HUB_PROGRESS_LABELS = {
     `${metric} de ${exercise}`,
 } as const;
 
+/**
+ * UI copy for the progreso view: the four KPI cards, the weekly bar chart and
+ * the recent-session list.
+ */
+export const PROGRESS_LABELS = {
+  title: "Tu progreso",
+  subtitle: (count: number): string => `Resumen de tus últimas ${count || 0} sesiones.`,
+  metrics: {
+    workouts: "Entrenamientos",
+    bestWeight: "Peso máximo",
+    volume: "Volumen",
+    total: "Sesiones totales",
+  } as const,
+  hints: {
+    thisMonth: "este mes",
+    validSet: "en serie válida",
+    completed: "completadas",
+  } as const,
+  week: "Últimos 7 días",
+  history: "Sesiones recientes",
+  historyEmpty: "Cuando termines tu primera sesión aparecerá aquí.",
+  sessionSets: (sets: number): string => `${sets} series`,
+  /** Sesión sin nombre asignado: "Sesión de Viernes". */
+  sessionFallback: (weekday: string): string => `Sesión de ${weekday}`,
+  loading: "Calculando…",
+} as const;
+
 /** Copy for the records tab. */
 export const HUB_RECORDS_LABELS = {
   gridAriaLabel: (exercise: string): string => `Récords de ${exercise}`,

@@ -8,7 +8,9 @@ import { CronosLogo } from "./components/CronosLogo";
 import { BrandLockup } from "./components/shell/BrandLockup";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { Onboarding } from "./components/Onboarding";
-import { ProgressDashboard } from "./components/ProgressDashboard";
+import { ProgressCharts } from "./components/progress/ProgressCharts";
+import { ConsistencyTracker } from "./components/progress/ConsistencyTracker";
+import { WorkoutHistory } from "./components/progress/WorkoutHistory";
 import { AnatomicalRanksPage } from "./components/ranks/AnatomicalRanksPage";
 import { CoachHub } from "./components/coach/CoachHub";
 import { RoutinesPage } from "./components/dashboard/RoutinesPage";
@@ -22,6 +24,8 @@ import {
 import { useProfile } from "./hooks/useProfile";
 import { useOfflineSync } from "./hooks/useOfflineSync";
 import { AuthModalProvider } from "./context/AuthModalContext";
+import { TYPE, TEXT } from "@/design/tokens";
+import { PROGRESS_LABELS } from "@/lib/i18n";
 
 /**
  * Exact-path comparison, so `/` does not claim to be active on every route.
@@ -387,10 +391,38 @@ export function ProgressView() {
           {error}
         </div>
       )}
-      <ProgressDashboard stats={stats} loading={loading} />
+      {loading ? (
+        <p className="text-sm text-neutral-500">{PROGRESS_LABELS.loading}</p>
+      ) : (
+        <div className="space-y-6">
+          <div>
+            <h2 style={pageTitleStyle}>{PROGRESS_LABELS.title}</h2>
+            <p style={pageSubtitleStyle}>{PROGRESS_LABELS.subtitle(stats.recent.length)}</p>
+          </div>
+          <ProgressCharts stats={stats} />
+          <div className="grid gap-5 lg:grid-cols-[1fr_360px] lg:items-start">
+            <ConsistencyTracker week={stats.week} />
+            <WorkoutHistory recent={stats.recent} />
+          </div>
+        </div>
+      )}
     </>
   );
 }
+
+const pageTitleStyle: React.CSSProperties = {
+  fontSize: TYPE.title2.size,
+  lineHeight: TYPE.title2.lineHeight,
+  fontWeight: TYPE.title2.weight,
+  color: TEXT.primary,
+};
+
+const pageSubtitleStyle: React.CSSProperties = {
+  fontSize: TYPE.caption.size,
+  lineHeight: TYPE.caption.lineHeight,
+  fontWeight: TYPE.caption.weight,
+  color: TEXT.secondary,
+};
 
 /**
  * The anatomical ranks, on their own route.

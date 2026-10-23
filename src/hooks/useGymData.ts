@@ -431,3 +431,8 @@ export function formatWeight(value: number | null): string {
   if (value === null) return "—";
   return Number.isInteger(value) ? `${value} kg` : `${value.toFixed(1)} kg`;
 }
+
+/** Volumen con separador de millares, p. ej. `12,557 kg`. */
+export function formatVolume(kg: number): string {
+  return `${new Intl.NumberFormat("es-MX").format(Math.round(kg))} kg`;
+}

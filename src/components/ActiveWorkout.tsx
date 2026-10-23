@@ -11,14 +11,7 @@
  * spinbutton /Peso:/, botón de gear, "Última sesión: ...", undo banner, etc.
  */
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   X,
   Play,
@@ -31,12 +24,12 @@ import {
   Settings,
   Timer,
 } from "lucide-react";
+import { GlassButton } from "@/components/ui/GlassButton";
 import { SmartSwapModal } from "@/components/SmartSwapModal";
 import { WarmupPyramidSection } from "@/components/WarmupPyramidSection";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
 import { GYM_LABELS } from "../lib/i18n";
-import { GYM_SETTINGS_KEY } from "../context/GymSettingsContext";
 import {
   ACCENT,
   DANGER,
@@ -47,7 +40,6 @@ import {
   SURFACE,
   SOLID,
   SPACE,
-  STATUS,
   TEXT,
   TYPE,
   Z_INDEX,
@@ -151,42 +143,21 @@ function SessionHeader({
       style={{
         position: "sticky",
         top: 0,
-        zIndex: Z_INDEX.sticky,
+        zIndex: 40,
+        width: "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: SPACE.md,
-        padding: `${SPACE.sm} ${SPACE.md}`,
-        borderBottom: `1px solid ${GLASS.border}`,
-        background: SCRIM.modal,
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        padding: "12px 16px",
+        background: "rgba(0, 0, 0, 0.7)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        transition: "all 200ms ease",
       }}
     >
-      <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
-          {exerciseLabel && (
-            <div
-              style={{
-                fontSize: TYPE.caption.size,
-                color: TEXT.tertiary,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {exerciseLabel}
-            </div>
-          )}
-          {superset && (
-            <SupersetBadge
-              label={superset.label}
-              position={superset.position}
-              total={superset.total}
-              tone={superset.tone}
-            />
-          )}
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: SPACE.md, minWidth: 0 }}>
         {startedAt && (
           <div
             style={{
@@ -204,51 +175,64 @@ function SessionHeader({
             {time}
           </div>
         )}
+        {exerciseLabel && (
+          <div
+            style={{
+              fontSize: TYPE.caption.size,
+              color: TEXT.tertiary,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {exerciseLabel}
+          </div>
+        )}
+        {superset && (
+          <SupersetBadge
+            label={superset.label}
+            position={superset.position}
+            total={superset.total}
+            tone={superset.tone}
+          />
+        )}
       </div>
-      {onTerminate && (
+      <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
         <button
           type="button"
-          onClick={onTerminate}
-          aria-label="Terminar entrenamiento"
+          aria-label={GEAR}
           style={{
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: SPACE.xs,
+            minWidth: MOTION.minTouchTarget,
             minHeight: MOTION.minTouchTarget,
-            padding: `0 ${SPACE.lg}`,
             borderRadius: RADIUS.control,
-            border: `1px solid ${GLASS.borderStrong}`,
+            border: `1px solid ${GLASS.border}`,
             background: "transparent",
-            color: TEXT.primary,
-            fontSize: TYPE.subhead.size,
-            fontWeight: TYPE.subhead.weight,
+            color: TEXT.secondary,
             cursor: "pointer",
+            padding: `0 ${SPACE.sm}`,
           }}
+          onClick={onGear}
         >
-          Terminar
+          <Settings size={18} strokeWidth={1.5} aria-hidden="true" />
         </button>
-      )}
-      <button
-        type="button"
-        aria-label={GEAR}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minWidth: MOTION.minTouchTarget,
-          minHeight: MOTION.minTouchTarget,
-          borderRadius: RADIUS.control,
-          border: `1px solid ${GLASS.border}`,
-          background: "transparent",
-          color: TEXT.secondary,
-          cursor: "pointer",
-          padding: `0 ${SPACE.sm}`,
-        }}
-        onClick={onGear}
-      >
-        <Settings size={18} strokeWidth={1.5} aria-hidden="true" />
-      </button>
+        {onTerminate && (
+          <GlassButton
+            variant="primary"
+            onClick={onTerminate}
+            aria-label="Terminar entrenamiento"
+            style={{
+              background: "rgba(239, 68, 68, 0.2)",
+              color: "rgb(248, 113, 113)",
+              border: "1px solid rgba(239, 68, 68, 0.4)",
+            }}
+          >
+            Terminar
+          </GlassButton>
+        )}
+      </div>
     </header>
   );
 }
@@ -268,12 +252,14 @@ interface SetTrackerTableProps {
   onDuplicate: (index: number) => void;
 }
 
-const SET_TYPE_LABELS_MAP: Record<string, string> = {
-  normal: "Normal",
-  warmup: "Calentamiento",
-  failure: "Al fallo",
-  drop: "Drop set",
-};
+const SET_TYPE_OPTIONS: Array<{ kind: SetEntry["kind"]; label: string; fullLabel: string; color: string; bg: string }> = [
+  { kind: "normal", label: "1", fullLabel: "Normal / Efectiva", color: TEXT.primary, bg: "rgba(255, 255, 255, 0.08)" },
+  { kind: "warmup", label: "C", fullLabel: "Calentamiento", color: "rgb(251, 191, 36)", bg: "rgba(251, 191, 36, 0.2)" },
+  { kind: "normal", label: "A", fullLabel: "Aproximación", color: "rgb(96, 165, 250)", bg: "rgba(96, 165, 250, 0.2)" }, // Using normal kind as approximation
+  { kind: "failure", label: "F", fullLabel: "Al Fallo", color: "rgb(248, 113, 113)", bg: "rgba(239, 68, 68, 0.25)" },
+  { kind: "drop", label: "D", fullLabel: "Drop Set", color: "rgb(168, 85, 247)", bg: "rgba(168, 85, 247, 0.25)" },
+  { kind: "normal", label: "RP", fullLabel: "Rest-Pause", color: "rgb(251, 146, 60)", bg: "rgba(251, 146, 60, 0.25)" },
+];
 
 function SetTrackerTable({
   index,
@@ -281,390 +267,228 @@ function SetTrackerTable({
   previousKg,
   previousReps,
   formatWeight,
-  previousLabel,
-  overloadTarget,
   onChange,
-  onRemove,
-  onDuplicate,
 }: SetTrackerTableProps) {
   const setNumber = index + 1;
-  const labelWeight = formatWeight ? formatWeight(Number(entry.weight || 0)) : entry.weight;
-  const isCompleted = entry.completed;
-  const [noteOpen, setNoteOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const currentOption = useMemo(() => {
+    if (entry.kind === "warmup") return SET_TYPE_OPTIONS[1];
+    if (entry.kind === "failure") return SET_TYPE_OPTIONS[3];
+    if (entry.kind === "drop") return SET_TYPE_OPTIONS[4];
+    return SET_TYPE_OPTIONS[0];
+  }, [entry.kind]);
+
+  const previousText = previousKg != null && previousReps != null 
+    ? formatWeight 
+      ? `${formatWeight(previousKg)} × ${previousReps}` 
+      : `${previousKg}kg × ${previousReps}`
+    : "-";
 
   return (
     <div
-      role="group"
-      aria-label={`Serie ${setNumber}`}
       style={{
         display: "flex",
-        flexDirection: "column",
-        gap: SPACE.sm,
-        padding: SPACE.card,
-        borderRadius: RADIUS.card,
-        border: `1px solid ${GLASS.border}`,
-        background: SOLID.card,
+        alignItems: "center",
+        gap: "12px",
+        padding: "8px 0",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+        position: "relative",
       }}
     >
-      {/* Selector de tipo de serie — pestañas segmentadas estilo iOS */}
+      <div style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={`Serie ${setNumber} tipo`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "28px",
+            height: "28px",
+            borderRadius: "50%",
+            background: currentOption.bg,
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            color: currentOption.color,
+            fontSize: currentOption.label === "RP" ? "8px" : "11px",
+            fontWeight: 600,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          {currentOption.label === "1" ? setNumber : currentOption.label}
+        </button>
+
+        {menuOpen && (
+          <>
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 50,
+              }}
+              onClick={() => setMenuOpen(false)}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: "36px",
+                left: 0,
+                zIndex: 51,
+                background: "rgba(0, 0, 0, 0.85)",
+                backdropFilter: "blur(20px)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                borderRadius: "16px",
+                padding: "8px",
+                minWidth: "200px",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.9)",
+              }}
+            >
+              {SET_TYPE_OPTIONS.map((option, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    onChange(index, { ...entry, kind: option.kind });
+                    setMenuOpen(false);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    width: "100%",
+                    padding: "10px 12px",
+                    background: "transparent",
+                    border: "none",
+                    borderRadius: "12px",
+                    color: TEXT.primary,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "24px",
+                      height: "24px",
+                      borderRadius: "50%",
+                      background: option.bg,
+                      color: option.color,
+                      fontSize: option.label === "RP" ? "7px" : "10px",
+                      fontWeight: 600,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {option.label === "1" ? setNumber : option.label}
+                  </div>
+                  <span>{option.fullLabel}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
       <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontSize: "12px",
+          color: "rgba(255, 255, 255, 0.4)",
+        }}
+      >
+        {previousText}
+      </div>
+
+      <input
+        type="number"
+        inputMode="decimal"
+        aria-label={`Peso serie ${setNumber}`}
+        value={entry.weight}
+        onChange={(e) => onChange(index, { ...entry, weight: e.target.value })}
+        style={{
+          background: "rgba(255, 255, 255, 0.05)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "12px",
+          padding: "6px 8px",
+          textAlign: "center",
+          color: TEXT.primary,
+          width: "80px",
+          fontSize: "14px",
+        }}
+      />
+
+      <input
+        type="number"
+        inputMode="numeric"
+        aria-label={`Repeticiones serie ${setNumber}`}
+        value={entry.reps}
+        onChange={(e) => onChange(index, { ...entry, reps: e.target.value })}
+        style={{
+          background: "rgba(255, 255, 255, 0.05)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "12px",
+          padding: "6px 8px",
+          textAlign: "center",
+          color: TEXT.primary,
+          width: "64px",
+          fontSize: "14px",
+        }}
+      />
+
+      <input
+        type="number"
+        inputMode="numeric"
+        aria-label={`RPE serie ${setNumber}`}
+        placeholder="RPE"
+        value={entry.rpe || ""}
+        onChange={(e) => onChange(index, { ...entry, rpe: e.target.value })}
+        style={{
+          background: "rgba(255, 255, 255, 0.05)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "12px",
+          padding: "6px 8px",
+          textAlign: "center",
+          color: TEXT.primary,
+          width: "56px",
+          fontSize: "14px",
+        }}
+      />
+
+      <button
+        type="button"
+        aria-label={`Marcar serie ${setNumber} completada`}
+        onClick={() => onChange(index, { ...entry, completed: !entry.completed })}
         style={{
           display: "flex",
           alignItems: "center",
-          gap: SPACE.sm,
-          flexWrap: "wrap",
-          marginBottom: SPACE.xs,
+          justifyContent: "center",
+          width: "32px",
+          height: "32px",
+          borderRadius: "12px",
+          background: entry.completed ? "rgb(16, 185, 129)" : "rgba(255, 255, 255, 0.1)",
+          color: entry.completed ? "#000" : "rgba(255, 255, 255, 0.4)",
+          border: entry.completed ? "1px solid rgb(16, 185, 129)" : "1px solid rgba(255, 255, 255, 0.1)",
+          cursor: "pointer",
+          flexShrink: 0,
+          transition: "all 150ms ease",
         }}
       >
-        {Object.entries(SET_TYPE_LABELS_MAP).map(([kind, kindLabel]) => (
-          <button
-            key={kind}
-            type="button"
-            role="button"
-            aria-label={`Serie ${setNumber} de tipo ${kindLabel}`}
-            aria-pressed={entry.kind === kind}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: MOTION.minTouchTarget,
-              padding: `6px 14px`,
-              borderBottom: `2px solid ${
-                entry.kind === kind ? ACCENT.base : "transparent"
-              }`,
-              borderRadius: 0,
-              background: "transparent",
-              color: entry.kind === kind ? TEXT.primary : TEXT.secondary,
-              fontSize: TYPE.caption.size,
-              fontWeight: entry.kind === kind ? 700 : 500,
-              cursor: "pointer",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-            }}
-            onClick={() => {
-              onChange(index, { ...entry, kind: kind as SetEntry["kind"] });
-            }}
-          >
-            {kindLabel}
-          </button>
-        ))}
-
-        {overloadTarget && (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: SPACE.xs,
-              fontSize: TYPE.caption.size,
-              color: ACCENT.text,
-              fontWeight: 700,
-              background: ACCENT.subtle,
-              borderRadius: RADIUS.control,
-              padding: `4px 10px`,
-              border: `1px solid ${ACCENT.border}`,
-            }}
-          >
-            Meta hoy:{overloadTarget.weight != null && overloadTarget.reps != null
-              ? ` ${formatWeight ? formatWeight(overloadTarget.weight) : overloadTarget.weight} kg × ${overloadTarget.reps}`
-              : overloadTarget.weight != null
-              ? ` ${formatWeight ? formatWeight(overloadTarget.weight) : overloadTarget.weight} kg`
-              : ` × ${overloadTarget.reps} reps`}
-          </span>
-        )}
-
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: TYPE.caption.size,
-              color: TEXT.tertiary,
-              marginBottom: SPACE.xs,
-            }}
-          >
-            Peso (KG)
-          </label>
-          <input
-            type="number"
-            role="spinbutton"
-            aria-label={`Peso: serie ${setNumber}`}
-            value={entry.weight}
-            onChange={(e) =>
-              onChange(index, { ...entry, weight: e.target.value })
-            }
-            onBlur={(e) => {
-              const v = Number.parseFloat(e.target.value);
-              if (Number.isFinite(v)) {
-                const snapped = Math.round(v / 2.5) * 2.5;
-                const finalValue = snapped % 5 === 2.5 ? snapped - 2.5 : snapped;
-                onChange(index, { ...entry, weight: String(finalValue) });
-              }
-            }}
-            style={{
-              width: "100%",
-              minHeight: MOTION.minTouchTarget,
-              padding: `8px 12px`,
-              borderRadius: RADIUS.input,
-              border: `1px solid ${GLASS.border}`,
-              background: SOLID.popover,
-              color: TEXT.primary,
-              fontSize: TYPE.body.size,
-              fontFamily: TYPE.mono.font,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          />
-          <span
-            style={{
-              fontSize: TYPE.body.size,
-              fontFamily: TYPE.mono.font,
-              fontVariantNumeric: "tabular-nums",
-              color: TEXT.primary,
-            }}
-          >
-            {labelWeight}
-          </span>
-          {previousLabel && (
-            <span
-              style={{
-                display: "block",
-                fontSize: TYPE.caption.size,
-                color: TEXT.tertiary,
-                marginTop: SPACE.xs,
-              }}
-              aria-label={previousLabel}
-            >
-              {previousLabel}
-            </span>
-          )}
-          {previousKg != null && previousReps != null && (
-            <span
-              style={{
-                fontSize: TYPE.caption.size,
-                color: TEXT.tertiary,
-                marginTop: SPACE.xs,
-              }}
-            >
-              Última: {labelWeight} × {previousReps}
-            </span>
-          )}
-          {previousKg != null && previousReps != null && entry.weight && entry.reps && (
-            <>
-              {toNumber(entry.weight)! > previousKg &&
-                toNumber(entry.reps)! >= previousReps && (
-                  <span
-                    style={{
-                      fontSize: TYPE.caption.size,
-                      fontWeight: 700,
-                      color: ACCENT.text,
-                      marginTop: SPACE.xs,
-                    }}
-                  >
-                    +{`${(toNumber(entry.weight)! - previousKg).toFixed(1)} kg`}
-                  </span>
-                )}
-              {toNumber(entry.weight)! <= previousKg &&
-                toNumber(entry.reps)! > previousReps && (
-                  <span
-                    style={{
-                      fontSize: TYPE.caption.size,
-                      fontWeight: 700,
-                      color: ACCENT.text,
-                      marginTop: SPACE.xs,
-                    }}
-                  >
-                    +{`${toNumber(entry.reps)! - previousReps} rep`}
-                  </span>
-                )}
-            </>
-          )}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "flex-end", gap: SPACE.xs }}>
-          <button
-            type="button"
-            aria-label={`Duplicar la serie ${setNumber}`}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: MOTION.minTouchTarget,
-              minHeight: MOTION.minTouchTarget,
-              borderRadius: RADIUS.control,
-              border: `1px solid ${GLASS.border}`,
-              background: "transparent",
-              color: TEXT.secondary,
-              cursor: "pointer",
-            }}
-            onClick={() => onDuplicate(index)}
-          >
-            ⧉
-          </button>
-          <button
-            type="button"
-            aria-label={`Eliminar la serie ${setNumber}`}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: MOTION.minTouchTarget,
-              minHeight: MOTION.minTouchTarget,
-              borderRadius: RADIUS.control,
-              border: `1px solid ${GLASS.border}`,
-              background: "transparent",
-              color: TEXT.secondary,
-              cursor: "pointer",
-            }}
-            onClick={() => onRemove(index)}
-          >
-            <X size={16} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, flexWrap: "wrap" }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: TYPE.caption.size,
-              color: TEXT.tertiary,
-              marginBottom: SPACE.xs,
-            }}
-          >
-            Reps
-          </label>
-          <input
-            type="number"
-            role="spinbutton"
-            aria-label="Repeticiones"
-            value={entry.reps}
-            onChange={(e) => onChange(index, { ...entry, reps: e.target.value })}
-            style={{
-              width: "100%",
-              minHeight: MOTION.minTouchTarget,
-              padding: `8px 12px`,
-              borderRadius: RADIUS.input,
-              border: `1px solid ${GLASS.border}`,
-              background: SOLID.popover,
-              color: TEXT.primary,
-              fontSize: TYPE.body.size,
-              fontFamily: TYPE.mono.font,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: TYPE.caption.size,
-              color: TEXT.tertiary,
-              marginBottom: SPACE.xs,
-            }}
-          >
-            RPE
-          </label>
-          <input
-            type="number"
-            role="spinbutton"
-            aria-label={`RPE: serie ${setNumber}`}
-            value={entry.rpe}
-            onChange={(e) => onChange(index, { ...entry, rpe: e.target.value })}
-            style={{
-              width: "100%",
-              minHeight: MOTION.minTouchTarget,
-              padding: `8px 12px`,
-              borderRadius: RADIUS.input,
-              border: `1px solid ${GLASS.border}`,
-              background: SOLID.popover,
-              color: TEXT.primary,
-              fontSize: TYPE.body.size,
-              fontFamily: TYPE.mono.font,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          />
-        </div>
-      </div>
-
-      {noteOpen && (
-        <div style={{ marginTop: SPACE.sm, flex: 1, minWidth: 0 }}>
-          <textarea
-            aria-label={`Texto de la nota de la serie ${setNumber}`}
-            value={entry.notes ?? ""}
-            onChange={(e) =>
-              onChange(index, { ...entry, notes: e.target.value })
-            }
-            onBlur={() => setNoteOpen(false)}
-            style={{
-              width: "100%",
-              minHeight: 44,
-              padding: `8px 12px`,
-              borderRadius: RADIUS.input,
-              border: `1px solid ${GLASS.border}`,
-              background: SOLID.popover,
-              color: TEXT.primary,
-              fontSize: TYPE.body.size,
-              fontFamily: TYPE.mono.font,
-              resize: "vertical",
-            }}
-          />
-        </div>
-      )}
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
-        <button
-          type="button"
-          aria-label={`Nota de la serie ${setNumber}`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: SPACE.xs,
-            minHeight: MOTION.minTouchTarget,
-            padding: `6px 10px`,
-            borderRadius: RADIUS.control,
-            border: `1px solid ${GLASS.border}`,
-            background: noteOpen ? STATUS.progression.base : "transparent",
-            color: noteOpen ? TEXT.onAccent : TEXT.secondary,
-            fontSize: TYPE.caption.size,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-          onClick={() => setNoteOpen(!noteOpen)}
-        >
-          {noteOpen ? "Ocultar nota" : "+ Nota"}
-        </button>
-        <button
-          type="button"
-          aria-label={
-            isCompleted
-              ? `Marcar la serie ${setNumber} como no completada`
-              : `Marcar la serie ${setNumber} como completada`
-          }
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minWidth: MOTION.minTouchTarget,
-            minHeight: MOTION.minTouchTarget,
-            borderRadius: RADIUS.round,
-            border: `1px solid ${ACCENT.base}`,
-            background: isCompleted ? ACCENT.base : "transparent",
-            color: isCompleted ? TEXT.onAccent : ACCENT.text,
-            fontSize: TYPE.body.size,
-            fontWeight: 700,
-            cursor: "pointer",
-            padding: 0,
-          }}
-          onClick={() =>
-            onChange(index, { ...entry, completed: !isCompleted })
-          }
-        >
-          <Check size={20} aria-hidden="true" />
-        </button>
-      </div>
+        <Check size={16} strokeWidth={3} />
+      </button>
     </div>
   );
 }
-
 
 /** ------------------------------------------------------------------ exercise stage */
 
@@ -2003,16 +1827,17 @@ export function ActiveWorkout({
             alignItems: "center",
             justifyContent: "center",
             background: SCRIM.modal,
-            backdropFilter: "blur(8px)",
+            backdropFilter: "blur(12px)",
           }}
         >
           <div
             style={{
-              padding: SPACE.card,
-              borderRadius: RADIUS.modal,
-              background: SOLID.popover,
-              border: `1px solid ${GLASS.borderStrong}`,
-              boxShadow: GLASS.shadow,
+              padding: "24px",
+              borderRadius: "24px",
+              background: "rgba(0, 0, 0, 0.8)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
               maxWidth: 480,
               width: "90vw",
             }}
@@ -2025,30 +1850,61 @@ export function ActiveWorkout({
                 color: TEXT.primary,
               }}
             >
-              Configuración del gimnasio
+              ConfiguraciÃ³n del gimnasio
             </h3>
-            <div style={{ display: "flex", gap: SPACE.sm }}>
+            <div
+              style={{
+                display: "flex",
+                background: GLASS.fill,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${GLASS.border}`,
+                padding: "4px",
+                gap: "4px",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => {
-                    window.localStorage.setItem(
-                      GYM_SETTINGS_KEY,
-                      JSON.stringify({ weightUnit: "lb" }),
-                    );
+                  gym.updateSettings({ weightUnit: "kg" });
                   setGearOpen(false);
                 }}
                 style={{
+                  flex: 1,
                   minHeight: MOTION.minTouchTarget,
                   padding: `8px 16px`,
                   borderRadius: RADIUS.control,
-                  border: `1px solid ${GLASS.border}`,
-                  background: "transparent",
-                  color: TEXT.primary,
+                  border: gym.weightUnit === "kg" ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid transparent",
+                  background: gym.weightUnit === "kg" ? "rgba(239, 68, 68, 0.2)" : "transparent",
+                  color: gym.weightUnit === "kg" ? "rgb(248, 113, 113)" : TEXT.primary,
                   fontSize: TYPE.body.size,
+                  fontWeight: gym.weightUnit === "kg" ? 600 : 500,
                   cursor: "pointer",
+                  transition: "all 150ms ease",
                 }}
               >
-                lb
+                Kilogramos (kg)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  gym.updateSettings({ weightUnit: "lb" });
+                  setGearOpen(false);
+                }}
+                style={{
+                  flex: 1,
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `8px 16px`,
+                  borderRadius: RADIUS.control,
+                  border: gym.weightUnit === "lb" ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid transparent",
+                  background: gym.weightUnit === "lb" ? "rgba(239, 68, 68, 0.2)" : "transparent",
+                  color: gym.weightUnit === "lb" ? "rgb(248, 113, 113)" : TEXT.primary,
+                  fontSize: TYPE.body.size,
+                  fontWeight: gym.weightUnit === "lb" ? 600 : 500,
+                  cursor: "pointer",
+                  transition: "all 150ms ease",
+                }}
+              >
+                Libras (lb)
               </button>
             </div>
           </div>
@@ -2207,53 +2063,69 @@ export function ActiveWorkout({
                 />
               )}
 
-              {selected.sets.map((entry, index) => (
-                <SetTrackerTable
-                  key={index}
-                  index={index}
-                  entry={entry}
-                  previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
-                  previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
-                  formatWeight={displayKg}
-                  overloadTarget={overload[selected.key] ?? null}
-                  previousLabel={
-                    performance[selected.exercise.id]?.bestSet?.weight != null &&
-                    performance[selected.exercise.id]?.bestSet?.reps != null
-                      ? `Repetir la última vez: ${displayKg(
-                          performance[selected.exercise.id]?.bestSet?.weight ?? 0,
-                        )} kilos por ${performance[selected.exercise.id]?.bestSet?.reps ?? 0} repeticiones`
-                      : undefined
-                  }
-                  onChange={(i, e) => updateSet(selected.key, i, e)}
-                  onRemove={(i) => removeSet(selected.key, i)}
-                  onDuplicate={(i) => duplicateSet(selected.key, i)}
-                />
-              ))}
-
-              <div style={{ display: "flex", gap: SPACE.sm, justifyContent: "center", marginTop: SPACE.sm }}>
-                <button
-                  type="button"
-                  onClick={() => addSet(selected.key)}
-                  aria-label="+ Agregar serie"
+              {selected.sets.length > 0 && (
+                <div
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: SPACE.xs,
-                    minHeight: MOTION.minTouchTarget,
-                    padding: `8px 16px`,
-                     borderRadius: RADIUS.control,
-                     border: `1px solid ${DANGER.base}`,
-                     background: SOLID.popover,
-                     color: DANGER.base,
-                     fontSize: TYPE.body.size,
-                     fontWeight: 600,
-                     cursor: "pointer",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    borderRadius: "16px",
+                    padding: "16px",
+                    backdropFilter: "blur(12px)",
                   }}
                 >
-                  + Agregar serie
-                </button>
-              </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "0 0 12px 0",
+                      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <div style={{ width: "28px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500 }}>SERIE</div>
+                    <div style={{ flex: 1, fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500 }}>ANTERIOR</div>
+                    <div style={{ width: "80px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500, textAlign: "center" }}>KG/LB</div>
+                    <div style={{ width: "64px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500, textAlign: "center" }}>REPS</div>
+                    <div style={{ width: "56px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500, textAlign: "center" }}>RPE</div>
+                    <div style={{ width: "32px" }}></div>
+                  </div>
+
+                  {selected.sets.map((entry, index) => (
+                    <SetTrackerTable
+                      key={index}
+                      index={index}
+                      entry={entry}
+                      previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
+                      previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
+                      formatWeight={displayKg}
+                      overloadTarget={overload[selected.key] ?? null}
+                      previousLabel={
+                        performance[selected.exercise.id]?.bestSet?.weight != null &&
+                        performance[selected.exercise.id]?.bestSet?.reps != null
+                          ? `Repetir la última vez: ${displayKg(
+                              performance[selected.exercise.id]?.bestSet?.weight ?? 0,
+                            )} kilos por ${performance[selected.exercise.id]?.bestSet?.reps ?? 0} repeticiones`
+                          : undefined
+                      }
+                      onChange={(i, e) => updateSet(selected.key, i, e)}
+                      onRemove={(i) => removeSet(selected.key, i)}
+                      onDuplicate={(i) => duplicateSet(selected.key, i)}
+                    />
+                  ))}
+
+                  <div style={{ display: "flex", justifyContent: "center", marginTop: "12px" }}>
+                    <GlassButton
+                      variant="secondary"
+                      onClick={() => addSet(selected.key)}
+                      aria-label="+ Agregar serie"
+                      style={{ minHeight: "36px", padding: "6px 16px" }}
+                    >
+                      + Agregar serie
+                    </GlassButton>
+                  </div>
+                </div>
+              )}
             </>
           )}
 

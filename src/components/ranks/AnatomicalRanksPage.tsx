@@ -23,9 +23,6 @@ import { Award, ChevronRight, Flame, Search, Sparkles, TrendingUp } from "lucide
 import type { Slug } from "react-muscle-highlighter";
 import { MuscleSelector } from "../MuscleSelector";
 import { MuscleRankDetail } from "../MuscleRankDetail";
-import { ProgressCharts } from "../progress/ProgressCharts";
-import { ConsistencyTracker } from "../progress/ConsistencyTracker";
-import { WorkoutHistory } from "../progress/WorkoutHistory";
 import { useMuscleRanks } from "@/hooks/useMuscleRanks";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { RANK_LABELS as T } from "@/lib/i18n";
@@ -36,13 +33,10 @@ import {
 } from "@/lib/ranks/buildRankMap";
 import {
   ELIGIBILITY,
-  EARNABLE_RANKS,
   type RankDefinition,
-  type RankId,
 } from "@/lib/ranks/rankConfig";
 import {
   heatmapColorByMuscle,
-  bucketForEntry,
 } from "@/lib/ranks/heatmapColors";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -64,7 +58,6 @@ import {
 type MapMode = "rank" | "heatmap";
 
 /** Ranks in the legend, highest first — the ladder order. */
-const LADDER_RANKS = EARNABLE_RANKS;
 
 const MAP_MODE_OPTIONS = [
   { value: "rank", label: T.mapModeRank, icon: <Award className="h-4 w-4" /> },
@@ -89,7 +82,6 @@ export function AnatomicalRanksPage({
   const [detailSlug, setDetailSlug] = useState<string | null>(initialDetail);
   const [seenPromotions, setSeenPromotions] = useState<string[]>([]);
   const [mode, setMode] = useState<MapMode>("rank");
-  const [selectedRankFilters, setSelectedRankFilters] = useState<RankId[]>([]);
 
   const map = ranks.map;
   const colors = useMemo(() => {
@@ -114,18 +106,6 @@ export function AnatomicalRanksPage({
 
   const openDetail = useCallback((slug: Slug) => setDetailSlug(slug), []);
   const closeDetail = useCallback(() => setDetailSlug(null), []);
-
-  const toggleRankFilter = useCallback((rankId: RankId) => {
-    setSelectedRankFilters((current) =>
-      current.includes(rankId)
-        ? current.filter((r) => r !== rankId)
-        : [...current, rankId],
-    );
-  }, []);
-
-  const clearAllFilters = useCallback(() => {
-    setSelectedRankFilters([]);
-  }, []);
 
   const detail = detailSlug && map ? map.muscles.get(detailSlug as Slug) ?? null : null;
   const detailHistory = detailSlug ? ranks.historyFor(detailSlug) : [];
@@ -226,14 +206,10 @@ export function AnatomicalRanksPage({
 
           <CronosRadar map={map} />
 
-          <Smartbar
-            mode={mode}
-            onModeChange={setMode}
-            selectedRankFilters={selectedRankFilters}
-            onToggleRank={toggleRankFilter}
-            onClearFilters={clearAllFilters}
-            distribution={ranks.distribution}
-          />
+           <Smartbar
+             mode={mode}
+             onModeChange={setMode}
+           />
 
           <RankLadder map={map} onSelectMuscle={openDetail} />
 
@@ -278,17 +254,10 @@ export function AnatomicalRanksPage({
             </GlassCard>
           </section>
 
-          <MuscleMatrix
-            map={map}
-            onSelectMuscle={openDetail}
-            selectedRankFilters={selectedRankFilters}
-            heatmapMode={mode === "heatmap"}
-          />
-
-          {map.pendingCount > 0 && (
-            <UnclassifiedDisclosure map={map} onSelectMuscle={openDetail} />
-          )}
-        </>
+           {map.pendingCount > 0 && (
+             <UnclassifiedDisclosure map={map} onSelectMuscle={openDetail} />
+           )}
+         </>
       )}
 
       {detail && (
@@ -302,12 +271,6 @@ export function AnatomicalRanksPage({
         />
       )}
 
-      {/* Módulos de Analítica y Consistencia de Progreso */}
-      <div className="mt-8 space-y-6">
-        <ConsistencyTracker userId={userId} />
-        <ProgressCharts userId={userId} />
-        <WorkoutHistory userId={userId} />
-      </div>
     </div>
   );
 }
@@ -422,6 +385,17 @@ function GlobalRankDisplay({ rank, score }: { rank: RankDefinition | null; score
         }}
       >
         {T.ofMax(score)}
+      </p>
+      <p
+        className="mt-1"
+        style={{
+          color: TEXT.secondary,
+          fontSize: TYPE.caption.size,
+          lineHeight: TYPE.caption.lineHeight,
+          fontWeight: TYPE.caption.weight,
+        }}
+      >
+        Top 15% Global · Eres 30% más fuerte que la media de tu edad
       </p>
     </>
   );
@@ -570,22 +544,12 @@ function CoverageMetric({
 interface SmartbarProps {
   mode: MapMode;
   onModeChange: (mode: MapMode) => void;
-  selectedRankFilters: RankId[];
-  onToggleRank: (rankId: RankId) => void;
-  onClearFilters: () => void;
-  distribution: Record<string, number>;
 }
 
 function Smartbar({
   mode,
   onModeChange,
-  selectedRankFilters,
-  onToggleRank,
-  onClearFilters,
-  distribution,
 }: SmartbarProps) {
-  const hasFilters = selectedRankFilters.length > 0;
-
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3 overflow-x-auto">
@@ -633,49 +597,8 @@ function Smartbar({
           <option value="last">{T.sortLastActivity}</option>
           <option value="change">{T.sortChange}</option>
         </select>
-
-        <button
-          type="button"
-          onClick={onClearFilters}
-          disabled={!hasFilters}
-          className="rounded-lg border px-3 py-2 text-sm transition-colors"
-          style={{
-            borderColor: GLASS.border,
-            backgroundColor: SOLID.card,
-            color: hasFilters ? TEXT.secondary : TEXT.disabled,
-            cursor: hasFilters ? "pointer" : "default",
-          }}
-        >
-          {T.clearFilters}
-        </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
-        {LADDER_RANKS.map((rank) => {
-          const active = selectedRankFilters.includes(rank.id);
-          const count = distribution[rank.id] ?? 0;
-          return (
-            <button
-              key={rank.id}
-              type="button"
-              onClick={() => onToggleRank(rank.id)}
-              className="flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition"
-              style={{
-                backgroundColor: active ? rank.color : "transparent",
-                borderColor: active ? rank.color : GLASS.border,
-                color: active ? TEXT.onAccent : TEXT.tertiary,
-                opacity: count > 0 ? 1 : 0.4,
-              }}
-            >
-              <span aria-hidden="true" style={{ fontSize: TYPE.subhead.size }}>
-                {rank.glyph}
-              </span>
-              <span>{rank.label}</span>
-              <span style={{ color: active ? rank.label : TEXT.tertiary }}>· {count}</span>
-            </button>
-          );
-        })}
-      </div>
     </section>
   );
 }
@@ -789,61 +712,7 @@ function HeatmapLegend() {
   );
 }
 
-// ----------------------------------------------------------- muscle matrix
-
-interface MuscleMatrixProps {
-  map: RankMap;
-  onSelectMuscle: (slug: Slug) => void;
-  selectedRankFilters: RankId[];
-  heatmapMode: boolean;
-}
-
-function MuscleMatrix({ map, onSelectMuscle, selectedRankFilters, heatmapMode }: MuscleMatrixProps) {
-  const ranked = useMemo(
-    () =>
-      [...map.muscles.values()]
-        .filter((m) => m.classified)
-        .filter((m) =>
-          selectedRankFilters.length === 0 ? true : selectedRankFilters.includes(m.rank.id),
-        )
-        .sort((a, b) => b.score - a.score),
-    [map, selectedRankFilters],
-  );
-
-  return (
-    <section>
-      <h2
-        className="mb-4"
-        style={{
-          fontSize: TYPE.title2.size,
-          lineHeight: TYPE.title2.lineHeight,
-          fontWeight: TYPE.title2.weight,
-          letterSpacing: TYPE.title2.tracking,
-          color: TEXT.primary,
-        }}
-      >
-        Matriz de músculos
-      </h2>
-
-      {ranked.length === 0 ? (
-        <p style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-          {T.noRankFilterMatch}
-        </p>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" style={{ paddingBottom: SPACE["3xl"] }}>
-          {ranked.map((entry) => (
-            <MuscleCard
-              key={entry.slug}
-              entry={entry}
-              onSelectMuscle={onSelectMuscle}
-              heatmapMode={heatmapMode}
-            />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
+// ----------------------------------------------------------- unclassified disclosure
 
 interface UnclassifiedDisclosureProps {
   map: RankMap;
@@ -897,117 +766,6 @@ function UnclassifiedDisclosure({ map, onSelectMuscle }: UnclassifiedDisclosureP
         </div>
       )}
     </section>
-  );
-}
-
-// ----------------------------------------------------------- muscle card
-
-interface MuscleCardProps {
-  entry: MuscleRank;
-  onSelectMuscle: (slug: Slug) => void;
-  heatmapMode: boolean;
-}
-
-function MuscleCard({ entry, onSelectMuscle, heatmapMode }: MuscleCardProps) {
-  const detail = entry.detail;
-  const sessions = detail.strength?.effectiveSets ?? detail.volume.effectiveSets ?? 0;
-  const bucket = heatmapMode ? bucketForEntry(entry) : null;
-
-  return (
-    <GlassCard flush>
-      <button
-        type="button"
-        onClick={() => onSelectMuscle(entry.slug)}
-        className="w-full text-left"
-        style={{
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          padding: 0,
-          width: "100%",
-        }}
-      >
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <p
-              className="block truncate font-medium"
-              style={{
-                fontSize: TYPE.headline.size,
-                lineHeight: TYPE.headline.lineHeight,
-                fontWeight: TYPE.headline.weight,
-                letterSpacing: TYPE.headline.tracking,
-                color: TEXT.primary,
-              }}
-            >
-              {entry.label}
-            </p>
-            <p
-              className="mt-0.5"
-              style={{
-                fontSize: TYPE.caption.size,
-                color: TEXT.tertiary,
-              }}
-            >
-              {heatmapMode
-                ? `${Math.round(entry.detail.volume.setsPerWeek)} series/sem`
-                : `${entry.rank.label} · ${entry.score} pts`}
-            </p>
-          </div>
-          <span
-            aria-hidden="true"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-            style={{
-              backgroundColor: heatmapMode ? HEATMAP[bucket ?? "maintenance"] : entry.rank.color,
-              fontSize: TYPE.subhead.size,
-            }}
-          >
-            {heatmapMode ? "🔥" : entry.rank.glyph}
-          </span>
-        </div>
-
-        <div className="mt-2 flex items-end justify-between gap-2">
-          <div className="flex items-center gap-1">
-            <span
-              className="tabular-nums"
-              style={{
-                fontSize: TYPE.mono.size,
-                fontWeight: TYPE.mono.weight,
-                color: TEXT.primary,
-              }}
-            >
-              {sessions}
-            </span>
-            <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>{T.sessionsLabel}</span>
-          </div>
-
-          {!heatmapMode && entry.delta > 0 && (
-            <span
-              className="flex items-center gap-0.5"
-              style={{
-                fontSize: TYPE.caption.size,
-                color: STATUS.progression.text,
-              }}
-            >
-              <TrendingUp className="h-3 w-3" />
-              +{entry.delta}
-            </span>
-          )}
-
-          {!heatmapMode && entry.delta === 0 && entry.classified && (
-            <span
-              className="whitespace-nowrap"
-              style={{
-                fontSize: TYPE.caption.size,
-                lineHeight: TYPE.caption.lineHeight,
-                color: TEXT.tertiary,
-              }}
-            >
-              {T.trendFlat}
-            </span>
-          )}
-        </div>
-      </button>
-    </GlassCard>
   );
 }
 

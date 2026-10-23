@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Play, RefreshCw, AlertTriangle, Lightbulb, Zap } from "lucide-react";
+import { Play, RefreshCw, AlertTriangle, Lightbulb, Zap, RotateCcw } from "lucide-react";
 
 import { useDashboardHome } from "@/lib/dashboard/dashboardHomeModel";
 import { WEEKDAY_SHORT_ES } from "@/lib/dashboard/heroCardModel";
@@ -519,31 +519,41 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                 <div
                   style={{
                     display: "flex",
-                    alignItems: "center",
-                    gap: SPACE.sm,
+                    flexDirection: "column",
+                    gap: SPACE.md,
                   }}
                 >
-                  {TIP_CATALOG[tipIndex].icon === "lightbulb" ? (
-                    <Lightbulb size={20} style={{ color: ACCENT.text }} />
-                  ) : (
-                    <Zap size={20} style={{ color: ACCENT.text }} />
-                  )}
-                  <span
+                  <div
                     style={{
-                      ...TYPE.body,
-                      color: TEXT.primary,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: SPACE.sm,
                     }}
                   >
-                    {TIP_CATALOG[tipIndex].text}
-                  </span>
+                    {TIP_CATALOG[tipIndex].icon === "lightbulb" ? (
+                      <Lightbulb size={20} style={{ color: ACCENT.text }} />
+                    ) : (
+                      <Zap size={20} style={{ color: ACCENT.text }} />
+                    )}
+                    <span
+                      style={{
+                        ...TYPE.body,
+                        color: TEXT.primary,
+                      }}
+                    >
+                      {TIP_CATALOG[tipIndex].text}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <GlassButton
+                      variant="secondary"
+                      icon={<RotateCcw size={16} />}
+                      onClick={nextTip}
+                    >
+                      Siguiente tip
+                    </GlassButton>
+                  </div>
                 </div>
-                <GlassButton
-                  variant="ghost"
-                  onClick={nextTip}
-                  style={{ marginTop: SPACE.xs }}
-                >
-                  Siguiente tip
-                </GlassButton>
               </GlassCard>
             )}
         </div>

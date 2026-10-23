@@ -12,19 +12,18 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
    Play,
-  Plus,
-  StarIcon,
-  Pencil,
-  Trash2,
-  X,
-  Clock,
-  Dumbbell,
-  RefreshCw,
-  Sparkle,
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
-   LayoutList,
+   Plus,
+   StarIcon,
+   Pencil,
+   Trash2,
+   X,
+   Clock,
+   Dumbbell,
+   RefreshCw,
+   Sparkle,
+   AlertCircle,
+   ChevronDown,
+   ChevronUp,
    MoreHorizontal,
    Share2,
    Copy,
@@ -38,7 +37,6 @@ import { ExerciseBrowser } from "@/components/ExerciseBrowser";
 import { ExercisePickerModal } from "@/components/exercise/ExercisePickerModal";
 import { WeeklyPlanEditor } from "@/components/routines/WeeklyPlanEditor";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { RoutineLibrary } from "@/components/dashboard/RoutineLibrary";
 import { WeeklyPlanner } from "@/components/dashboard/WeeklyPlanner";
 import { ExerciseSwapModal, SwapButton } from "@/components/dashboard/ExerciseSwapModal";
 import { useGymSettings } from "@/context/GymSettingsContext";
@@ -98,9 +96,7 @@ const LABELS = {
   newRoutine: "Nueva rutina",
   newShort: "Nueva",
   start: "Empezar",
-  libraryAria: "Abrir biblioteca",
   edit: "Editar",
-  deleteAria: "Eliminar rutina",
   delete: "Eliminar",
   favoriteAria: "Destacar rutina",
   namePlaceholder: "Nombre de la rutina",
@@ -297,7 +293,6 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [recentlyDeletedId, setRecentlyDeletedId] = useState<string | null>(null);
   const [deletedRoutine, setDeletedRoutine] = useState<RoutineWithExercises | null>(null);
-  const [showLibrary, setShowLibrary] = useState(false);
   const [swapItemIndex, setSwapItemIndex] = useState<number | null>(null);
   const [swappedExercise, setSwappedExercise] = useState<Exercise | null>(null);
   const [actionMenuTarget, setActionMenuTarget] = useState<{
@@ -632,7 +627,7 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
           padding: `${SPACE.xl} ${SPACE.gutter}`,
         }}
       >
-        <PageHeader routineCount={visibleRoutines.length} loading={loading} onNew={openNew} onLibrary={() => setShowLibrary(true)} />
+        <PageHeader routineCount={visibleRoutines.length} loading={loading} onNew={openNew} />
 
         {error && (
           <div
@@ -900,19 +895,6 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
         />
       )}
 
-      {showLibrary && (
-        <RoutineLibrary
-          userId={userId}
-          routines={visibleRoutines}
-          loading={loading}
-          error={error}
-          refresh={refresh}
-          onStart={handleStart}
-          onEdit={openEdit}
-          onClose={() => setShowLibrary(false)}
-        />
-      )}
-
       {swappedExercise !== null && swapItemIndex !== null && sheet !== "closed" && draft.items[swapItemIndex] && (
         <UndoToast
           message={LABELS.swappedExercise}
@@ -945,11 +927,10 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   );
 }
 
-function PageHeader({ routineCount, loading, onNew, onLibrary }: {
+function PageHeader({ routineCount, loading, onNew }: {
   routineCount: number;
   loading: boolean;
   onNew: () => void;
-  onLibrary: () => void;
 }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
@@ -977,26 +958,6 @@ function PageHeader({ routineCount, loading, onNew, onLibrary }: {
           {loading ? "Cargando…" : LABELS.pageSubtitle(routineCount)}
         </p>
       </div>
-      <button
-        type="button"
-        onClick={onLibrary}
-        aria-label={LABELS.libraryAria}
-        title="Biblioteca"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 40,
-          height: 40,
-          borderRadius: RADIUS.round,
-          background: GLASS.fill,
-          border: `1px solid ${GLASS.border}`,
-          color: TEXT.secondary,
-          cursor: "pointer",
-        }}
-      >
-        <LayoutList style={{ width: 18, height: 18 }} strokeWidth={1.5} />
-      </button>
       <button
         type="button"
         onClick={onNew}

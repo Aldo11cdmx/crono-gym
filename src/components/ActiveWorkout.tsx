@@ -29,6 +29,7 @@ import {
   Check,
   Dumbbell,
   Settings,
+  Timer,
 } from "lucide-react";
 import { SmartSwapModal } from "@/components/SmartSwapModal";
 import { WarmupPyramidSection } from "@/components/WarmupPyramidSection";
@@ -71,6 +72,7 @@ import {
 import { queueAndSync } from "../lib/sessionSync";
 import { useActiveSession } from "../context/ActiveSessionContext";
 import { useGymSettings } from "../context/GymSettingsContext";
+import { useElapsedMs, formatElapsed } from "../hooks/useElapsedMs";
 import { RestTimer } from "./RestTimer";
 import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
 import { toWarmupColumn } from "../lib/workout/setKind";
@@ -141,6 +143,8 @@ function SessionHeader({
   onTerminate,
 }: SessionHeaderProps) {
   const GEAR = GYM_LABELS.triggerAriaLabel(GYM_LABELS.defaultTriggerContext);
+  const elapsed = useElapsedMs(startedAt);
+  const time = formatElapsed(elapsed);
 
   return (
     <header
@@ -186,6 +190,9 @@ function SessionHeader({
         {startedAt && (
           <div
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACE.xs,
               fontFamily: TYPE.mono.font,
               fontSize: TYPE.body.size,
               fontWeight: 600,
@@ -193,10 +200,8 @@ function SessionHeader({
               fontVariantNumeric: "tabular-nums",
             }}
           >
-            {new Date(startedAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            <Timer size={14} strokeWidth={1.5} aria-hidden="true" />
+            {time}
           </div>
         )}
       </div>

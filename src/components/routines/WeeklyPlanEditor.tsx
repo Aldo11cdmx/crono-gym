@@ -42,7 +42,7 @@ import {
 const LABELS = {
   dayNameAria: "Nombre de la sesión",
   dayNamePlaceholder: "Nombre del día (ej. Empuje Pro)",
-  addExercise: "+ Agregar Ejercicio",
+  addExercise: "Agregar ejercicio",
   moveUp: "Subir",
   moveDown: "Bajar",
   remove: "Quitar",
@@ -202,15 +202,19 @@ export function WeeklyPlanEditor({
                 />
 
                 {bucket.length === 0 && (
-                  <p
+                  <div
                     style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: SPACE.xs,
                       fontSize: TYPE.caption.size,
-                      color: TEXT.tertiary,
+                      color: TEXT.secondary,
                       margin: 0,
                     }}
                   >
+                    <Dumbbell size={14} strokeWidth={1.5} />
                     {LABELS.emptyDay}
-                  </p>
+                  </div>
                 )}
 
                 {bucket.map((entry, position) => (

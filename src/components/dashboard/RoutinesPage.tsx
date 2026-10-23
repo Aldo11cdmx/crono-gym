@@ -24,6 +24,7 @@ import {
    AlertCircle,
    ChevronDown,
    ChevronUp,
+   CalendarDays,
    MoreHorizontal,
    Share2,
    Copy,
@@ -755,17 +756,21 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
           }}
           onClick={closeSheet}
         >
           <div
             style={{
-              ...SURFACE_RAISED,
-              borderRadius: RADIUS.surface,
-              padding: SPACE.card,
-              maxWidth: 420,
-              width: "90%",
-              border: `1px solid ${GLASS.border}`,
+              backgroundColor: GLASS.fill,
+              borderColor: GLASS.borderStrong,
+              borderRadius: RADIUS.sheet,
+              padding: `${SPACE.lg} ${SPACE.xl}`,
+              maxWidth: 440,
+              width: "92%",
+              border: `1px solid ${GLASS.borderStrong}`,
+              boxShadow: GLASS.shadow,
               display: "flex",
               flexDirection: "column",
               gap: SPACE.md,
@@ -782,8 +787,15 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
                 aria-label={LABELS.closeAria}
                 style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  width: 32, height: 32, borderRadius: RADIUS.chip, border: "none",
+                  width: 32, height: 32, borderRadius: RADIUS.round, border: "none",
                   background: "transparent", color: TEXT.secondary, cursor: "pointer",
+                  transition: `background-color ${MOTION.fast} ${MOTION.standard}`,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget.style as any).backgroundColor = GLASS.fillRaised;
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget.style as any).backgroundColor = "transparent";
                 }}
               >
                 <X style={{ width: 16, height: 16 }} strokeWidth={1.5} />
@@ -794,33 +806,95 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
                 type="button"
                 onClick={openNewSingle}
                 style={{
-                  ...SURFACE_STYLE,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: SPACE.md,
+                  width: "100%",
                   padding: SPACE.md,
                   borderRadius: RADIUS.control,
+                  backgroundColor: GLASS.fill,
                   border: `1px solid ${GLASS.border}`,
                   color: TEXT.primary,
-                  textAlign: "left",
                   cursor: "pointer",
+                  textAlign: "left",
+                  transition: `all ${MOTION.fast} ${MOTION.standard}`,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget.style as any).backgroundColor = GLASS.fillRaised;
+                  (e.currentTarget.style as any).borderColor = ACCENT.base;
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget.style as any).backgroundColor = GLASS.fill;
+                  (e.currentTarget.style as any).borderColor = GLASS.border;
                 }}
               >
-                <div style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight }}>Rutina Individual</div>
-                <div style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, marginTop: SPACE.xs }}>Para crear un bloque de entrenamiento único/suelto.</div>
+                <span
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: 40, height: 40, borderRadius: RADIUS.control,
+                    backgroundColor: `${ACCENT.base}1a`,
+                    color: ACCENT.text,
+                    flexShrink: 0,
+                    transition: `all ${MOTION.fast} ${MOTION.standard}`,
+                  }}
+                >
+                  <Dumbbell style={{ width: 20, height: 20 }} strokeWidth={1.5} />
+                </span>
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, color: TEXT.primary, lineHeight: TYPE.title2.lineHeight }}>
+                    Rutina Individual
+                  </span>
+                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, lineHeight: TYPE.caption.lineHeight }}>
+                    Para crear un bloque de entrenamiento único/suelto.
+                  </span>
+                </span>
               </button>
               <button
                 type="button"
                 onClick={openNewWeekly}
                 style={{
-                  ...SURFACE_STYLE,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: SPACE.md,
+                  width: "100%",
                   padding: SPACE.md,
                   borderRadius: RADIUS.control,
+                  backgroundColor: GLASS.fill,
                   border: `1px solid ${GLASS.border}`,
                   color: TEXT.primary,
-                  textAlign: "left",
                   cursor: "pointer",
+                  textAlign: "left",
+                  transition: `all ${MOTION.fast} ${MOTION.standard}`,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget.style as any).backgroundColor = GLASS.fillRaised;
+                  (e.currentTarget.style as any).borderColor = COPPER.base;
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget.style as any).backgroundColor = GLASS.fill;
+                  (e.currentTarget.style as any).borderColor = GLASS.border;
                 }}
               >
-                <div style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight }}>Plan Semanal Completo (7 Días)</div>
-                <div style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, marginTop: SPACE.xs }}>Vista tabulada/acordeón de Lunes a Domingo para armar toda la semana en una sola pantalla.</div>
+                <span
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: 40, height: 40, borderRadius: RADIUS.control,
+                    backgroundColor: `${COPPER.base}1a`,
+                    color: COPPER.text,
+                    flexShrink: 0,
+                    transition: `all ${MOTION.fast} ${MOTION.standard}`,
+                  }}
+                >
+                  <CalendarDays style={{ width: 20, height: 20 }} strokeWidth={1.5} />
+                </span>
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, color: TEXT.primary, lineHeight: TYPE.title2.lineHeight }}>
+                    Plan Semanal Completo (7 Días)
+                  </span>
+                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, lineHeight: TYPE.caption.lineHeight }}>
+                    Vista tabulada/acordeón de Lunes a Domingo para armar toda la semana en una sola pantalla.
+                  </span>
+                </span>
               </button>
             </div>
           </div>
@@ -1739,14 +1813,17 @@ function Sheet({
               style={{
                 width: "100%",
                 padding: `${SPACE.sm} ${SPACE.md}`,
-                borderRadius: RADIUS.control,
-                border: "none",
                 background: "transparent",
                 color: TEXT.primary,
                 fontSize: TYPE.title2.size,
                 fontWeight: TYPE.title2.weight,
+                border: "none",
+                borderBottom: `1px solid ${GLASS.border}`,
                 outline: "none",
+                transition: `border-color ${MOTION.fast} ${MOTION.easeOut}`,
               }}
+              onFocus={(e) => (e.currentTarget.style.borderBottomColor = ACCENT.base)}
+              onBlur={(e) => (e.currentTarget.style.borderBottomColor = GLASS.border)}
             />
             <div style={{ height: 1, background: GLASS.border }} />
           </div>

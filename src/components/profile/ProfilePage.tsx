@@ -66,6 +66,8 @@ import {
 import type { WorkspaceOutletContext } from "@/App";
 import type { BodyweightEntry } from "@/types/supabase";
 import { COACH_PATH } from "@/components/shell/navItems";
+import { usePermissions } from "@/hooks/usePermissions";
+import { Shield, Code, Users } from "lucide-react";
 
 const PROFILE_TABS = ["biometric", "gym", "preferences"] as const;
 type ProfileTabId = (typeof PROFILE_TABS)[number];
@@ -108,6 +110,7 @@ export function ProfilePage() {
   const gym = useGymSettings();
   const local = useLocalState();
   const session = useLocalSession();
+  const permissions = usePermissions();
   const bodyMetrics = useBodyMetrics(userId);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ProfileTabId>("biometric");
@@ -269,6 +272,7 @@ export function ProfilePage() {
           navigate={navigate}
           onSignOut={() => void supabase.auth.signOut()}
           onExport={() => exportProfile(profile, local.row)}
+          permissions={permissions}
         />
       )}
 
@@ -581,6 +585,7 @@ interface PreferencesTabContentProps {
   navigate: ReturnType<typeof useNavigate>;
   onSignOut: () => void;
   onExport: () => void;
+  permissions: ReturnType<typeof usePermissions>;
 }
 
 function PreferencesTabContent({
@@ -590,9 +595,42 @@ function PreferencesTabContent({
   navigate,
   onSignOut,
   onExport,
+  permissions,
 }: PreferencesTabContentProps) {
   return (
     <>
+      <GroupedSection title="Acceso a paneles">
+        <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
+          {permissions.hasRole("admin") && (
+            <GlassButton
+              variant="secondary"
+              icon={<Shield size={16} aria-hidden="true" />}
+              onClick={() => void navigate("/admin")}
+            >
+              Panel de administración
+            </GlassButton>
+          )}
+          {permissions.hasRole("developer") && (
+            <GlassButton
+              variant="secondary"
+              icon={<Code size={16} aria-hidden="true" />}
+              onClick={() => void navigate("/developer")}
+            >
+              Consola de desarrollador
+            </GlassButton>
+          )}
+          {(permissions.hasRole(["coach", "admin", "developer"])) && (
+            <GlassButton
+              variant="secondary"
+              icon={<Users size={16} aria-hidden="true" />}
+              onClick={() => void navigate("/coach/portal")}
+            >
+              Portal de coach
+            </GlassButton>
+          )}
+        </div>
+      </GroupedSection>
+
       <GroupedSection title={PROFILE_LABELS.devLabel}>
         <p style={{ ...hintStyle, margin: `0 0 ${SPACE.md}` }}>
           {session.loading

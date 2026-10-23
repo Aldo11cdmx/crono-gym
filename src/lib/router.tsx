@@ -35,6 +35,9 @@ import { CoachPortal } from "@/components/coach/portal/CoachPortal";
 import { HubSkeleton } from "@/components/hub/HubSkeleton";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
 import { CoachPortalPreview } from "@/components/dev/CoachPortalPreview";
+import { AdminGate } from "@/components/profile/AdminGate";
+import { DeveloperGate } from "@/components/profile/DeveloperGate";
+import { AdminHub } from "@/components/admin/AdminHub";
 import {
   COACH_PATH,
   EXERCISE_PATH,
@@ -166,6 +169,22 @@ export const router = createBrowserRouter([
            * coach's inbox one thumb-tap away from every free user's home screen.
            */
           { path: "/coach/portal", element: <CoachPortal /> },
+          {
+            path: "/admin",
+            element: (
+              <AdminGate>
+                <AdminHub />
+              </AdminGate>
+            ),
+          },
+          {
+            path: "/developer",
+            element: (
+              <DeveloperGate>
+                <UiCatalogPage />
+              </DeveloperGate>
+            ),
+          },
         ],
       },
       /*

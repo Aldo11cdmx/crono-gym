@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Play, RefreshCw, AlertTriangle } from "lucide-react";
+import { Play, RefreshCw, AlertTriangle, Lightbulb, Zap } from "lucide-react";
 
 import { useDashboardHome } from "@/lib/dashboard/dashboardHomeModel";
 import { WEEKDAY_SHORT_ES } from "@/lib/dashboard/heroCardModel";
@@ -52,11 +52,106 @@ const KIND_LABELS: Record<Announcement["kind"], string> = {
   event: "Evento",
 };
 
+/** Videogame-loading-screen style tips for the empty feed state. */
+interface Tip {
+  id: string;
+  text: string;
+  icon: "lightbulb" | "zap";
+  category: "entrenamiento" | "rir-rpe" | "nutricion" | "descanso";
+}
+
+const TIP_CATALOG: Tip[] = [
+  {
+    id: "tip-1",
+    text: "Deja 1-2 reps en la reserva (RIR 1-2) para la mayoria de las series.",
+    icon: "zap",
+    category: "rir-rpe",
+  },
+  {
+    id: "tip-2",
+    text: "Descansa 2-3 min entre series de fuerza para recuperar ATP.",
+    icon: "zap",
+    category: "descanso",
+  },
+  {
+    id: "tip-3",
+    text: "Consume 1.6-2.2g de proteinas por kg de peso corporal.",
+    icon: "lightbulb",
+    category: "nutricion",
+  },
+  {
+    id: "tip-4",
+    text: "Duerme 7-9 horas para maximizar la recuperacion.",
+    icon: "lightbulb",
+    category: "descanso",
+  },
+  {
+    id: "tip-5",
+    text: "No entrenes el mismo grupo muscular dos dias seguidos.",
+    icon: "zap",
+    category: "entrenamiento",
+  },
+  {
+    id: "tip-6",
+    text: "Lleva un registro de tus series y pesos para progresar.",
+    icon: "lightbulb",
+    category: "entrenamiento",
+  },
+  {
+    id: "tip-7",
+    text: "El RPE mide el esfuerzo percibido del 1 al 10.",
+    icon: "zap",
+    category: "rir-rpe",
+  },
+  {
+    id: "tip-8",
+    text: "Hidratate antes, durante y despues del entrenamiento.",
+    icon: "lightbulb",
+    category: "nutricion",
+  },
+  {
+    id: "tip-9",
+    text: "Calienta 5-10 min antes de cargas pesadas.",
+    icon: "zap",
+    category: "entrenamiento",
+  },
+  {
+    id: "tip-10",
+    text: "La sobrecarga progresiva es la clave del crecimiento.",
+    icon: "lightbulb",
+    category: "entrenamiento",
+  },
+  {
+    id: "tip-11",
+    text: "Descansa 48h entre sesiones del mismo musculo.",
+    icon: "lightbulb",
+    category: "descanso",
+  },
+  {
+    id: "tip-12",
+    text: "Un RPE de 8-9 es ideal para hipertrofia.",
+    icon: "zap",
+    category: "rir-rpe",
+  },
+];
+
 interface DashboardPageProps {
   userId: string;
 }
 
 type SessionState = "idle" | "scheduled" | "in-progress" | "completed";
+
+/** Resolves the hero routine title: falls back to day label when raw title is "xd" or empty. */
+function resolveRoutineTitle(
+  routine: { title: string | null | undefined } | null,
+  dayLabel: string | null | undefined,
+): string {
+  const raw = routine?.title?.trim();
+  if (!raw || raw.toLowerCase() === "xd") {
+    return dayLabel ?? "Rutina del Dia";
+  }
+  return raw;
+}
 
 export function DashboardPage({ userId }: DashboardPageProps) {
   const navigate = useNavigate();
@@ -65,6 +160,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
+  const [tipIndex, setTipIndex] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,6 +221,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
     navigate(TRAIN_PATH);
   }, [sessionState, suggested, data.startSession, navigate]);
+
+  const nextTip = useCallback(() => {
+    setTipIndex((i) => (i + 1) % TIP_CATALOG.length);
+  }, []);
 
   const firstError = useMemo(() => {
     for (const value of Object.values(data.errors)) {
@@ -219,7 +319,16 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       )}
 
       {/* Hero — saludo, rutina objetivo, unico CTA primario, monito a la derecha */}
-      <GlassCard raised style={{ padding: SPACE.card }}>
+      <GlassCard
+        raised
+        style={{
+          padding: SPACE.card,
+          border: `1px solid ${data.isSessionActive ? ACCENT.border : GLASS.border}`,
+          boxShadow: data.isSessionActive
+            ? `0 0 24px ${ACCENT.glow}`
+            : GLASS.shadow,
+        }}
+      >
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <div className="flex-1 min-w-0">
             <p
@@ -241,7 +350,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                     wordBreak: "break-word",
                   }}
                 >
-                  {routine.title}
+                  {resolveRoutineTitle(routine, data.dailyFocus.dayLabel)}
                 </h1>
                 <p
                   style={{
@@ -250,7 +359,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                     margin: 0,
                   }}
                 >
-                  {routine.title} &middot; {routine.exerciseCount} ej &middot; {routine.estimatedDurationMin} min
+                  {resolveRoutineTitle(routine, data.dailyFocus.dayLabel)} &middot; {routine.exerciseCount} ej &middot; {routine.estimatedDurationMin} min
                 </p>
               </>
             ) : (
@@ -406,15 +515,36 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           {announcements.length === 0 &&
             !announcementsLoading &&
             !announcementsError && (
-              <p
-                style={{
-                  ...TYPE.subhead,
-                  color: TEXT.tertiary,
-                  margin: 0,
-                }}
-              >
-                Sin anuncios pendientes.
-              </p>
+              <GlassCard raised style={{ padding: SPACE.card }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: SPACE.sm,
+                  }}
+                >
+                  {TIP_CATALOG[tipIndex].icon === "lightbulb" ? (
+                    <Lightbulb size={20} style={{ color: ACCENT.text }} />
+                  ) : (
+                    <Zap size={20} style={{ color: ACCENT.text }} />
+                  )}
+                  <span
+                    style={{
+                      ...TYPE.body,
+                      color: TEXT.primary,
+                    }}
+                  >
+                    {TIP_CATALOG[tipIndex].text}
+                  </span>
+                </div>
+                <GlassButton
+                  variant="ghost"
+                  onClick={nextTip}
+                  style={{ marginTop: SPACE.xs }}
+                >
+                  Siguiente tip
+                </GlassButton>
+              </GlassCard>
             )}
         </div>
       </GlassCard>

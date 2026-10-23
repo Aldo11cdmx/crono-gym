@@ -463,7 +463,7 @@ describe("DashboardPage", () => {
     expect(document.body.textContent).not.toMatch(/Ã|\uFFFD/);
   });
 
-  it("shows the empty state when there are no announcements", async () => {
+  it("shows the daily tip card when there are no announcements", async () => {
     mockSelect.mockReturnValue({
       order: () => Promise.resolve({ data: [], error: null }),
     });
@@ -476,7 +476,69 @@ describe("DashboardPage", () => {
 
     await act(async () => {});
 
-    expect(screen.getByText("Sin anuncios pendientes.")).toBeTruthy();
+    // Un tip del catalogo se renderiza.
+    expect(screen.getByText(/Deja 1-2 reps en la reserva/)).toBeTruthy();
+    // El boton para pasar al siguiente tip esta presente.
+    expect(screen.getByText("Siguiente tip")).toBeTruthy();
+    // Ningun simbolo de mojibake en pantalla.
+    expect(document.body.textContent).not.toMatch(/Ã|\uFFFD/);
+  });
+
+  it("sanitizes the display name: mich_nsqk -> Mich in the greeting", () => {
+    mockState.profile = {
+      ...mockState.profile,
+      display_name: "mich_nsqk",
+    } as Profile;
+
+    render(
+      <MemoryRouter>
+        <DashboardPage userId="user-1" />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText(/Buenas tardes, Mich/)).toBeTruthy();
+  });
+
+  it("shows the day label when the routine title is xd", () => {
+    mockState.routines = [
+      {
+        ...mockState.routines[0],
+        title: "xd",
+      },
+    ];
+
+    render(
+      <MemoryRouter>
+        <DashboardPage userId="user-1" />
+      </MemoryRouter>,
+    );
+
+    // El dayLabel "Pecho" gana sobre el fallback cuando el titulo es "xd".
+    expect(screen.getByText("Pecho")).toBeTruthy();
+    expect(screen.queryByText("xd")).toBeFalsy();
+  });
+
+  it("cycles to a different tip when clicking Siguiente tip", async () => {
+    mockSelect.mockReturnValue({
+      order: () => Promise.resolve({ data: [], error: null }),
+    });
+
+    render(
+      <MemoryRouter>
+        <DashboardPage userId="user-1" />
+      </MemoryRouter>,
+    );
+
+    await act(async () => {});
+
+    const firstTipEl = screen.getByText(/Deja 1-2 reps en la reserva/);
+    expect(firstTipEl).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Siguiente tip"));
+
+    // El boton sigue presente y el tip cambio (12 tips distintos en el catalogo).
+    expect(screen.getByText("Siguiente tip")).toBeTruthy();
+    expect(screen.queryByText(/Deja 1-2 reps en la reserva/)).toBeFalsy();
   });
 
   it("renders no mojibake symbols anywhere on screen", () => {

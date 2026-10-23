@@ -180,12 +180,14 @@ export function getGreeting(now: number, name: string | null | undefined): strin
   const trimmed = name.trim();
   if (trimmed === "") return part;
 
-  const firstName = trimmed.split(/\s+/)[0] ?? "";
+  const firstName = trimmed.split(/[\s_]+/)[0] ?? "";
   if (firstName === "") return part;
 
   const displayName = firstName.length > MAX_NAME_LENGTH
     ? firstName.slice(0, MAX_NAME_LENGTH)
     : firstName;
 
-  return `${part}, ${displayName}`;
+  const capitalized = displayName.charAt(0).toUpperCase() + displayName.slice(1).toLowerCase();
+
+  return `${part}, ${capitalized}`;
 }

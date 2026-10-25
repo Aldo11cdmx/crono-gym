@@ -28,7 +28,9 @@ import {
   usePreviousPerformance,
 } from "../hooks/usePreviousPerformance";
 import { useOfflineSync } from "../hooks/useOfflineSync";
+import { useElapsedMs, formatElapsed } from "../hooks/useElapsedMs";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { WorkoutPreStartView } from "./workout/WorkoutPreStartView";
 import {
   loadRecoverableDraft,
   newSessionId,
@@ -94,6 +96,7 @@ export function ActiveWorkout({
   const [fallbackStart] = useState(() => new Date().toISOString());
   const [recoveredStart, setRecoveredStart] = useState<string | null>(null);
   const startedAt = recoveredStart ?? session?.startedAt ?? fallbackStart;
+const elapsedMs = useElapsedMs(startedAt);
 
   const [items, setItems] = useState<DraftExercise[]>(() =>
     planned.map((p) => ({
@@ -670,9 +673,9 @@ export function ActiveWorkout({
           >
             {routineTitle}
           </h2>
-          <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-            {done} de {total} series completadas
-          </p>
+           <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+             {formatElapsed(elapsedMs)} · {done} de {total} series completadas
+           </p>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
@@ -806,9 +809,14 @@ export function ActiveWorkout({
 
       {gearOpen && <GymSettingsModal onClose={() => setGearOpen(false)} />}
 
-      {showSummary ? (
-        <button type="button" onClick={() => setStarted(true)}>Iniciar Entrenamiento</button>
-      ) : items.length === 0 ? (
+{showSummary ? (
+  <WorkoutPreStartView
+    routineTitle={routineTitle}
+    planned={planned}
+    onStart={() => setStarted(true)}
+    onExit={end}
+  />
+) : items.length === 0 ? (
         <EmptyState onAdd={() => setBrowsing(true)} />
       ) : (
         <>

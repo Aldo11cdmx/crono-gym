@@ -380,6 +380,20 @@ export const RANK_LABELS = {
  * where five items all start with the same verb -- so the icon's label is a full
  * instruction and the visible one is a noun.
  */
+export const NAV_LABELS = {
+  home: "Inicio",
+  routines: "Rutinas",
+  train: "Entrenar",
+  profile: "Perfil",
+  more: "Más",
+  moreOptions: "Más opciones",
+  ranges: "Rangos",
+  progress: "Progreso",
+  settings: "Ajustes",
+  close: "Cerrar",
+  continueTraining: "Continuar entrenamiento",
+} as const;
+
 export const SHELL_LABELS = {
   navAriaLabel: "Navegación principal",
   sidebarAriaLabel: "Navegación lateral",

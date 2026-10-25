@@ -19,6 +19,7 @@ import { SURFACE } from "@/design/tokens";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BottomNav } from "./BottomNav";
+import { MobileNav } from "../MobileNav";
 import { ActiveWorkoutPill } from "./ActiveWorkoutPill";
 import { SideNav } from "../nav/SideNav";
 import { SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from "./navItems";
@@ -85,16 +86,21 @@ export function AppShell() {
         persistent node -- would mean the transition has to be driven by a class
         toggling, which cannot re-run on a second navigation to the same route.
       */}
-      <div
+       <div
         key={pathname}
-        className={reducedMotion ? "cronos-route" : "cronos-route cronos-route--animate"}
+        className={`cronos-route${reducedMotion ? "" : " cronos-route--animate"} pb-28 md:pb-0`}
       >
         <Outlet />
       </div>
 
       <SideNav collapsed={collapsed} onToggleCollapsed={toggle} />
-      <BottomNav />
-      <ActiveWorkoutPill />
+      <div className="hidden md:block">
+        <BottomNav />
+      </div>
+      <div className="hidden md:block">
+        <ActiveWorkoutPill />
+      </div>
+      <MobileNav />
     </div>
   );
 }

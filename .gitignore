@@ -27,4 +27,5 @@ Thumbs.db
 # versions the tests did. `supabase/functions/deno.json` and this file are what let
 # `deno check` run at all here.
 
-originals/
+originals/supabase/.branches
+supabase/.temp

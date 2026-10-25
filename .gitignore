@@ -29,3 +29,7 @@ Thumbs.db
 
 originals/supabase/.branches
 supabase/.temp
+
+originals/
+supabase/.branches/
+supabase/.temp/

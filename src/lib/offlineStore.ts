@@ -219,17 +219,36 @@ export async function loadRecoverableDraft(userId: string): Promise<SessionDraft
     try {
       const request = db.transaction(DRAFT_STORE, "readonly").objectStore(DRAFT_STORE).getAll();
       request.onsuccess = () => {
-        const rows = (request.result ?? []) as SessionDraft[];
+        const rows = (request.result ?? []) as unknown[];
         // Limpiar borradores zombis que ya fueron finalizados
         for (const row of rows) {
-          if (row.userId === userId && row.finalized) {
-            void deleteDraft(row.logId);
+          if (row && typeof row === "object") {
+            const r = row as Partial<SessionDraft>;
+            if (r.userId === userId && r.finalized && typeof r.logId === "string") {
+              void deleteDraft(r.logId);
+            }
           }
         }
-        const candidate = rows
-          .filter((d) => d.userId === userId && !d.finalized && d.items.length > 0)
-          .sort((a, b) => b.updatedAt - a.updatedAt)[0];
-        resolve(candidate ? normalizeDraft(candidate) : null);
+        const candidates: SessionDraft[] = [];
+        for (const row of rows) {
+          if (!row || typeof row !== "object") continue;
+          const r = row as Partial<SessionDraft>;
+          if (r.userId !== userId) continue;
+          if (r.finalized) continue;
+          if (!Array.isArray(r.items) || r.items.length === 0) continue;
+          if (typeof r.logId !== "string" || !r.logId) continue;
+          if (typeof r.userId !== "string" || !r.userId) continue;
+          try {
+            const normalized = normalizeDraft(r as SessionDraft);
+            if (normalized && Array.isArray(normalized.items) && normalized.items.length > 0) {
+              candidates.push(normalized);
+            }
+          } catch {
+            // skip corrupted draft
+          }
+        }
+        candidates.sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+        resolve(candidates[0] ?? null);
       };
       request.onerror = () => resolve(null);
     } catch {

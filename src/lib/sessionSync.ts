@@ -121,21 +121,16 @@ export async function drainQueue(): Promise<SyncResult> {
       result.failed += 1;
       result.errors.push(message);
 
-      // A permission or validation error will repeat forever; drop it and let
-      // the app show the message instead of retrying on every online event.
+      // Never discard a finalized session automatically. A permanent RPC,
+      // schema, validation or permission error still needs manual recovery.
+      // Stop draining so the same broken operation is not retried repeatedly
+      // during this pass.
       if (!retryable) {
-        // Keep payload in queue for manual review if auth/permission related
-        if (message.includes("not_owner") || message.includes("not_authenticated") || message.toLowerCase().includes("rls") || message.toLowerCase().includes("permission")) {
-          result.errors.push(
-            `Sesión ${op.payload.logId.slice(0, 8)} bloqueada: ${message} (se mantiene en cola para revisión)`,
-          );
-          break;
-        }
-        await removeFromQueue(op.id);
         result.errors.push(
-          `Sesión ${op.payload.logId.slice(0, 8)} descartada: ${message}`,
+          `Sesión ${op.payload.logId.slice(0, 8)} pendiente de revisión: ${message} (se conserva en la cola)`,
         );
       }
+
       break;
     }
   }

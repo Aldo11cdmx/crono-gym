@@ -178,14 +178,37 @@ export function tx<T>(
           resolve(null);
           return;
         }
+        let settled = false;
+        const safeResolve = (value: T | null) => {
+          if (settled) return;
+          settled = true;
+          resolve(value);
+        };
         try {
           const transaction = db.transaction(store, mode);
-          const request = run(transaction.objectStore(store));
-          request.onsuccess = () => resolve(request.result ?? null);
-          request.onerror = () => resolve(null);
-          transaction.onerror = () => resolve(null);
+          const objectStore = transaction.objectStore(store);
+          const request = run(objectStore);
+      request.onsuccess = () => {
+        try {
+          safeResolve((request.result as T | undefined) ?? null);
         } catch {
-          resolve(null);
+          safeResolve(null);
+        }
+      };
+      request.onerror = () => {
+        // Don't resolve here; let transaction handle it
+      };
+      transaction.oncomplete = () => {
+        try {
+          safeResolve((request.result as T | undefined) ?? null);
+        } catch {
+          safeResolve(null);
+        }
+      };
+      transaction.onerror = () => safeResolve(null);
+      transaction.onabort = () => safeResolve(null);
+        } catch {
+          safeResolve(null);
         }
       }),
   );

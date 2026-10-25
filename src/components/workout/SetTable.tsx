@@ -437,7 +437,7 @@ export function SetTable({
               </div>
               <div style={{ minWidth: 0 }}>
                 <CellLabel>Previa</CellLabel>
-                {previousKg !== null && previousKg !== undefined ? (
+                {isFirst && previousKg !== null && previousKg !== undefined ? (
                   <span
                     style={{
                       fontFamily: TYPE.mono.font,

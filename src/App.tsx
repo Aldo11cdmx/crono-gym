@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Lock } from "lucide-react";
 import { Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { ActiveWorkoutView } from "./components/workout/ActiveWorkoutView";
@@ -251,35 +250,118 @@ function Welcome({
   requestedLabel: string | null;
   onOpenAuth: () => void;
 }) {
+  const [showEmail, setShowEmail] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleGoogle() {
+    setLoading(true);
+    setError(null);
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error inesperado";
+      setError(msg);
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) throw authError;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error inesperado";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900/60 p-8 text-center shadow-glass">
-      {requestedLabel ? (
-        <>
-          <Lock className="mx-auto mb-3 h-7 w-7 text-accent" aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-neutral-50">Inicia sesión para ver {requestedLabel}</h2>
-          <p className="mt-2 text-sm text-neutral-400">
-            Esta sección necesita una cuenta para guardar tus datos y mostrar tu progreso.
-          </p>
-        </>
-      ) : (
-        <>
-          <h2 className="text-xl font-semibold text-neutral-50">Bienvenido a Cronos</h2>
-          <p className="mt-2 text-sm text-neutral-400">
-            Gestiona tus rutinas y registra cada serie para ver tu progreso.
-          </p>
-        </>
-      )}
-      <button
-        type="button"
-        onClick={onOpenAuth}
-        className="mt-6 w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:brightness-110"
-      >
-        Iniciar sesión
-      </button>
-      <p className="mt-3 text-xs text-neutral-500">
-        También puedes explorar <span className="text-neutral-400">Diario de Hoy</span> sin
-        conectar, aunque las sesiones no se guardarán.
-      </p>
+    <div className="flex min-h-[70vh] items-center justify-center">
+      <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-neutral-900/80 p-8 text-center shadow-2xl backdrop-blur-xl">
+        <img
+          src="/logo.jpg"
+          alt="Cronos Gym"
+          className="mx-auto mb-4 h-16 w-auto rounded-lg object-contain shadow-[0_0_25px_rgba(239,68,68,0.2)]"
+          style={{ filter: "invert(1)", mixBlendMode: "screen" }}
+        />
+        <h2 className="text-2xl font-bold text-white">CRONOS GYM</h2>
+        <p className="mb-6 mt-1 text-sm text-neutral-400">Tu templo. Tus marcas. Tu progreso.</p>
+
+        <button
+          type="button"
+          onClick={handleGoogle}
+          disabled={loading}
+          className="mb-3 flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-white font-semibold text-black transition hover:bg-neutral-100 disabled:opacity-50"
+        >
+          Continuar con Google
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowEmail((v) => !v)}
+          className="mb-4 flex h-11 w-full items-center justify-center rounded-xl border border-white/20 text-white transition hover:bg-white/5"
+        >
+          Iniciar con correo electrónico
+        </button>
+
+        {showEmail && (
+          <form className="mb-4 space-y-3" onSubmit={handleSubmit}>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+              className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm text-white placeholder:text-neutral-600"
+            />
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="........"
+              className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm text-white placeholder:text-neutral-600"
+            />
+            {error && <p className="text-xs text-red-300">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-neutral-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50"
+            >
+              {loading ? "Cargando..." : "Iniciar Sesión"}
+            </button>
+          </form>
+        )}
+
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            onOpenAuth();
+          }}
+          className="text-xs text-neutral-400 hover:text-white"
+        >
+          Explorar como invitado
+        </a>
+
+        <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-neutral-400">
+          <span>⚡ Mapeo de máquinas del gym</span>
+          <span>📊 Registro de series y RPE</span>
+          <span>🤖 Coach con IA integrada</span>
+        </div>
+      </div>
     </div>
   );
 }

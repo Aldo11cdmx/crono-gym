@@ -89,7 +89,10 @@ interface CoachDatabase {
   };
 }
 
-/** The service-role client, with the two tables above described. */
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 type AdminClient = SupabaseClient<CoachDatabase>;
 
 /**

@@ -645,7 +645,7 @@ const elapsedMs = useElapsedMs(startedAt);
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg }}>
+    <div className="pb-32 md:pb-8" style={{ display: "flex", flexDirection: "column", gap: SPACE.lg }}>
       {/*
         The session chrome sits above the gate as well as below it: sync state and the
         gear are facts about the session, not about the exercise, and an athlete who

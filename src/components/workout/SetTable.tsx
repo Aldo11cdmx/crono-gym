@@ -733,11 +733,11 @@ function PreviousRow({
 function ColumnHeadings({ hasPrevious }: { hasPrevious: boolean }) {
   return (
     <div style={{ ...gridStyle, padding: `0 ${SPACE.md}` }}>
-      <span style={headingStyle}>SERIE</span>
-      {hasPrevious && <span style={headingStyle}>PREVIA</span>}
-      <span style={headingStyle}>KG</span>
-      <span style={headingStyle}>REPES</span>
-      <span style={headingStyle}>RPE</span>
+      <span className="truncate min-w-0" style={headingStyle}>SERIE</span>
+      {hasPrevious && <span className="truncate min-w-0" style={headingStyle}>PREVIA</span>}
+      <span className="truncate min-w-0" style={headingStyle}>KG</span>
+      <span className="truncate min-w-0" style={headingStyle}>REPES</span>
+      <span className="truncate min-w-0" style={headingStyle}>RPE</span>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@lib/supabase";
 import { X, Mail, Lock, User, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
-import { CronosLogo } from "./CronosLogo";
 import { RoleSelector } from "./RoleSelector";
 import { useAuth } from "@/context/AuthContext";
 
@@ -112,7 +111,7 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
         <button type="button" onClick={onClose} aria-label="Cerrar" className="absolute right-4 top-4 rounded-lg p-1.5 text-neutral-400 transition hover:bg-white/5 hover:text-neutral-100">
           <X className="h-5 w-5" />
         </button>
-        <CronosLogo size={64} className="h-16 w-auto mx-auto mb-4" />
+        <img src="/logo.jpg" alt="Cronos Gym" className="h-16 w-auto mx-auto mb-3 object-contain rounded-lg" />
         <h2 className="text-xl font-semibold text-white">Bienvenido a Cronos</h2>
         <p className="text-neutral-400 text-sm mb-6">Entrena, progresa y supera tus límites.</p>
 

@@ -710,3 +710,110 @@ background: radial-gradient(
     animation: none !important;
   }
 }
+
+.coach-ai-fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + var(--cronos-nav-height, 56px) + 16px);
+  z-index: var(--cronos-z-fab, 55);
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.coach-ai-fab__glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.45) 0%, rgba(59, 130, 246, 0.25) 40%, transparent 70%);
+  filter: blur(8px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.coach-ai-fab__inner {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18) 0%, rgba(239, 68, 68, 0.85) 55%, rgba(30, 58, 138, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 12px 40px rgba(239, 68, 68, 0.35),
+    0 6px 18px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.coach-ai-fab--enter {
+  animation: coach-ai-fab-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.coach-ai-fab--pulse .coach-ai-fab__glow {
+  animation: coach-ai-glow-pulse 2800ms ease-in-out infinite;
+}
+
+.coach-ai-fab:focus-visible {
+  outline: none;
+}
+
+.coach-ai-fab:focus-visible .coach-ai-fab__inner {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.9),
+    0 12px 40px rgba(239, 68, 68, 0.4),
+    0 6px 18px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.coach-ai-fab:active .coach-ai-fab__inner {
+  transform: scale(0.98);
+}
+
+@keyframes coach-ai-fab-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes coach-ai-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@media (min-width: 900px) {
+  .coach-ai-fab {
+    right: calc(16px + var(--cronos-nav-width, 0px));
+    bottom: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-ai-fab--enter,
+  .coach-ai-fab--pulse .coach-ai-fab__glow {
+    animation: none !important;
+  }
+}

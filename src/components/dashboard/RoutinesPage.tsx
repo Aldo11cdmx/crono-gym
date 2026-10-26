@@ -11,13 +11,9 @@
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
-   Play,
    Plus,
-   StarIcon,
-   Pencil,
    Trash2,
    X,
-   Clock,
    Dumbbell,
    RefreshCw,
    Sparkle,
@@ -25,12 +21,12 @@ import {
    ChevronDown,
    ChevronUp,
    CalendarDays,
-   MoreHorizontal,
    Share2,
    Copy,
    Moon,
-} from "lucide-react";
+ } from "lucide-react";
 import { useActiveSession } from "@/context/ActiveSessionContext";
+import { useRole } from "@/hooks/useRole";
 import { useNavigate } from "react-router-dom";
 import { TRAIN_PATH } from "@/components/shell/navItems";
 import { supabase } from "@lib/supabase";
@@ -38,6 +34,7 @@ import { ExerciseBrowser } from "@/components/ExerciseBrowser";
 import { ExercisePickerModal } from "@/components/exercise/ExercisePickerModal";
 import { WeeklyPlanEditor } from "@/components/routines/WeeklyPlanEditor";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { RoutineCard } from "./RoutineCard";
 import { WeeklyPlanner } from "@/components/dashboard/WeeklyPlanner";
 import { ExerciseSwapModal, SwapButton } from "@/components/dashboard/ExerciseSwapModal";
 import { useGymSettings } from "@/context/GymSettingsContext";
@@ -67,7 +64,6 @@ import {
   draftProblem,
   emptyDraft,
   estimateMinutes,
-  estimateRoutineDuration,
   getExerciseName,
   getRepLabel,
   isSavableDraft,
@@ -82,7 +78,6 @@ import {
   DUPLICATE_SUFFIX,
 } from "@/lib/routines/routineShare";
 import { computeWeeklyCoverage, type WeeklyCoverageSummary } from "@/lib/routines/weeklyCoverage";
-import { SHEET_TOP_HIGHLIGHT } from "@/design/sheetGradients";
 import type { Exercise } from "@/types/supabase";
 import { type WeeklyAssignment } from "@/lib/routines/routinesViewModel";
 
@@ -263,6 +258,7 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   const { routines, loading, error, refresh, toggleFavorite, pendingIds } =
     useRoutines(userId);
   const { start, session } = useActiveSession();
+  const { role } = useRole();
   const navigate = useNavigate();
   const { exercises: catalogExercises } = useExerciseCatalog();
 
@@ -296,10 +292,6 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   const [deletedRoutine, setDeletedRoutine] = useState<RoutineWithExercises | null>(null);
   const [swapItemIndex, setSwapItemIndex] = useState<number | null>(null);
   const [swappedExercise, setSwappedExercise] = useState<Exercise | null>(null);
-  const [actionMenuTarget, setActionMenuTarget] = useState<{
-    routine: RoutineWithExercises;
-    anchorRect: DOMRect;
-  } | null>(null);
   const [shareToast, setShareToast] = useState<string | null>(null);
   const [deloadActive, setDeloadActive] = useState(false);
   /** The day the exercise picker is filling, or null when it is closed. */
@@ -732,13 +724,14 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
                 <RoutineCard
                   key={routine.id}
                   routine={routine}
+                  role={role}
                   onStart={() => handleStart(routine)}
                   onEdit={() => openEdit(routine)}
-                  onOpenActionMenu={(e) =>
-                    setActionMenuTarget({ routine, anchorRect: (e.currentTarget as HTMLElement).getBoundingClientRect() })
-                  }
                   onToggleFavorite={() => void toggleFavorite(routine.id)}
                   isFavoritePending={pendingIds.has(routine.id)}
+                  onDuplicate={() => handleDuplicate(routine)}
+                  onShare={() => void handleShare(routine)}
+                  onDelete={() => handleDelete(routine)}
                 />
               ))}
             </div>
@@ -985,16 +978,6 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
           message={shareToast}
           onUndo={() => {}}
           onDismiss={() => setShareToast(null)}
-        />
-      )}
-
-      {actionMenuTarget !== null && (
-        <ActionMenu
-          anchorRect={actionMenuTarget.anchorRect}
-          onDuplicate={() => handleDuplicate(actionMenuTarget.routine)}
-          onShare={() => void handleShare(actionMenuTarget.routine)}
-          onDelete={() => handleDelete(actionMenuTarget.routine)}
-          onClose={() => setActionMenuTarget(null)}
         />
       )}
     </>
@@ -1386,206 +1369,6 @@ function EmptyState({ onNew, onTemplate }: { onNew: () => void; onTemplate: () =
       </div>
     </div>
   );
-}
-
-function RoutineCard({
-  routine, onStart, onEdit, onOpenActionMenu, onToggleFavorite, isFavoritePending,
-}: {
-  routine: RoutineWithExercises;
-  onStart: () => void;
-  onEdit: () => void;
-  onOpenActionMenu: (e: { currentTarget: HTMLElement }) => void;
-  onToggleFavorite: () => void;
-  isFavoritePending: boolean;
-}) {
-  const duration = estimateRoutineDuration(draftFromRoutine(routine));
-  const isAi = routine.source === "ai";
-  const isCoach = routine.source === "human_coach";
-
-  return (
-    <div
-      style={{
-        ...SURFACE_STYLE,
-        borderRadius: RADIUS.card,
-        backgroundColor: GLASS.fillRaised,
-        border: `1px solid ${GLASS.border}`,
-        boxShadow: GLASS.shadow,
-        padding: SPACE.card,
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          background: SHEET_TOP_HIGHLIGHT,
-        }}
-      />
-
-      <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: SPACE.sm }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h3
-              style={{
-                fontSize: TYPE.title2.size,
-                fontWeight: TYPE.title2.weight,
-                lineHeight: TYPE.title2.lineHeight,
-                margin: 0,
-                color: TEXT.primary,
-              }}
-            >
-              {routine.title && routine.title.trim() !== "" && routine.title.trim().toLowerCase() !== "xd"
-                  ? routine.title
-                  : routine.title && routine.title.trim().toLowerCase() === "xd"
-                    ? "Rutina de Torso & Abdomen"
-                    : "Rutina Personalizada"}
-            </h3>
-            {routine.description && (
-              <p style={{ fontSize: TYPE.body.size, color: TEXT.secondary, marginTop: SPACE.xs }}>
-                {routine.description}
-              </p>
-            )}
-          </div>
-          {(isAi || isCoach) && (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                fontSize: TYPE.caption.size,
-                fontWeight: TYPE.caption.weight,
-                color: isAi ? ACCENT.text : COPPER.text,
-                background: isAi ? ACCENT.subtle : COPPER.muted,
-                borderRadius: RADIUS.chip,
-                padding: "2px 8px",
-                flexShrink: 0,
-              }}
-            >
-              {isAi && <Sparkle style={{ width: 10, height: 10 }} />}
-              {isAi ? LABELS.aiChip : LABELS.coachChip}
-            </span>
-          )}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: SPACE.sm,
-            fontSize: TYPE.caption.size,
-            color: TEXT.secondary,
-          }}
-        >
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              background: GLASS.fill,
-              borderRadius: RADIUS.chip,
-              padding: "1px 6px",
-            }}
-          >
-            <Dumbbell style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-            {LABELS.exerciseCount(routine.exercises.length)}
-          </span>
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              background: GLASS.fill,
-              borderRadius: RADIUS.chip,
-              padding: "1px 6px",
-            }}
-          >
-            <Clock style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-            {duration} min
-          </span>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm, marginTop: SPACE.sm }}>
-          {/* Botón primario "Empezar" con acento rojo */}
-          <button
-            type="button"
-            onClick={onStart}
-            style={{
-              flex: "0 0 auto",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: SPACE.xs,
-              padding: `${SPACE.sm} ${SPACE.md}`,
-              borderRadius: RADIUS.control,
-              background: ACCENT.base,
-              border: `1px solid ${ACCENT.base}`,
-              color: TEXT.onAccent,
-              fontFamily: FONT_SANS,
-              fontSize: TYPE.subhead.size,
-              fontWeight: TYPE.subhead.weight,
-              cursor: "pointer",
-              boxShadow: ACCENT.ring,
-              transition: `background-color ${MOTION.fast} ${MOTION.standard}`,
-            }}
-          >
-            <Play style={{ width: 14, height: 14 }} strokeWidth={1.5} /> {LABELS.start}
-          </button>
-
-          {/* Acciones secundarias discretas (basura movida a ActionMenu) */}
-          <div style={{ display: "inline-flex", gap: SPACE.xs }}>
-            <button
-              type="button"
-              onClick={onEdit}
-              aria-label={LABELS.edit}
-              title={LABELS.edit}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 36, height: 36, borderRadius: RADIUS.control,
-                border: `1px solid ${GLASS.border}`, background: GLASS.fill,
-                color: TEXT.secondary, cursor: "pointer",
-              }}
-            >
-              <Pencil style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-            </button>
-            <button
-              type="button"
-              onClick={onToggleFavorite}
-              disabled={isFavoritePending}
-              aria-label={LABELS.favoriteAria}
-              title={LABELS.favoriteAria}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 36, height: 36, borderRadius: RADIUS.control,
-                border: `1px solid ${GLASS.border}`, background: GLASS.fill,
-                color: routine.is_favorite ? ACCENT.text : TEXT.tertiary,
-                cursor: "pointer", opacity: isFavoritePending ? 0.5 : 1,
-              }}
-            >
-              <StarIcon style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-            </button>
-            <button
-              type="button"
-              onClick={onOpenActionMenu}
-              aria-label={LABELS.menuAria}
-              title={LABELS.menuAria}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 36, height: 36, borderRadius: RADIUS.control,
-                border: `1px solid ${GLASS.border}`, background: GLASS.fill,
-                color: TEXT.secondary, cursor: "pointer",
-              }}
-            >
-              <MoreHorizontal style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-            </button>
-          </div>
-        </div>
-       </div>
-     </div>
-    );
 }
 
 const ACTION_MENU_STYLE: CSSProperties = {

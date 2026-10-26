@@ -21,6 +21,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BottomNav } from "./BottomNav";
 import { MobileNav } from "../MobileNav";
 import { ActiveWorkoutPill } from "./ActiveWorkoutPill";
+import { CoachFloatingButton } from "../coach/CoachFloatingButton";
 import { SideNav } from "../nav/SideNav";
 import { SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from "./navItems";
 import { useSideNavCollapsed } from "./useSideNavCollapsed";
@@ -100,6 +101,7 @@ export function AppShell() {
       <div className="hidden md:block">
         <ActiveWorkoutPill />
       </div>
+      <CoachFloatingButton />
       <MobileNav />
     </div>
   );

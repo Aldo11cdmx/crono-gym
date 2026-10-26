@@ -31,12 +31,16 @@ import { FeatureFlagSwitch } from "@/components/profile/FeatureFlagSwitch";
 import { useLocalState } from "@/hooks/useLocalState";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { useProfile } from "@/hooks/useProfile";
+import { useRole } from "@/hooks/useRole";
+import type { Role } from "@/lib/localSession";
+import { RoleManagementModal } from "./RoleManagementModal";
 import {
   ACTIVITY_LABELS,
   EXPERIENCE_LABELS,
   GYM_LABELS,
   GOAL_LABELS,
   PROFILE_LABELS,
+  ROLE_LABELS,
   SEX_LABELS,
 } from "@/lib/i18n";
 import { ACTIVITY_FACTORS, ageFrom, cmToIn, kgToLb, type Profile } from "@/lib/profile";
@@ -48,6 +52,7 @@ import {
   RADIUS,
   SOLID,
   SPACE,
+  STATUS,
   TEXT,
   TYPE,
 } from "@/design/tokens";
@@ -61,6 +66,14 @@ const BMI_BANDS: readonly { max: number; label: string }[] = [
   { max: 30, label: "Sobrepeso" },
   { max: Infinity, label: "Obesidad" },
 ];
+
+/** Color neón por rol para el badge y el chip del simulador (tokens existentes). */
+const ROLE_LABELS_COLOR: Record<Role, string> = {
+  athlete: STATUS.comeback.base,
+  coach: STATUS.progression.base,
+  admin: STATUS.pr.base,
+  developer: ACCENT.base,
+};
 
 /**
  * Body-mass index, or null.
@@ -102,6 +115,13 @@ export function ProfileView() {
     verboseMode: false,
   };
 
+  const { role: serverRole } = useRole();
+  const [activeRolePreview, setActiveRolePreview] = useState<Role | null>(null);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const effectiveRole: Role = activeRolePreview ?? serverRole;
+  const isAdminOrDev = effectiveRole === "admin" || effectiveRole === "developer";
+  const isRealDev = serverRole === "developer";
+
   const age = useMemo(() => (profile ? ageFrom(profile.birth_date) : null), [profile]);
   const bmi = useMemo(
     () => (profile ? bmiOf(profile.weight_kg, profile.height_cm) : null),
@@ -130,6 +150,7 @@ export function ProfileView() {
           {PROFILE_LABELS.title}
         </h1>
         <p style={{ margin: `${SPACE.xs} 0 0`, ...mutedStyle }}>{profile.display_name || email || PROFILE_LABELS.notSet}</p>
+        <span style={roleBadgeStyle(effectiveRole)}>{roleLabelFor(effectiveRole)}</span>
       </header>
 
       {/* ------------------------------------------------------ identity */}
@@ -147,6 +168,57 @@ export function ProfileView() {
           <span style={readOnlyStyle}>{email || PROFILE_LABELS.notSet}</span>
         </Field>
       </Section>
+
+      {/* ------------------------------------------------------ acceso rápido */}
+      {isAdminOrDev && (
+        <Section title={PROFILE_LABELS.quickActionsTitle}>
+          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
+            <GlassButton
+              variant="secondary"
+              block
+              onClick={() => setRoleModalOpen(true)}
+            >
+              {ROLE_LABELS.title}
+            </GlassButton>
+            {isRealDev && (
+              <>
+                <p style={{ ...mutedStyle, margin: `0 0 ${SPACE.sm}` }}>
+                  {ROLE_LABELS.previewTitle}
+                </p>
+                <div
+                  role="radiogroup"
+                  aria-label={ROLE_LABELS.previewTitle}
+                  style={{ display: "flex", gap: SPACE.xs, flexWrap: "wrap" }}
+                >
+                  {([
+                    "developer",
+                    "admin",
+                    "coach",
+                    "athlete",
+                  ] as Role[]).map((r) => {
+                    const active = activeRolePreview === r;
+                    return (
+                      <button
+                        key={r}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setActiveRolePreview(r)}
+                        style={previewChipStyle(active, ROLE_LABELS_COLOR[r])}
+                      >
+                        {ROLE_LABELS[r]}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={{ ...mutedStyle, margin: `${SPACE.sm} 0 0` }}>
+                  {ROLE_LABELS.previewHint}
+                </p>
+              </>
+            )}
+          </div>
+        </Section>
+      )}
 
       {/* ----------------------------------------------------------- body */}
       <Section title={PROFILE_LABELS.bodyLabel}>
@@ -477,6 +549,13 @@ export function ProfileView() {
           onImported={() => setWizardOpen(false)}
         />
       )}
+
+      {roleModalOpen && (
+        <RoleManagementModal
+          open={roleModalOpen}
+          onClose={() => setRoleModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -639,3 +718,44 @@ const readOnlyStyle: CSSProperties = {
   fontSize: TYPE.body.size,
   color: TEXT.secondary,
 };
+
+function roleLabelFor(role: Role): string {
+  return ROLE_LABELS[role];
+}
+
+function roleBadgeStyle(role: Role): CSSProperties {
+  const color = ROLE_LABELS_COLOR[role];
+  return {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: SPACE.xs,
+    marginTop: SPACE.xs,
+    padding: "2px 10px",
+    borderRadius: RADIUS.pill,
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: color,
+    backgroundColor: "transparent",
+    color: color,
+    fontSize: TYPE.caption.size,
+    fontWeight: 600,
+    letterSpacing: TYPE.label.tracking,
+    textTransform: "uppercase",
+  };
+}
+
+function previewChipStyle(active: boolean, color: string): CSSProperties {
+  return {
+    minHeight: 36,
+    padding: "0 14px",
+    borderRadius: RADIUS.pill,
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: active ? color : GLASS.border,
+    background: active ? color : "transparent",
+    color: active ? TEXT.onAccent : TEXT.secondary,
+    fontSize: TYPE.body.size,
+    fontWeight: 600,
+    cursor: "pointer",
+  };
+}

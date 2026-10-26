@@ -717,6 +717,7 @@ export const BRAND_LABELS = {
  */
 export const PROFILE_LABELS = {
   title: "Tu perfil",
+  quickActionsTitle: "Acceso rápido",
   loading: "Cargando tu perfil…",
   notLoaded: "No hemos podido cargar tu perfil.",
   retry: "Reintentar",
@@ -976,6 +977,40 @@ export const SEX_LABELS: Record<string, string> = {
   female: "Mujer",
   other: "Otro",
 };
+
+/**
+ * Copy for role management and role badges.
+ *
+ * Un solo vocabulario para los roles de cuenta: el rol se muestra en el perfil,
+ * en los chips de la tabla de gestión y en el simulador de vista del desarrollador.
+ */
+export const ROLE_LABELS = {
+  title: "Gestión de roles",
+  subtitle: "Asciende o degrada a cualquier usuario registrado por su correo.",
+  emailLabel: "Correo del usuario",
+  emailPlaceholder: "usuario@ejemplo.com",
+  roleLabel: "Nuevo rol",
+  athlete: "Atleta",
+  coach: "Coach",
+  admin: "Administrador",
+  developer: "Desarrollador",
+  grant: "Asignar rol",
+  granting: "Asignando…",
+  success: "Rol asignado",
+  successMsg: (role: string): string => `Rol actualizado a ${role}.`,
+  error: "Error al asignar el rol",
+  listTitle: "Coaches y administradores actuales",
+  listEmpty: "No hay coaches ni administradores registrados.",
+  userId: "Usuario",
+  roleCol: "Rol",
+  grantedAt: "Concedido",
+  edit: "Editar",
+  save: "Guardar",
+  cancel: "Cancelar",
+  previewTitle: "Simulador de vista",
+  previewHint: "Solo afecta esta sesión local; no cambia la base de datos.",
+  previewAs: "Ver como",
+} as const;
 
 /**
  * Copy for the import wizard.

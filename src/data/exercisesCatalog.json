@@ -4139,7 +4139,12 @@
     "media_id": "qLpO4vV",
     "created_at": "2026-03-18T12:31:32.855635+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0030",
+    "equipment_name": "Banco de Hiperextensión / Silla Romana",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0030_banco-hiperextension_vista-01.jpg"
+    ]
   },
   {
     "id": "3297",
@@ -4253,7 +4258,13 @@
     "media_id": "GaSzzuh",
     "created_at": "2026-03-18T12:31:32.855652+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1405",
@@ -4666,7 +4677,12 @@
     "media_id": "3omWx6P",
     "created_at": "2026-03-18T12:31:32.855724+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0969",
@@ -4768,7 +4784,12 @@
     "media_id": "ztAa1RK",
     "created_at": "2026-03-18T12:31:32.855741+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0970",
@@ -5226,7 +5247,12 @@
     "media_id": "wSScovH",
     "created_at": "2026-03-18T12:31:32.85581+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0972",
@@ -5557,7 +5583,12 @@
     "media_id": "ufaxB52",
     "created_at": "2026-03-18T12:31:32.855863+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0976",
@@ -5669,7 +5700,12 @@
     "media_id": "kmVVAfu",
     "created_at": "2026-03-18T12:31:32.85588+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3117",
@@ -6053,7 +6089,12 @@
     "media_id": "sTg7iys",
     "created_at": "2026-03-18T12:31:32.855933+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0978",
@@ -6146,7 +6187,12 @@
     "media_id": "TFA88iB",
     "created_at": "2026-03-18T12:31:32.85595+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1408",
@@ -6259,7 +6305,12 @@
     "media_id": "E4R8Hz1",
     "created_at": "2026-03-18T12:31:32.855967+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0979",
@@ -6402,7 +6453,12 @@
     "media_id": "9pa4H5m",
     "created_at": "2026-03-18T12:31:32.855984+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0981",
@@ -6839,7 +6895,12 @@
     "media_id": "vIICElP",
     "created_at": "2026-03-18T12:31:32.856051+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1002",
@@ -6941,7 +7002,12 @@
     "media_id": "bbLR7fB",
     "created_at": "2026-03-18T12:31:32.856071+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0986",
@@ -7044,7 +7110,12 @@
     "media_id": "UNAB8ak",
     "created_at": "2026-03-18T12:31:32.856088+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0987",
@@ -7157,7 +7228,12 @@
     "media_id": "arsYEd3",
     "created_at": "2026-03-18T12:31:32.856105+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0988",
@@ -7419,7 +7495,13 @@
     "media_id": "c16nYGA",
     "created_at": "2026-03-18T12:31:32.856142+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0990",
@@ -7661,7 +7743,12 @@
     "media_id": "VtTbiP3",
     "created_at": "2026-03-18T12:31:32.856178+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0992",
@@ -7892,7 +7979,12 @@
     "media_id": "sTfvVsG",
     "created_at": "2026-03-18T12:31:32.856212+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0994",
@@ -8004,7 +8096,12 @@
     "media_id": "Ezpnw9d",
     "created_at": "2026-03-18T12:31:32.856228+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0996",
@@ -8117,7 +8214,12 @@
     "media_id": "9gbyYKk",
     "created_at": "2026-03-18T12:31:32.856245+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1011",
@@ -8229,7 +8331,12 @@
     "media_id": "S1JXDAG",
     "created_at": "2026-03-18T12:31:32.856261+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0997",
@@ -8332,7 +8439,13 @@
     "media_id": "peAeMR3",
     "created_at": "2026-03-18T12:31:32.856278+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1018",
@@ -8434,7 +8547,12 @@
     "media_id": "trmte8s",
     "created_at": "2026-03-18T12:31:32.869579+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0998",
@@ -8536,7 +8654,12 @@
     "media_id": "obe5LMq",
     "created_at": "2026-03-18T12:31:32.869721+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0999",
@@ -8639,7 +8762,12 @@
     "media_id": "9JprnPh",
     "created_at": "2026-03-18T12:31:32.869775+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1000",
@@ -8742,7 +8870,12 @@
     "media_id": "QsSQWbf",
     "created_at": "2026-03-18T12:31:32.8698+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1001",
@@ -8845,7 +8978,12 @@
     "media_id": "y8bYM8w",
     "created_at": "2026-03-18T12:31:32.869826+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1004",
@@ -8949,7 +9087,12 @@
     "media_id": "TUZLh71",
     "created_at": "2026-03-18T12:31:32.869852+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1003",
@@ -9073,7 +9216,12 @@
     "media_id": "w1NOByi",
     "created_at": "2026-03-18T12:31:32.86988+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1005",
@@ -9304,7 +9452,12 @@
     "media_id": "tc5dYrf",
     "created_at": "2026-03-18T12:31:32.869933+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1007",
@@ -9545,7 +9698,12 @@
     "media_id": "d5bTEPV",
     "created_at": "2026-03-18T12:31:32.869987+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1009",
@@ -9668,7 +9826,12 @@
     "media_id": "kuMiR2T",
     "created_at": "2026-03-18T12:31:32.870008+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1023",
@@ -9781,7 +9944,12 @@
     "media_id": "lHeUULr",
     "created_at": "2026-03-18T12:31:32.870027+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1010",
@@ -9904,7 +10072,12 @@
     "media_id": "KUaoUV8",
     "created_at": "2026-03-18T12:31:32.870047+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1012",
@@ -10027,7 +10200,12 @@
     "media_id": "u4bAmKp",
     "created_at": "2026-03-18T12:31:32.870071+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1369",
@@ -10130,7 +10308,12 @@
     "media_id": "jl6uxZV",
     "created_at": "2026-03-18T12:31:32.870089+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1013",
@@ -10352,7 +10535,12 @@
     "media_id": "H6ETwO9",
     "created_at": "2026-03-18T12:31:32.870132+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1015",
@@ -10475,7 +10663,12 @@
     "media_id": "G7PXMlT",
     "created_at": "2026-03-18T12:31:32.870152+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1016",
@@ -10578,7 +10771,12 @@
     "media_id": "vUTfFHw",
     "created_at": "2026-03-18T12:31:32.870171+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1017",
@@ -10681,7 +10879,12 @@
     "media_id": "aHDy5O5",
     "created_at": "2026-03-18T12:31:32.870191+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0023",
@@ -10793,7 +10996,13 @@
     "media_id": "Yza7XrQ",
     "created_at": "2026-03-18T12:31:32.870212+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0024",
@@ -10897,7 +11106,13 @@
     "media_id": "Y7YcmIJ",
     "created_at": "2026-03-18T12:31:32.870232+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0025",
@@ -11160,7 +11375,13 @@
     "media_id": "W9pFVv1",
     "created_at": "2026-03-18T12:31:32.87027+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1316",
@@ -11263,7 +11484,13 @@
     "media_id": "cA9FuWG",
     "created_at": "2026-03-18T12:31:32.870288+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0027",
@@ -11376,7 +11603,13 @@
     "media_id": "eZyBC3j",
     "created_at": "2026-03-18T12:31:32.870309+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2407",
@@ -11498,7 +11731,13 @@
     "media_id": "aee2Fcj",
     "created_at": "2026-03-18T12:31:32.870329+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0028",
@@ -11623,7 +11862,13 @@
     "media_id": "SGY8Zui",
     "created_at": "2026-03-18T12:31:32.870347+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0029",
@@ -11738,7 +11983,13 @@
     "media_id": "qi996YS",
     "created_at": "2026-03-18T12:31:32.870368+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0030",
@@ -11969,7 +12220,13 @@
     "media_id": "25GPyDY",
     "created_at": "2026-03-18T12:31:32.870407+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0032",
@@ -12082,7 +12339,13 @@
     "media_id": "ila4NZS",
     "created_at": "2026-03-18T12:31:32.870425+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0033",
@@ -12294,7 +12557,13 @@
     "media_id": "hMEptv0",
     "created_at": "2026-03-18T12:31:32.870463+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0035",
@@ -12387,7 +12656,13 @@
     "media_id": "LMGXZn8",
     "created_at": "2026-03-18T12:31:32.871367+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1255",
@@ -12500,7 +12775,13 @@
     "media_id": "9sgNE2O",
     "created_at": "2026-03-18T12:31:32.871387+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0036",
@@ -12603,7 +12884,13 @@
     "media_id": "hl8DUh8",
     "created_at": "2026-03-18T12:31:32.871404+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0037",
@@ -12706,7 +12993,13 @@
     "media_id": "Hj4FOCd",
     "created_at": "2026-03-18T12:31:32.871421+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0038",
@@ -12808,7 +13101,13 @@
     "media_id": "IENzBdA",
     "created_at": "2026-03-18T12:31:32.871438+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1370",
@@ -12920,7 +13219,13 @@
     "media_id": "2IHEa2T",
     "created_at": "2026-03-18T12:31:32.871455+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0039",
@@ -13035,7 +13340,13 @@
     "media_id": "IeTIEqg",
     "created_at": "2026-03-18T12:31:32.871473+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0041",
@@ -13128,7 +13439,13 @@
     "media_id": "b2Uoz54",
     "created_at": "2026-03-18T12:31:32.871489+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0040",
@@ -13241,7 +13558,13 @@
     "media_id": "33AzZeV",
     "created_at": "2026-03-18T12:31:32.871506+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0042",
@@ -13356,7 +13679,13 @@
     "media_id": "zG0zs85",
     "created_at": "2026-03-18T12:31:32.871523+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0043",
@@ -13491,7 +13820,13 @@
     "media_id": "qXTaZnJ",
     "created_at": "2026-03-18T12:31:32.871543+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1461",
@@ -13626,7 +13961,13 @@
     "media_id": "DhMl549",
     "created_at": "2026-03-18T12:31:32.871562+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1462",
@@ -13761,7 +14102,13 @@
     "media_id": "iYzB0Cz",
     "created_at": "2026-03-18T12:31:32.87158+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1545",
@@ -13886,7 +14233,13 @@
     "media_id": "vR1vold",
     "created_at": "2026-03-18T12:31:32.871597+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1409",
@@ -13999,7 +14352,13 @@
     "media_id": "qKBpF7I",
     "created_at": "2026-03-18T12:31:32.871614+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "3562",
@@ -14112,7 +14471,13 @@
     "media_id": "qg2PGl6",
     "created_at": "2026-03-18T12:31:32.871631+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0044",
@@ -14214,7 +14579,13 @@
     "media_id": "XlZ4lAC",
     "created_at": "2026-03-18T12:31:32.871648+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0045",
@@ -14568,7 +14939,13 @@
     "media_id": "Gnfo4FM",
     "created_at": "2026-03-18T12:31:32.8717+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0047",
@@ -14919,7 +15296,13 @@
     "media_id": "641mIfk",
     "created_at": "2026-03-18T12:31:32.871752+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0049",
@@ -15042,7 +15425,13 @@
     "media_id": "dmgMp3n",
     "created_at": "2026-03-18T12:31:32.871769+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0050",
@@ -15165,7 +15554,13 @@
     "media_id": "xi0yckC",
     "created_at": "2026-03-18T12:31:32.871785+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0051",
@@ -15279,7 +15674,13 @@
     "media_id": "pkSoCW9",
     "created_at": "2026-03-18T12:31:32.871802+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0052",
@@ -15492,7 +15893,13 @@
     "media_id": "1gFNTZV",
     "created_at": "2026-03-18T12:31:32.871835+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1410",
@@ -15596,7 +16003,13 @@
     "media_id": "py1HSzx",
     "created_at": "2026-03-18T12:31:32.871852+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1435",
@@ -15700,7 +16113,13 @@
     "media_id": "bTpEUcm",
     "created_at": "2026-03-18T12:31:32.87187+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0054",
@@ -15804,7 +16223,13 @@
     "media_id": "t8iSghb",
     "created_at": "2026-03-18T12:31:32.871887+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1720",
@@ -15906,7 +16331,13 @@
     "media_id": "yg8Totb",
     "created_at": "2026-03-18T12:31:32.871905+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0055",
@@ -16019,7 +16450,13 @@
     "media_id": "EcaV7aL",
     "created_at": "2026-03-18T12:31:32.871922+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0056",
@@ -16131,7 +16568,13 @@
     "media_id": "HJ63mSO",
     "created_at": "2026-03-18T12:31:32.871939+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0057",
@@ -16233,7 +16676,13 @@
     "media_id": "EMpUwRI",
     "created_at": "2026-03-18T12:31:32.871956+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0058",
@@ -16336,7 +16785,13 @@
     "media_id": "SNFfUff",
     "created_at": "2026-03-18T12:31:32.871972+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0059",
@@ -16556,7 +17011,13 @@
     "media_id": "iZop9xO",
     "created_at": "2026-03-18T12:31:32.872006+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0060",
@@ -16658,7 +17119,13 @@
     "media_id": "h8LFzo9",
     "created_at": "2026-03-18T12:31:32.872022+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0063",
@@ -16772,7 +17239,13 @@
     "media_id": "elhhVgj",
     "created_at": "2026-03-18T12:31:32.87204+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0064",
@@ -16875,7 +17348,13 @@
     "media_id": "Jsgsc27",
     "created_at": "2026-03-18T12:31:32.872057+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0065",
@@ -16978,7 +17457,13 @@
     "media_id": "vtusOWT",
     "created_at": "2026-03-18T12:31:32.872077+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0066",
@@ -17092,7 +17577,13 @@
     "media_id": "2DxtqHL",
     "created_at": "2026-03-18T12:31:32.872094+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0067",
@@ -17226,7 +17717,13 @@
     "media_id": "xHKN2s8",
     "created_at": "2026-03-18T12:31:32.872112+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0068",
@@ -17330,7 +17827,13 @@
     "media_id": "uKyN64F",
     "created_at": "2026-03-18T12:31:32.872129+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0069",
@@ -17435,7 +17938,13 @@
     "media_id": "gfk9kD4",
     "created_at": "2026-03-18T12:31:32.872146+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1411",
@@ -17538,7 +18047,13 @@
     "media_id": "yzYH9pI",
     "created_at": "2026-03-18T12:31:32.872163+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1412",
@@ -17641,7 +18156,13 @@
     "media_id": "SJAA2IQ",
     "created_at": "2026-03-18T12:31:32.87218+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "3017",
@@ -17754,7 +18275,13 @@
     "media_id": "r0z6xzQ",
     "created_at": "2026-03-18T12:31:32.872197+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1751",
@@ -17886,7 +18413,13 @@
     "media_id": "bndCa3Q",
     "created_at": "2026-03-18T12:31:32.872213+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0070",
@@ -18254,7 +18787,13 @@
     "media_id": "WLvTAv5",
     "created_at": "2026-03-18T12:31:32.872264+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0073",
@@ -18357,7 +18896,13 @@
     "media_id": "i6LWjok",
     "created_at": "2026-03-18T12:31:32.87228+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0022",
@@ -18461,7 +19006,13 @@
     "media_id": "znLogoF",
     "created_at": "2026-03-18T12:31:32.872296+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0074",
@@ -18574,7 +19125,13 @@
     "media_id": "za9Ni4z",
     "created_at": "2026-03-18T12:31:32.872312+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0075",
@@ -18677,7 +19234,13 @@
     "media_id": "Ln9iTbU",
     "created_at": "2026-03-18T12:31:32.872329+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0076",
@@ -18791,7 +19354,13 @@
     "media_id": "S9zHIvU",
     "created_at": "2026-03-18T12:31:32.872346+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0078",
@@ -18895,7 +19464,13 @@
     "media_id": "VaP75jl",
     "created_at": "2026-03-18T12:31:32.872362+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0077",
@@ -18999,7 +19574,13 @@
     "media_id": "62Nw60O",
     "created_at": "2026-03-18T12:31:32.872379+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0079",
@@ -19112,7 +19693,13 @@
     "media_id": "qDnGfDb",
     "created_at": "2026-03-18T12:31:32.872395+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2187",
@@ -19353,7 +19940,13 @@
     "media_id": "xNrS20v",
     "created_at": "2026-03-18T12:31:32.872429+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0118",
@@ -19466,7 +20059,13 @@
     "media_id": "SzX3uzM",
     "created_at": "2026-03-18T12:31:32.872446+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1256",
@@ -19955,7 +20554,13 @@
     "media_id": "yRLPCLu",
     "created_at": "2026-03-18T12:31:32.872518+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0081",
@@ -20176,7 +20781,13 @@
     "media_id": "LsZkfU6",
     "created_at": "2026-03-18T12:31:32.872552+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0084",
@@ -20534,7 +21145,13 @@
     "media_id": "wQ2c4XD",
     "created_at": "2026-03-18T12:31:32.872608+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0086",
@@ -20647,7 +21264,13 @@
     "media_id": "ngPpyRS",
     "created_at": "2026-03-18T12:31:32.872625+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0087",
@@ -20750,7 +21373,13 @@
     "media_id": "0dCyly0",
     "created_at": "2026-03-18T12:31:32.872641+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0088",
@@ -20863,7 +21492,13 @@
     "media_id": "ktsFQAZ",
     "created_at": "2026-03-18T12:31:32.872658+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1371",
@@ -20965,7 +21600,13 @@
     "media_id": "ipvgBnC",
     "created_at": "2026-03-18T12:31:32.872686+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1718",
@@ -21067,7 +21708,13 @@
     "media_id": "4CBIBOM",
     "created_at": "2026-03-18T12:31:32.872703+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0089",
@@ -21169,7 +21816,13 @@
     "media_id": "1V1gj1u",
     "created_at": "2026-03-18T12:31:32.872722+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0090",
@@ -21272,7 +21925,13 @@
     "media_id": "d960PgE",
     "created_at": "2026-03-18T12:31:32.87274+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0091",
@@ -21385,7 +22044,13 @@
     "media_id": "kTbSH9h",
     "created_at": "2026-03-18T12:31:32.872756+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0092",
@@ -21487,7 +22152,13 @@
     "media_id": "5uFK1xr",
     "created_at": "2026-03-18T12:31:32.872772+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0094",
@@ -21600,7 +22271,13 @@
     "media_id": "dFSNDOA",
     "created_at": "2026-03-18T12:31:32.872789+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0095",
@@ -21702,7 +22379,13 @@
     "media_id": "dG7tG5y",
     "created_at": "2026-03-18T12:31:32.872805+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0096",
@@ -21815,7 +22498,13 @@
     "media_id": "i4JkUaL",
     "created_at": "2026-03-18T12:31:32.872821+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0098",
@@ -21929,7 +22618,13 @@
     "media_id": "W31mMjd",
     "created_at": "2026-03-18T12:31:32.872837+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0097",
@@ -22053,7 +22748,13 @@
     "media_id": "HUEqZ1y",
     "created_at": "2026-03-18T12:31:32.872857+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1756",
@@ -22166,7 +22867,13 @@
     "media_id": "gEyURal",
     "created_at": "2026-03-18T12:31:32.872873+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0099",
@@ -22280,7 +22987,13 @@
     "media_id": "gGNQmVt",
     "created_at": "2026-03-18T12:31:32.87289+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2799",
@@ -22372,7 +23085,13 @@
     "media_id": "G7xoEzr",
     "created_at": "2026-03-18T12:31:32.872907+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2800",
@@ -22475,7 +23194,13 @@
     "media_id": "BCs0G2F",
     "created_at": "2026-03-18T12:31:32.872923+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0100",
@@ -22578,7 +23303,13 @@
     "media_id": "4Leypho",
     "created_at": "2026-03-18T12:31:32.872944+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0101",
@@ -22692,7 +23423,13 @@
     "media_id": "euI1BwR",
     "created_at": "2026-03-18T12:31:32.87296+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2810",
@@ -22796,7 +23533,13 @@
     "media_id": "HBYyX94",
     "created_at": "2026-03-18T12:31:32.872977+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0102",
@@ -22910,7 +23653,13 @@
     "media_id": "oR7O9LW",
     "created_at": "2026-03-18T12:31:32.872993+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2798",
@@ -23044,7 +23793,13 @@
     "media_id": "RYcV1kH",
     "created_at": "2026-03-18T12:31:32.87301+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0103",
@@ -23255,7 +24010,13 @@
     "media_id": "2qTvJAZ",
     "created_at": "2026-03-18T12:31:32.873042+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0105",
@@ -23348,7 +24109,13 @@
     "media_id": "dCPESfR",
     "created_at": "2026-03-18T12:31:32.873059+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1372",
@@ -23441,7 +24208,13 @@
     "media_id": "8ozhUIZ",
     "created_at": "2026-03-18T12:31:32.873075+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0106",
@@ -23553,7 +24326,13 @@
     "media_id": "4dUn2iv",
     "created_at": "2026-03-18T12:31:32.873091+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1456",
@@ -23656,7 +24435,13 @@
     "media_id": "wdRZISl",
     "created_at": "2026-03-18T12:31:32.873108+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2414",
@@ -23768,7 +24553,13 @@
     "media_id": "vsMcDi9",
     "created_at": "2026-03-18T12:31:32.873125+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0107",
@@ -23881,7 +24672,13 @@
     "media_id": "S8mo30S",
     "created_at": "2026-03-18T12:31:32.873142+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0108",
@@ -23974,7 +24771,13 @@
     "media_id": "rGwhJ5o",
     "created_at": "2026-03-18T12:31:32.873158+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0109",
@@ -24076,7 +24879,13 @@
     "media_id": "dZl9Q27",
     "created_at": "2026-03-18T12:31:32.873176+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0110",
@@ -24188,7 +24997,13 @@
     "media_id": "LWuA3aZ",
     "created_at": "2026-03-18T12:31:32.873194+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0111",
@@ -24281,7 +25096,13 @@
     "media_id": "6HiHHe0",
     "created_at": "2026-03-18T12:31:32.873211+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0112",
@@ -24394,7 +25215,13 @@
     "media_id": "yQe5HpE",
     "created_at": "2026-03-18T12:31:32.873228+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1629",
@@ -24506,7 +25333,13 @@
     "media_id": "faHKVkK",
     "created_at": "2026-03-18T12:31:32.873244+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1457",
@@ -24599,7 +25432,13 @@
     "media_id": "Kyd9Rz5",
     "created_at": "2026-03-18T12:31:32.873261+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0113",
@@ -24722,7 +25561,13 @@
     "media_id": "NdIb5Z1",
     "created_at": "2026-03-18T12:31:32.873278+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0114",
@@ -24836,7 +25681,13 @@
     "media_id": "Kxquu2E",
     "created_at": "2026-03-18T12:31:32.873295+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0115",
@@ -24949,7 +25800,13 @@
     "media_id": "JrOHAZc",
     "created_at": "2026-03-18T12:31:32.873312+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0116",
@@ -25062,7 +25919,13 @@
     "media_id": "hrVQWvE",
     "created_at": "2026-03-18T12:31:32.873329+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0117",
@@ -25186,7 +26049,13 @@
     "media_id": "KgI0tqW",
     "created_at": "2026-03-18T12:31:32.873347+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "3305",
@@ -25291,7 +26160,13 @@
     "media_id": "f7Y9eDZ",
     "created_at": "2026-03-18T12:31:32.873363+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0120",
@@ -25394,7 +26269,13 @@
     "media_id": "UDlhcO8",
     "created_at": "2026-03-18T12:31:32.87338+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0119",
@@ -25497,7 +26378,13 @@
     "media_id": "83HoW9X",
     "created_at": "2026-03-18T12:31:32.873396+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0121",
@@ -25600,7 +26487,13 @@
     "media_id": "fI18Rbc",
     "created_at": "2026-03-18T12:31:32.873413+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0122",
@@ -25952,7 +26845,13 @@
     "media_id": "s7HX1BY",
     "created_at": "2026-03-18T12:31:32.873466+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0123",
@@ -26055,7 +26954,13 @@
     "media_id": "RgJDRR1",
     "created_at": "2026-03-18T12:31:32.873486+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0126",
@@ -26158,7 +27063,13 @@
     "media_id": "82LxxkW",
     "created_at": "2026-03-18T12:31:32.873502+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0125",
@@ -26271,7 +27182,13 @@
     "media_id": "6kSxYnw",
     "created_at": "2026-03-18T12:31:32.87352+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0127",
@@ -26386,7 +27303,13 @@
     "media_id": "LSTChY9",
     "created_at": "2026-03-18T12:31:32.873537+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "3212",
@@ -27883,7 +28806,12 @@
     "media_id": "wfotm7S",
     "created_at": "2026-03-18T12:31:32.873776+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3544",
@@ -28104,7 +29032,12 @@
     "media_id": "s0HKO2I",
     "created_at": "2026-03-18T12:31:32.873812+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1769",
@@ -28196,7 +29129,12 @@
     "media_id": "gscGLOU",
     "created_at": "2026-03-18T12:31:32.87383+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3168",
@@ -28299,7 +29237,12 @@
     "media_id": "3xK09Sk",
     "created_at": "2026-03-18T12:31:32.873847+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3167",
@@ -28402,7 +29345,12 @@
     "media_id": "BReCuOn",
     "created_at": "2026-03-18T12:31:32.873865+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1373",
@@ -28505,7 +29453,12 @@
     "media_id": "bJYHBIN",
     "created_at": "2026-03-18T12:31:32.873882+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3156",
@@ -28608,7 +29561,12 @@
     "media_id": "v2DfH14",
     "created_at": "2026-03-18T12:31:32.873899+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3158",
@@ -28721,7 +29679,12 @@
     "media_id": "tig3PXb",
     "created_at": "2026-03-18T12:31:32.873916+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3162",
@@ -28844,7 +29807,12 @@
     "media_id": "xbkPfaw",
     "created_at": "2026-03-18T12:31:32.873934+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3161",
@@ -28947,7 +29915,12 @@
     "media_id": "O4oIqQD",
     "created_at": "2026-03-18T12:31:32.873951+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3166",
@@ -29070,7 +30043,12 @@
     "media_id": "wd4ds3s",
     "created_at": "2026-03-18T12:31:32.873968+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3165",
@@ -29173,7 +30151,12 @@
     "media_id": "uTv34oq",
     "created_at": "2026-03-18T12:31:32.873984+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0138",
@@ -29888,7 +30871,13 @@
     "media_id": "bWlZvXh",
     "created_at": "2026-03-18T12:31:32.874089+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0148",
@@ -49850,7 +50839,12 @@
     "media_id": "7E06s6d",
     "created_at": "2026-03-18T12:31:32.877023+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1326",
@@ -50376,7 +51370,12 @@
     "media_id": "CMAxnsG",
     "created_at": "2026-03-18T12:31:32.877116+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1327",
@@ -50587,7 +51586,12 @@
     "media_id": "x6KpKpq",
     "created_at": "2026-03-18T12:31:32.877153+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "2398",
@@ -50690,7 +51694,12 @@
     "media_id": "v3vLFW0",
     "created_at": "2026-03-18T12:31:32.877171+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0260",
@@ -52117,7 +53126,12 @@
     "media_id": "i5cEhka",
     "created_at": "2026-03-18T12:31:32.877398+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0282",
@@ -52424,7 +53438,12 @@
     "media_id": "soIB2rj",
     "created_at": "2026-03-18T12:31:32.877452+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0284",
@@ -85628,7 +86647,12 @@
     "media_id": "wbUYILZ",
     "created_at": "2026-03-18T12:31:32.882589+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0443",
@@ -86069,7 +87093,12 @@
     "media_id": "PERjVm8",
     "created_at": "2026-03-18T12:31:32.882661+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0030",
+    "equipment_name": "Banco de Hiperextensión / Silla Romana",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0030_banco-hiperextension_vista-01.jpg"
+    ]
   },
   {
     "id": "1334",
@@ -86182,7 +87211,12 @@
     "media_id": "o1HGDSq",
     "created_at": "2026-03-18T12:31:32.88268+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0030",
+    "equipment_name": "Banco de Hiperextensión / Silla Romana",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0030_banco-hiperextension_vista-01.jpg"
+    ]
   },
   {
     "id": "1335",
@@ -86285,7 +87319,12 @@
     "media_id": "WME869U",
     "created_at": "2026-03-18T12:31:32.882699+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0030",
+    "equipment_name": "Banco de Hiperextensión / Silla Romana",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0030_banco-hiperextension_vista-01.jpg"
+    ]
   },
   {
     "id": "1336",
@@ -86398,7 +87437,12 @@
     "media_id": "WVD66ff",
     "created_at": "2026-03-18T12:31:32.882716+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0030",
+    "equipment_name": "Banco de Hiperextensión / Silla Romana",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0030_banco-hiperextension_vista-01.jpg"
+    ]
   },
   {
     "id": "1744",
@@ -88929,7 +89973,13 @@
     "media_id": "fprd84i",
     "created_at": "2026-03-18T12:31:32.883231+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1627",
@@ -89149,7 +90199,13 @@
     "media_id": "V4ryaZa",
     "created_at": "2026-03-18T12:31:32.883268+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0447",
@@ -89251,7 +90307,13 @@
     "media_id": "6TG6x2w",
     "created_at": "2026-03-18T12:31:32.883284+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0448",
@@ -89364,7 +90426,13 @@
     "media_id": "DgZQ11d",
     "created_at": "2026-03-18T12:31:32.883301+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2186",
@@ -89476,7 +90544,13 @@
     "media_id": "CQHoDm0",
     "created_at": "2026-03-18T12:31:32.883317+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0449",
@@ -89588,7 +90662,13 @@
     "media_id": "KyLtiLT",
     "created_at": "2026-03-18T12:31:32.883333+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0450",
@@ -89819,7 +90899,13 @@
     "media_id": "Y5X65IB",
     "created_at": "2026-03-18T12:31:32.883366+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0452",
@@ -90059,7 +91145,13 @@
     "media_id": "jtFKbt5",
     "created_at": "2026-03-18T12:31:32.883398+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0453",
@@ -90171,7 +91263,13 @@
     "media_id": "iaapw0g",
     "created_at": "2026-03-18T12:31:32.883415+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0454",
@@ -90283,7 +91381,13 @@
     "media_id": "Ye5Qxb0",
     "created_at": "2026-03-18T12:31:32.883432+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1628",
@@ -90395,7 +91499,13 @@
     "media_id": "2kattbR",
     "created_at": "2026-03-18T12:31:32.883456+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2404",
@@ -90738,7 +91848,13 @@
     "media_id": "OVTZ65k",
     "created_at": "2026-03-18T12:31:32.88351+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "2133",
@@ -91386,7 +92502,13 @@
     "media_id": "neonEDL",
     "created_at": "2026-03-18T12:31:32.88362+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0459",
@@ -92136,7 +93258,13 @@
     "media_id": "PkCN2lv",
     "created_at": "2026-03-18T12:31:32.883764+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "3295",
@@ -92249,7 +93377,13 @@
     "media_id": "hbY9wqG",
     "created_at": "2026-03-18T12:31:32.883782+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0464",
@@ -92718,7 +93852,12 @@
     "media_id": "gw9PqGk",
     "created_at": "2026-03-18T12:31:32.883847+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0466",
@@ -94510,7 +95649,12 @@
     "media_id": "rQxwMxO",
     "created_at": "2026-03-18T12:31:32.884128+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1764",
@@ -96317,7 +97461,12 @@
     "media_id": "1YB40kg",
     "created_at": "2026-03-18T12:31:32.884423+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0491",
@@ -96644,7 +97793,12 @@
     "media_id": "B1EVP9F",
     "created_at": "2026-03-18T12:31:32.884482+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3785",
@@ -96747,7 +97901,12 @@
     "media_id": "F7vjXqT",
     "created_at": "2026-03-18T12:31:32.884499+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0494",
@@ -96850,7 +98009,12 @@
     "media_id": "XaaRnRn",
     "created_at": "2026-03-18T12:31:32.884517+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3011",
@@ -97577,7 +98741,12 @@
     "media_id": "bZGHsAZ",
     "created_at": "2026-03-18T12:31:32.884626+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "2300",
@@ -97690,7 +98859,12 @@
     "media_id": "VPPtusI",
     "created_at": "2026-03-18T12:31:32.884645+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "2298",
@@ -97813,7 +98987,12 @@
     "media_id": "Mxa7Cr8",
     "created_at": "2026-03-18T12:31:32.884663+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0497",
@@ -97926,7 +99105,12 @@
     "media_id": "uX3sUBz",
     "created_at": "2026-03-18T12:31:32.884681+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0498",
@@ -98049,7 +99233,12 @@
     "media_id": "jdiExfW",
     "created_at": "2026-03-18T12:31:32.884699+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1419",
@@ -104752,7 +105941,12 @@
     "media_id": "ZOuKWir",
     "created_at": "2026-03-18T12:31:32.885831+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3288",
@@ -105183,7 +106377,13 @@
     "media_id": "QYysSLV",
     "created_at": "2026-03-18T12:31:32.885909+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "3237",
@@ -106350,7 +107550,13 @@
     "media_id": "X3cqyXz",
     "created_at": "2026-03-18T12:31:32.886094+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "3200",
@@ -106453,7 +107659,13 @@
     "media_id": "LuBEORI",
     "created_at": "2026-03-18T12:31:32.886114+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0575",
@@ -106565,7 +107777,13 @@
     "media_id": "q6y3OhV",
     "created_at": "2026-03-18T12:31:32.886132+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "2289",
@@ -106796,7 +108014,13 @@
     "media_id": "T0yTjgW",
     "created_at": "2026-03-18T12:31:32.886168+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0576",
@@ -106899,7 +108123,13 @@
     "media_id": "DOoWcnA",
     "created_at": "2026-03-18T12:31:32.886189+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0578",
@@ -107032,7 +108262,13 @@
     "media_id": "GUT8I22",
     "created_at": "2026-03-18T12:31:32.886207+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1300",
@@ -107155,7 +108391,13 @@
     "media_id": "vsVoPHt",
     "created_at": "2026-03-18T12:31:32.886226+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1253",
@@ -107498,7 +108740,13 @@
     "media_id": "f91FwXG",
     "created_at": "2026-03-18T12:31:32.886289+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1439",
@@ -107601,7 +108849,13 @@
     "media_id": "cbuFJrn",
     "created_at": "2026-03-18T12:31:32.886309+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "2288",
@@ -107704,7 +108958,13 @@
     "media_id": "mKwcrHn",
     "created_at": "2026-03-18T12:31:32.886326+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1615",
@@ -108063,7 +109323,13 @@
     "media_id": "OPqShYN",
     "created_at": "2026-03-18T12:31:32.886381+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "2611",
@@ -108297,7 +109563,13 @@
     "media_id": "jHAnWmT",
     "created_at": "2026-03-18T12:31:32.886425+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1479",
@@ -108410,7 +109682,13 @@
     "media_id": "o17Jfkt",
     "created_at": "2026-03-18T12:31:32.886445+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0582",
@@ -108651,7 +109929,13 @@
     "media_id": "sZOR9EV",
     "created_at": "2026-03-18T12:31:32.886481+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0584",
@@ -108754,7 +110038,13 @@
     "media_id": "dRTfGZT",
     "created_at": "2026-03-18T12:31:32.886499+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0585",
@@ -109221,7 +110511,13 @@
     "media_id": "CggQhII",
     "created_at": "2026-03-18T12:31:32.886574+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0588",
@@ -109483,7 +110779,13 @@
     "media_id": "Fhdtwf3",
     "created_at": "2026-03-18T12:31:32.886615+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1356",
@@ -109596,7 +110898,13 @@
     "media_id": "OIFMAp1",
     "created_at": "2026-03-18T12:31:32.886637+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1347",
@@ -109810,7 +111118,13 @@
     "media_id": "2KGnL6M",
     "created_at": "2026-03-18T12:31:32.886677+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0591",
@@ -110287,7 +111601,13 @@
     "media_id": "4U7iLb5",
     "created_at": "2026-03-18T12:31:32.886759+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "2736",
@@ -110659,7 +111979,13 @@
     "media_id": "ZqNOWQ6",
     "created_at": "2026-03-18T12:31:32.886814+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0593",
@@ -111140,7 +112466,13 @@
     "media_id": "Ie9UGty",
     "created_at": "2026-03-18T12:31:32.886885+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0594",
@@ -111728,7 +113060,13 @@
     "media_id": "BRImeP8",
     "created_at": "2026-03-18T12:31:32.88697+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0596",
@@ -111841,7 +113179,13 @@
     "media_id": "v3xmPAR",
     "created_at": "2026-03-18T12:31:32.886987+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "3759",
@@ -111954,7 +113298,13 @@
     "media_id": "XsCcxCC",
     "created_at": "2026-03-18T12:31:32.887005+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0597",
@@ -112522,7 +113872,13 @@
     "media_id": "myfUsKf",
     "created_at": "2026-03-18T12:31:32.887102+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0601",
@@ -112625,7 +113981,13 @@
     "media_id": "xiHiJcA",
     "created_at": "2026-03-18T12:31:32.88712+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1350",
@@ -112998,7 +114360,13 @@
     "media_id": "67n3r98",
     "created_at": "2026-03-18T12:31:32.887176+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0869",
@@ -113111,7 +114479,13 @@
     "media_id": "vqsbmL0",
     "created_at": "2026-03-18T12:31:32.887193+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "2318",
@@ -113224,7 +114598,13 @@
     "media_id": "dNFYIU1",
     "created_at": "2026-03-18T12:31:32.887211+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0604",
@@ -113326,7 +114706,13 @@
     "media_id": "ZZKbeMw",
     "created_at": "2026-03-18T12:31:32.887229+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0605",
@@ -113538,7 +114924,13 @@
     "media_id": "WbNq5Xu",
     "created_at": "2026-03-18T12:31:32.887265+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0606",
@@ -113780,7 +115172,13 @@
     "media_id": "FVM1AUZ",
     "created_at": "2026-03-18T12:31:32.887298+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0607",
@@ -113882,7 +115280,13 @@
     "media_id": "Ser9eQp",
     "created_at": "2026-03-18T12:31:32.887314+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "1313",
@@ -115076,7 +116480,13 @@
     "media_id": "wDN97Ca",
     "created_at": "2026-03-18T12:31:32.887505+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "0624",
@@ -116320,7 +117730,12 @@
     "media_id": "epOSYUZ",
     "created_at": "2026-03-18T12:31:32.887723+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1421",
@@ -116978,7 +118393,12 @@
     "media_id": "4cWjYEN",
     "created_at": "2026-03-18T12:31:32.887827+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1403",
@@ -117534,7 +118954,13 @@
     "media_id": "o1ntciW",
     "created_at": "2026-03-18T12:31:32.887914+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0637",
@@ -117636,7 +119062,13 @@
     "media_id": "wu5LXwz",
     "created_at": "2026-03-18T12:31:32.887932+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1355",
@@ -118723,7 +120155,12 @@
     "media_id": "jNU1gFQ",
     "created_at": "2026-03-18T12:31:32.888112+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0643",
@@ -119307,7 +120744,12 @@
     "media_id": "XPUDTt7",
     "created_at": "2026-03-18T12:31:32.8882+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1306",
@@ -120810,7 +122252,12 @@
     "media_id": "wXvUZC8",
     "created_at": "2026-03-18T12:31:32.888422+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3638",
@@ -121122,7 +122569,12 @@
     "media_id": "I4hDWkc",
     "created_at": "2026-03-18T12:31:32.888477+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0653",
@@ -121226,7 +122678,12 @@
     "media_id": "2kr2lWy",
     "created_at": "2026-03-18T12:31:32.888494+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0655",
@@ -121330,7 +122787,12 @@
     "media_id": "Y4BRNQF",
     "created_at": "2026-03-18T12:31:32.888513+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0656",
@@ -121434,7 +122896,12 @@
     "media_id": "tgryw5Y",
     "created_at": "2026-03-18T12:31:32.888535+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0659",
@@ -121547,7 +123014,12 @@
     "media_id": "LEH9jxP",
     "created_at": "2026-03-18T12:31:32.888554+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0658",
@@ -121670,7 +123142,12 @@
     "media_id": "NCmbLCw",
     "created_at": "2026-03-18T12:31:32.888573+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0660",
@@ -121884,7 +123361,12 @@
     "media_id": "0br45wL",
     "created_at": "2026-03-18T12:31:32.888609+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0663",
@@ -121978,7 +123460,12 @@
     "media_id": "W8KAlkI",
     "created_at": "2026-03-18T12:31:32.888626+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1467",
@@ -122081,7 +123568,12 @@
     "media_id": "4Jt8QsQ",
     "created_at": "2026-03-18T12:31:32.888644+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3145",
@@ -122194,7 +123686,12 @@
     "media_id": "pvBMLHA",
     "created_at": "2026-03-18T12:31:32.888662+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0664",
@@ -122740,7 +124237,12 @@
     "media_id": "13TpY4H",
     "created_at": "2026-03-18T12:31:32.88875+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0668",
@@ -123300,7 +124802,12 @@
     "media_id": "Pjbc0Kt",
     "created_at": "2026-03-18T12:31:32.888835+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3007",
@@ -123520,7 +125027,12 @@
     "media_id": "XFc3vpY",
     "created_at": "2026-03-18T12:31:32.888868+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3124",
@@ -123623,7 +125135,13 @@
     "media_id": "4x5Okof",
     "created_at": "2026-03-18T12:31:32.888886+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "3006",
@@ -123845,7 +125363,13 @@
     "media_id": "S93zLTG",
     "created_at": "2026-03-18T12:31:32.888923+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0010",
+    "equipment_name": "Máquinas de Placas y Palanca Guiadas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0010_maquinas-guiadas_vista-02.jpg"
+    ]
   },
   {
     "id": "3144",
@@ -123958,7 +125482,12 @@
     "media_id": "Nu7jqFE",
     "created_at": "2026-03-18T12:31:32.888942+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0872",
@@ -124499,7 +126028,12 @@
     "media_id": "vM5YS2g",
     "created_at": "2026-03-18T12:31:32.889029+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0030",
+    "equipment_name": "Banco de Hiperextensión / Silla Romana",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0030_banco-hiperextension_vista-01.jpg"
+    ]
   },
   {
     "id": "1423",
@@ -126750,7 +128284,12 @@
     "media_id": "jV65tKx",
     "created_at": "2026-03-18T12:31:32.889382+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0688",
@@ -128638,7 +130177,12 @@
     "media_id": "qEse6fe",
     "created_at": "2026-03-18T12:31:32.889694+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "1774",
@@ -129655,7 +131199,12 @@
     "media_id": "wpbD28t",
     "created_at": "2026-03-18T12:31:32.889848+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0721",
@@ -130068,7 +131617,12 @@
     "media_id": "MUic5zN",
     "created_at": "2026-03-18T12:31:32.889919+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3645",
@@ -133120,7 +134674,13 @@
     "media_id": "MzNnwx9",
     "created_at": "2026-03-18T12:31:32.890379+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0747",
@@ -133253,7 +134813,13 @@
     "media_id": "Gpn4ADc",
     "created_at": "2026-03-18T12:31:32.890397+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0748",
@@ -133376,7 +134942,13 @@
     "media_id": "trqKQv2",
     "created_at": "2026-03-18T12:31:32.890414+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0749",
@@ -133489,7 +135061,13 @@
     "media_id": "1bQkKZK",
     "created_at": "2026-03-18T12:31:32.890432+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1359",
@@ -133612,7 +135190,13 @@
     "media_id": "ZX9UZmj",
     "created_at": "2026-03-18T12:31:32.890452+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0750",
@@ -133736,7 +135320,13 @@
     "media_id": "Gu2rNJd",
     "created_at": "2026-03-18T12:31:32.89047+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0751",
@@ -133839,7 +135429,13 @@
     "media_id": "WcHl7ru",
     "created_at": "2026-03-18T12:31:32.890488+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0752",
@@ -133963,7 +135559,13 @@
     "media_id": "UfePqpx",
     "created_at": "2026-03-18T12:31:32.890506+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0753",
@@ -134076,7 +135678,13 @@
     "media_id": "ETZfAbZ",
     "created_at": "2026-03-18T12:31:32.890524+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0754",
@@ -134189,7 +135797,13 @@
     "media_id": "MY9P1WA",
     "created_at": "2026-03-18T12:31:32.890541+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1433",
@@ -134334,7 +135948,13 @@
     "media_id": "lFhb2Rw",
     "created_at": "2026-03-18T12:31:32.89056+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "3281",
@@ -134478,7 +136098,13 @@
     "media_id": "NNoHCEA",
     "created_at": "2026-03-18T12:31:32.890579+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0755",
@@ -134751,7 +136377,13 @@
     "media_id": "CqhoytW",
     "created_at": "2026-03-18T12:31:32.890615+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0757",
@@ -134864,7 +136496,13 @@
     "media_id": "5v7KYld",
     "created_at": "2026-03-18T12:31:32.890633+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0758",
@@ -134987,7 +136625,13 @@
     "media_id": "78VqWQK",
     "created_at": "2026-03-18T12:31:32.890652+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0759",
@@ -135110,7 +136754,13 @@
     "media_id": "ayAHcEm",
     "created_at": "2026-03-18T12:31:32.89067+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0760",
@@ -135405,7 +137055,13 @@
     "media_id": "RGLscZM",
     "created_at": "2026-03-18T12:31:32.890708+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1683",
@@ -136022,7 +137678,13 @@
     "media_id": "JGKowMS",
     "created_at": "2026-03-18T12:31:32.890798+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1360",
@@ -136145,7 +137807,13 @@
     "media_id": "Q4DSJPC",
     "created_at": "2026-03-18T12:31:32.890816+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1393",
@@ -136268,7 +137936,13 @@
     "media_id": "9GXrTE6",
     "created_at": "2026-03-18T12:31:32.890833+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0762",
@@ -136372,7 +138046,13 @@
     "media_id": "nFUwqG6",
     "created_at": "2026-03-18T12:31:32.89085+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0763",
@@ -136494,7 +138174,13 @@
     "media_id": "ywaNfuh",
     "created_at": "2026-03-18T12:31:32.890867+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1394",
@@ -136616,7 +138302,13 @@
     "media_id": "Lsqrgh4",
     "created_at": "2026-03-18T12:31:32.890887+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1361",
@@ -136739,7 +138431,13 @@
     "media_id": "aaxA3cm",
     "created_at": "2026-03-18T12:31:32.890908+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0764",
@@ -136872,7 +138570,13 @@
     "media_id": "zK8Fu1W",
     "created_at": "2026-03-18T12:31:32.890927+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1395",
@@ -136974,7 +138678,13 @@
     "media_id": "0S75mYG",
     "created_at": "2026-03-18T12:31:32.890945+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0765",
@@ -137097,7 +138807,13 @@
     "media_id": "xUwnBMT",
     "created_at": "2026-03-18T12:31:32.890963+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1426",
@@ -137210,7 +138926,13 @@
     "media_id": "B6dAO1t",
     "created_at": "2026-03-18T12:31:32.890981+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0766",
@@ -137323,7 +139045,13 @@
     "media_id": "903mzG8",
     "created_at": "2026-03-18T12:31:32.891+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0767",
@@ -137435,7 +139163,13 @@
     "media_id": "OUQ0ZyW",
     "created_at": "2026-03-18T12:31:32.891022+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0768",
@@ -137548,7 +139282,13 @@
     "media_id": "wWFspEi",
     "created_at": "2026-03-18T12:31:32.89104+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0769",
@@ -137672,7 +139412,13 @@
     "media_id": "HsjbB1z",
     "created_at": "2026-03-18T12:31:32.89106+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0770",
@@ -137935,7 +139681,13 @@
     "media_id": "hfmQ0Tz",
     "created_at": "2026-03-18T12:31:32.891104+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0772",
@@ -138078,7 +139830,13 @@
     "media_id": "ht8xDrP",
     "created_at": "2026-03-18T12:31:32.891124+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0773",
@@ -138191,7 +139949,13 @@
     "media_id": "6MaEjVA",
     "created_at": "2026-03-18T12:31:32.891142+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0774",
@@ -138304,7 +140068,13 @@
     "media_id": "jjUPrze",
     "created_at": "2026-03-18T12:31:32.891162+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "3142",
@@ -138428,7 +140198,13 @@
     "media_id": "dzz6BiV",
     "created_at": "2026-03-18T12:31:32.891183+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1396",
@@ -138561,7 +140337,13 @@
     "media_id": "Y4QlY8z",
     "created_at": "2026-03-18T12:31:32.891203+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0775",
@@ -138674,7 +140456,13 @@
     "media_id": "1DN3iz4",
     "created_at": "2026-03-18T12:31:32.891221+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1308",
@@ -138797,7 +140585,13 @@
     "media_id": "zoOvPcx",
     "created_at": "2026-03-18T12:31:32.891239+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "1309",
@@ -138920,7 +140714,13 @@
     "media_id": "wi2H9QX",
     "created_at": "2026-03-18T12:31:32.891256+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0002",
+    "equipment_name": "Máquina Smith y Rack de Sentadillas",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0002_maquina-smith_vista-02.jpg"
+    ]
   },
   {
     "id": "0776",
@@ -142291,7 +144091,12 @@
     "media_id": "4GqRrAk",
     "created_at": "2026-03-18T12:31:32.90502+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0805",
@@ -142518,7 +144323,12 @@
     "media_id": "IaGQCrC",
     "created_at": "2026-03-18T12:31:32.905069+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0807",
@@ -146014,7 +147824,12 @@
     "media_id": "Gk1r408",
     "created_at": "2026-03-18T12:31:32.905744+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "3643",
@@ -147006,7 +148821,12 @@
     "media_id": "8urJS9b",
     "created_at": "2026-03-18T12:31:32.905931+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0030",
+    "equipment_name": "Banco de Hiperextensión / Silla Romana",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0030_banco-hiperextension_vista-01.jpg"
+    ]
   },
   {
     "id": "3641",
@@ -147767,7 +149587,12 @@
     "media_id": "HMzLjXx",
     "created_at": "2026-03-18T12:31:32.906074+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0045",
+    "equipment_name": "Estación de Calistenia y Bandas de Resistencia",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0045_calistenia-bandas_vista-01.jpg"
+    ]
   },
   {
     "id": "0844",

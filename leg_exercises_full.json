@@ -1,0 +1,4085 @@
+[
+  {
+    "id": "1512",
+    "name": "all fours squad stretch",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1368",
+    "name": "ankle circles",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankle stabilizers"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3214",
+    "name": "arms apart circular toe touch (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1708",
+    "name": "assisted lying calves stretch",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "1709",
+    "name": "assisted lying glutes stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "1710",
+    "name": "assisted lying gluteus and piriformis stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "0013",
+    "name": "assisted lying leg raise with throw down",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "quadriceps"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "0016",
+    "name": "assisted prone hamstring",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "1713",
+    "name": "assisted prone lying quads stretch",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "1714",
+    "name": "assisted prone rectus femoris stretch",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "quadriceps"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "1712",
+    "name": "assisted side lying adductor stretch",
+    "target": "adductors",
+    "primary_muscle": "adductors",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "3220",
+    "name": "astride jumps (male)",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3672",
+    "name": "back and forth step",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1314",
+    "name": "back extension on exercise ball",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1473",
+    "name": "backward jump",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0020",
+    "name": "balance board",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "calves",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0980",
+    "name": "band bent-over hip extension",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1408",
+    "name": "band hip lift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0979",
+    "name": "band horizontal pallof press",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0984",
+    "name": "band lying hip internal rotation",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0987",
+    "name": "band one arm single leg split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0991",
+    "name": "band pull through",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0996",
+    "name": "band seated hip internal rotation",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0999",
+    "name": "band single leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1000",
+    "name": "band single leg reverse calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1001",
+    "name": "band single leg split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1004",
+    "name": "band squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1003",
+    "name": "band squat row",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1008",
+    "name": "band step-up",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1009",
+    "name": "band stiff leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1023",
+    "name": "band straight back stiff leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1010",
+    "name": "band straight leg deadlift",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1369",
+    "name": "band two legs calf raise - (band under both legs) v. 2",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1015",
+    "name": "band vertical pallof press",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0024",
+    "name": "barbell bench front squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0026",
+    "name": "barbell bench squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0028",
+    "name": "barbell clean and press",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes",
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0029",
+    "name": "barbell clean-grip front squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0032",
+    "name": "barbell deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1370",
+    "name": "barbell floor calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0039",
+    "name": "barbell front chest squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0042",
+    "name": "barbell front squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0043",
+    "name": "barbell full squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1461",
+    "name": "barbell full squat (back pov)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1462",
+    "name": "barbell full squat (side pov)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1545",
+    "name": "barbell full zercher squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1409",
+    "name": "barbell glute bridge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3562",
+    "name": "barbell glute bridge two legs on bench (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0044",
+    "name": "barbell good morning",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0046",
+    "name": "barbell hack squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1436",
+    "name": "barbell high bar squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0051",
+    "name": "barbell jefferson squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0053",
+    "name": "barbell jump squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1410",
+    "name": "barbell lateral lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1435",
+    "name": "barbell low bar squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0054",
+    "name": "barbell lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0058",
+    "name": "barbell lying lifting (on hip)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0063",
+    "name": "barbell narrow stance squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0066",
+    "name": "barbell one arm side deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0068",
+    "name": "barbell one leg squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0069",
+    "name": "barbell overhead squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0074",
+    "name": "barbell rack pull",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0078",
+    "name": "barbell rear lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0077",
+    "name": "barbell rear lunge v. 2",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0085",
+    "name": "barbell romanian deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0088",
+    "name": "barbell seated calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1371",
+    "name": "barbell seated calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0090",
+    "name": "barbell seated good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0098",
+    "name": "barbell side split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0097",
+    "name": "barbell side split squat v. 2",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1756",
+    "name": "barbell single leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0099",
+    "name": "barbell single leg split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "2800",
+    "name": "barbell sitted alternate leg raise (female)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "quadriceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0101",
+    "name": "barbell speed squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "2810",
+    "name": "barbell split squat v. 2",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0102",
+    "name": "barbell squat (on knees)",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "2798",
+    "name": "barbell squat jump step rear lunge",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1372",
+    "name": "barbell standing calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0108",
+    "name": "barbell standing leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0111",
+    "name": "barbell standing rocking leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0114",
+    "name": "barbell step-up",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0115",
+    "name": "barbell stiff leg good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0116",
+    "name": "barbell straight leg deadlift",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0117",
+    "name": "barbell sumo deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3305",
+    "name": "barbell thruster",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0124",
+    "name": "barbell wide squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0127",
+    "name": "barbell zercher squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3212",
+    "name": "basic toe touch (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0130",
+    "name": "bench hip extension",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3639",
+    "name": "bent knee lying twist (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "obliques",
+      "hip flexors"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3543",
+    "name": "bodyweight drop jump squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1373",
+    "name": "bodyweight standing calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1374",
+    "name": "box jump down with one leg stabilization",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2466",
+    "name": "bridge - mountain climber (cross body)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps",
+      "hamstrings",
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1160",
+    "name": "burpee",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1494",
+    "name": "butterfly yoga pose",
+    "target": "adductors",
+    "primary_muscle": "adductors",
+    "secondary_muscles": [
+      "hamstrings",
+      "groin"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3235",
+    "name": "cable assisted inverse leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "calves"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0157",
+    "name": "cable deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0168",
+    "name": "cable hip adduction",
+    "target": "adductors",
+    "primary_muscle": "adductors",
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0196",
+    "name": "cable pull through (with rope)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1375",
+    "name": "cable standing calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0228",
+    "name": "cable standing hip extension",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1376",
+    "name": "cable standing one leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1407",
+    "name": "calf push stretch with hands against wall",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1377",
+    "name": "calf stretch with hands against wall",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1378",
+    "name": "calf stretch with rope",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "1548",
+    "name": "chair leg extended stretch",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0257",
+    "name": "circles knee stretch",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3769",
+    "name": "curtsey squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2331",
+    "name": "cycle cross trainer",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0284",
+    "name": "donkey calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0291",
+    "name": "dumbbell bench squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1201",
+    "name": "dumbbell burpee",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "triceps",
+      "core"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0295",
+    "name": "dumbbell clean",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3635",
+    "name": "dumbbell contralateral forward lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0300",
+    "name": "dumbbell deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1760",
+    "name": "dumbbell goblet squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0336",
+    "name": "dumbbell lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1658",
+    "name": "dumbbell lunge with bicep curl",
+    "target": "biceps",
+    "primary_muscle": "biceps",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0339",
+    "name": "dumbbell lying femoral",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3888",
+    "name": "dumbbell one arm snatch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "core"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0371",
+    "name": "dumbbell plyo squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0381",
+    "name": "dumbbell rear lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1459",
+    "name": "dumbbell romanian deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1379",
+    "name": "dumbbell seated calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0400",
+    "name": "dumbbell seated one leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1380",
+    "name": "dumbbell seated one leg calf raise - hammer grip",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1381",
+    "name": "dumbbell seated one leg calf raise - palm up",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0409",
+    "name": "dumbbell single leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1757",
+    "name": "dumbbell single leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2805",
+    "name": "dumbbell single leg deadlift with stepbox support",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0410",
+    "name": "dumbbell single leg split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0411",
+    "name": "dumbbell single leg squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0413",
+    "name": "dumbbell squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0417",
+    "name": "dumbbell standing calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1684",
+    "name": "dumbbell step up single leg balance with bicep curl",
+    "target": "biceps",
+    "primary_muscle": "biceps",
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0431",
+    "name": "dumbbell step-up",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2796",
+    "name": "dumbbell step-up lunge",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2812",
+    "name": "dumbbell step-up split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0432",
+    "name": "dumbbell stiff leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0434",
+    "name": "dumbbell straight leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2808",
+    "name": "dumbbell sumo pull through",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "core"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2803",
+    "name": "dumbbell supported squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1333",
+    "name": "exercise ball back extension with arms extended",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1334",
+    "name": "exercise ball back extension with hands behind head",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1335",
+    "name": "exercise ball back extension with knees off ground",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1336",
+    "name": "exercise ball back extension with rotation",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1559",
+    "name": "exercise ball hip flexor stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1341",
+    "name": "exercise ball lower back stretch (pyramid)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1382",
+    "name": "exercise ball on the wall calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3241",
+    "name": "exercise ball on the wall calf raise (tennis ball between ankles)",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3240",
+    "name": "exercise ball on the wall calf raise (tennis ball between knees)",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1416",
+    "name": "exercise ball one leg prone lower body rotation",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "core"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1417",
+    "name": "exercise ball one legged diagonal kick hamstring curl",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1343",
+    "name": "exercise ball prone leg raise",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "abdominals",
+      "glutes"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1560",
+    "name": "exercise ball seated hamstring stretch",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "2133",
+    "name": "farmers walk",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "calves",
+      "forearms",
+      "core"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0457",
+    "name": "flexion leg sit up (straight arm)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0459",
+    "name": "flutter kicks",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower abs"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1472",
+    "name": "forward jump",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "calves",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3470",
+    "name": "forward lunge (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3194",
+    "name": "frankenstein squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3561",
+    "name": "glute bridge march",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3523",
+    "name": "glute bridge two legs on bench (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3193",
+    "name": "glute-ham raise",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0469",
+    "name": "groin crunch",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "inner thighs"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1383",
+    "name": "hack calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "1384",
+    "name": "hack one leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "3221",
+    "name": "half knee bends (male)",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1511",
+    "name": "hamstring stretch",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3218",
+    "name": "hands clasped circular toe touch (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3215",
+    "name": "hands reversed clasped circular toe touch (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3636",
+    "name": "high knee against wall",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0484",
+    "name": "hip raise (bent knee)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1418",
+    "name": "hug keens to chest",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0489",
+    "name": "hyperextension",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0488",
+    "name": "hyperextension (on bench)",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1471",
+    "name": "inchworm",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3698",
+    "name": "inchworm v. 2",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1564",
+    "name": "intermediate hip flexor and quad stretch",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "0496",
+    "name": "inverse leg curl (bench support)",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2400",
+    "name": "inverse leg curl (on pull-up cable machine)",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1419",
+    "name": "iron cross stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0501",
+    "name": "jack burpee",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "triceps",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3224",
+    "name": "jack jump (male)",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2612",
+    "name": "jump rope",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "calves",
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "0514",
+    "name": "jump squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0513",
+    "name": "jump squat v. 2",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0530",
+    "name": "kettlebell double windmill",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "hamstrings"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0533",
+    "name": "kettlebell front squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0534",
+    "name": "kettlebell goblet squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0535",
+    "name": "kettlebell hang clean",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0536",
+    "name": "kettlebell lunge pass through",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0544",
+    "name": "kettlebell pistol squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0548",
+    "name": "kettlebell sumo high pull",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0549",
+    "name": "kettlebell swing",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0550",
+    "name": "kettlebell thruster",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes",
+      "core"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0551",
+    "name": "kettlebell turkish get up (squat style)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0555",
+    "name": "kick out sit",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1420",
+    "name": "kneeling jump squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0562",
+    "name": "landmine 180",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "quadriceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1576",
+    "name": "leg up hamstring stretch",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2287",
+    "name": "lever alternate leg press",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0573",
+    "name": "lever back extension",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2289",
+    "name": "lever calf press",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0578",
+    "name": "lever deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1253",
+    "name": "lever donkey calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2286",
+    "name": "lever hip extension v. 2",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2611",
+    "name": "lever horizontal one leg press",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0582",
+    "name": "lever kneeling leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0585",
+    "name": "lever leg extension",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0586",
+    "name": "lever lying leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "calves"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "3195",
+    "name": "lever lying two-one leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0593",
+    "name": "lever reverse hyperextension",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2315",
+    "name": "lever rotary calf",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "soleus",
+      "ankle stabilizers"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2335",
+    "name": "lever seated calf press",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "soleus",
+      "hamstrings"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0594",
+    "name": "lever seated calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "soleus",
+      "ankle stabilizers"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "3759",
+    "name": "lever seated good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0597",
+    "name": "lever seated hip abduction",
+    "target": "abductors",
+    "primary_muscle": "abductors",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0598",
+    "name": "lever seated hip adduction",
+    "target": "adductors",
+    "primary_muscle": "adductors",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0599",
+    "name": "lever seated leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "calves"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1385",
+    "name": "lever seated squat calf raise on leg press machine",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0605",
+    "name": "lever standing calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "soleus",
+      "ankle stabilizers"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "3013",
+    "name": "low glute bridge on floor",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1352",
+    "name": "lower back curl",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3582",
+    "name": "lunge with jump",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1688",
+    "name": "lunge with twist",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0613",
+    "name": "lying (side) quads stretch",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0624",
+    "name": "march sit (wall)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0628",
+    "name": "monster walk",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1386",
+    "name": "one leg donkey calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1387",
+    "name": "one leg floor calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1476",
+    "name": "one leg squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0642",
+    "name": "outside leg kick push-up",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1422",
+    "name": "pelvic tilt into bridge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1388",
+    "name": "peroneals stretch",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "3662",
+    "name": "pike-to-cobra push-up",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "core",
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1687",
+    "name": "posterior step to overhead reach",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "quadriceps",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1389",
+    "name": "posterior tibialis stretch",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "3119",
+    "name": "potty squat",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3132",
+    "name": "potty squat with support",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0648",
+    "name": "power clean",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3665",
+    "name": "power point plank",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "triceps",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3638",
+    "name": "push to run",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0661",
+    "name": "push-up inside leg kick",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3533",
+    "name": "quads",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3552",
+    "name": "quick feet v. 2",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "calves",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0668",
+    "name": "rear decline bridge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1582",
+    "name": "reclining big toe pose with rope",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "calves",
+      "glutes"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "3236",
+    "name": "resistance band hip thrusts on knees (female)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "resistance band"
+  },
+  {
+    "id": "3007",
+    "name": "resistance band leg extension",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "resistance band"
+  },
+  {
+    "id": "3006",
+    "name": "resistance band seated hip abduction",
+    "target": "abductors",
+    "primary_muscle": "abductors",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "resistance band"
+  },
+  {
+    "id": "0675",
+    "name": "reverse hyper extension (on stability ball)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1423",
+    "name": "reverse hyper on flat bench",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3663",
+    "name": "reverse plank with leg lift",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2571",
+    "name": "rocking frog stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2208",
+    "name": "roller back stretch",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "roller"
+  },
+  {
+    "id": "2205",
+    "name": "roller hip lat stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "roller"
+  },
+  {
+    "id": "2202",
+    "name": "roller hip stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "roller"
+  },
+  {
+    "id": "0685",
+    "name": "run",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0684",
+    "name": "run (equipment)",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1585",
+    "name": "runners stretch",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "calves",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3219",
+    "name": "scissor jumps (male)",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1390",
+    "name": "seated calf stretch (male)",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1424",
+    "name": "seated glute stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0690",
+    "name": "seated lower back stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2567",
+    "name": "seated piriformis stretch",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1587",
+    "name": "seated wide angle pose sequence",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0697",
+    "name": "self assisted inverse leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1766",
+    "name": "self assisted inverse leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0696",
+    "name": "self assisted inverse leg curl (on floor)",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3222",
+    "name": "semi squat jump (male)",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3656",
+    "name": "short stride run",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1774",
+    "name": "side bridge hip abduction",
+    "target": "abductors",
+    "primary_muscle": "abductors",
+    "secondary_muscles": [
+      "glutes",
+      "obliques"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0705",
+    "name": "side bridge v. 2",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0710",
+    "name": "side hip abduction",
+    "target": "abductors",
+    "primary_muscle": "abductors",
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1358",
+    "name": "side lying floor stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3667",
+    "name": "side lying hip adduction (male)",
+    "target": "adductors",
+    "primary_muscle": "adductors",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1775",
+    "name": "side plank hip adduction",
+    "target": "adductors",
+    "primary_muscle": "adductors",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3645",
+    "name": "single leg bridge with outstretched leg",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0727",
+    "name": "single leg calf raise (on a dumbbell)",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0730",
+    "name": "single leg platform slide",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1759",
+    "name": "single leg squat (pistol) male",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1489",
+    "name": "sissy squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "calves",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3361",
+    "name": "skater hops",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3671",
+    "name": "ski step",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1425",
+    "name": "sled 45 degrees one leg press",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0738",
+    "name": "sled 45в° calf press",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0739",
+    "name": "sled 45в° leg press",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "1464",
+    "name": "sled 45в° leg press (back pov)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "1463",
+    "name": "sled 45° leg press (side pov)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0740",
+    "name": "sled 45в° leg wide press",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "1391",
+    "name": "sled calf press on leg press",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0741",
+    "name": "sled closer hack squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0742",
+    "name": "sled forward angled calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0743",
+    "name": "sled hack squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "2334",
+    "name": "sled lying calf press",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0744",
+    "name": "sled lying squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "1392",
+    "name": "sled one leg calf press on leg press",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "sled machine"
+  },
+  {
+    "id": "0749",
+    "name": "smith bent knee good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0750",
+    "name": "smith chair squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0752",
+    "name": "smith deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1433",
+    "name": "smith front squat (clean grip)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "3281",
+    "name": "smith full squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0755",
+    "name": "smith hack squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0756",
+    "name": "smith hip raise",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0760",
+    "name": "smith leg press",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1434",
+    "name": "smith low bar squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1393",
+    "name": "smith one leg floor calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0763",
+    "name": "smith reverse calf raises",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1394",
+    "name": "smith reverse calf raises",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1395",
+    "name": "smith seated one leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0768",
+    "name": "smith single leg split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0769",
+    "name": "smith sprint lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0770",
+    "name": "smith squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0773",
+    "name": "smith standing leg calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "3142",
+    "name": "smith sumo squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1396",
+    "name": "smith toe raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "shins"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0776",
+    "name": "snatch pull",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1362",
+    "name": "sphinx",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0778",
+    "name": "spider crawl push up",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "core",
+      "chest",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1363",
+    "name": "spine stretch",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2368",
+    "name": "split squats",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0786",
+    "name": "squat jerk",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1705",
+    "name": "squat on bosu ball",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "bosu ball"
+  },
+  {
+    "id": "1685",
+    "name": "squat to overhead reach",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1686",
+    "name": "squat to overhead reach with twist",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1490",
+    "name": "standing calf raise (on a staircase)",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1397",
+    "name": "standing calves",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1398",
+    "name": "standing calves calf stretch",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1599",
+    "name": "standing hamstring and calf stretch with strap",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "calves"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "0795",
+    "name": "standing single leg curl",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3223",
+    "name": "star jump (male)",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2138",
+    "name": "stationary bike run v. 3",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "stationary bike"
+  },
+  {
+    "id": "0798",
+    "name": "stationary bike walk",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1427",
+    "name": "straight leg outer hip abductor",
+    "target": "abductors",
+    "primary_muscle": "abductors",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0809",
+    "name": "suspended split squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3433",
+    "name": "swimmer kicks v. 2 (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2459",
+    "name": "tire flip",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "core"
+    ],
+    "equipment": "tire"
+  },
+  {
+    "id": "0811",
+    "name": "trap bar deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "trap bar"
+  },
+  {
+    "id": "1466",
+    "name": "twist hip lift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "obliques",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3231",
+    "name": "two toe touch (male)",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2141",
+    "name": "walk elliptical cross trainer",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "elliptical machine"
+  },
+  {
+    "id": "3655",
+    "name": "walking high knees lunge",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1460",
+    "name": "walking lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3666",
+    "name": "walking on incline treadmill",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2311",
+    "name": "walking on stepmill",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "stepmill machine"
+  },
+  {
+    "id": "3643",
+    "name": "weighted cossack squats (male)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0833",
+    "name": "weighted donkey calf raise",
+    "target": "calves",
+    "primary_muscle": "calves",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0835",
+    "name": "weighted hyperextension (on stability ball)",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3644",
+    "name": "weighted lunge with swing",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0851",
+    "name": "weighted sissy squat",
+    "target": "quads",
+    "primary_muscle": "quads",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0852",
+    "name": "weighted squat",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3642",
+    "name": "weighted stretch lunge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3637",
+    "name": "wheel run",
+    "target": "cardiovascular system",
+    "primary_muscle": "cardiovascular system",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0858",
+    "name": "wind sprints",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1604",
+    "name": "world greatest stretch",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight"
+  }
+]

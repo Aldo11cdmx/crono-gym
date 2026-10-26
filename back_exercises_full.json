@@ -1,0 +1,4460 @@
+[
+  {
+    "id": "0001",
+    "name": "3/4 sit-up",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0007",
+    "name": "alternate lateral pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "3293",
+    "name": "archer pull up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2355",
+    "name": "arm slingers hanging bent knee legs",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2333",
+    "name": "arm slingers hanging straight legs",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3204",
+    "name": "arms overhead full sit-up (male)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0010",
+    "name": "assisted hanging knee raise with throw down",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "0014",
+    "name": "assisted motion russian twist",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "medicine ball"
+  },
+  {
+    "id": "0015",
+    "name": "assisted parallel close grip pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0016",
+    "name": "assisted prone hamstring",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "assisted"
+  },
+  {
+    "id": "0017",
+    "name": "assisted pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1431",
+    "name": "assisted standing chin-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1432",
+    "name": "assisted standing pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1314",
+    "name": "back extension on exercise ball",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "3297",
+    "name": "back lever",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1405",
+    "name": "back pec stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0970",
+    "name": "band assisted pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0971",
+    "name": "band assisted wheel rollerout",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0980",
+    "name": "band bent-over hip extension",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0974",
+    "name": "band close-grip pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "3117",
+    "name": "band fixed back close grip pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "3116",
+    "name": "band fixed back underhand pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0977",
+    "name": "band front lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "upper back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0978",
+    "name": "band front raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0983",
+    "name": "band kneeling one arm pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0988",
+    "name": "band one arm standing low row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0990",
+    "name": "band one arm twisting seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0991",
+    "name": "band pull through",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0993",
+    "name": "band reverse fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "upper back",
+      "trapezius"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "0997",
+    "name": "band shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1018",
+    "name": "band shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1003",
+    "name": "band squat row",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1022",
+    "name": "band standing rear delt row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1009",
+    "name": "band stiff leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1023",
+    "name": "band straight back stiff leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1010",
+    "name": "band straight leg deadlift",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1012",
+    "name": "band twisting overhead press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1013",
+    "name": "band underhand pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1017",
+    "name": "band y-raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "band"
+  },
+  {
+    "id": "1316",
+    "name": "barbell bent arm pullover",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "chest"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0027",
+    "name": "barbell bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0032",
+    "name": "barbell deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0034",
+    "name": "barbell decline bent arm pullover",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "chest"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0037",
+    "name": "barbell decline wide-grip pullover",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "chest"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1409",
+    "name": "barbell glute bridge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0044",
+    "name": "barbell good morning",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0049",
+    "name": "barbell incline row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0050",
+    "name": "barbell incline shoulder raise",
+    "target": "serratus anterior",
+    "primary_muscle": "serratus anterior",
+    "secondary_muscles": [
+      "deltoids",
+      "trapezius"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0064",
+    "name": "barbell one arm bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0066",
+    "name": "barbell one arm side deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0067",
+    "name": "barbell one arm snatch",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "forearms",
+      "core"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3017",
+    "name": "barbell pendlay row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0073",
+    "name": "barbell pullover",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "chest",
+      "triceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0022",
+    "name": "barbell pullover to press",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "chest",
+      "shoulders"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0074",
+    "name": "barbell rack pull",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0075",
+    "name": "barbell rear delt raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0076",
+    "name": "barbell rear delt row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0118",
+    "name": "barbell reverse grip bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1317",
+    "name": "barbell reverse grip incline bench row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0084",
+    "name": "barbell rollerout",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0085",
+    "name": "barbell romanian deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0086",
+    "name": "barbell seated behind head military press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0087",
+    "name": "barbell seated bradford rocky press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0090",
+    "name": "barbell seated good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0091",
+    "name": "barbell seated overhead press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0094",
+    "name": "barbell seated twist",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0095",
+    "name": "barbell shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0096",
+    "name": "barbell side bent v. 2",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1756",
+    "name": "barbell single leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0103",
+    "name": "barbell standing ab rollerout",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0105",
+    "name": "barbell standing bradford press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1456",
+    "name": "barbell standing close grip military press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0107",
+    "name": "barbell standing front raise over head",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0112",
+    "name": "barbell standing twist",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1457",
+    "name": "barbell standing wide military press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0115",
+    "name": "barbell stiff leg good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0116",
+    "name": "barbell straight leg deadlift",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0117",
+    "name": "barbell sumo deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0120",
+    "name": "barbell upright row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0119",
+    "name": "barbell upright row v. 2",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0121",
+    "name": "barbell upright row v. 3",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0123",
+    "name": "barbell wide-grip upright row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3019",
+    "name": "bench pull-ups",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3168",
+    "name": "bodyweight squatting row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3167",
+    "name": "bodyweight squatting row (with towel)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3156",
+    "name": "bodyweight standing close-grip one arm row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3158",
+    "name": "bodyweight standing close-grip row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3162",
+    "name": "bodyweight standing one arm row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3161",
+    "name": "bodyweight standing one arm row (with towel)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3166",
+    "name": "bodyweight standing row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3165",
+    "name": "bodyweight standing row (with towel)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0870",
+    "name": "butt-ups",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0148",
+    "name": "cable alternate shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0150",
+    "name": "cable bar lateral pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0153",
+    "name": "cable cross-over lateral pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0154",
+    "name": "cable cross-over revers fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "rhomboids",
+      "trapezius"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0157",
+    "name": "cable deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0159",
+    "name": "cable decline seated wide-grip row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0160",
+    "name": "cable floor seated wide-grip row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0164",
+    "name": "cable front shoulder raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0167",
+    "name": "cable high row (kneeling)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1318",
+    "name": "cable incline bench row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0172",
+    "name": "cable incline pushdown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "3697",
+    "name": "cable kneeling rear delt row (with rope) (male)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "2330",
+    "name": "cable lat pulldown full range of motion",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0177",
+    "name": "cable lateral pulldown (with rope attachment)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "2616",
+    "name": "cable lateral pulldown with v-bar",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0178",
+    "name": "cable lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "triceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0180",
+    "name": "cable low seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0184",
+    "name": "cable lying extension pullover (with rope attachment)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0189",
+    "name": "cable one arm bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0191",
+    "name": "cable one arm lateral bent-over",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "deltoids",
+      "trapezius"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0192",
+    "name": "cable one arm lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "triceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "3563",
+    "name": "cable one arm pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0193",
+    "name": "cable one arm straight back high row (kneeling)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1319",
+    "name": "cable palm rotational row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0196",
+    "name": "cable pull through (with rope)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0198",
+    "name": "cable pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0197",
+    "name": "cable pulldown (pro lat bar)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0199",
+    "name": "cable pushdown (straight arm) v. 2",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0202",
+    "name": "cable rear delt row (stirrups)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0203",
+    "name": "cable rear delt row (with rope)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0204",
+    "name": "cable rear drive",
+    "target": "triceps",
+    "primary_muscle": "triceps",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0205",
+    "name": "cable rear pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0208",
+    "name": "cable reverse-grip straight back seated high row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1320",
+    "name": "cable rope crossover seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1321",
+    "name": "cable rope elevated seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1322",
+    "name": "cable rope extension incline bench row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1323",
+    "name": "cable rope seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0211",
+    "name": "cable russian twists (on stability ball)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0213",
+    "name": "cable seated high row (v-bar)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0214",
+    "name": "cable seated one arm alternate row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0215",
+    "name": "cable seated rear lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0861",
+    "name": "cable seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0218",
+    "name": "cable seated wide-grip row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0219",
+    "name": "cable shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0220",
+    "name": "cable shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1717",
+    "name": "cable squat row (with rope attachment)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0225",
+    "name": "cable standing cross-over high reverse fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0230",
+    "name": "cable standing lift",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0233",
+    "name": "cable standing rear delt row (with rope)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0234",
+    "name": "cable standing row (v-bar)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0235",
+    "name": "cable standing shoulder external rotation",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "rotator cuff",
+      "trapezius"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0236",
+    "name": "cable standing twist row (v-bar)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0238",
+    "name": "cable straight arm pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0237",
+    "name": "cable straight arm pulldown (with rope)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0239",
+    "name": "cable straight back seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0240",
+    "name": "cable supine reverse fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "2464",
+    "name": "cable thibaudeau kayak row",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0862",
+    "name": "cable twist (up-down)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0244",
+    "name": "cable twisting pull",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0245",
+    "name": "cable underhand pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1324",
+    "name": "cable upper row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0246",
+    "name": "cable upright row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "1325",
+    "name": "cable wide grip rear pulldown behind neck",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "0248",
+    "name": "cambered bar lying row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1326",
+    "name": "chin-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0253",
+    "name": "chin-ups (narrow parallel grip)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1327",
+    "name": "close grip chin-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0260",
+    "name": "cocoons",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0276",
+    "name": "dead bug",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0282",
+    "name": "decline sit-up",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0288",
+    "name": "dumbbell around pullover",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "triceps",
+      "latissimus dorsi"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0293",
+    "name": "dumbbell bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0299",
+    "name": "dumbbell cuban press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2136",
+    "name": "dumbbell cuban press v. 2",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0300",
+    "name": "dumbbell deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0305",
+    "name": "dumbbell decline shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0304",
+    "name": "dumbbell decline shrug v. 2",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0310",
+    "name": "dumbbell front raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "biceps",
+      "trapezius"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0309",
+    "name": "dumbbell front raise v. 2",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0311",
+    "name": "dumbbell full can lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rotator cuff"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0323",
+    "name": "dumbbell incline one arm lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "triceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0325",
+    "name": "dumbbell incline raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "triceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0326",
+    "name": "dumbbell incline rear lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0327",
+    "name": "dumbbell incline row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0328",
+    "name": "dumbbell incline shoulder raise",
+    "target": "serratus anterior",
+    "primary_muscle": "serratus anterior",
+    "secondary_muscles": [
+      "deltoids",
+      "trapezius"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0329",
+    "name": "dumbbell incline shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3542",
+    "name": "dumbbell incline t-raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3541",
+    "name": "dumbbell incline y-raise",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "rear deltoids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1734",
+    "name": "dumbbell kickbacks on exercise ball",
+    "target": "triceps",
+    "primary_muscle": "triceps",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0334",
+    "name": "dumbbell lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0335",
+    "name": "dumbbell lateral to front raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2470",
+    "name": "dumbbell lying on floor rear delt raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0341",
+    "name": "dumbbell lying one arm deltoid rear",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0345",
+    "name": "dumbbell lying one arm rear lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1284",
+    "name": "dumbbell lying pullover on exercise ball",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders",
+      "back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1328",
+    "name": "dumbbell lying rear delt row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0348",
+    "name": "dumbbell lying rear lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0292",
+    "name": "dumbbell one arm bent-over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0355",
+    "name": "dumbbell one arm lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "triceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0356",
+    "name": "dumbbell one arm lateral raise with support",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rotator cuff"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1291",
+    "name": "dumbbell one arm pullover on exercise ball",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "triceps",
+      "latissimus dorsi",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0359",
+    "name": "dumbbell one arm reverse fly (with support)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0361",
+    "name": "dumbbell one arm shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0360",
+    "name": "dumbbell one arm shoulder press v. 2",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0363",
+    "name": "dumbbell one arm upright row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1329",
+    "name": "dumbbell palm rotational bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0375",
+    "name": "dumbbell pullover",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "latissimus dorsi",
+      "triceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1295",
+    "name": "dumbbell pullover on exercise ball",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "triceps",
+      "latissimus dorsi"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0376",
+    "name": "dumbbell raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2292",
+    "name": "dumbbell rear delt raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0377",
+    "name": "dumbbell rear delt row_shoulder",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0378",
+    "name": "dumbbell rear fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0380",
+    "name": "dumbbell rear lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0379",
+    "name": "dumbbell rear lateral raise (support head)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0383",
+    "name": "dumbbell reverse fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1330",
+    "name": "dumbbell reverse grip incline bench one arm row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1331",
+    "name": "dumbbell reverse grip incline bench two arm row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2327",
+    "name": "dumbbell reverse grip row (female)",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1459",
+    "name": "dumbbell romanian deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0386",
+    "name": "dumbbell rotation reverse fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0387",
+    "name": "dumbbell seated alternate front raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3546",
+    "name": "dumbbell seated alternate shoulder",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2317",
+    "name": "dumbbell seated bent arm lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1730",
+    "name": "dumbbell seated bent over alternate kickback",
+    "target": "triceps",
+    "primary_muscle": "triceps",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1737",
+    "name": "dumbbell seated bent over triceps extension",
+    "target": "triceps",
+    "primary_muscle": "triceps",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0392",
+    "name": "dumbbell seated front raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0396",
+    "name": "dumbbell seated lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0395",
+    "name": "dumbbell seated lateral raise v. 2",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "triceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0405",
+    "name": "dumbbell seated shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0404",
+    "name": "dumbbell seated shoulder press (parallel grip)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0406",
+    "name": "dumbbell shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0408",
+    "name": "dumbbell side lying one hand raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3664",
+    "name": "dumbbell side plank with rear fly",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "core"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "3548",
+    "name": "dumbbell single arm overhead carry",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "core"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1757",
+    "name": "dumbbell single leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "2805",
+    "name": "dumbbell single leg deadlift with stepbox support",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0415",
+    "name": "dumbbell standing alternate raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "forearms"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1740",
+    "name": "dumbbell standing bent over one arm triceps extension",
+    "target": "triceps",
+    "primary_muscle": "triceps",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1741",
+    "name": "dumbbell standing bent over two arm triceps extension",
+    "target": "triceps",
+    "primary_muscle": "triceps",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0419",
+    "name": "dumbbell standing front raise above head",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0426",
+    "name": "dumbbell standing overhead press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0432",
+    "name": "dumbbell stiff leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0433",
+    "name": "dumbbell straight arm pullover",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "latissimus dorsi",
+      "triceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0434",
+    "name": "dumbbell straight leg deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0437",
+    "name": "dumbbell upright row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1765",
+    "name": "dumbbell upright row (back pov)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "0864",
+    "name": "dumbbell upright shoulder external rotation",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "rotator cuff",
+      "trapezius"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1772",
+    "name": "elbow lift - reverse push-up",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3292",
+    "name": "elevator",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "trapezius"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1332",
+    "name": "exercise ball alternating arm ups",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "core"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1333",
+    "name": "exercise ball back extension with arms extended",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1334",
+    "name": "exercise ball back extension with hands behind head",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1335",
+    "name": "exercise ball back extension with knees off ground",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1336",
+    "name": "exercise ball back extension with rotation",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1338",
+    "name": "exercise ball hug",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1339",
+    "name": "exercise ball lat stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1341",
+    "name": "exercise ball lower back stretch (pyramid)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1342",
+    "name": "exercise ball lying side lat stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1343",
+    "name": "exercise ball prone leg raise",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "abdominals",
+      "glutes"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1560",
+    "name": "exercise ball seated hamstring stretch",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "3010",
+    "name": "ez bar lying bent arms pullover",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "chest"
+    ],
+    "equipment": "ez barbell"
+  },
+  {
+    "id": "1344",
+    "name": "ez bar reverse grip bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "ez barbell"
+  },
+  {
+    "id": "3296",
+    "name": "front lever",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "lats",
+      "shoulders",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3295",
+    "name": "front lever reps",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "core",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0466",
+    "name": "gironda sternum chin",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3193",
+    "name": "glute-ham raise",
+    "target": "hamstrings",
+    "primary_muscle": "hamstrings",
+    "secondary_muscles": [
+      "glutes",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1764",
+    "name": "hanging leg hip raise",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0489",
+    "name": "hyperextension",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0488",
+    "name": "hyperextension (on bench)",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0499",
+    "name": "inverted row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2300",
+    "name": "inverted row bent knees",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2298",
+    "name": "inverted row on bench",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0497",
+    "name": "inverted row v. 2",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0498",
+    "name": "inverted row with straps",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0508",
+    "name": "janda sit-up",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0518",
+    "name": "kettlebell alternating hang clean",
+    "target": "forearms",
+    "primary_muscle": "forearms",
+    "secondary_muscles": [
+      "shoulders",
+      "traps",
+      "core"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0521",
+    "name": "kettlebell alternating renegade row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "core",
+      "shoulders"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0522",
+    "name": "kettlebell alternating row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0523",
+    "name": "kettlebell arnold press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0529",
+    "name": "kettlebell double snatch",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "forearms",
+      "core"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0541",
+    "name": "kettlebell one arm row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0542",
+    "name": "kettlebell one arm snatch",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "forearms",
+      "core"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "1438",
+    "name": "kettlebell seated two arm military press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0548",
+    "name": "kettlebell sumo high pull",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0552",
+    "name": "kettlebell two arm clean",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "forearms"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0553",
+    "name": "kettlebell two arm military press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "1345",
+    "name": "kettlebell two arm row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "kettlebell"
+  },
+  {
+    "id": "0558",
+    "name": "kipping muscle up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "triceps",
+      "shoulders",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1346",
+    "name": "kneeling lat stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3418",
+    "name": "l-pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3237",
+    "name": "landmine lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0570",
+    "name": "leg pull in flat bench",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0571",
+    "name": "lever alternating narrow grip seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0572",
+    "name": "lever assisted chin-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0573",
+    "name": "lever back extension",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0574",
+    "name": "lever bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "3200",
+    "name": "lever bent-over row with v-bar",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0579",
+    "name": "lever front pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0580",
+    "name": "lever gripless shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1439",
+    "name": "lever gripless shrug v. 2",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0581",
+    "name": "lever high row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "rear deltoids"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0583",
+    "name": "lever kneeling twist",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0584",
+    "name": "lever lateral raise",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "upper back"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0588",
+    "name": "lever narrow grip seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0589",
+    "name": "lever one arm bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "1356",
+    "name": "lever one arm lateral high row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1347",
+    "name": "lever one arm lateral wide pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0590",
+    "name": "lever one arm shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2285",
+    "name": "lever pullover",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "2736",
+    "name": "lever reverse grip lateral pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1348",
+    "name": "lever reverse grip vertical row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0593",
+    "name": "lever reverse hyperextension",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1349",
+    "name": "lever reverse t-bar row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0596",
+    "name": "lever seated fly",
+    "target": "pectorals",
+    "primary_muscle": "pectorals",
+    "secondary_muscles": [
+      "deltoids",
+      "trapezius"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "3759",
+    "name": "lever seated good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0602",
+    "name": "lever seated reverse fly",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0601",
+    "name": "lever seated reverse fly (parallel grip)",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1350",
+    "name": "lever seated row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0604",
+    "name": "lever shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0606",
+    "name": "lever t bar row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1351",
+    "name": "lever t-bar reverse grip row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "1313",
+    "name": "lever unilateral row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0609",
+    "name": "london bridge",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "1352",
+    "name": "lower back curl",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2312",
+    "name": "lying elbow to knee",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1353",
+    "name": "medicine ball catch and overhead throw",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "core"
+    ],
+    "equipment": "medicine ball"
+  },
+  {
+    "id": "1354",
+    "name": "medicine ball overhead slam",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "core"
+    ],
+    "equipment": "medicine ball"
+  },
+  {
+    "id": "0627",
+    "name": "mixed grip chin-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0631",
+    "name": "muscle up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "triceps",
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1401",
+    "name": "muscle-up (on vertical bar)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "triceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1403",
+    "name": "neck side stretch",
+    "target": "levator scapulae",
+    "primary_muscle": "levator scapulae",
+    "secondary_muscles": [
+      "trapezius",
+      "sternocleidomastoid"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1355",
+    "name": "one arm against wall",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0638",
+    "name": "one arm chin-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0640",
+    "name": "one arm slam (with medicine ball)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "back"
+    ],
+    "equipment": "medicine ball"
+  },
+  {
+    "id": "1773",
+    "name": "one arm towel row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0641",
+    "name": "otis up",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3147",
+    "name": "pelvic tilt",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1707",
+    "name": "prone twist on stability ball",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "0651",
+    "name": "pull up (neutral grip)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0652",
+    "name": "pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0668",
+    "name": "rear decline bridge",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0669",
+    "name": "rear deltoid stretch",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0670",
+    "name": "rear pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3122",
+    "name": "resistance band seated shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "resistance band"
+  },
+  {
+    "id": "3144",
+    "name": "resistance band seated straight back row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "resistance band"
+  },
+  {
+    "id": "0673",
+    "name": "reverse grip machine lat pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "leverage machine"
+  },
+  {
+    "id": "0674",
+    "name": "reverse grip pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0675",
+    "name": "reverse hyper extension (on stability ball)",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "stability ball"
+  },
+  {
+    "id": "1423",
+    "name": "reverse hyper on flat bench",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0678",
+    "name": "rocky pull-up pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2208",
+    "name": "roller back stretch",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "roller"
+  },
+  {
+    "id": "2207",
+    "name": "roller side lat stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "roller"
+  },
+  {
+    "id": "0680",
+    "name": "rope climb",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "forearms",
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "rope"
+  },
+  {
+    "id": "3012",
+    "name": "scapula dips",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "rhomboids",
+      "deltoids"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0688",
+    "name": "scapular pull-up",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0690",
+    "name": "seated lower back stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1763",
+    "name": "shoulder grip pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1358",
+    "name": "side lying floor stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0716",
+    "name": "side push neck stretch",
+    "target": "levator scapulae",
+    "primary_muscle": "levator scapulae",
+    "secondary_muscles": [
+      "trapezius",
+      "sternocleidomastoid"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0720",
+    "name": "side-to-side chin",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3304",
+    "name": "skin the cat",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "core"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0746",
+    "name": "smith back shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0747",
+    "name": "smith behind neck press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0749",
+    "name": "smith bent knee good morning",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1359",
+    "name": "smith bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0752",
+    "name": "smith deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0759",
+    "name": "smith incline shoulder raises",
+    "target": "serratus anterior",
+    "primary_muscle": "serratus anterior",
+    "secondary_muscles": [
+      "deltoids",
+      "trapezius"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0761",
+    "name": "smith narrow row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "rear deltoids"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1360",
+    "name": "smith one arm row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0762",
+    "name": "smith rear delt row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "1361",
+    "name": "smith reverse grip bent over row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0765",
+    "name": "smith seated shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0766",
+    "name": "smith shoulder press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0767",
+    "name": "smith shrug",
+    "target": "traps",
+    "primary_muscle": "traps",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0772",
+    "name": "smith standing behind head military press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0774",
+    "name": "smith standing military press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0775",
+    "name": "smith upright row",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "traps",
+      "biceps"
+    ],
+    "equipment": "smith machine"
+  },
+  {
+    "id": "0777",
+    "name": "spell caster",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "dumbbell"
+  },
+  {
+    "id": "1362",
+    "name": "sphinx",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1363",
+    "name": "spine stretch",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2329",
+    "name": "spine twist",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "3669",
+    "name": "standing archer",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders",
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0788",
+    "name": "standing behind neck press",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell"
+  },
+  {
+    "id": "0794",
+    "name": "standing lateral stretch",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "shoulders",
+      "obliques"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1364",
+    "name": "standing pelvic tilt",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "abdominals"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0796",
+    "name": "standing wheel rollerout",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "lower back",
+      "shoulders"
+    ],
+    "equipment": "wheel roller"
+  },
+  {
+    "id": "0808",
+    "name": "suspended row",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "0811",
+    "name": "trap bar deadlift",
+    "target": "glutes",
+    "primary_muscle": "glutes",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "equipment": "trap bar"
+  },
+  {
+    "id": "0818",
+    "name": "twin handle parallel grip lat pulldown",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "equipment": "cable"
+  },
+  {
+    "id": "3231",
+    "name": "two toe touch (male)",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1365",
+    "name": "upper back stretch",
+    "target": "upper back",
+    "primary_muscle": "upper back",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1366",
+    "name": "upward facing dog",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "2987",
+    "name": "weighted close grip chin-up on dip cage",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3670",
+    "name": "weighted decline sit-up",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "2135",
+    "name": "weighted front plank",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "shoulders",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0866",
+    "name": "weighted hanging leg-hip raise",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0835",
+    "name": "weighted hyperextension (on stability ball)",
+    "target": "spine",
+    "primary_muscle": "spine",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3286",
+    "name": "weighted muscle up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "triceps",
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3312",
+    "name": "weighted muscle up (on bar)",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "triceps",
+      "shoulders",
+      "forearms"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "3290",
+    "name": "weighted one hand pull up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0840",
+    "name": "weighted overhead crunch (on stability ball)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0841",
+    "name": "weighted pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0844",
+    "name": "weighted round arm",
+    "target": "delts",
+    "primary_muscle": "delts",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0846",
+    "name": "weighted russian twist",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "2371",
+    "name": "weighted russian twist v. 2",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0849",
+    "name": "weighted seated twist (on stability ball)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0850",
+    "name": "weighted side bend (on stability ball)",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "obliques",
+      "lower back"
+    ],
+    "equipment": "weighted"
+  },
+  {
+    "id": "0857",
+    "name": "wheel rollerout",
+    "target": "abs",
+    "primary_muscle": "abs",
+    "secondary_muscles": [
+      "lower back"
+    ],
+    "equipment": "wheel roller"
+  },
+  {
+    "id": "1429",
+    "name": "wide grip pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  },
+  {
+    "id": "1367",
+    "name": "wide grip rear pull-up",
+    "target": "lats",
+    "primary_muscle": "lats",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight"
+  }
+]

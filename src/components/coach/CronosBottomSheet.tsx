@@ -241,7 +241,7 @@ export function CronosBottomSheet({
             conversation.
           */}
           {tab === "chat" ? (
-            <ChatTab key="chat" userId={userId} initialContext={initialContext} />
+            <ChatTab key="chat" userId={userId} initialContext={initialContext} onClose={onClose} />
           ) : (
             <div key="generate">
               <RoutineGeneratorWizard
@@ -273,9 +273,11 @@ export function CronosBottomSheet({
 function ChatTab({
   userId,
   initialContext,
+  onClose,
 }: {
   userId: string | null;
   initialContext: string | null;
+  onClose: () => void;
 }) {
   const { context, loading } = useCoachContext(userId);
   const gym = useGymSettings();
@@ -300,7 +302,13 @@ function ChatTab({
           {initialContext}
         </p>
       )}
-      <CoachChat context={context} gymSettings={gym} />
+      <CoachChat
+        userId={userId}
+        context={context}
+        gymSettings={gym}
+        fullScreen
+        onClose={onClose}
+      />
     </>
   );
 }

@@ -1,26 +1,18 @@
 /**
- * CoachChat.tsx — the conversation with the assistant.
+ * CoachChat.tsx — la conversación con el asistente, ahora en pantalla completa OLED.
  *
- * Three decisions shape this component, and each of them has a failure it is avoiding:
+ * Cuando `fullScreen` es cierto ocupa el 100% de ancho y alto sin bordes ni
+ * traslucidez que dejen ver la interfaz trasera: un panel negro denso
+ * (`bg-neutral-950`) con cero transparencia, header con `X` de cierre, título
+ * `"Cronos IA"` y una tira de chips de sugerencias justo sobre el campo de
+ * entrada. Todo el estilo sale de `src/design/tokens.ts`.
  *
- *  1. **The context is built here, from the same `CoachContext` the hub shows.** The
- *     model is told the same numbers the athlete is looking at, on purpose. A second
- *     projection would be a second place for the app to decide what it knows, and the
- *     two would drift.
+ * Las tres decisiones estructurales del componente original se mantienen:
+ *  1. El contexto se construye aquí desde el mismo `CoachContext` del hub.
+ *  2. Los fallos son mensajes en el transcripto, no toasts.
+ *  3. Una petición abortada conserva la respuesta parcial.
  *
- *  2. **Failures are messages in the transcript, not toasts.** A rate-limit notice that
- *     disappears after four seconds is not something an athlete can act on. Putting it
- *     in the scroll keeps the history of what the coach could and could not answer
- *     readable next to what it did. This is why `ChatMessage` carries
- *     `role: "error"`.
- *
- *  3. **An aborted request keeps the partial answer.** Stopping a stream that has
- *     already produced two sentences and throwing them away would punish the athlete
- *     for a change of mind; the text is still true.
- *
- * The transcript is saved to IndexedDB after every turn, not on unload. An unload
- * handler does not fire when the tab is killed, and mobile browsers kill tabs
- * constantly -- so the common case would be no save at all.
+ * El transcripto se guarda en IndexedDB después de cada turno, no al descargar.
  */
 
 import {
@@ -31,9 +23,9 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { AlertTriangle, Send, Square, Trash2 } from "lucide-react";
+import { AlertTriangle, Send, Square, Trash2, X } from "lucide-react";
 import { ACCENT, MOTION, RADIUS, SCRIM, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { GlassButton } from "@/components/ui";
 import { COACH_LABELS as T } from "@/lib/i18n";
 import { useAuthModal } from "@/context/AuthModalContext";
 import type { GymSettings } from "@/context/GymSettingsContext";
@@ -46,8 +38,8 @@ import {
 } from "@/lib/ai/coachAssistant";
 import { toAssistantContext, type CoachError, type ChatMessage } from "@/lib/ai/types";
 import { EXERCISE_TOOLS } from "@/lib/ai/tools";
-import { parseRoutinePayload, validateRoutine } from "@/lib/ai/routineGenerator";
-import type { GeneratedRoutine } from "@/lib/ai/routineGenerator";
+import { parseRoutinePayload, validateRoutine, type GeneratedRoutine } from "@/lib/ai/routineGenerator";
+import { saveGeneratedRoutine } from "@/lib/routines/saveGeneratedRoutine";
 import {
   chatDay,
   loadChat,
@@ -89,19 +81,30 @@ function selectTools(text: string): boolean {
 }
 
 export interface CoachChatProps {
-  /** The hub's already-loaded context. Not re-fetched: it would be a second source. */
+  /** El contexto ya cargado del hub. No se reobtiene: sería una segunda fuente. */
   context: CoachContext;
   gymSettings: GymSettings;
+  /** Usuario autentico, necesario para guardar una rutina propuesta en su cuenta. */
+  userId: string;
+  /** Cuando es cierto, el chat ocupa el 100% de la pantalla (modo OLED focus). */
+  fullScreen?: boolean;
+  onClose?: () => void;
 }
 
-export function CoachChat({ context, gymSettings }: CoachChatProps) {
+export function CoachChat({
+  context,
+  gymSettings,
+  userId,
+  fullScreen = false,
+  onClose,
+}: CoachChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [persisted, setPersisted] = useState(true);
-  const [proposedRoutine, setProposedRoutine] = useState<GeneratedRoutine | null>(null);
-  const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(null);
+const [proposedRoutine, setProposedRoutine] = useState<GeneratedRoutine | null>(null);
+const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(null);
 
   const day = useMemo(() => chatDay(), []);
 
@@ -109,8 +112,6 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
   const listEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Load today's conversation on mount. Also prunes: retention enforced on load is the
-  // only way it ever gets enforced for someone who stopped chatting.
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -124,8 +125,6 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
     };
   }, [day]);
 
-  // Follow the stream. Scrolling only when the athlete is already at the bottom, so
-  // reading back through the conversation is not yanked away by every new token.
   useEffect(() => {
     const list = listEndRef.current?.parentElement;
     if (!list) return;
@@ -159,8 +158,6 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
         content: trimmed,
         timestamp: Date.now(),
       };
-      // Saved before the request, not after: if the tab dies mid-stream the question
-      // the athlete typed is the part they will want to find again.
       const withUser = [...messages, userMessage];
       setMessages(withUser);
       setDraft("");
@@ -177,9 +174,6 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           ...(selectTools(trimmed) ? { tools: [...EXERCISE_TOOLS] } : {}),
         },
         (chunk) => {
-          // One functional update per chunk rather than a captured `messages`: the
-          // stream is the one thing in this component that can fire many times before
-          // React settles, and a stale closure would drop fragments.
           setMessages((current) => {
             const existing = current.find((m) => m.id === assistantId);
             if (existing) {
@@ -205,15 +199,16 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           if (response.toolCalls && response.toolCalls.length > 0) {
             handleToolCalls(response.toolCalls);
           }
-          setMessages((current) => {
-            const next = finalize(current, assistantId, response);
-            persist(next);
-            return next;
-          });
+  setMessages((current) => {
+    const next = finalize(current, assistantId, response);
+    persist(next);
+    return next;
+  });
+  if (response.action?.type === "routine_proposal") {
+    setProposedRoutine(response.action.routine);
+  }
         })
         .catch((cause: unknown) => {
-          // An abort is the athlete's own doing, not a failure worth a bubble. The
-          // partial text stays: it was already true when they stopped reading it.
           if (isAbort(cause, controller.signal)) {
             setMessages((current) => {
               const next = finalize(current, assistantId);
@@ -232,8 +227,6 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
                 role: "error" as const,
                 content: T.chatErrors[error.code] ?? T.chatErrors.SERVICE_UNAVAILABLE,
                 timestamp: Date.now(),
-                // Carried so the bubble can offer re-authentication only when that is
-                // the thing that would fix it.
                 errorCode: error.code,
               },
             ];
@@ -245,9 +238,9 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           abortRef.current = null;
           setBusy(false);
         });
-      },
-     [assistantContext, busy, messages, persist],
-   );
+    },
+    [assistantContext, busy, messages, persist],
+  );
 
   const handleToolCalls = (toolCalls: ToolCall[]) => {
     for (const tc of toolCalls) {
@@ -275,6 +268,17 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
     setProposedRoutineError(null);
   };
 
+  const saveProposed = async () => {
+    if (!proposedRoutine) return;
+    const ok = await saveGeneratedRoutine(userId, proposedRoutine);
+    if (ok) {
+      setProposedRoutine(null);
+      setProposedRoutineError(null);
+    } else {
+      setProposedRoutineError("No se pudo guardar la rutina en tu cuenta. Inténtalo de nuevo.");
+    }
+  };
+
   const submit = (event: FormEvent) => {
     event.preventDefault();
     send(draft);
@@ -290,75 +294,211 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
 
   const tooLong = draft.length > MAX_USER_MESSAGE_CHARS;
 
+  const containerStyle: React.CSSProperties = fullScreen
+    ? {
+        position: "fixed",
+        inset: 0,
+        zIndex: MOTION.minTouchTarget ? 1000 : 50,
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#050505",
+        color: TEXT.primary,
+      }
+    : {};
+
+  const headerStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: `${SPACE.lg} ${SPACE.xl}`,
+    borderBottom: fullScreen ? `1px solid ${TEXT.tertiary}22` : undefined,
+    minHeight: fullScreen ? 60 : undefined,
+  };
+
+  const titleStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: SPACE.xs,
+    margin: 0,
+    fontSize: TYPE.title2.size,
+    fontWeight: TYPE.title2.weight,
+    color: TEXT.primary,
+  };
+
+  const closeStyle: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.control,
+    border: `1px solid ${TEXT.tertiary}33`,
+    backgroundColor: SCRIM.recessed,
+    color: TEXT.primary,
+    cursor: "pointer",
+  };
+
+  const scrollStyle: React.CSSProperties = {
+    flex: 1,
+    overflowY: "auto",
+    padding: SPACE.xl,
+    display: "flex",
+    flexDirection: "column",
+    gap: SPACE.sm,
+  };
+
+  const chipsStyle: React.CSSProperties = {
+    display: "flex",
+    gap: SPACE.xs,
+    overflowX: "auto",
+    paddingBottom: SPACE.md,
+    scrollbarWidth: "none",
+    WebkitOverflowScrolling: "touch",
+  };
+
+  const chipStyle = (): React.CSSProperties => ({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: SPACE.xs,
+    minHeight: MOTION.minTouchTarget,
+    padding: `${SPACE.xs} ${SPACE.md}`,
+    borderRadius: RADIUS.pill,
+    border: `1px solid ${TEXT.tertiary}33`,
+    backgroundColor: "#0a0a0a",
+    color: TEXT.secondary,
+    fontSize: TYPE.caption.size,
+    fontWeight: TYPE.subhead.weight,
+    whiteSpace: "nowrap",
+    cursor: "pointer",
+    flexShrink: 0,
+  });
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    resize: "vertical",
+    borderRadius: RADIUS.control,
+    border: `1px solid ${tooLong ? STATUS.warning.text : `${TEXT.tertiary}33`}`,
+    backgroundColor: SCRIM.recessed,
+    color: TEXT.primary,
+    padding: "10px 12px",
+    fontSize: TYPE.subhead.size,
+    fontFamily: "inherit",
+  };
+
+  const inputAreaStyle: React.CSSProperties = {
+    padding: `${SPACE.lg} ${SPACE.xl}`,
+    borderTop: `1px solid ${TEXT.tertiary}22`,
+    backgroundColor: "#050505",
+  };
+
   return (
-    <GlassCard>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: SPACE.md,
-        }}
-      >
-        <div>
-          <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}>{T.chatTitle}</h3>
-          <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-            {T.chatSubtitle}
-          </p>
-        </div>
-        {messages.length > 0 && (
+    <div style={containerStyle}>
+      {fullScreen && onClose && (
+        <header style={headerStyle}>
+          <div style={titleStyle}>
+            <span aria-hidden="true" style={{ color: ACCENT.base }}>
+              ✦
+            </span>
+            Cronos IA
+          </div>
           <button
             type="button"
-            onClick={clearToday}
-            aria-label={T.chatClear}
+            onClick={onClose}
+            aria-label="Cerrar Cronos IA"
+            style={closeStyle}
+          >
+            <X size={20} strokeWidth={1.8} />
+          </button>
+        </header>
+      )}
+
+      {!fullScreen ? (
+        <div style={{ padding: SPACE.md }}>
+          <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: MOTION.minTouchTarget,
-              height: MOTION.minTouchTarget,
-              flexShrink: 0,
-              borderRadius: RADIUS.control,
-              border: "1px solid transparent",
-              backgroundColor: "transparent",
-              color: TEXT.tertiary,
-              cursor: "pointer",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: SPACE.md,
             }}
           >
-            <Trash2 size={15} aria-hidden="true" />
-          </button>
-        )}
-      </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600 }}>
+                {T.chatTitle}
+              </h3>
+              <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                {T.chatSubtitle}
+              </p>
+            </div>
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={clearToday}
+                aria-label={T.chatClear}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: MOTION.minTouchTarget,
+                  height: MOTION.minTouchTarget,
+                  flexShrink: 0,
+                  borderRadius: RADIUS.control,
+                  border: "1px solid transparent",
+                  backgroundColor: "transparent",
+                  color: TEXT.tertiary,
+                  cursor: "pointer",
+                }}
+              >
+                <Trash2 size={15} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div style={{ paddingLeft: SPACE.xl, paddingRight: SPACE.xl, paddingBottom: SPACE.md }}>
+          <div style={{ marginBottom: SPACE.md, fontSize: TYPE.caption.size, color: TEXT.secondary }}>
+            Cronos está contigo
+          </div>
+        </div>
+      )}
 
-      {/* 
-          `aria-live="polite"` on the transcript rather than `assertive`: a stream emits
-          dozens of updates, and an assertive region would announce every one of them.
-      */}
       <div
+        style={scrollStyle}
         aria-live="polite"
         aria-busy={busy}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: SPACE.sm,
-          marginTop: SPACE.md,
-          maxHeight: 320,
-          overflowY: "auto",
-          // Reduced motion removes the caret pulse below, but the transition here is on
-          // layout, so it is left alone: it only runs when content is actually added.
-        }}
       >
         {!loaded ? (
-          <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>{T.loading}</p>
+          <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+            {T.loading}
+          </p>
         ) : messages.length === 0 ? (
-          <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>{T.chatEmpty}</p>
+          <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+            {T.chatEmpty}
+          </p>
         ) : (
           messages.map((message) => <Bubble key={message.id} message={message} />)
         )}
         <div ref={listEndRef} />
       </div>
 
-      <form onSubmit={submit} style={{ marginTop: SPACE.md }}>
+      <div style={chipsStyle}>
+        {T.chatSuggestions.map((suggestion) => (
+          <button
+            key={suggestion}
+            type="button"
+            onClick={() => {
+              setDraft(suggestion);
+              send(suggestion);
+            }}
+            aria-label={suggestion}
+            style={chipStyle()}
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+
+      <form onSubmit={submit} style={inputAreaStyle}>
         <label
           htmlFor="coach-chat-input"
           style={{
@@ -378,8 +518,6 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
-            // Enter sends, Shift+Enter breaks the line. A send key that also inserts a
-            // newline is the one thing that makes a chat box feel broken on desktop.
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
               send(draft);
@@ -389,17 +527,7 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
           maxLength={MAX_USER_MESSAGE_CHARS + 1}
           placeholder={T.chatPlaceholder}
           aria-describedby="coach-chat-disclaimer"
-          style={{
-            width: "100%",
-            resize: "vertical",
-            borderRadius: RADIUS.control,
-            border: `1px solid ${tooLong ? STATUS.warning.text : `${TEXT.tertiary}33`}`,
-            backgroundColor: SCRIM.recessed,
-            color: TEXT.primary,
-            padding: "10px 12px",
-            fontSize: TYPE.subhead.size,
-            fontFamily: "inherit",
-          }}
+          style={inputStyle}
         />
 
         <div
@@ -484,9 +612,13 @@ export function CoachChat({ context, gymSettings }: CoachChatProps) {
       )}
 
       {proposedRoutine && (
-        <ProposedRoutineCard routine={proposedRoutine} onAccept={dismissProposed} />
+        <ProposedRoutineCard
+          routine={proposedRoutine}
+          onSave={saveProposed}
+          onClose={dismissProposed}
+        />
       )}
-    </GlassCard>
+    </div>
   );
 }
 
@@ -496,8 +628,6 @@ function Bubble({ message }: { message: ChatMessage }) {
   const authModal = useAuthModal();
 
   if (message.role === "error") {
-    // Only an expired session gets a way out. A rate limit has nothing the athlete
-    // can do, and offering "sign in again" there would be a button that cannot help.
     const recoverable = message.errorCode === "AUTH_ERROR";
     return (
       <div
@@ -532,8 +662,6 @@ function Bubble({ message }: { message: ChatMessage }) {
         alignSelf: mine ? "flex-end" : "flex-start",
         maxWidth: "85%",
         borderRadius: RADIUS.control,
-        // Asymmetric so the two speakers are distinguishable by shape as well as by
-        // side: colour alone would fail anyone who cannot separate them.
         borderBottomLeftRadius: mine ? RADIUS.control : 2,
         borderBottomRightRadius: mine ? 2 : RADIUS.control,
         border: `1px solid ${mine ? `${ACCENT.base}44` : `${TEXT.tertiary}22`}`,
@@ -554,22 +682,13 @@ function Bubble({ message }: { message: ChatMessage }) {
               marginLeft: 2,
               verticalAlign: "-2px",
               backgroundColor: ACCENT.text,
-              // The one animation here worth having: it is the only signal that the
-              // answer is still arriving. The keyframes and the reduced-motion
-              // override live in index.css with the app's other motion.
-              //
-              // `steps(2, start)` is deliberately not one of `MOTION`'s curves. A caret
-              // has to snap on and off; easing it would make it fade at the edges, and a
-              // cursor that fades is not a cursor. The period is the token because a
-              // duration is a decision, and the timing function is not because this is the
-              // one thing on screen that should not move smoothly.
               animation: `cronos-caret ${MOTION.loop.caret} steps(2, start) infinite`,
             }}
           />
         )}
       </p>
 
-      {message.action && (
+      {message.action && message.action.type !== "routine_proposal" && (
         <div
           style={{
             marginTop: 8,
@@ -597,13 +716,6 @@ function Bubble({ message }: { message: ChatMessage }) {
   );
 }
 
-/**
- * A structured recommendation in words.
- *
- * Derived from the discriminant, never stored: the four kinds say genuinely different
- * things and a generic "aplicar" would leave the athlete unable to tell a load change
- * from a deload.
- */
 function describeAction(action: NonNullable<ChatMessage["action"]>): string {
   switch (action.type) {
     case "exercise_swap":
@@ -614,24 +726,13 @@ function describeAction(action: NonNullable<ChatMessage["action"]>): string {
       return `${action.deltaKcal > 0 ? "+" : ""}${action.deltaKcal} kcal. ${action.reason}`;
     case "deload_suggestion":
       return `${action.durationWeeks} ${action.durationWeeks === 1 ? "semana" : "semanas"}. ${action.reason}`;
+    case "routine_proposal":
+      return "Rutina propuesta por Cronos IA. Usa Guardar en mis rutinas para añadirla a tu biblioteca.";
   }
 }
 
 // --------------------------------------------------------------- finalize
 
-/**
- * Settles the placeholder bubble once the request ends.
- *
- * The bubble is normally created by the first `onChunk`, but not always: a provider
- * can return a complete answer having emitted no fragments at all, and an empty
- * `onChunk` sequence is legal. Mapping over `current` alone would then find nothing
- * to update and the answer would be dropped on the floor — the athlete's question
- * stays on screen with no reply and no error, which reads as a silent failure.
- * So the bubble is appended when it is missing.
- *
- * `response` is optional: on an abort there may be no result, and the bubble only has
- * to stop claiming to be streaming.
- */
 function finalize(
   current: ChatMessage[],
   assistantId: string,
@@ -651,18 +752,11 @@ function finalize(
       message.id === assistantId
         ? {
             ...bubble,
-            /*
-             * The server's text is the complete one with any action block stripped
-             * out, so it replaces what accumulated — except when it is empty. A model
-             * that emitted only an action fence leaves nothing behind, and replacing
-             * unconditionally would erase prose that was already on screen.
-             */
             content: bubble.content !== "" ? bubble.content : message.content,
           }
         : message,
     );
   }
-  // Nothing was streamed. Keep the bubble only if there is something to show.
   return response === undefined ? current : [...current, bubble];
 }
 
@@ -673,13 +767,6 @@ function isAbort(cause: unknown, signal: AbortSignal): boolean {
   return cause instanceof Error && cause.name === "AbortError";
 }
 
-/**
- * Reduces anything thrown to a code the transcript has words for.
- *
- * `CoachRequestError` is the classified path. Anything else is a bug, and rendering it
- * as "unavailable" rather than as a stack trace keeps an internal failure out of a
- * user-facing surface without hiding it from the console.
- */
 function classify(cause: unknown): CoachError {
   if (typeof cause === "object" && cause !== null && "detail" in cause) {
     const detail = (cause as { detail: unknown }).detail;
@@ -694,10 +781,12 @@ function classify(cause: unknown): CoachError {
 
 function ProposedRoutineCard({
   routine,
-  onAccept,
+  onSave,
+  onClose,
 }: {
   routine: GeneratedRoutine;
-  onAccept: () => void;
+  onSave: () => void;
+  onClose: () => void;
 }) {
   return (
     <div
@@ -716,11 +805,11 @@ function ProposedRoutineCard({
         {routine.name} · {routine.days.length} día{routine.days.length === 1 ? "" : "s"}
       </p>
       <div style={{ marginTop: 8, display: "flex", gap: SPACE.sm }}>
-        <GlassButton variant="primary" onClick={onAccept}>
-          Ver rutina
+        <GlassButton variant="primary" onClick={onSave}>
+          Guardar en mis rutinas
         </GlassButton>
-        <GlassButton variant="ghost" onClick={onAccept}>
-          Cerrar
+        <GlassButton variant="ghost" onClick={onClose}>
+          Descartar
         </GlassButton>
       </div>
     </div>

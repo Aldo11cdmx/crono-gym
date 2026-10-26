@@ -1,9 +1,18 @@
+/**
+ * CoachFloatingButton.tsx — disparador de "Cronos IA".
+ *
+ * Cápsula flotante horizontal estilo iOS que se sitúa sobre el MobileNav
+ * respetando `--cronos-nav-height`. Un único foco visual: el nombre "Cronos IA"
+ * con el icono de chispa `✦` y un indicador brillante de pulso neón. Al tocarlo
+ * se abre el asistente (CronosBottomSheet, ahora en modo pantalla completa).
+ */
+
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@lib/supabase";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { ACCENT, TEXT } from "@/design/tokens";
 import { CRONOS_LABELS as T } from "@/lib/i18n";
 import { CronosBottomSheet } from "./CronosBottomSheet";
 
@@ -48,15 +57,31 @@ export function CoachFloatingButton({ userId }: CoachFloatingButtonProps = {}) {
     <>
       <button
         type="button"
-        className={reducedMotion ? "coach-ai-fab" : "coach-ai-fab coach-ai-fab--enter coach-ai-fab--pulse"}
+        className={[
+          "fixed right-4 z-[55]",
+          "bottom-[calc(16px+var(--cronos-nav-height,56px)+16px)]",
+          "bg-neutral-900/95 border border-white/15 backdrop-blur-xl",
+          "rounded-full px-4 py-2 flex items-center gap-2",
+          "transition-colors cursor-pointer",
+          !reducedMotion ? "" : "animate-none",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         onClick={() => setOpen(true)}
         aria-label={T.fabAriaLabel}
         data-testid="coach-fab"
       >
-        <span className="coach-ai-fab__glow" aria-hidden="true" />
-        <span className="coach-ai-fab__inner">
-          <Sparkles size={22} aria-hidden="true" strokeWidth={1.8} />
+        <span aria-hidden="true" style={{ color: ACCENT.base }}>
+          ✦
         </span>
+        <span className="text-sm font-medium leading-none" style={{ color: TEXT.primary }}>
+          Cronos IA
+        </span>
+        <span
+          aria-hidden="true"
+          className={`w-2 h-2 rounded-full ${!reducedMotion ? "animate-pulse" : ""}`}
+          style={{ backgroundColor: ACCENT.base }}
+        />
       </button>
 
       {open && (

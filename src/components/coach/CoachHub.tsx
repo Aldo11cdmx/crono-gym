@@ -83,7 +83,7 @@ export function CoachHub({ userId }: CoachHubProps) {
             into what the model is told, so rendering it against a skeleton would mean
             asking a coach about a briefing that does not exist yet.
           */}
-          <CoachChat context={context} gymSettings={gym} />
+          <CoachChat userId={userId} context={context} gymSettings={gym} />
         </>
       )}
 

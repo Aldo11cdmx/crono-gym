@@ -109,7 +109,7 @@ afterEach(() => {
 });
 
 function renderChat(overrides: Partial<GymSettings> = {}) {
-  return render(<CoachChat context={CONTEXT} gymSettings={{ ...GYM, ...overrides }} />);
+  return render(<CoachChat userId="test-user" context={CONTEXT} gymSettings={{ ...GYM, ...overrides }} />);
 }
 
 /**
@@ -122,7 +122,7 @@ function renderChatWithAuth(overrides: Partial<GymSettings> = {}) {
   const open = vi.fn();
   render(
     <AuthModalProvider open={open}>
-      <CoachChat context={CONTEXT} gymSettings={{ ...GYM, ...overrides }} />
+      <CoachChat userId="test-user" context={CONTEXT} gymSettings={{ ...GYM, ...overrides }} />
     </AuthModalProvider>,
   );
   return { open };

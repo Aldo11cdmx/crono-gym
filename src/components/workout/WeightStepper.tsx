@@ -28,7 +28,7 @@ import {
   type PlateInventory,
   type PlateKg,
 } from "@/lib/workout/weightUtils";
-import { ACCENT, GLASS, MOTION, NUMERIC, RADIUS, SOLID, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, MOTION, NUMERIC, RADIUS, SOLID, SPACE, STATUS, SURFACE, SURFACE_ROLE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 export interface WeightStepperProps {
   /** Current weight in **kg**, whatever unit the user reads. */
@@ -184,6 +184,7 @@ export function WeightStepper({
     borderRadius: RADIUS.control,
     background: GLASS.fill,
     border: `1px solid ${SOLID.border}`,
+    position: "relative",
   };
 
   const rowStyle: CSSProperties = {
@@ -365,24 +366,36 @@ export function WeightStepper({
         </div>
       )}
 
-      <p style={{ margin: 0, fontSize: TYPE.label.size, color: TEXT.tertiary }}>
-        {STEPPER_LABELS.platesLabel}:{" "}
-        {plates.platesPerSide.length === 0 ? (
-          <span style={{ color: TEXT.secondary }}>{STEPPER_LABELS.emptyBarPlates}</span>
-        ) : (
-          plates.platesPerSide.map((plate) => (
-            <span key={plate.weight} style={{ marginRight: "6px", color: TEXT.secondary }}>
-              {plate.count} × {trim(plate.weight)}
-            </span>
-          ))
-        )}
-      </p>
-
-      {!plates.isExact && (
-        <p style={{ margin: 0, fontSize: TYPE.label.size, color: STATUS.warning.text }}>
-          {STEPPER_LABELS.shortfall(trim(toDisplay(Math.abs(plates.remainder))), unit)}
+      <div
+        style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          zIndex: Z_INDEX.pill,
+          background: SURFACE.elevated,
+          border: `1px solid ${GLASS.border}`,
+          borderRadius: RADIUS.control,
+          padding: "4px 8px",
+        }}
+      >
+        <p style={{ margin: 0, fontSize: TYPE.label.size, color: TEXT.tertiary }}>
+          {STEPPER_LABELS.platesLabel}:{" "}
+          {plates.platesPerSide.length === 0 ? (
+            <span style={{ color: TEXT.secondary }}>{STEPPER_LABELS.emptyBarPlates}</span>
+          ) : (
+            plates.platesPerSide.map((plate) => (
+              <span key={plate.weight} style={{ marginRight: "6px", color: TEXT.secondary }}>
+                {plate.count} × {trim(plate.weight)}
+              </span>
+            ))
+          )}
         </p>
-      )}
+        {!plates.isExact && (
+          <p style={{ margin: 0, fontSize: TYPE.label.size, color: STATUS.warning.text }}>
+            {STEPPER_LABELS.shortfall(trim(toDisplay(Math.abs(plates.remainder))), unit)}
+          </p>
+        )}
+      </div>
 
       {hasSuggestion && suggestedKg !== undefined && (
         <div style={rowStyle}>

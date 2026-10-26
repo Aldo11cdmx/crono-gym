@@ -32,9 +32,9 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { useState } from "react";
-import { Check, Copy, Trash2, X } from "lucide-react";
+import { Check, Copy, Flame, Flag, Layers, Trash2, TrendingUp, X } from "lucide-react";
 import { SET_LOGGER_LABELS, SET_TYPE_LABELS, FATIGUE_LABELS, STEPPER_LABELS } from "../../lib/i18n";
-import { type SetKind } from "../../lib/workout/setKind";
+import { SET_KINDS, type SetKind } from "../../lib/workout/setKind";
 import { isRecordBreak } from "../../lib/workout/recordBreak";
 import {
   FATIGUE,
@@ -158,6 +158,15 @@ export interface SetTableProps {
    */
   onLastSetComplete?: () => void;
 }
+
+const KIND_ICON: Record<SetKind, typeof Flame> = {
+  normal: TrendingUp,
+  // A failure set is a good day, not a cold one: an icon that reads as "worse" on the
+  // hardest set of the session is exactly backwards.
+  warmup: Flame,
+  failure: Flag,
+  drop: Layers,
+};
 
 export function SetTable({
   sets,
@@ -343,9 +352,11 @@ export function SetTable({
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: SPACE.xs,
-              padding: `${SPACE.xs} ${SPACE.md}`,
+              gap: SPACE.sm,
+              padding: SPACE.md,
+              borderRadius: RADIUS.control,
               background: entry.completed ? STATUS.success.muted : GLASS.fill,
+              border: `1px solid ${entry.completed ? STATUS.success.border : GLASS.border}`,
               transition: `background ${MOTION.fast} ${MOTION.standard}`,
             }}
           >
@@ -356,17 +367,23 @@ export function SetTable({
                type sheet, which is the card-based replacement for inline kind
                chips.
              */}
-              <SetKindBadge
-                kind={entry.kind}
-                setNumber={index + 1}
-                onTap={() => setSheetSetIndex(index)}
-              />
+             <SetKindBadge
+               kind={entry.kind}
+               setNumber={index + 1}
+               onTap={() => setSheetSetIndex(index)}
+             />
 
-              {fatigue.level !== "none" && fatigue.shortfall !== null ? (
-                <FatigueBadge shortfall={fatigue.shortfall} level={fatigue.level} />
-              ) : null}
+             {fatigue.level !== "none" && fatigue.shortfall !== null ? (
+               <FatigueBadge shortfall={fatigue.shortfall} level={fatigue.level} />
+             ) : null}
 
-               <div style={{ flex: 1 }} />
+             <KindChips
+               index={index}
+               value={entry.kind}
+               onChange={(kind) => onChange(index, { ...entry, kind })}
+             />
+
+              <div style={{ flex: 1 }} />
 
               <SetNoteField
                 index={index}
@@ -405,6 +422,7 @@ export function SetTable({
 
             <div style={gridStyle}>
               <div style={{ minWidth: 0 }}>
+                <CellLabel>Serie</CellLabel>
                 <span
                   style={{
                     fontFamily: TYPE.mono.font,
@@ -418,7 +436,8 @@ export function SetTable({
                 </span>
               </div>
               <div style={{ minWidth: 0 }}>
-                {isFirst && previousKg !== null && previousKg !== undefined ? (
+                <CellLabel>Previa</CellLabel>
+                {previousKg !== null && previousKg !== undefined ? (
                   <span
                     style={{
                       fontFamily: TYPE.mono.font,
@@ -445,6 +464,7 @@ export function SetTable({
                 )}
               </div>
               <div style={{ minWidth: 0 }}>
+                <CellLabel>Peso</CellLabel>
                 {isBodyweight ? (
                   <BodyweightWeightCell
                     value={entry.weight}
@@ -713,11 +733,11 @@ function PreviousRow({
 function ColumnHeadings({ hasPrevious }: { hasPrevious: boolean }) {
   return (
     <div style={{ ...gridStyle, padding: `0 ${SPACE.md}` }}>
-      <span className="truncate min-w-0" style={headingStyle}>SERIE</span>
-      {hasPrevious && <span className="truncate min-w-0" style={headingStyle}>PREVIA</span>}
-      <span className="truncate min-w-0" style={headingStyle}>KG</span>
-      <span className="truncate min-w-0" style={headingStyle}>REPES</span>
-      <span className="truncate min-w-0" style={headingStyle}>RPE</span>
+      <span style={headingStyle}>SERIE</span>
+      {hasPrevious && <span style={headingStyle}>PREVIA</span>}
+      <span style={headingStyle}>KG</span>
+      <span style={headingStyle}>REPES</span>
+      <span style={headingStyle}>RPE</span>
     </div>
   );
 }
@@ -801,6 +821,60 @@ function CompleteToggle({
           {completed ? SET_LOGGER_LABELS.completed : SET_LOGGER_LABELS.complete}
         </span>
       </button>
+  );
+}
+
+/**
+ * The set-kind chips.
+ *
+ * `role="group"` rather than a radio group: they are not exclusive in the way a radio
+ * group is exclusive-and-one-is-always-chosen -- a set can be *not yet* classified, and
+ * `aria-pressed` on a toggle is the honest report of that. A radiogroup would announce
+ * "one of these is selected" on every row before anyone has touched it.
+ */
+function KindChips({
+  index,
+  value,
+  onChange,
+}: {
+  index: number;
+  value: SetKind;
+  onChange: (kind: SetKind) => void;
+}) {
+  return (
+    <div role="group" aria-label={SET_LOGGER_LABELS.setTypeGroupAriaLabel} style={{ display: "flex", gap: "4px" }}>
+      {SET_KINDS.map((kind) => {
+        const KindIcon = KIND_ICON[kind];
+        const selected = value === kind;
+        return (
+          <button
+            key={kind}
+            type="button"
+            aria-pressed={selected}
+            aria-label={SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS[kind], index + 1)}
+            onClick={() => onChange(kind)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              minHeight: "26px",
+              padding: "0 8px",
+              borderRadius: RADIUS.pill,
+              border: `1px solid ${selected ? ACCENT.base : GLASS.border}`,
+              background: selected ? ACCENT.base : "transparent",
+              color: selected ? TEXT.onAccent : TEXT.tertiary,
+              fontSize: TYPE.label.size,
+              fontWeight: 600,
+              letterSpacing: TYPE.label.tracking,
+              cursor: "pointer",
+            }}
+          >
+            <KindIcon size={11} aria-hidden="true" />
+            {SET_TYPE_LABELS[kind]}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

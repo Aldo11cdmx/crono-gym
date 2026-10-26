@@ -100,7 +100,12 @@
     "media_id": "2gPfomN",
     "created_at": "2026-03-18T12:31:32.854798+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0002",
@@ -1336,7 +1341,12 @@
     "media_id": "NAkmgdx",
     "created_at": "2026-03-18T12:31:32.855178+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0009",
@@ -2315,7 +2325,12 @@
     "media_id": "r7cT9YD",
     "created_at": "2026-03-18T12:31:32.855349+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0015",
@@ -3215,7 +3230,12 @@
     "media_id": "aumB2IV",
     "created_at": "2026-03-18T12:31:32.855494+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1431",
@@ -4969,7 +4989,12 @@
     "media_id": "zhF9lW4",
     "created_at": "2026-03-18T12:31:32.855774+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1254",
@@ -5072,7 +5097,13 @@
     "media_id": "khlHMqs",
     "created_at": "2026-03-18T12:31:32.855791+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0980",
@@ -5298,7 +5329,12 @@
     "media_id": "tZkGYZ9",
     "created_at": "2026-03-18T12:31:32.855828+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0974",
@@ -6458,7 +6494,12 @@
     "media_id": "KCBKjma",
     "created_at": "2026-03-18T12:31:32.856001+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0983",
@@ -6690,7 +6731,12 @@
     "media_id": "225x2Vd",
     "created_at": "2026-03-18T12:31:32.856034+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0984",
@@ -7728,7 +7774,12 @@
     "media_id": "zFzbBfL",
     "created_at": "2026-03-18T12:31:32.856195+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0993",
@@ -9134,7 +9185,12 @@
     "media_id": "Kzg30R7",
     "created_at": "2026-03-18T12:31:32.869911+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1022",
@@ -9360,7 +9416,12 @@
     "media_id": "euq4pwp",
     "created_at": "2026-03-18T12:31:32.869961+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1008",
@@ -10959,7 +11020,13 @@
     "media_id": "EIeI8Vf",
     "created_at": "2026-03-18T12:31:32.870252+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0026",
@@ -11784,7 +11851,13 @@
     "media_id": "J6Dx1Mu",
     "created_at": "2026-03-18T12:31:32.870388+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0031",
@@ -12112,7 +12185,13 @@
     "media_id": "GrO65fd",
     "created_at": "2026-03-18T12:31:32.870444+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0034",
@@ -14248,7 +14327,13 @@
     "media_id": "GXoaSgn",
     "created_at": "2026-03-18T12:31:32.871665+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0046",
@@ -14596,7 +14681,13 @@
     "media_id": "3TZduzM",
     "created_at": "2026-03-18T12:31:32.871718+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1719",
@@ -14719,7 +14810,13 @@
     "media_id": "gx7s7uF",
     "created_at": "2026-03-18T12:31:32.871735+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0048",
@@ -15285,7 +15382,13 @@
     "media_id": "ZsiqXYa",
     "created_at": "2026-03-18T12:31:32.871819+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0053",
@@ -18004,7 +18107,12 @@
     "media_id": "wnEscH8",
     "created_at": "2026-03-18T12:31:32.872246+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0072",
@@ -19127,7 +19235,13 @@
     "media_id": "YqJw82s",
     "created_at": "2026-03-18T12:31:32.872412+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0080",
@@ -19455,7 +19569,13 @@
     "media_id": "DotAgEF",
     "created_at": "2026-03-18T12:31:32.872464+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1257",
@@ -19578,7 +19698,13 @@
     "media_id": "DU7I633",
     "created_at": "2026-03-18T12:31:32.872481+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1317",
@@ -19711,7 +19837,13 @@
     "media_id": "8d8qJQI",
     "created_at": "2026-03-18T12:31:32.872497+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1721",
@@ -20146,7 +20278,12 @@
     "media_id": "7M66AVi",
     "created_at": "2026-03-18T12:31:32.87257+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0083",
@@ -20259,7 +20396,12 @@
     "media_id": "Gxg9lDc",
     "created_at": "2026-03-18T12:31:32.872591+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0085",
@@ -23005,7 +23147,12 @@
     "media_id": "xnInPfE",
     "created_at": "2026-03-18T12:31:32.873026+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0104",
@@ -25566,7 +25713,13 @@
     "media_id": "JsKq9so",
     "created_at": "2026-03-18T12:31:32.873432+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1258",
@@ -25679,7 +25832,13 @@
     "media_id": "945zpRg",
     "created_at": "2026-03-18T12:31:32.87345+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0124",
@@ -27827,7 +27986,12 @@
     "media_id": "5VXmnV5",
     "created_at": "2026-03-18T12:31:32.873793+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1771",
@@ -29352,7 +29516,12 @@
     "media_id": "9c6T1YX",
     "created_at": "2026-03-18T12:31:32.874036+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1160",
@@ -29478,7 +29647,12 @@
     "media_id": "dK9394r",
     "created_at": "2026-03-18T12:31:32.874053+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0060",
+    "equipment_name": "Área de Cardio y Ergómetros",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0060_cardio_vista-01.jpg"
+    ]
   },
   {
     "id": "0870",
@@ -50834,7 +51008,12 @@
     "media_id": "rbu5UUb",
     "created_at": "2026-03-18T12:31:32.877225+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0267",
@@ -50936,7 +51115,12 @@
     "media_id": "kjJ3VoQ",
     "created_at": "2026-03-18T12:31:32.877243+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0271",
@@ -51272,7 +51456,12 @@
     "media_id": "TFqbd8t",
     "created_at": "2026-03-18T12:31:32.877296+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3016",
@@ -52553,7 +52742,13 @@
     "media_id": "BU15nH4",
     "created_at": "2026-03-18T12:31:32.877501+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2403",
@@ -52685,7 +52880,13 @@
     "media_id": "CfKsRbG",
     "created_at": "2026-03-18T12:31:32.877517+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1646",
@@ -53053,7 +53254,13 @@
     "media_id": "6em2Dxj",
     "created_at": "2026-03-18T12:31:32.877567+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0286",
@@ -53146,7 +53353,13 @@
     "media_id": "izMnLqz",
     "created_at": "2026-03-18T12:31:32.877583+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1649",
@@ -53464,7 +53677,13 @@
     "media_id": "Xy4jlWA",
     "created_at": "2026-03-18T12:31:32.877634+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0287",
@@ -53567,7 +53786,13 @@
     "media_id": "eOrFCnx",
     "created_at": "2026-03-18T12:31:32.877651+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0288",
@@ -53670,7 +53895,13 @@
     "media_id": "vi8EhoE",
     "created_at": "2026-03-18T12:31:32.877667+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0289",
@@ -53773,7 +54004,13 @@
     "media_id": "SpYC0Kp",
     "created_at": "2026-03-18T12:31:32.877684+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0290",
@@ -53876,7 +54113,13 @@
     "media_id": "3d7wHyd",
     "created_at": "2026-03-18T12:31:32.8777+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0291",
@@ -53980,7 +54223,13 @@
     "media_id": "mnzcrIB",
     "created_at": "2026-03-18T12:31:32.877716+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0293",
@@ -54093,7 +54342,13 @@
     "media_id": "BJ0Hz5L",
     "created_at": "2026-03-18T12:31:32.877733+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1651",
@@ -54216,7 +54471,13 @@
     "media_id": "1VpF8db",
     "created_at": "2026-03-18T12:31:32.877749+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1652",
@@ -54451,7 +54712,13 @@
     "media_id": "uSkDMYl",
     "created_at": "2026-03-18T12:31:32.877783+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0294",
@@ -54563,7 +54830,13 @@
     "media_id": "NbVPDMW",
     "created_at": "2026-03-18T12:31:32.877799+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2401",
@@ -54685,7 +54958,13 @@
     "media_id": "nlJsbkW",
     "created_at": "2026-03-18T12:31:32.877828+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1654",
@@ -54797,7 +55076,13 @@
     "media_id": "nFc4FyV",
     "created_at": "2026-03-18T12:31:32.877851+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1655",
@@ -54899,7 +55184,13 @@
     "media_id": "niXESDw",
     "created_at": "2026-03-18T12:31:32.877872+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1656",
@@ -55022,7 +55313,13 @@
     "media_id": "H1XAdpk",
     "created_at": "2026-03-18T12:31:32.877892+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1201",
@@ -55159,7 +55456,13 @@
     "media_id": "0JtKWum",
     "created_at": "2026-03-18T12:31:32.877911+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0295",
@@ -55283,7 +55586,13 @@
     "media_id": "7Hg55JG",
     "created_at": "2026-03-18T12:31:32.87793+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1731",
@@ -55396,7 +55705,13 @@
     "media_id": "7jGOBF3",
     "created_at": "2026-03-18T12:31:32.87795+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0296",
@@ -55509,7 +55824,13 @@
     "media_id": "RxayqAZ",
     "created_at": "2026-03-18T12:31:32.877969+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0297",
@@ -55631,7 +55952,13 @@
     "media_id": "gvsWLQw",
     "created_at": "2026-03-18T12:31:32.877987+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3635",
@@ -55745,7 +56072,13 @@
     "media_id": "ecl28tP",
     "created_at": "2026-03-18T12:31:32.878005+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0298",
@@ -55867,7 +56200,13 @@
     "media_id": "Qyk5J3p",
     "created_at": "2026-03-18T12:31:32.878026+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1657",
@@ -55979,7 +56318,13 @@
     "media_id": "HDYiZcY",
     "created_at": "2026-03-18T12:31:32.878045+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0299",
@@ -56082,7 +56427,13 @@
     "media_id": "QfAKy1G",
     "created_at": "2026-03-18T12:31:32.878063+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2136",
@@ -56185,7 +56536,13 @@
     "media_id": "BqgCRif",
     "created_at": "2026-03-18T12:31:32.878082+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0300",
@@ -56288,7 +56645,13 @@
     "media_id": "nUwVh7b",
     "created_at": "2026-03-18T12:31:32.8781+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0301",
@@ -56391,7 +56754,13 @@
     "media_id": "DwhEmmE",
     "created_at": "2026-03-18T12:31:32.878118+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0302",
@@ -56493,7 +56862,13 @@
     "media_id": "xXm4nYq",
     "created_at": "2026-03-18T12:31:32.878137+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0303",
@@ -56596,7 +56971,13 @@
     "media_id": "1qrWgZ2",
     "created_at": "2026-03-18T12:31:32.878154+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1276",
@@ -56708,7 +57089,13 @@
     "media_id": "NL6YBwN",
     "created_at": "2026-03-18T12:31:32.878172+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1617",
@@ -56811,7 +57198,13 @@
     "media_id": "SHUMp5H",
     "created_at": "2026-03-18T12:31:32.878191+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0305",
@@ -56924,7 +57317,13 @@
     "media_id": "cwsAI4G",
     "created_at": "2026-03-18T12:31:32.87821+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0304",
@@ -57037,7 +57436,13 @@
     "media_id": "bRlbdjK",
     "created_at": "2026-03-18T12:31:32.878229+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0306",
@@ -57139,7 +57544,13 @@
     "media_id": "OTgkHwR",
     "created_at": "2026-03-18T12:31:32.878248+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0307",
@@ -57252,7 +57663,13 @@
     "media_id": "reFHapa",
     "created_at": "2026-03-18T12:31:32.878266+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1437",
@@ -57345,7 +57762,13 @@
     "media_id": "mtXengz",
     "created_at": "2026-03-18T12:31:32.878284+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0308",
@@ -57447,7 +57870,13 @@
     "media_id": "yz9nUhF",
     "created_at": "2026-03-18T12:31:32.87831+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1277",
@@ -57683,7 +58112,13 @@
     "media_id": "XalXcvM",
     "created_at": "2026-03-18T12:31:32.878349+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0310",
@@ -57776,7 +58211,13 @@
     "media_id": "3eGE2JC",
     "created_at": "2026-03-18T12:31:32.878366+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0309",
@@ -57879,7 +58320,13 @@
     "media_id": "Rr7S3yg",
     "created_at": "2026-03-18T12:31:32.878386+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0311",
@@ -57982,7 +58429,13 @@
     "media_id": "AQ0mC4Y",
     "created_at": "2026-03-18T12:31:32.878407+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1760",
@@ -58086,7 +58539,13 @@
     "media_id": "yn8yg1r",
     "created_at": "2026-03-18T12:31:32.878423+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0313",
@@ -58218,7 +58677,13 @@
     "media_id": "slDvUAU",
     "created_at": "2026-03-18T12:31:32.87844+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1659",
@@ -58472,7 +58937,13 @@
     "media_id": "2NpxjC1",
     "created_at": "2026-03-18T12:31:32.878473+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2402",
@@ -58604,7 +59075,13 @@
     "media_id": "GNhAeJ0",
     "created_at": "2026-03-18T12:31:32.878489+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1664",
@@ -58696,7 +59173,13 @@
     "media_id": "qAmNMJY",
     "created_at": "2026-03-18T12:31:32.878505+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3545",
@@ -58809,7 +59292,13 @@
     "media_id": "TVdivgY",
     "created_at": "2026-03-18T12:31:32.878522+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0314",
@@ -58922,7 +59411,13 @@
     "media_id": "ns0SIbU",
     "created_at": "2026-03-18T12:31:32.878538+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0315",
@@ -59034,7 +59529,13 @@
     "media_id": "F3xgbjF",
     "created_at": "2026-03-18T12:31:32.878554+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0316",
@@ -59157,7 +59658,13 @@
     "media_id": "B3Rxp6L",
     "created_at": "2026-03-18T12:31:32.878573+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0318",
@@ -59279,7 +59786,13 @@
     "media_id": "ae9UoXQ",
     "created_at": "2026-03-18T12:31:32.878589+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0317",
@@ -59391,7 +59904,13 @@
     "media_id": "RaflbWD",
     "created_at": "2026-03-18T12:31:32.878605+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0319",
@@ -59503,7 +60022,13 @@
     "media_id": "ESOd5Pl",
     "created_at": "2026-03-18T12:31:32.878622+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1278",
@@ -59615,7 +60140,13 @@
     "media_id": "HYe1ZqR",
     "created_at": "2026-03-18T12:31:32.878638+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0320",
@@ -59737,7 +60268,13 @@
     "media_id": "ByX0WxV",
     "created_at": "2026-03-18T12:31:32.878654+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0321",
@@ -59840,7 +60377,13 @@
     "media_id": "PG1kcIb",
     "created_at": "2026-03-18T12:31:32.878671+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1618",
@@ -60085,7 +60628,13 @@
     "media_id": "LCtQPn8",
     "created_at": "2026-03-18T12:31:32.878704+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1279",
@@ -60208,7 +60757,13 @@
     "media_id": "Gw2HFvW",
     "created_at": "2026-03-18T12:31:32.878721+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1280",
@@ -60443,7 +60998,13 @@
     "media_id": "LL1UiTX",
     "created_at": "2026-03-18T12:31:32.878754+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1620",
@@ -60669,7 +61230,13 @@
     "media_id": "aTNKZiC",
     "created_at": "2026-03-18T12:31:32.878789+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1281",
@@ -60772,7 +61339,13 @@
     "media_id": "rDAiRf9",
     "created_at": "2026-03-18T12:31:32.878806+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1282",
@@ -61008,7 +61581,13 @@
     "media_id": "OVLmUuL",
     "created_at": "2026-03-18T12:31:32.878845+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1283",
@@ -61121,7 +61700,13 @@
     "media_id": "bfiHMpI",
     "created_at": "2026-03-18T12:31:32.878866+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0325",
@@ -61224,7 +61809,13 @@
     "media_id": "nxW6BkN",
     "created_at": "2026-03-18T12:31:32.878885+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0326",
@@ -61337,7 +61928,13 @@
     "media_id": "vYk8lqw",
     "created_at": "2026-03-18T12:31:32.878903+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0327",
@@ -61450,7 +62047,13 @@
     "media_id": "7vG5o25",
     "created_at": "2026-03-18T12:31:32.87892+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0328",
@@ -61563,7 +62166,13 @@
     "media_id": "6e2DcYX",
     "created_at": "2026-03-18T12:31:32.878938+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0329",
@@ -61665,7 +62274,13 @@
     "media_id": "JymLInS",
     "created_at": "2026-03-18T12:31:32.878956+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3542",
@@ -61768,7 +62383,13 @@
     "media_id": "jgbvVJ0",
     "created_at": "2026-03-18T12:31:32.878975+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0330",
@@ -61870,7 +62491,13 @@
     "media_id": "OVIKwsd",
     "created_at": "2026-03-18T12:31:32.878993+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0331",
@@ -61983,7 +62610,13 @@
     "media_id": "1PLE8e9",
     "created_at": "2026-03-18T12:31:32.879011+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1733",
@@ -62085,7 +62718,13 @@
     "media_id": "U7D9Fx3",
     "created_at": "2026-03-18T12:31:32.879029+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3541",
@@ -62188,7 +62827,13 @@
     "media_id": "PbzNu7c",
     "created_at": "2026-03-18T12:31:32.879046+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0332",
@@ -62281,7 +62926,13 @@
     "media_id": "cALkHHX",
     "created_at": "2026-03-18T12:31:32.879064+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0333",
@@ -62393,7 +63044,13 @@
     "media_id": "W6PxUkg",
     "created_at": "2026-03-18T12:31:32.879083+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1734",
@@ -62720,7 +63377,13 @@
     "media_id": "DsgkuIt",
     "created_at": "2026-03-18T12:31:32.879137+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0335",
@@ -62843,7 +63506,13 @@
     "media_id": "xMjBKwn",
     "created_at": "2026-03-18T12:31:32.879155+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0336",
@@ -62957,7 +63626,13 @@
     "media_id": "RRWFUcw",
     "created_at": "2026-03-18T12:31:32.879172+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1658",
@@ -63070,7 +63745,13 @@
     "media_id": "Mz6lLcW",
     "created_at": "2026-03-18T12:31:32.879191+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0337",
@@ -63172,7 +63853,13 @@
     "media_id": "L2V5Nan",
     "created_at": "2026-03-18T12:31:32.879208+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1729",
@@ -63274,7 +63961,13 @@
     "media_id": "NfP83rA",
     "created_at": "2026-03-18T12:31:32.879226+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0338",
@@ -63367,7 +64060,13 @@
     "media_id": "eOCOwIR",
     "created_at": "2026-03-18T12:31:32.879244+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0863",
@@ -63470,7 +64169,13 @@
     "media_id": "bmBf7LN",
     "created_at": "2026-03-18T12:31:32.879262+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0339",
@@ -63562,7 +64267,13 @@
     "media_id": "FkBIE6a",
     "created_at": "2026-03-18T12:31:32.879279+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0340",
@@ -63655,7 +64366,13 @@
     "media_id": "7gdLIXa",
     "created_at": "2026-03-18T12:31:32.879299+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2470",
@@ -63758,7 +64475,13 @@
     "media_id": "Ion0XWz",
     "created_at": "2026-03-18T12:31:32.879317+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0341",
@@ -63861,7 +64584,13 @@
     "media_id": "gSw59a4",
     "created_at": "2026-03-18T12:31:32.879338+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0343",
@@ -63964,7 +64693,13 @@
     "media_id": "zGSIWQi",
     "created_at": "2026-03-18T12:31:32.87936+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0342",
@@ -64077,7 +64812,13 @@
     "media_id": "K3dIO25",
     "created_at": "2026-03-18T12:31:32.879383+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0344",
@@ -64179,7 +64920,13 @@
     "media_id": "wyaqzOS",
     "created_at": "2026-03-18T12:31:32.8794+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0345",
@@ -64272,7 +65019,13 @@
     "media_id": "KwFGiEP",
     "created_at": "2026-03-18T12:31:32.879421+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0346",
@@ -64374,7 +65127,13 @@
     "media_id": "zZlORz6",
     "created_at": "2026-03-18T12:31:32.879438+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0347",
@@ -64477,7 +65236,13 @@
     "media_id": "mym4hJo",
     "created_at": "2026-03-18T12:31:32.879454+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2705",
@@ -64590,7 +65355,13 @@
     "media_id": "7RWNjiB",
     "created_at": "2026-03-18T12:31:32.879478+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1284",
@@ -64797,7 +65568,13 @@
     "media_id": "XUUD0Fs",
     "created_at": "2026-03-18T12:31:32.879513+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0348",
@@ -64900,7 +65677,13 @@
     "media_id": "53Ttlck",
     "created_at": "2026-03-18T12:31:32.879529+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1735",
@@ -64992,7 +65775,13 @@
     "media_id": "6MfS53i",
     "created_at": "2026-03-18T12:31:32.879547+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0349",
@@ -65095,7 +65884,13 @@
     "media_id": "M2Pm3zj",
     "created_at": "2026-03-18T12:31:32.879565+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2706",
@@ -65198,7 +65993,13 @@
     "media_id": "rEhi2o5",
     "created_at": "2026-03-18T12:31:32.879583+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1661",
@@ -65320,7 +66121,13 @@
     "media_id": "XVzF3iZ",
     "created_at": "2026-03-18T12:31:32.879601+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0350",
@@ -65432,7 +66239,13 @@
     "media_id": "KUaZst7",
     "created_at": "2026-03-18T12:31:32.879619+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0351",
@@ -65534,7 +66347,13 @@
     "media_id": "mpKZGWz",
     "created_at": "2026-03-18T12:31:32.879637+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1662",
@@ -65646,7 +66465,13 @@
     "media_id": "qm9veZw",
     "created_at": "2026-03-18T12:31:32.879655+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0352",
@@ -65749,7 +66574,13 @@
     "media_id": "pP8wP2P",
     "created_at": "2026-03-18T12:31:32.879672+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1285",
@@ -65984,7 +66815,13 @@
     "media_id": "C0MA9bC",
     "created_at": "2026-03-18T12:31:32.879708+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1286",
@@ -66219,7 +67056,13 @@
     "media_id": "k5IpyHg",
     "created_at": "2026-03-18T12:31:32.879745+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1287",
@@ -66322,7 +67165,13 @@
     "media_id": "REGM1dE",
     "created_at": "2026-03-18T12:31:32.879764+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1288",
@@ -66881,7 +67730,13 @@
     "media_id": "PDaMuyV",
     "created_at": "2026-03-18T12:31:32.879848+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0354",
@@ -66993,7 +67848,13 @@
     "media_id": "bQy2Eni",
     "created_at": "2026-03-18T12:31:32.879867+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0355",
@@ -67106,7 +67967,13 @@
     "media_id": "n5cWCsI",
     "created_at": "2026-03-18T12:31:32.879883+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0356",
@@ -67229,7 +68096,13 @@
     "media_id": "Yg7MJAT",
     "created_at": "2026-03-18T12:31:32.879899+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1290",
@@ -67435,7 +68308,13 @@
     "media_id": "JWjujiY",
     "created_at": "2026-03-18T12:31:32.879932+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1666",
@@ -67527,7 +68406,13 @@
     "media_id": "LIGZSTA",
     "created_at": "2026-03-18T12:31:32.879949+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1291",
@@ -67743,7 +68628,13 @@
     "media_id": "BwSNDGt",
     "created_at": "2026-03-18T12:31:32.879985+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0359",
@@ -67856,7 +68747,13 @@
     "media_id": "e25F58f",
     "created_at": "2026-03-18T12:31:32.880003+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1622",
@@ -67969,7 +68866,13 @@
     "media_id": "Ze7MoIb",
     "created_at": "2026-03-18T12:31:32.880021+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1414",
@@ -68169,7 +69072,13 @@
     "media_id": "VdLZ3nB",
     "created_at": "2026-03-18T12:31:32.880058+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1668",
@@ -68393,7 +69302,13 @@
     "media_id": "jK2hZ6n",
     "created_at": "2026-03-18T12:31:32.880097+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1415",
@@ -68496,7 +69411,13 @@
     "media_id": "YtaCTYl",
     "created_at": "2026-03-18T12:31:32.880116+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0361",
@@ -68589,7 +69510,13 @@
     "media_id": "84RyJf8",
     "created_at": "2026-03-18T12:31:32.880133+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0360",
@@ -68682,7 +69609,13 @@
     "media_id": "1TkiAFK",
     "created_at": "2026-03-18T12:31:32.880151+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3888",
@@ -68816,7 +69749,13 @@
     "media_id": "6pTkI99",
     "created_at": "2026-03-18T12:31:32.88017+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1670",
@@ -68928,7 +69867,13 @@
     "media_id": "ffQsyBj",
     "created_at": "2026-03-18T12:31:32.880187+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1671",
@@ -69050,7 +69995,13 @@
     "media_id": "2sQGZ5b",
     "created_at": "2026-03-18T12:31:32.880205+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0362",
@@ -69265,7 +70216,13 @@
     "media_id": "6cKQC5E",
     "created_at": "2026-03-18T12:31:32.880245+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0364",
@@ -69368,7 +70325,13 @@
     "media_id": "q8aHNoF",
     "created_at": "2026-03-18T12:31:32.880264+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1672",
@@ -70338,7 +71301,13 @@
     "media_id": "wt6rwjk",
     "created_at": "2026-03-18T12:31:32.880416+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1623",
@@ -70461,7 +71430,13 @@
     "media_id": "8eqjhOl",
     "created_at": "2026-03-18T12:31:32.880432+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0370",
@@ -70593,7 +71568,13 @@
     "media_id": "F1KxjBa",
     "created_at": "2026-03-18T12:31:32.880455+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0371",
@@ -70707,7 +71688,13 @@
     "media_id": "S4pwGlc",
     "created_at": "2026-03-18T12:31:32.880478+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0372",
@@ -71158,7 +72145,13 @@
     "media_id": "bpJL2Qs",
     "created_at": "2026-03-18T12:31:32.880552+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0374",
@@ -71290,7 +72283,13 @@
     "media_id": "mwpPcr1",
     "created_at": "2026-03-18T12:31:32.880575+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1674",
@@ -71422,7 +72421,13 @@
     "media_id": "cWemPG8",
     "created_at": "2026-03-18T12:31:32.880592+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0375",
@@ -71525,7 +72530,13 @@
     "media_id": "9XjtHvS",
     "created_at": "2026-03-18T12:31:32.880608+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1294",
@@ -71845,7 +72856,13 @@
     "media_id": "FS63wTN",
     "created_at": "2026-03-18T12:31:32.880658+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0376",
@@ -71948,7 +72965,13 @@
     "media_id": "c9MnDRp",
     "created_at": "2026-03-18T12:31:32.880674+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2292",
@@ -72051,7 +73074,13 @@
     "media_id": "mu5Guxt",
     "created_at": "2026-03-18T12:31:32.88069+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0377",
@@ -72174,7 +73203,13 @@
     "media_id": "EKXOMEh",
     "created_at": "2026-03-18T12:31:32.880707+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0378",
@@ -72287,7 +73322,13 @@
     "media_id": "8DiFDVA",
     "created_at": "2026-03-18T12:31:32.880725+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0380",
@@ -72390,7 +73431,13 @@
     "media_id": "v1qBec9",
     "created_at": "2026-03-18T12:31:32.880742+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0379",
@@ -72493,7 +73540,13 @@
     "media_id": "UzkLrem",
     "created_at": "2026-03-18T12:31:32.880759+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0381",
@@ -72597,7 +73650,13 @@
     "media_id": "SSsBDwB",
     "created_at": "2026-03-18T12:31:32.880776+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0382",
@@ -72709,7 +73768,13 @@
     "media_id": "e4ojVhP",
     "created_at": "2026-03-18T12:31:32.880793+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1624",
@@ -72822,7 +73887,13 @@
     "media_id": "UIbGx6H",
     "created_at": "2026-03-18T12:31:32.880809+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0383",
@@ -72935,7 +74006,13 @@
     "media_id": "EAs3xL9",
     "created_at": "2026-03-18T12:31:32.880826+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1330",
@@ -73098,7 +74175,13 @@
     "media_id": "ZIViNh1",
     "created_at": "2026-03-18T12:31:32.880846+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1331",
@@ -73221,7 +74304,13 @@
     "media_id": "9pQSkH8",
     "created_at": "2026-03-18T12:31:32.880864+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "2327",
@@ -73344,7 +74433,13 @@
     "media_id": "Nh3mvOO",
     "created_at": "2026-03-18T12:31:32.880881+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0384",
@@ -73584,7 +74679,13 @@
     "media_id": "6sMAmNv",
     "created_at": "2026-03-18T12:31:32.880918+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0385",
@@ -73697,7 +74798,13 @@
     "media_id": "BLCvwr2",
     "created_at": "2026-03-18T12:31:32.880936+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1459",
@@ -73790,7 +74897,13 @@
     "media_id": "rR0LJzx",
     "created_at": "2026-03-18T12:31:32.880954+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0386",
@@ -73903,7 +75016,13 @@
     "media_id": "prbWx1D",
     "created_at": "2026-03-18T12:31:32.880971+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2397",
@@ -74006,7 +75125,13 @@
     "media_id": "5vfAI0I",
     "created_at": "2026-03-18T12:31:32.88099+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0387",
@@ -74119,7 +75244,13 @@
     "media_id": "gH5fRsC",
     "created_at": "2026-03-18T12:31:32.881007+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1676",
@@ -74364,7 +75495,13 @@
     "media_id": "QT5Q0nK",
     "created_at": "2026-03-18T12:31:32.881043+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3546",
@@ -74467,7 +75604,13 @@
     "media_id": "q7qkONO",
     "created_at": "2026-03-18T12:31:32.881062+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0389",
@@ -74672,7 +75815,13 @@
     "media_id": "JzQbv7J",
     "created_at": "2026-03-18T12:31:32.881097+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1730",
@@ -74785,7 +75934,13 @@
     "media_id": "x0lwvfq",
     "created_at": "2026-03-18T12:31:32.881114+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1737",
@@ -74888,7 +76043,13 @@
     "media_id": "4ievMJ9",
     "created_at": "2026-03-18T12:31:32.881132+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1677",
@@ -74990,7 +76151,13 @@
     "media_id": "xiA6lRr",
     "created_at": "2026-03-18T12:31:32.88115+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0390",
@@ -75112,7 +76279,13 @@
     "media_id": "WgJnBH5",
     "created_at": "2026-03-18T12:31:32.881168+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3547",
@@ -75234,7 +76407,13 @@
     "media_id": "OeL23VY",
     "created_at": "2026-03-18T12:31:32.881186+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1379",
@@ -75346,7 +76525,13 @@
     "media_id": "r29jP7S",
     "created_at": "2026-03-18T12:31:32.881204+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0391",
@@ -75448,7 +76633,13 @@
     "media_id": "TiaZTxx",
     "created_at": "2026-03-18T12:31:32.881221+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0392",
@@ -75551,7 +76742,13 @@
     "media_id": "Ys97II0",
     "created_at": "2026-03-18T12:31:32.881239+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1678",
@@ -75663,7 +76860,13 @@
     "media_id": "IGtBdNT",
     "created_at": "2026-03-18T12:31:32.881256+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0393",
@@ -75765,7 +76968,13 @@
     "media_id": "KXyoEtA",
     "created_at": "2026-03-18T12:31:32.881273+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0394",
@@ -75877,7 +77086,13 @@
     "media_id": "en550rk",
     "created_at": "2026-03-18T12:31:32.881289+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0396",
@@ -75980,7 +77195,13 @@
     "media_id": "hxyTtWj",
     "created_at": "2026-03-18T12:31:32.881306+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0395",
@@ -76083,7 +77304,13 @@
     "media_id": "hrrS0Ed",
     "created_at": "2026-03-18T12:31:32.881323+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0397",
@@ -76185,7 +77412,13 @@
     "media_id": "uJmK7Z1",
     "created_at": "2026-03-18T12:31:32.881339+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1679",
@@ -76420,7 +77653,13 @@
     "media_id": "VQ3sNCn",
     "created_at": "2026-03-18T12:31:32.881373+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0399",
@@ -76523,7 +77762,13 @@
     "media_id": "7f2jsqP",
     "created_at": "2026-03-18T12:31:32.88139+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0400",
@@ -76636,7 +77881,13 @@
     "media_id": "Ia7tumC",
     "created_at": "2026-03-18T12:31:32.881406+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1380",
@@ -76749,7 +78000,13 @@
     "media_id": "FxhcxUW",
     "created_at": "2026-03-18T12:31:32.881422+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1381",
@@ -76862,7 +78119,13 @@
     "media_id": "VW88JNd",
     "created_at": "2026-03-18T12:31:32.881439+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0401",
@@ -76965,7 +78228,13 @@
     "media_id": "2dImyQ8",
     "created_at": "2026-03-18T12:31:32.881457+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0402",
@@ -77185,7 +78454,13 @@
     "media_id": "lyKCLmK",
     "created_at": "2026-03-18T12:31:32.881493+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1738",
@@ -77287,7 +78562,13 @@
     "media_id": "5fKX7wi",
     "created_at": "2026-03-18T12:31:32.881511+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0405",
@@ -77390,7 +78671,13 @@
     "media_id": "znQUdHY",
     "created_at": "2026-03-18T12:31:32.881529+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0404",
@@ -77493,7 +78780,13 @@
     "media_id": "f1jf47L",
     "created_at": "2026-03-18T12:31:32.881546+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2188",
@@ -77595,7 +78888,13 @@
     "media_id": "kont8Ut",
     "created_at": "2026-03-18T12:31:32.881564+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0406",
@@ -77697,7 +78996,13 @@
     "media_id": "NJzBsGJ",
     "created_at": "2026-03-18T12:31:32.881581+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0407",
@@ -77789,7 +79094,13 @@
     "media_id": "IpONWYv",
     "created_at": "2026-03-18T12:31:32.881599+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0408",
@@ -77892,7 +79203,13 @@
     "media_id": "fTlkJop",
     "created_at": "2026-03-18T12:31:32.881616+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3664",
@@ -78015,7 +79332,13 @@
     "media_id": "X6ytgYZ",
     "created_at": "2026-03-18T12:31:32.881635+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3548",
@@ -78118,7 +79441,13 @@
     "media_id": "mWBtgmb",
     "created_at": "2026-03-18T12:31:32.881652+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0409",
@@ -78220,7 +79549,13 @@
     "media_id": "1kB3Wmk",
     "created_at": "2026-03-18T12:31:32.88167+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1757",
@@ -78343,7 +79678,13 @@
     "media_id": "gKozT8X",
     "created_at": "2026-03-18T12:31:32.881688+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2805",
@@ -78456,7 +79797,13 @@
     "media_id": "daBmy1Y",
     "created_at": "2026-03-18T12:31:32.881706+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0410",
@@ -78560,7 +79907,13 @@
     "media_id": "qx4fgX7",
     "created_at": "2026-03-18T12:31:32.881725+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0411",
@@ -78674,7 +80027,13 @@
     "media_id": "H6ybluc",
     "created_at": "2026-03-18T12:31:32.881743+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0413",
@@ -78778,7 +80137,13 @@
     "media_id": "HsvHqgf",
     "created_at": "2026-03-18T12:31:32.88176+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "3560",
@@ -78941,7 +80306,13 @@
     "media_id": "LeaZOIz",
     "created_at": "2026-03-18T12:31:32.881778+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0414",
@@ -79044,7 +80415,13 @@
     "media_id": "bBi35y3",
     "created_at": "2026-03-18T12:31:32.881795+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0415",
@@ -79167,7 +80544,13 @@
     "media_id": "SxHteRW",
     "created_at": "2026-03-18T12:31:32.881811+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1739",
@@ -79269,7 +80652,13 @@
     "media_id": "Gi2BXfK",
     "created_at": "2026-03-18T12:31:32.881827+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2143",
@@ -79372,7 +80761,13 @@
     "media_id": "RSOsp5d",
     "created_at": "2026-03-18T12:31:32.881843+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1740",
@@ -79475,7 +80870,13 @@
     "media_id": "CJwa0vD",
     "created_at": "2026-03-18T12:31:32.88186+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1741",
@@ -79578,7 +80979,13 @@
     "media_id": "3T12T87",
     "created_at": "2026-03-18T12:31:32.881876+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0416",
@@ -79690,7 +81097,13 @@
     "media_id": "3s4NnTh",
     "created_at": "2026-03-18T12:31:32.881892+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0417",
@@ -79782,7 +81195,13 @@
     "media_id": "dPmaUaU",
     "created_at": "2026-03-18T12:31:32.881908+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0418",
@@ -79904,7 +81323,13 @@
     "media_id": "7inpWch",
     "created_at": "2026-03-18T12:31:32.881925+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0419",
@@ -79997,7 +81422,13 @@
     "media_id": "laVRfDf",
     "created_at": "2026-03-18T12:31:32.881942+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2321",
@@ -80119,7 +81550,13 @@
     "media_id": "vKilzz3",
     "created_at": "2026-03-18T12:31:32.88196+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0420",
@@ -80221,7 +81658,13 @@
     "media_id": "UmpPAAe",
     "created_at": "2026-03-18T12:31:32.881977+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0421",
@@ -80343,7 +81786,13 @@
     "media_id": "8fgqP5a",
     "created_at": "2026-03-18T12:31:32.881995+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0422",
@@ -80445,7 +81894,13 @@
     "media_id": "BIb1tGo",
     "created_at": "2026-03-18T12:31:32.882013+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "1680",
@@ -80547,7 +82002,13 @@
     "media_id": "EmlJR2y",
     "created_at": "2026-03-18T12:31:32.88203+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0423",
@@ -80659,7 +82120,13 @@
     "media_id": "BCUR88E",
     "created_at": "2026-03-18T12:31:32.882051+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0424",
@@ -80762,7 +82229,13 @@
     "media_id": "ocYc6Db",
     "created_at": "2026-03-18T12:31:32.882069+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0425",
@@ -80864,7 +82337,13 @@
     "media_id": "DU5Kkj2",
     "created_at": "2026-03-18T12:31:32.882087+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0426",
@@ -80957,7 +82436,13 @@
     "media_id": "A6wtbuL",
     "created_at": "2026-03-18T12:31:32.882104+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0427",
@@ -81050,7 +82535,13 @@
     "media_id": "UilDHSs",
     "created_at": "2026-03-18T12:31:32.882122+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0428",
@@ -81280,7 +82771,13 @@
     "media_id": "0IgNjSM",
     "created_at": "2026-03-18T12:31:32.882158+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0430",
@@ -81382,7 +82879,13 @@
     "media_id": "PdmaD0N",
     "created_at": "2026-03-18T12:31:32.882176+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2293",
@@ -81624,7 +83127,13 @@
     "media_id": "76vfTdU",
     "created_at": "2026-03-18T12:31:32.882212+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0431",
@@ -81738,7 +83247,13 @@
     "media_id": "aXtJhlg",
     "created_at": "2026-03-18T12:31:32.88223+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2796",
@@ -81852,7 +83367,13 @@
     "media_id": "gFyFj9z",
     "created_at": "2026-03-18T12:31:32.882248+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2812",
@@ -81976,7 +83497,13 @@
     "media_id": "QjE2DcA",
     "created_at": "2026-03-18T12:31:32.882266+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0432",
@@ -82069,7 +83596,13 @@
     "media_id": "5eLRITT",
     "created_at": "2026-03-18T12:31:32.882283+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0433",
@@ -82172,7 +83705,13 @@
     "media_id": "i8BdLTK",
     "created_at": "2026-03-18T12:31:32.882299+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0434",
@@ -82275,7 +83814,13 @@
     "media_id": "oom75KC",
     "created_at": "2026-03-18T12:31:32.882316+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2808",
@@ -82399,7 +83944,13 @@
     "media_id": "BmrwWzo",
     "created_at": "2026-03-18T12:31:32.882333+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2803",
@@ -82503,7 +84054,13 @@
     "media_id": "r5DgrW9",
     "created_at": "2026-03-18T12:31:32.88235+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0436",
@@ -82595,7 +84152,13 @@
     "media_id": "s5PdDyY",
     "created_at": "2026-03-18T12:31:32.882366+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1742",
@@ -82707,7 +84270,13 @@
     "media_id": "wOLmCXc",
     "created_at": "2026-03-18T12:31:32.882382+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1743",
@@ -82840,7 +84409,13 @@
     "media_id": "z6TAHoT",
     "created_at": "2026-03-18T12:31:32.882399+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0437",
@@ -82943,7 +84518,13 @@
     "media_id": "ainizkb",
     "created_at": "2026-03-18T12:31:32.882415+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1765",
@@ -83056,7 +84637,13 @@
     "media_id": "Iptlv6x",
     "created_at": "2026-03-18T12:31:32.882431+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0864",
@@ -83159,7 +84746,13 @@
     "media_id": "x306lCW",
     "created_at": "2026-03-18T12:31:32.882448+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "5201",
@@ -83262,7 +84855,13 @@
     "media_id": "KOpzGBL",
     "created_at": "2026-03-18T12:31:32.882466+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0438",
@@ -83365,7 +84964,13 @@
     "media_id": "vmwLyCg",
     "created_at": "2026-03-18T12:31:32.882483+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0439",
@@ -83477,7 +85082,13 @@
     "media_id": "kXaIn5A",
     "created_at": "2026-03-18T12:31:32.882501+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "2294",
@@ -83687,7 +85298,13 @@
     "media_id": "FQXdXzY",
     "created_at": "2026-03-18T12:31:32.882536+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1167",
@@ -88074,7 +89691,13 @@
     "media_id": "hnOYgH3",
     "created_at": "2026-03-18T12:31:32.88335+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "0451",
@@ -89007,7 +90630,13 @@
     "media_id": "da4cXST",
     "created_at": "2026-03-18T12:31:32.883492+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "2741",
@@ -90274,7 +91903,12 @@
     "media_id": "FFRP97T",
     "created_at": "2026-03-18T12:31:32.883719+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3301",
@@ -90738,7 +92372,12 @@
     "media_id": "CosupLu",
     "created_at": "2026-03-18T12:31:32.883799+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3315",
@@ -91748,7 +93387,12 @@
     "media_id": "mWppALS",
     "created_at": "2026-03-18T12:31:32.88395+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1383",
@@ -92196,7 +93840,12 @@
     "media_id": "iQ241UP",
     "created_at": "2026-03-18T12:31:32.884021+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1511",
@@ -92401,7 +94050,12 @@
     "media_id": "pAIWRGu",
     "created_at": "2026-03-18T12:31:32.884056+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0060",
+    "equipment_name": "Área de Cardio y Ergómetros",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0060_cardio_vista-01.jpg"
+    ]
   },
   {
     "id": "3218",
@@ -94010,7 +95664,13 @@
     "media_id": "P9ZRyLT",
     "created_at": "2026-03-18T12:31:32.88432+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0489",
@@ -96866,7 +98526,12 @@
     "media_id": "mr7pkqP",
     "created_at": "2026-03-18T12:31:32.884774+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0060",
+    "equipment_name": "Área de Cardio y Ergómetros",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0060_cardio_vista-01.jpg"
+    ]
   },
   {
     "id": "3224",
@@ -97051,7 +98716,12 @@
     "media_id": "mbkgB44",
     "created_at": "2026-03-18T12:31:32.884807+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0508",
@@ -97154,7 +98824,12 @@
     "media_id": "1GPHRyK",
     "created_at": "2026-03-18T12:31:32.884824+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2612",
@@ -97620,7 +99295,13 @@
     "media_id": "Kal9cQQ",
     "created_at": "2026-03-18T12:31:32.8849+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0518",
@@ -97744,7 +99425,13 @@
     "media_id": "I4tibZG",
     "created_at": "2026-03-18T12:31:32.884918+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0520",
@@ -97847,7 +99534,13 @@
     "media_id": "5KLbZWx",
     "created_at": "2026-03-18T12:31:32.884936+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0519",
@@ -97950,7 +99643,13 @@
     "media_id": "7w6i0vE",
     "created_at": "2026-03-18T12:31:32.884957+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0521",
@@ -98053,7 +99752,13 @@
     "media_id": "b9kqlBy",
     "created_at": "2026-03-18T12:31:32.884973+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0522",
@@ -98156,7 +99861,13 @@
     "media_id": "Ca76jUE",
     "created_at": "2026-03-18T12:31:32.884991+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0523",
@@ -98249,7 +99960,13 @@
     "media_id": "UM8mgyG",
     "created_at": "2026-03-18T12:31:32.88501+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0524",
@@ -98383,7 +100100,13 @@
     "media_id": "kjE55n5",
     "created_at": "2026-03-18T12:31:32.885036+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0525",
@@ -98516,7 +100239,13 @@
     "media_id": "4KJEpzb",
     "created_at": "2026-03-18T12:31:32.885058+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0526",
@@ -98639,7 +100368,13 @@
     "media_id": "a4F9Oyc",
     "created_at": "2026-03-18T12:31:32.885077+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0527",
@@ -98772,7 +100507,13 @@
     "media_id": "tznL2Ad",
     "created_at": "2026-03-18T12:31:32.885098+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0528",
@@ -98885,7 +100626,13 @@
     "media_id": "I4KkPdl",
     "created_at": "2026-03-18T12:31:32.885123+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0529",
@@ -98989,7 +100736,13 @@
     "media_id": "M74kdvm",
     "created_at": "2026-03-18T12:31:32.885142+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0530",
@@ -99112,7 +100865,13 @@
     "media_id": "OaE7CpD",
     "created_at": "2026-03-18T12:31:32.885161+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0531",
@@ -99215,7 +100974,13 @@
     "media_id": "rseLfH3",
     "created_at": "2026-03-18T12:31:32.885179+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0532",
@@ -99338,7 +101103,13 @@
     "media_id": "L4ay0PW",
     "created_at": "2026-03-18T12:31:32.885198+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0533",
@@ -99452,7 +101223,13 @@
     "media_id": "DB0n8AG",
     "created_at": "2026-03-18T12:31:32.885219+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0534",
@@ -99556,7 +101333,13 @@
     "media_id": "ZA8b5hc",
     "created_at": "2026-03-18T12:31:32.885238+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0535",
@@ -99670,7 +101453,13 @@
     "media_id": "LHWF7us",
     "created_at": "2026-03-18T12:31:32.885267+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0536",
@@ -99784,7 +101573,13 @@
     "media_id": "WKMQzCD",
     "created_at": "2026-03-18T12:31:32.885288+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0537",
@@ -99887,7 +101682,13 @@
     "media_id": "vzAxBtt",
     "created_at": "2026-03-18T12:31:32.885309+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1298",
@@ -99990,7 +101791,13 @@
     "media_id": "rg59QCH",
     "created_at": "2026-03-18T12:31:32.885327+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0538",
@@ -100123,7 +101930,13 @@
     "media_id": "S37C94C",
     "created_at": "2026-03-18T12:31:32.885345+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0539",
@@ -100226,7 +102039,13 @@
     "media_id": "yCvYdi7",
     "created_at": "2026-03-18T12:31:32.885363+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0540",
@@ -100329,7 +102148,13 @@
     "media_id": "osdXT3K",
     "created_at": "2026-03-18T12:31:32.88538+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0541",
@@ -100432,7 +102257,13 @@
     "media_id": "g9AsZ8P",
     "created_at": "2026-03-18T12:31:32.885399+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0542",
@@ -100536,7 +102367,13 @@
     "media_id": "aXcUyKb",
     "created_at": "2026-03-18T12:31:32.885421+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0543",
@@ -100649,7 +102486,13 @@
     "media_id": "kuXhl0o",
     "created_at": "2026-03-18T12:31:32.885439+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0544",
@@ -100753,7 +102596,13 @@
     "media_id": "5bpPTHv",
     "created_at": "2026-03-18T12:31:32.885457+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0545",
@@ -100857,7 +102706,13 @@
     "media_id": "ktf3nvW",
     "created_at": "2026-03-18T12:31:32.885475+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0546",
@@ -100960,7 +102815,13 @@
     "media_id": "BkxB8LW",
     "created_at": "2026-03-18T12:31:32.885493+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1438",
@@ -101063,7 +102924,13 @@
     "media_id": "ZEkjZDi",
     "created_at": "2026-03-18T12:31:32.885511+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0547",
@@ -101166,7 +103033,13 @@
     "media_id": "UDm6cGl",
     "created_at": "2026-03-18T12:31:32.885528+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0548",
@@ -101280,7 +103153,13 @@
     "media_id": "8ARQ9Hw",
     "created_at": "2026-03-18T12:31:32.88555+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0549",
@@ -101393,7 +103272,13 @@
     "media_id": "UHJlbu3",
     "created_at": "2026-03-18T12:31:32.88557+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0550",
@@ -101507,7 +103392,13 @@
     "media_id": "yWxMvB5",
     "created_at": "2026-03-18T12:31:32.885588+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0551",
@@ -101651,7 +103542,13 @@
     "media_id": "Ha7SZ3y",
     "created_at": "2026-03-18T12:31:32.885608+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0552",
@@ -101754,7 +103651,13 @@
     "media_id": "7Ba7bQ2",
     "created_at": "2026-03-18T12:31:32.885625+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0553",
@@ -101847,7 +103750,13 @@
     "media_id": "blBXysN",
     "created_at": "2026-03-18T12:31:32.88565+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "1345",
@@ -101950,7 +103859,13 @@
     "media_id": "wf24o8S",
     "created_at": "2026-03-18T12:31:32.88567+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0554",
@@ -102063,7 +103978,13 @@
     "media_id": "9Tkqa9O",
     "created_at": "2026-03-18T12:31:32.885691+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0555",
@@ -102388,7 +104309,12 @@
     "media_id": "dTg95eZ",
     "created_at": "2026-03-18T12:31:32.885758+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1420",
@@ -102718,7 +104644,12 @@
     "media_id": "h1ezqSu",
     "created_at": "2026-03-18T12:31:32.885812+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3211",
@@ -109569,7 +111500,12 @@
     "media_id": "ZnJHhMk",
     "created_at": "2026-03-18T12:31:32.886937+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3760",
@@ -114695,7 +116631,12 @@
     "media_id": "RJgzwny",
     "created_at": "2026-03-18T12:31:32.887777+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0631",
@@ -115242,7 +117183,12 @@
     "media_id": "szIn2UK",
     "created_at": "2026-03-18T12:31:32.887862+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1495",
@@ -115354,7 +117300,12 @@
     "media_id": "cJgSTmh",
     "created_at": "2026-03-18T12:31:32.887879+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0635",
@@ -115456,7 +117407,12 @@
     "media_id": "QUDd8WS",
     "created_at": "2026-03-18T12:31:32.887896+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0636",
@@ -118168,7 +120124,12 @@
     "media_id": "hCjGsRQ",
     "created_at": "2026-03-18T12:31:32.88832+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3203",
@@ -118270,7 +120231,12 @@
     "media_id": "mgejmGP",
     "created_at": "2026-03-18T12:31:32.888336+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1707",
@@ -119807,7 +121773,13 @@
     "media_id": "KZXAtKQ",
     "created_at": "2026-03-18T12:31:32.888591+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0661",
@@ -120346,7 +122318,12 @@
     "media_id": "KhHJ338",
     "created_at": "2026-03-18T12:31:32.888679+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3533",
@@ -120561,7 +122538,12 @@
     "media_id": "enxnJcM",
     "created_at": "2026-03-18T12:31:32.888715+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3552",
@@ -122078,7 +124060,12 @@
     "media_id": "nCU1Ekp",
     "created_at": "2026-03-18T12:31:32.888959+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0672",
@@ -122625,7 +124612,13 @@
     "media_id": "OrETs32",
     "created_at": "2026-03-18T12:31:32.889047+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0001",
+    "equipment_name": "Banco Plano / Multiposición",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0001_banco-plano_vista-02.jpg"
+    ]
   },
   {
     "id": "3663",
@@ -122739,7 +124732,12 @@
     "media_id": "tFToB7l",
     "created_at": "2026-03-18T12:31:32.889065+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0677",
@@ -123188,7 +125186,12 @@
     "media_id": "isofgzg",
     "created_at": "2026-03-18T12:31:32.889136+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2204",
@@ -123282,7 +125285,12 @@
     "media_id": "XeMvLgE",
     "created_at": "2026-03-18T12:31:32.889154+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2205",
@@ -123385,7 +125393,12 @@
     "media_id": "0L2KwtI",
     "created_at": "2026-03-18T12:31:32.889173+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2202",
@@ -123508,7 +125521,12 @@
     "media_id": "oMypNrz",
     "created_at": "2026-03-18T12:31:32.88919+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2206",
@@ -123610,7 +125628,12 @@
     "media_id": "SKXQAx3",
     "created_at": "2026-03-18T12:31:32.889209+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2203",
@@ -123713,7 +125736,12 @@
     "media_id": "8coXSYU",
     "created_at": "2026-03-18T12:31:32.889227+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2209",
@@ -123826,7 +125854,12 @@
     "media_id": "CjETvlw",
     "created_at": "2026-03-18T12:31:32.889246+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2207",
@@ -123929,7 +125962,12 @@
     "media_id": "c3Pfhti",
     "created_at": "2026-03-18T12:31:32.889264+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0680",
@@ -124496,7 +126534,12 @@
     "media_id": "XVDdcoj",
     "created_at": "2026-03-18T12:31:32.889348+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3012",
@@ -125558,7 +127601,12 @@
     "media_id": "Y9hNPcN",
     "created_at": "2026-03-18T12:31:32.889525+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "1587",
@@ -128226,7 +130274,13 @@
     "media_id": "fKZgDEO",
     "created_at": "2026-03-18T12:31:32.889955+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0005",
+    "equipment_name": "Rack de Mancuernas y Peso Libre",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-01.jpg",
+      "/images/gym-equipment/CG-EQP-0005_rack-mancuernas_vista-02.jpg"
+    ]
   },
   {
     "id": "0730",
@@ -128668,7 +130722,12 @@
     "media_id": "Bn6TXyO",
     "created_at": "2026-03-18T12:31:32.890027+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3679",
@@ -128770,7 +130829,12 @@
     "media_id": "6ZCiYWQ",
     "created_at": "2026-03-18T12:31:32.890044+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3361",
@@ -129018,7 +131082,12 @@
     "media_id": "vpQaQkH",
     "created_at": "2026-03-18T12:31:32.89008+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0060",
+    "equipment_name": "Área de Cardio y Ergómetros",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0060_cardio_vista-01.jpg"
+    ]
   },
   {
     "id": "3671",
@@ -138214,7 +140283,12 @@
     "media_id": "Gn5FwYT",
     "created_at": "2026-03-18T12:31:32.891477+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3291",
@@ -139421,7 +141495,12 @@
     "media_id": "KtRomty",
     "created_at": "2026-03-18T12:31:32.891674+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3223",
@@ -140531,7 +142610,12 @@
     "media_id": "R1WYG5D",
     "created_at": "2026-03-18T12:31:32.905092+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0808",
@@ -142059,7 +144143,12 @@
     "media_id": "BMMolZ3",
     "created_at": "2026-03-18T12:31:32.905412+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0818",
@@ -142979,7 +145068,12 @@
     "media_id": "ZuXu4Eq",
     "created_at": "2026-03-18T12:31:32.905577+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0826",
@@ -143211,7 +145305,12 @@
     "media_id": "rjtuP6X",
     "created_at": "2026-03-18T12:31:32.905618+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0060",
+    "equipment_name": "Área de Cardio y Ergómetros",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0060_cardio_vista-01.jpg"
+    ]
   },
   {
     "id": "3655",
@@ -143564,7 +145663,12 @@
     "media_id": "rjiM4L3",
     "created_at": "2026-03-18T12:31:32.905681+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0060",
+    "equipment_name": "Área de Cardio y Ergómetros",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0060_cardio_vista-01.jpg"
+    ]
   },
   {
     "id": "2311",
@@ -144126,7 +146230,12 @@
     "media_id": "s8nrDXF",
     "created_at": "2026-03-18T12:31:32.905785+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3670",
@@ -144229,7 +146338,12 @@
     "media_id": "EZeDVzO",
     "created_at": "2026-03-18T12:31:32.905804+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0833",
@@ -144588,7 +146702,12 @@
     "media_id": "VBAWRPG",
     "created_at": "2026-03-18T12:31:32.905868+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0834",
@@ -145530,7 +147649,12 @@
     "media_id": "xmM75XG",
     "created_at": "2026-03-18T12:31:32.906055+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0841",
@@ -145869,7 +147993,12 @@
     "media_id": "fZFZ704",
     "created_at": "2026-03-18T12:31:32.906116+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0845",
@@ -145982,7 +148111,12 @@
     "media_id": "WU9BLIs",
     "created_at": "2026-03-18T12:31:32.906137+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "2371",
@@ -146095,7 +148229,12 @@
     "media_id": "YIUAtYf",
     "created_at": "2026-03-18T12:31:32.906156+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "0847",
@@ -147592,7 +149731,12 @@
     "media_id": "NAgVB3t",
     "created_at": "2026-03-18T12:31:32.90645+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": false
+    "availableInCronosGym": false,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   },
   {
     "id": "3637",
@@ -148547,6 +150691,11 @@
     "media_id": "bd5b860",
     "created_at": "2026-03-18T12:31:32.906631+00:00",
     "attribution": "© Gym visual — https://gymvisual.com/",
-    "availableInCronosGym": true
+    "availableInCronosGym": true,
+    "equipment_id": "CG-EQP-0040",
+    "equipment_name": "Rueda Abdominal y Tapete de Core",
+    "image_urls": [
+      "/images/gym-equipment/CG-EQP-0040_rueda-abdominal_vista-01.jpg"
+    ]
   }
 ]

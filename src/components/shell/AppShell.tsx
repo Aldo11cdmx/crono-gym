@@ -17,6 +17,7 @@ import type { CSSProperties } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { SURFACE } from "@/design/tokens";
 import { useActiveSession } from "@/context/ActiveSessionContext";
+import { useAuth } from "@/context/AuthContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BottomNav } from "./BottomNav";
 import { MobileNav } from "../MobileNav";
@@ -52,6 +53,7 @@ export function AppShell() {
   const { pathname } = useLocation();
   const reducedMotion = useReducedMotion();
   const { isActive } = useActiveSession();
+  const { user } = useAuth();
   /*
     The bottom dock (FAB always on mobile; pill when a session runs) floats over the
     bottom bar. The *amount* of space to reserve is a layout question the stylesheet
@@ -95,12 +97,16 @@ export function AppShell() {
       </div>
 
       <SideNav collapsed={collapsed} onToggleCollapsed={toggle} />
-      <div className="hidden md:block">
-        <BottomNav />
-      </div>
-      <div className="hidden md:block">
-        <ActiveWorkoutPill />
-      </div>
+      {user && (
+        <>
+          <div className="hidden md:block">
+            <BottomNav />
+          </div>
+          <div className="hidden md:block">
+            <ActiveWorkoutPill />
+          </div>
+        </>
+      )}
       <CoachFloatingButton />
       <MobileNav />
     </div>

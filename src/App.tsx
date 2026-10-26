@@ -114,7 +114,7 @@ export function AuthGate() {
         in `BottomNav` and `SideRail`, so this bar exists to put the mark on screen
         below 768px -- where the rail is `display: none` -- and nothing else.
       */}
-      {!isActive && (
+      {!isActive && userId && (
         <header
           className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md"
           style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
@@ -356,10 +356,16 @@ function Welcome({
           Explorar como invitado
         </a>
 
-        <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-neutral-400">
-          <span>⚡ Mapeo de máquinas del gym</span>
-          <span>📊 Registro de series y RPE</span>
-          <span>🤖 Coach con IA integrada</span>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-neutral-300">
+            ⚡ Mapeo de máquinas
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-neutral-300">
+            📊 Registro de series y RPE
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-neutral-300">
+            🤖 Coach con IA integrada
+          </span>
         </div>
       </div>
     </div>

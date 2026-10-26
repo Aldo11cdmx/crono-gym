@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@lib/supabase";
-import { X, Mail, Lock, User, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
+import { X, Mail, Lock, User, CheckCircle2, AlertCircle } from "lucide-react";
 import { RoleSelector } from "./RoleSelector";
 import { useAuth } from "@/context/AuthContext";
 
@@ -75,13 +75,9 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
     }
   }
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    onAuthenticated();
-  }
-
   if (availableRoles && availableRoles.length > 1) {
-    return (
+
+  return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
         <div className="bg-neutral-900/80 backdrop-blur-2xl rounded-3xl border border-white/10 p-8 max-w-sm w-full mx-auto shadow-2xl">
           <RoleSelector
@@ -111,7 +107,7 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
         <button type="button" onClick={onClose} aria-label="Cerrar" className="absolute right-4 top-4 rounded-lg p-1.5 text-neutral-400 transition hover:bg-white/5 hover:text-neutral-100">
           <X className="h-5 w-5" />
         </button>
-        <img src="/logo.jpg" alt="Cronos Gym" className="h-16 w-auto mx-auto mb-3 object-contain rounded-lg" />
+        <img src="/logo.jpg" alt="Cronos Gym" className="h-16 w-auto mx-auto mb-3 object-contain rounded-lg" style={{ filter: "invert(1)", mixBlendMode: "screen" }} />
         <h2 className="text-xl font-semibold text-white">Bienvenido a Cronos</h2>
         <p className="text-neutral-400 text-sm mb-6">Entrena, progresa y supera tus límites.</p>
 
@@ -173,12 +169,6 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
         <a href="#" onClick={(e) => { e.preventDefault(); onClose(); }} className="text-neutral-400 hover:text-white text-xs">
           Explorar como invitado
         </a>
-
-        <div className="mt-4 flex items-center justify-center">
-          <button type="button" onClick={handleLogout} className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-300">
-            <LogOut className="h-3.5 w-3.5" /> Cerrar sesión
-          </button>
-        </div>
       </div>
     </div>
   );

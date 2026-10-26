@@ -4,7 +4,6 @@ import { Outlet, useLocation, useNavigate, useOutletContext, useSearchParams } f
 import { supabase } from "@lib/supabase";
 import { ActiveWorkoutView } from "./components/workout/ActiveWorkoutView";
 import { AuthModal } from "./components/AuthModal";
-import { CronosLogo } from "./components/CronosLogo";
 import { BrandLockup } from "./components/shell/BrandLockup";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { Onboarding } from "./components/Onboarding";
@@ -254,9 +253,6 @@ function Welcome({
 }) {
   return (
     <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900/60 p-8 text-center shadow-glass">
-      <div className="mb-5 flex justify-center">
-        <CronosLogo size={64} showWordmark />
-      </div>
       {requestedLabel ? (
         <>
           <Lock className="mx-auto mb-3 h-7 w-7 text-accent" aria-hidden="true" />

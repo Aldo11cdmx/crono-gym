@@ -14,6 +14,7 @@
 
 import type { GymSettings } from "@/context/GymSettingsContext";
 import type { CoachContext } from "@/lib/coach/types";
+import type { GeneratedRoutine } from "@/lib/ai/routineGenerator";
 import { BAR_WEIGHTS } from "@/lib/workout/weightUtils";
 
 // ------------------------------------------------------------------ actions
@@ -36,7 +37,8 @@ export type CoachAction =
       reason: string;
     }
   | { type: "calorie_adjustment"; deltaKcal: number; reason: string }
-  | { type: "deload_suggestion"; durationWeeks: number; reason: string };
+  | { type: "deload_suggestion"; durationWeeks: number; reason: string }
+  | { type: "routine_proposal"; routine: GeneratedRoutine };
 
 /** The four kinds, for validating a model-produced `type` at runtime. */
 export const COACH_ACTION_TYPES = [
@@ -44,6 +46,7 @@ export const COACH_ACTION_TYPES = [
   "training_adjustment",
   "calorie_adjustment",
   "deload_suggestion",
+  "routine_proposal",
 ] as const;
 
 /** Narrows an untrusted value to a {@link CoachAction}. Never throws. */

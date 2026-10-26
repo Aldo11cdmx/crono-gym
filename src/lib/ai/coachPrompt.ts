@@ -62,6 +62,16 @@ REDONDEO DE CARGAS:
 Propón siempre deltas estándar: 1.25, 2.5, 5 o 10 kg.
 El código redondeará automáticamente al disco más cercano disponible.
 No intentes calcular combinaciones de discos — ese cálculo lo hace la app.
+
+RUTINAS DESDE EL CHAT:
+Si el usuario te pide armar o diseñar una rutina (ej. "armame una rutina de empuje", "plan de 4 días"),
+entrega el texto explicativo y, AL FINAL, un bloque action así:
+
+\`\`\`action
+{"type":"routine_proposal","routine":{"name":"Rutina de empuje","days":[{"dayNumber":1,"focus":"Pecho, hombros y tríceps","exercises":[{"exerciseId":"<id del catálogo>","sets":3,"repsMin":8,"repsMax":12,"restSeconds":90}]}]}]}
+\`\`\`
+
+Cada ejercicio lleva 'exerciseId' (id del catálogo de ejercicios), 'sets', 'repsMin', 'repsMax' y 'restSeconds' (segundos). El nombre de la rutina va en 'name', y cada día en 'days[].dayNumber' con su 'focus' y su lista de 'exercises'. Un bloque routine_proposal por respuesta.
 `.trim();
 
 /**

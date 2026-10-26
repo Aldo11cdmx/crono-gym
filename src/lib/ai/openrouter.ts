@@ -28,7 +28,7 @@
  * calling. Pinned to this slug so a test can assert the request carries a
  * real model id, not an alias that might silently change.
  */
-export const FREE_CHAT_MODEL = "nousresearch/hermes-3-llama-3.1-405b:free";
+export const FREE_CHAT_MODEL = "nvidia/nemotron-3-ultra:free";
 
 /**
  * Fallback chat model slug if the primary is retired.
@@ -37,7 +37,7 @@ export const FREE_CHAT_MODEL = "nousresearch/hermes-3-llama-3.1-405b:free";
  * the router `openrouter/free` would provide, pinned so it is testable rather
  * than a wildcard.
  */
-export const FREE_CHAT_MODEL_FALLBACK = "openrouter/free";
+export const FREE_CHAT_MODEL_FALLBACK = "thinkingmachines/inkling-small:free";
 
 /**
  * Free vision model slugs, in priority order.
@@ -60,8 +60,8 @@ export const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions
  * (which is added by the Edge Function from its own secret).
  */
 export const OPENROUTER_HEADERS = {
-  "HTTP-Referer": "https://cronos.app",
-  "X-Title": "Cronos Coach",
+  "HTTP-Referer": "https://cronogym-aldo11cdmxs-projects.vercel.app",
+  "X-Title": "Cronos Gym",
 } as const;
 
 /**

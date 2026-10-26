@@ -19,12 +19,12 @@ import {
 
 describe("Free model slugs", () => {
   it("pins the chat+tool model to a real slug, not an alias", () => {
-    expect(FREE_CHAT_MODEL).toBe("nousresearch/hermes-3-llama-3.1-405b:free");
+    expect(FREE_CHAT_MODEL).toBe("nvidia/nemotron-3-ultra:free");
     expect(FREE_CHAT_MODEL).not.toBe("openrouter/free");
   });
 
   it("names a fallback model", () => {
-    expect(FREE_CHAT_MODEL_FALLBACK).toBe("openrouter/free");
+    expect(FREE_CHAT_MODEL_FALLBACK).toBe("thinkingmachines/inkling-small:free");
   });
 
   it("lists at least one vision model", () => {
@@ -43,11 +43,11 @@ describe("OpenRouter endpoint", () => {
   });
 
   it("sets the HTTP-Referer to the app origin", () => {
-    expect(OPENROUTER_HEADERS["HTTP-Referer"]).toBe("https://cronos.app");
+    expect(OPENROUTER_HEADERS["HTTP-Referer"]).toBe("https://cronogym-aldo11cdmxs-projects.vercel.app");
   });
 
   it("sets X-Title for the app", () => {
-    expect(OPENROUTER_HEADERS["X-Title"]).toBe("Cronos Coach");
+    expect(OPENROUTER_HEADERS["X-Title"]).toBe("Cronos Gym");
   });
 });
 

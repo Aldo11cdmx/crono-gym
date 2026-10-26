@@ -1512,6 +1512,14 @@ export const COACH_LABELS = {
    */
   chatSignInAgain: "Volver a entrar",
 
+  /** Sugerencias de un toque para arrancar la conversación con una mano. */
+  chatSuggestions: [
+    "¿Qué peso uso?",
+    "Sugerir descanso",
+    "Analizar racha",
+    "Reemplazar ejercicio",
+  ] as readonly string[],
+
   /** One classified failure, per `CoachError` code. */
   chatErrors: {
     RATE_LIMITED: "Has preguntado demasiado rápido. Espera un momento.",

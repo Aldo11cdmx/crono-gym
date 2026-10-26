@@ -1,4 +1,4 @@
-﻿-- CRONOS GYM - FASE B.2: finalize_session hardened definitivo y corregido
+-- CRONOS GYM - FASE B.2: finalize_session hardened definitivo y corregido
 create or replace function public.finalize_session(
     p_log_id uuid,
     p_user_id uuid,
@@ -173,4 +173,4 @@ create or replace function public.finalize_session(
   $$;
 
 revoke all on function public.finalize_session(uuid,uuid,uuid,text,timestamptz,timestamptz,integer,text,jsonb) from public, anon;
-grant execute on function public.finalize_session(uuid,uuid,uuid,text,timestamptz,timestamptz,integer,text,jsonb) to authenticated;
+grant execute on function public.finalize_session(uuid,uuid,uuid,text,timestamptz,timestamptz,integer,text,jsonb) to anon, authenticated, service_role;

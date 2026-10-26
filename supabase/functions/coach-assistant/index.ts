@@ -100,7 +100,7 @@ type AdminClient = SupabaseClient<CoachDatabase>;
  * started answering 404. Pinned still beats the router alias, which trades that 404 for
  * a silent change of model under the same config.
  */
-const MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
+const MODEL = "nvidia/nemotron-3-ultra:free";
 
 /**
  * Output budget for the visible answer.
@@ -132,6 +132,9 @@ const TOP_P = 0.9;
  * first one's merely chatty one.
  */
 const REASONING = { effort: "none" } as const;
+
+/** Fallback model when the primary is rate-limited or unavailable. */
+const FALLBACK_MODEL = "thinkingmachines/inkling-small:free";
 
 /** Upstream budget. Past this the user is better served by a clear "busy". */
 const TIMEOUT_MS = 15_000;
@@ -463,8 +466,8 @@ async function callOpenRouter(
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": Deno.env.get("APP_URL") ?? "https://cronos.app",
-          "X-Title": "Cronos Coach",
+          "HTTP-Referer": Deno.env.get("APP_URL") ?? "https://cronogym-aldo11cdmxs-projects.vercel.app",
+          "X-Title": "Cronos Gym",
         },
         body: JSON.stringify({
           model: MODEL,
@@ -596,8 +599,8 @@ async function callWithTools(
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": Deno.env.get("APP_URL") ?? "https://cronos.app",
-          "X-Title": "Cronos Coach",
+          "HTTP-Referer": Deno.env.get("APP_URL") ?? "https://cronogym-aldo11cdmxs-projects.vercel.app",
+          "X-Title": "Cronos Gym",
         },
         body: JSON.stringify({
           model: MODEL,

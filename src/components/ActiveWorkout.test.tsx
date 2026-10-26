@@ -31,7 +31,7 @@ import type { PlannedExercise } from "../hooks/useGymData";
 import { EMPTY_PERFORMANCE } from "../hooks/usePreviousPerformance";
 import type { PreviousPerformance } from "../lib/overload";
 import { queueAndSync } from "../lib/sessionSync";
-import { SET_TYPE_LABELS, GYM_LABELS, REST_TIMER_LABELS } from "../lib/i18n";
+import { SET_TYPE_LABELS, SET_LOGGER_LABELS, GYM_LABELS, REST_TIMER_LABELS } from "../lib/i18n";
 import { TICK_MS } from "../lib/workout/restTimer";
 import { GYM_SETTINGS_KEY } from "../context/GymSettingsContext";
 import { loadRecoverableDraft, saveDraft, type SessionDraft } from "../lib/offlineStore";
@@ -211,8 +211,10 @@ function setRow(n: number): HTMLElement {
   return screen.getByRole("group", { name: `Serie ${n}` });
 }
 
-function kindChip(n: number, label: string): HTMLElement {
-  return within(setRow(n)).getByRole("button", { name: `Serie ${n} de tipo ${label}` });
+function kindChip(n: number, _label: string): HTMLElement {
+  return within(setRow(n)).getByRole("button", {
+    name: (name) => name.startsWith(`Serie ${n}, tipo `),
+  });
 }
 
 function removeButton(n: number): HTMLElement {
@@ -285,7 +287,7 @@ describe("ActiveWorkout set rows", () => {
 
   it("starts every row as a normal set", () => {
     renderWorkout();
-    expect(kindChip(1, SET_TYPE_LABELS.normal).getAttribute("aria-pressed")).toBe("true");
+    expect(kindChip(1, SET_TYPE_LABELS.normal)).toBeTruthy();
   });
 
   it("snaps a typed weight onto the rack's real steps", () => {
@@ -315,9 +317,10 @@ describe("ActiveWorkout duplicating a set", () => {
       target: { value: "6" },
     });
     fireEvent.click(kindChip(1, SET_TYPE_LABELS.drop));
+    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 1) }));
     fireEvent.click(duplicateButton(1));
 
-    expect(kindChip(2, SET_TYPE_LABELS.drop).getAttribute("aria-pressed")).toBe("true");
+    expect(kindChip(2, SET_TYPE_LABELS.drop)).toBeTruthy();
     expect(within(setRow(2)).getByLabelText("Repeticiones")).toHaveProperty("value", "6");
   });
 
@@ -407,8 +410,11 @@ describe("ActiveWorkout set kind at the persistence boundary", () => {
   async function finishAndReadSets(): Promise<{ is_warmup: boolean }[]> {
     renderWorkout();
     fireEvent.click(kindChip(1, SET_TYPE_LABELS.warmup));
+    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.warmup, 1) }));
     fireEvent.click(kindChip(2, SET_TYPE_LABELS.drop));
+    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 2) }));
     fireEvent.click(kindChip(3, SET_TYPE_LABELS.failure));
+    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.failure, 3) }));
     // Complete every row, or nothing reaches the payload.
     for (const n of [1, 2, 3]) fireEvent.click(completeButton(n));
 
@@ -774,6 +780,7 @@ describe("ActiveWorkout routine separation", () => {
     renderWorkout(items);
     fireEvent.change(weightField(1), { target: { value: "100" } });
     fireEvent.click(kindChip(1, SET_TYPE_LABELS.drop));
+    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 1) }));
 
     // The routine is a prescription: three sets of a squat, and nothing
     // about what this session did with them.

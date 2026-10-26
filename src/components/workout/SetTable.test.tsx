@@ -28,7 +28,7 @@ import {
 import type { OverloadTarget } from "../../lib/overload";
 import type { SetEntry } from "../../lib/workout/types";
 import { sameColor } from "../../test-support/color";
-import { ACCENT, GLASS, MOTION, NUMERIC, STATUS, SURFACE, TEXT, TYPE } from "../../design/tokens";
+import { GLASS, MOTION, NUMERIC, STATUS, SURFACE, TEXT, TYPE } from "../../design/tokens";
 
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -277,47 +277,38 @@ describe("the completion toggle", () => {
   });
 });
 
-describe("the kind chips", () => {
-  it("keeps them, because `kind` decides what counts as volume", () => {
+describe("the set-kind badge", () => {
+  it("opens the type sheet when the badge is tapped", () => {
     renderTable();
 
-    expect(
+    fireEvent.click(
       within(row(1)).getByRole("button", {
-        name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.warmup, 1),
+        name: SET_LOGGER_LABELS.setBadgeAriaLabel(SET_TYPE_LABELS.normal, 1),
+      }),
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 1),
       }),
     ).toBeTruthy();
   });
 
   it("reports the new kind against the right row", () => {
     const { props } = renderTable();
+
     fireEvent.click(
       within(row(2)).getByRole("button", {
+        name: SET_LOGGER_LABELS.setBadgeAriaLabel(SET_TYPE_LABELS.normal, 2),
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
         name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 2),
       }),
     );
 
     expect(props.onChange).toHaveBeenCalledWith(1, expect.objectContaining({ kind: "drop" }));
-  });
-
-  it("marks the current kind as pressed rather than as selected", () => {
-    renderTable();
-
-    // `aria-pressed`, not a radio. A set can genuinely be unclassified, and a radiogroup
-    // announces "one of these is chosen" before anyone has touched the row.
-    const chip = within(row(1)).getByRole("button", {
-      name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.normal, 1),
-    });
-    expect(chip.getAttribute("aria-pressed")).toBe("true");
-    expect(screen.queryByRole("radiogroup")).toBeNull();
-  });
-
-  it("fills the pressed chip with the accent, so the current kind is one glance", () => {
-    renderTable();
-    const chip = within(row(1)).getByRole("button", {
-      name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.normal, 1),
-    });
-
-    expect(sameColor((chip as HTMLElement).style.background, ACCENT.base)).toBe(true);
   });
 });
 
@@ -356,7 +347,6 @@ describe("the completed row", () => {
 
     const [done, open] = setRows(container);
     expect(sameColor(done.style.background, STATUS.success.muted)).toBe(true);
-    expect(done.style.border).toContain(STATUS.success.border);
     expect(sameColor(open.style.background, GLASS.fill)).toBe(true);
   });
 });

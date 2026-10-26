@@ -15,7 +15,6 @@
 
 import { useMemo } from "react";
 import { User, Briefcase, Shield, Cpu } from "lucide-react";
-import { GlassCard } from "@/components/ui";
 import {
   ACCENT,
   GLASS,

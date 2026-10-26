@@ -111,14 +111,15 @@ export function AuthGate() {
   return (
     <AuthModalProvider open={openAuthModal}>
       <div className="min-h-screen bg-neutral-950 text-neutral-100">
-        {/*
-          Brand-only since Fase 7 removed the header tab row. The destinations live
-          in `BottomNav` and `SideRail`, so this bar exists to put the mark on screen
-          below 768px -- where the rail is `display: none` -- and nothing else.
-        */}
+      {/*
+        Brand-only since Fase 7 removed the header tab row. The destinations live
+        in `BottomNav` and `SideRail`, so this bar exists to put the mark on screen
+        below 768px -- where the rail is `display: none` -- and nothing else.
+      */}
+      {!isActive && (
         <header
           className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md"
-          style={{ display: isActive ? "none" : undefined, paddingTop: "env(safe-area-inset-top, 0px)" }}
+          style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
         >
           <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <h1 className="flex items-center gap-2.5">
@@ -136,8 +137,9 @@ export function AuthGate() {
             </h1>
           </div>
         </header>
+      )}
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className={`mx-auto max-w-6xl px-6 ${isActive ? "py-0" : "py-8"}`}>
         {sync.pending > 0 && !sync.online && (
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5">
             <p className="text-xs text-amber-200">

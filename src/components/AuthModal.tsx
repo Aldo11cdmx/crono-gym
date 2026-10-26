@@ -2,6 +2,8 @@ import { useState } from "react";
 import { supabase } from "@lib/supabase";
 import { X, Mail, Lock, User, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
 import { CronosLogo } from "./CronosLogo";
+import { RoleSelector } from "./RoleSelector";
+import { useAuth } from "@/context/AuthContext";
 
 interface AuthModalProps {
   open: boolean;
@@ -10,6 +12,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
+  const { setActiveRole } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +21,8 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState<string[] | null>(null);
+  const [pendingName, setPendingName] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -45,6 +50,13 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
       if (mode === "login") {
         const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
         if (authError) throw authError;
+        const { data: rolesData } = await supabase.rpc("my_roles");
+        const roles = (rolesData ?? []).map((r: unknown) => String(r));
+        if (roles.length > 1) {
+          setAvailableRoles(roles);
+          setPendingName(displayName.trim() || null);
+          return;
+        }
         onAuthenticated();
       } else {
         const { error: authError } = await supabase.auth.signUp({
@@ -67,6 +79,25 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
   async function handleLogout() {
     await supabase.auth.signOut();
     onAuthenticated();
+  }
+
+  if (availableRoles && availableRoles.length > 1) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
+        <div className="bg-neutral-900/80 backdrop-blur-2xl rounded-3xl border border-white/10 p-8 max-w-sm w-full mx-auto shadow-2xl">
+          <RoleSelector
+            availableRoles={availableRoles}
+            activeRole="athlete"
+            displayName={pendingName}
+            onSelect={(role) => {
+              setActiveRole(role as any);
+              setAvailableRoles(null);
+              onAuthenticated();
+            }}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (

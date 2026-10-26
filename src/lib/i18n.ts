@@ -719,26 +719,26 @@ export const BRAND_LABELS = {
  */
 export const AUTH_LABELS = {
   title: "Bienvenido a Cronos",
-  subtitle: "Entrena, progresa y supera tus límites.",
+  subtitle: "Entrena, progresa y supera tus l\u00edmites.",
   google: "Continuar con Google",
-  emailToggle: "Iniciar con correo electrónico",
+  emailToggle: "Iniciar con correo electr\u00f3nico",
   emailPlaceholder: "tu@correo.com",
   passwordPlaceholder: "........",
   namePlaceholder: "Tu nombre",
-  login: "Iniciar Sesión",
+  login: "Iniciar Sesi\u00f3n",
   signup: "Registrar Cuenta",
-  loginHint: "¿No tienes cuenta? Crear una",
-  signupHint: "¿Ya tienes cuenta? Iniciar sesión",
+  loginHint: "\u00bfNo tienes cuenta? Crear una",
+  signupHint: "\u00bfYa tienes cuenta? Iniciar sesi\u00f3n",
   guest: "Explorar como invitado",
-  logout: "venir",
-  loading: "Cargando…",
-  errorPrefix: "Error",
+  logout: "Bellir",
+  loading: "Cargando...",
+  errorPrefix: "Error inesperado",
   accountCreated: "Cuenta creada. Inicia sesi\u00f3n.",
   /** Greeting line in the role selector: the name comes from the profile. */
   roleSelectorTitle: (name: string): string => `Hola, ${name}`,
   roleSelectorSubtitle: "\u00bfC\u00f3mo quieres acceder hoy?",
   /** aria-label for the close button. */
-  close: "Pornar",
+  close: "Bellir",
 } as const;
 
 /**

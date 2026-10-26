@@ -36,8 +36,8 @@ describe("BrandLockup", () => {
     // imported asset would come back with a build-time hash instead, which is
     // what makes this assertion able to catch a refactor to `import logo from`.
     render(<BrandLockup />);
-    expect(mark().getAttribute("src")).toBe("/logo.png");
-    expect(BRAND_LOGO_SRC).toBe("/logo.png");
+    expect(mark().getAttribute("src")).toBe("/logo.jpg");
+    expect(BRAND_LOGO_SRC).toBe("/logo.jpg");
   });
 
   it("keeps the aspect ratio instead of squashing the mark", () => {

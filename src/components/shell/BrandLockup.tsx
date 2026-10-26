@@ -33,7 +33,7 @@ export interface BrandLockupProps {
 }
 
 /** Where the mark is served from. `public/logo.png`, copied verbatim by Vite. */
-export const BRAND_LOGO_SRC = "/logo.png";
+export const BRAND_LOGO_SRC = "/logo.jpg";
 
 /** The row: the mark, then the wordmark, on one baseline. */
 const ROW_CLASS = "flex items-center gap-3";

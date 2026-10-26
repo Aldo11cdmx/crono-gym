@@ -9,7 +9,7 @@
  * stored metric; `toDisplayUnits`/`fromDisplayUnits` handle the edges.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Info } from "lucide-react";
 import {
   ACTIVITY_FACTORS,
@@ -388,6 +388,12 @@ function StepAbout({
   guardianConsent: boolean;
   onChange: DraftPatch;
 }) {
+  // Auto-apply text scale for age >= 45
+  useEffect(() => {
+    if (age !== null && age >= 45) {
+      document.documentElement.setAttribute("data-text-scale", "large");
+    }
+  }, [age]);
   return (
     <fieldset className="space-y-5">
       <div>
@@ -398,9 +404,8 @@ function StepAbout({
           id="birth-date"
           type="date"
           value={birthDate}
-          max={new Date().toISOString().slice(0, 10)}
-          onChange={(e) => onChange({ birthDate: e.target.value })}
-          className="w-full rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 text-sm"
+          onChange={(event) => onChange({ birthDate: event.target.value })}
+          className="w-full rounded-lg border border-white/10 bg-transparent px-3 py-2 text-base focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
         {age !== null && age < 13 && (
           <p className="mt-1.5 text-xs text-red-400">

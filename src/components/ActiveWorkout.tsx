@@ -149,7 +149,7 @@ function SessionHeader({
         alignItems: "center",
         justifyContent: "space-between",
         gap: SPACE.md,
-        padding: "12px 16px",
+        padding: `calc(12px + env(safe-area-inset-top, 0px)) 16px 12px 16px`,
         background: "rgba(0, 0, 0, 0.7)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",

@@ -39,6 +39,7 @@ import { UserAvatar } from "@/components/common/UserAvatar";
 import { useProfile, useBodyMetrics } from "@/hooks/useProfile";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { useLocalState } from "@/hooks/useLocalState";
+import { useTextScale } from "@/hooks/useTextScale";
 import { useLocalSession } from "@/lib/localSession";
 import {
   ACTIVITY_LABELS,
@@ -109,6 +110,7 @@ export function ProfilePage() {
   const { profile, energy, loading, saving, error, update, refresh } = useProfile(userId);
   const gym = useGymSettings();
   const local = useLocalState();
+  const { largeText, setLargeText } = useTextScale(userId);
   const session = useLocalSession();
   const permissions = usePermissions();
   const bodyMetrics = useBodyMetrics(userId);
@@ -210,6 +212,38 @@ export function ProfilePage() {
           />
         </div>
       </GlassCard>
+
+      {/* Accessibility - Text Scale */}
+      <section style={{ marginTop: SPACE.lg }}>
+        <GlassCard>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.md }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>Tipografía Ampliada (Modo Accesible)</h2>
+              <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                Se activa automáticamente si tienes 45 años o más. Puedes activarlo manualmente.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void setLargeText(!largeText)}
+              aria-pressed={largeText}
+              style={{
+                minHeight: 36,
+                padding: "0 16px",
+                borderRadius: RADIUS.pill,
+                border: `1px solid ${largeText ? ACCENT.base : GLASS.border}`,
+                background: largeText ? ACCENT.base : "transparent",
+                color: largeText ? TEXT.onAccent : TEXT.secondary,
+                fontSize: TYPE.body.size,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              {largeText ? "Activado" : "Desactivado"}
+            </button>
+          </div>
+        </GlassCard>
+      </section>
 
       {/* Segmented Control — iOS-style tab strip */}
       <nav

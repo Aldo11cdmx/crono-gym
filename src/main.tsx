@@ -10,6 +10,7 @@ import { GymSettingsProvider } from "./context/GymSettingsContext";
 // frame. Module scope, not an effect, so it is there before the first paint.
 import "./design/installDesignTokens";
 import "./index.css";
+import "./styles/text-scale.css";
 import { registerServiceWorker } from "./lib/pwa/registerServiceWorker";
 
 // The shell that starts without a connection. Not in development: a cached

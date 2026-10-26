@@ -1,12 +1,10 @@
 /**
  * BrandLockup.tsx — the official mark, as a lockup with the wordmark.
  *
- * `mix-blend-screen` is not decoration. The logo is a JPEG with a black field
- * around it, and on an OLED panel that field has to disappear rather than sit on
- * top of `SURFACE.base` as a slightly-different black rectangle. Screen blending
- * multiplies the backdrop into the image, so the black resolves to whatever is
- * behind it and only the mark survives -- which is the whole point of shipping a
- * black-canvas logo in the first place.
+ * The mark is now a transparent PNG (`public/logo.png`), so it renders on any
+ * surface without the `mix-blend-screen` hack the JPEG needed. The JPEG had a
+ * black field that only disappeared against a black background; the PNG carries
+ * its own alpha and the component stops reasoning about what is behind it.
  *
  * One component, three sizes, for the same reason the navigation has one table: a
  * mark hand-written into a header, a rail and a welcome card is three chances to
@@ -34,8 +32,8 @@ export interface BrandLockupProps {
   className?: string;
 }
 
-/** Where the mark is served from. `public/logo.jpg`, copied verbatim by Vite. */
-export const BRAND_LOGO_SRC = "/logo.jpg";
+/** Where the mark is served from. `public/logo.png`, copied verbatim by Vite. */
+export const BRAND_LOGO_SRC = "/logo.png";
 
 /** The row: the mark, then the wordmark, on one baseline. */
 const ROW_CLASS = "flex items-center gap-3";
@@ -58,7 +56,7 @@ export function BrandLockup({
         // a frame of empty header.
         loading="eager"
         decoding="async"
-        className="w-auto object-contain mix-blend-screen"
+        className="w-auto object-contain"
         style={{ height: `${size}px` }}
       />
       {showWordmark && (

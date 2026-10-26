@@ -1,0 +1,1 @@
+﻿import sharp from 'sharp'; const files = ['public/logo.png','public/favicon.png','public/icon-192.png','public/icon-512.png']; Promise.all(files.map(f => sharp(f).metadata().then(m => ({f,...m})))).then(r => r.forEach(x => console.log(x.f+': '+x.width+'x'+x.height+', channels='+x.channels+', hasAlpha='+x.hasAlpha)));

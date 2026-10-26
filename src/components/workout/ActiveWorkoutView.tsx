@@ -52,6 +52,7 @@ export function ActiveWorkoutView({
          display: "flex",
          flexDirection: "column",
          minHeight: "100vh",
+         paddingTop: "env(safe-area-inset-top, 0px)",
        }}
      >
        <ActiveWorkout

@@ -1,0 +1,9 @@
+﻿:root { font-size: 16px; }
+[data-text-scale="large"] { font-size: 18px; }
+[data-text-scale="large"] html, [data-text-scale="large"] body { font-size: 1.125rem; }
+[data-text-scale="large"] .text-xs { font-size: 0.8125rem; }
+[data-text-scale="large"] .text-sm { font-size: 0.9375rem; }
+[data-text-scale="large"] .text-base { font-size: 1.125rem; }
+[data-text-scale="large"] .text-lg { font-size: 1.25rem; }
+[data-text-scale="large"] .text-xl { font-size: 1.375rem; }
+[data-text-scale="large"] .text-2xl { font-size: 1.625rem; }

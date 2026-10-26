@@ -55,7 +55,7 @@ export function isTabActive(path: string, pathname: string): boolean {
 export function AuthGate() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { ready, userId, email } = useAuthSession();
-  const { rehydrate } = useActiveSession();
+  const { rehydrate, isActive } = useActiveSession();
   const {
     profile,
     loading: profileLoading,
@@ -116,7 +116,10 @@ export function AuthGate() {
           in `BottomNav` and `SideRail`, so this bar exists to put the mark on screen
           below 768px -- where the rail is `display: none` -- and nothing else.
         */}
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md">
+        <header
+          className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md"
+          style={{ display: isActive ? "none" : undefined, paddingTop: "env(safe-area-inset-top, 0px)" }}
+        >
           <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <h1 className="flex items-center gap-2.5">
               {/*

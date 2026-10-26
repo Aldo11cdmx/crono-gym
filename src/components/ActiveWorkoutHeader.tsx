@@ -20,7 +20,7 @@ export function ActiveWorkoutHeader({
     <div
       style={{
         position: "fixed",
-        top: SPACE.lg,
+        top: `calc(${SPACE.lg} + env(safe-area-inset-top, 0px))`,
         left: 0,
         right: 0,
         zIndex: Z_INDEX.pill,

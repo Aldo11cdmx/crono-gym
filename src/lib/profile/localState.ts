@@ -37,6 +37,11 @@ export interface LocalStateRow {
   };
   /** Bumped by every write so the preamble cache can invalidate. */
   contextRevision: number;
+  /** Accessibility: larger text for users >=45 or manually enabled. */
+  accessibility?: {
+    largeText?: boolean;
+    largeTextManual?: boolean;
+  };
 }
 
 /**
@@ -50,7 +55,19 @@ export async function loadLocalState(): Promise<LocalStateRow | null> {
   const row = await tx<LocalStateRow>(LOCAL_STATE_STORE, "readonly", (store) =>
     store.get(LOCAL_STATE_KEY),
   );
-  return row ?? null;
+  if (!row) return null;
+  // Normalize accessibility for older rows
+  if (!row.accessibility) {
+    row.accessibility = { largeText: false, largeTextManual: false };
+  } else {
+    if (typeof row.accessibility.largeText !== "boolean") {
+      row.accessibility.largeText = false;
+    }
+    if (typeof row.accessibility.largeTextManual !== "boolean") {
+      row.accessibility.largeTextManual = false;
+    }
+  }
+  return row;
 }
 
 /**
@@ -107,6 +124,10 @@ export const DEFAULT_LOCAL_STATE: LocalStateRow = {
   context: { daysPerWeek: null, injuries: "" },
   consent: { shareAiContext: false },
   contextRevision: 0,
+  accessibility: {
+    largeText: false,
+    largeTextManual: false,
+  },
 };
 
 /** Re-exported so a caller can ask "is this a valid flags shape" without

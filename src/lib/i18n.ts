@@ -709,6 +709,39 @@ export const BRAND_LABELS = {
 } as const;
 
 /**
+ * Copy for the sign-in modal and the post-login role selector.
+ *
+ * Kept separate from `SHELL_LABELS` because these strings only appear when the
+ * athlete is not yet in the app, and separate from `PROFILE_LABELS` because
+ * the role selector is a *choice between identities* rather than a description
+ * of one. Un solo vocabulario: "Atleta", "Coach" and "Administrador" are the
+ * same words `ROLE_LABELS` uses, and reusing them here is the point.
+ */
+export const AUTH_LABELS = {
+  title: "Bienvenido a Cronos",
+  subtitle: "Entrena, progresa y supera tus límites.",
+  google: "Continuar con Google",
+  emailToggle: "Iniciar con correo electrónico",
+  emailPlaceholder: "tu@correo.com",
+  passwordPlaceholder: "........",
+  namePlaceholder: "Tu nombre",
+  login: "Iniciar Sesión",
+  signup: "Registrar Cuenta",
+  loginHint: "¿No tienes cuenta? Crear una",
+  signupHint: "¿Ya tienes cuenta? Iniciar sesión",
+  guest: "Explorar como invitado",
+  logout: "venir",
+  loading: "Cargando…",
+  errorPrefix: "Error",
+  accountCreated: "Cuenta creada. Inicia sesi\u00f3n.",
+  /** Greeting line in the role selector: the name comes from the profile. */
+  roleSelectorTitle: (name: string): string => `Hola, ${name}`,
+  roleSelectorSubtitle: "\u00bfC\u00f3mo quieres acceder hoy?",
+  /** aria-label for the close button. */
+  close: "Pornar",
+} as const;
+
+/**
  * Copy for the profile view.
  *
  * The experience-level and goal labels live here rather than in `Onboarding`

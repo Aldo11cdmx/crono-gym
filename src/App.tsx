@@ -244,7 +244,7 @@ function useAuthSession() {
 }
 
 function Welcome({
-  requestedLabel,
+  requestedLabel: _requestedLabel,
   onOpenAuth,
 }: {
   requestedLabel: string | null;

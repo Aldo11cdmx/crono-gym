@@ -20,6 +20,7 @@ import { Play, RefreshCw, AlertTriangle, Lightbulb, Zap, RotateCcw } from "lucid
 
 import { useDashboardHome } from "@/lib/dashboard/dashboardHomeModel";
 import { WEEKDAY_SHORT_ES } from "@/lib/dashboard/heroCardModel";
+import { formatSessionMeta } from "@/lib/dashboard/heroCardModel";
 import { PROGRESS_PATH, TRAIN_PATH } from "@/components/shell/navItems";
 import { MuscleReadonlyMap } from "@/components/MuscleReadonlyMap";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -323,9 +324,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         raised
         style={{
           padding: SPACE.card,
-          border: `1px solid ${data.isSessionActive ? "rgba(239, 68, 68, 0.3)" : GLASS.border}`,
+          border: `1px solid ${data.isSessionActive ? ACCENT.border : GLASS.border}`,
           boxShadow: data.isSessionActive
-            ? `0 0 20px rgba(239, 68, 68, 0.15), 0 0 24px ${ACCENT.glow}`
+            ? `${GLASS.shadow}`
             : GLASS.shadow,
         }}
       >
@@ -359,7 +360,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                     margin: 0,
                   }}
                 >
-                  {resolveRoutineTitle(routine, data.dailyFocus.dayLabel)} &middot; {routine.exerciseCount} ej &middot; {routine.estimatedDurationMin} min
+                  {formatSessionMeta(routine.exerciseCount, routine.estimatedDurationMin)}
                 </p>
               </>
             ) : (

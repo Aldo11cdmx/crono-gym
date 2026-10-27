@@ -37,7 +37,24 @@ export const WEEKDAY_NAME_ES = [
   "Domingo",
 ] as const;
 
-/** Returns the 0-based weekday index (Monday = 0) for the given timestamp. */
+/**
+ * Formats the hero card subtitle metrics without repeating the routine title.
+ *
+ * Examples:
+ *   formatSessionMeta(3, 15) -> "3 ejercicios • 15 min"
+ *   formatSessionMeta(1, null) -> "1 ejercicio"
+ *   formatSessionMeta(0, 5) -> "0 ejercicios • ~5 min" (when estimated)
+ */
+export function formatSessionMeta(
+  exerciseCount: number,
+  minutes: number | null,
+  estimated = false,
+): string {
+  const ex = exerciseCount === 1 ? "1 ejercicio" : `${exerciseCount} ejercicios`;
+  if (minutes === null) return ex;
+  const min = estimated ? `~${minutes} min` : `${minutes} min`;
+  return `${ex} • ${min}`;
+}
 export function getWeekdayIndex(now: number): number {
   const d = new Date(now);
   const day = d.getDay(); // 0 = Sunday

@@ -286,7 +286,7 @@ describe("DashboardPage", () => {
     );
 
     expect(screen.getByText(/Buenas tardes, Test/)).toBeTruthy();
-    expect(screen.getByText("Full Body · 1 ej · 15 min")).toBeTruthy();
+    expect(screen.getByText("1 ejercicio • 15 min")).toBeTruthy();
     expect(screen.getByText("Comenzar entrenamiento")).toBeTruthy();
     // Un solo CTA prominente primario.
     expect(screen.getAllByText("Comenzar entrenamiento").length).toBe(1);

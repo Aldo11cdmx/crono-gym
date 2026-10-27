@@ -61,6 +61,24 @@ export async function pushSession(payload: FinalizePayload): Promise<void> {
     throw new Error("Esta sesión pertenece a otra cuenta");
   }
 
+  // Validate required parameters before hitting the RPC: a 400 here means the
+  // payload is malformed and retrying will never succeed.
+  if (!payload.logId || typeof payload.logId !== "string") {
+    throw new Error("logId requerido");
+  }
+  if (!payload.userId || typeof payload.userId !== "string") {
+    throw new Error("userId requerido");
+  }
+  if (typeof payload.startedAt !== "string" || !payload.startedAt) {
+    throw new Error("startedAt requerido");
+  }
+  if (typeof payload.completedAt !== "string" || !payload.completedAt) {
+    throw new Error("completedAt requerido");
+  }
+  if (!Array.isArray(payload.sets)) {
+    throw new Error("sets debe ser un arreglo");
+  }
+
   const setsJson = payload.sets.map((set) => ({
     exercise_id: set.exercise_id,
     set_number: set.set_number,
@@ -99,7 +117,11 @@ export async function drainQueue(): Promise<SyncResult> {
   const result: SyncResult = { attempted: 0, succeeded: 0, failed: 0, errors: [] };
   const ops = await listQueue();
 
-  for (const op of ops) {
+  // Skip operations permanently rejected by a non-retryable error: they stay
+  // in the queue for manual review but are never retried automatically.
+  const pending = ops.filter((op) => !op.permanentError);
+
+  for (const op of pending) {
     result.attempted += 1;
     try {
       await pushSession(op.payload);
@@ -116,22 +138,26 @@ export async function drainQueue(): Promise<SyncResult> {
         attempts: op.attempts + 1,
         lastError: message,
       };
-      await updateQueueOp(updated);
 
-      result.failed += 1;
-      result.errors.push(message);
-
-      // Never discard a finalized session automatically. A permanent RPC,
-      // schema, validation or permission error still needs manual recovery.
-      // Stop draining so the same broken operation is not retried repeatedly
-      // during this pass.
+      // A non-retryable error (RLS, schema, validation, permission) will never
+      // succeed on retry. Mark it permanently and stop hammering the API.
       if (!retryable) {
+        updated.permanentError = true;
         result.errors.push(
           `Sesión ${op.payload.logId.slice(0, 8)} pendiente de revisión: ${message} (se conserva en la cola)`,
         );
+      } else {
+        result.errors.push(message);
       }
 
-      break;
+      await updateQueueOp(updated);
+      result.failed += 1;
+
+      // Retryable errors: stop this pass, the interval will try again later.
+      // Non-retryable errors: already marked permanent, just log and continue.
+      if (retryable) {
+        break;
+      }
     }
   }
 

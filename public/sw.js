@@ -80,13 +80,21 @@ self.addEventListener("fetch", (event) => {
   if (isDevModule(url)) return;
 
   // The shell: the network first, the stored copy when there is no network.
+  // A navigation to a client route (/admin, /coach/portal, ...) must always
+  // resolve to index.html so React Router can render it; a cached or network
+  // 404 for the raw path must never reach the user as a blank page.
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put("/index.html", copy));
-          return response;
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put("/index.html", copy));
+            return response;
+          }
+          // Non-OK (404, 500, ...) for a client route: serve the shell so the
+          // SPA router takes over instead of showing a blank page.
+          return caches.match("/index.html");
         })
         .catch(() => caches.match("/index.html")),
     );

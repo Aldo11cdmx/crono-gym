@@ -154,6 +154,10 @@ export interface QueueOp {
   createdAt: number;
   attempts: number;
   lastError: string | null;
+  /** Set when a non-retryable error (RLS, schema, validation) permanently
+   *  rejects this operation. It stays in the queue for manual review but is
+   *  never retried automatically, breaking the infinite 400-retry loop. */
+  permanentError?: boolean;
 }
 
 // ---------------------------------------------------------------- IndexedDB

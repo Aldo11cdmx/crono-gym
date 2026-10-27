@@ -636,6 +636,56 @@ export interface Database {
         Relationships: ForeignKey[];
       };
       /**
+       * Nota privada del coach para un atleta. Solo el coach que la escribió
+       * puede leerla o editarla; el atleta nunca la ve.
+       */
+      coach_notes: {
+        Row: {
+          id: string;
+          coach_id: string;
+          athlete_id: string;
+          content: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          coach_id: string;
+          athlete_id: string;
+          content: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          coach_id?: string;
+          athlete_id?: string;
+          content?: string;
+          updated_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+      /**
+       * Fase de entrenamiento del atleta: descarga, mantenimiento o sobrecarga.
+       * Una fila por atleta; el coach la establece para sus atletas asignados.
+       */
+      athlete_phases: {
+        Row: {
+          athlete_id: string;
+          phase: "deload" | "maintenance" | "overload";
+          updated_at: string;
+        };
+        Insert: {
+          athlete_id: string;
+          phase?: "deload" | "maintenance" | "overload";
+          updated_at?: string;
+        };
+        Update: {
+          athlete_id?: string;
+          phase?: "deload" | "maintenance" | "overload";
+          updated_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+      /**
        * The human conversation, polled every 10 seconds.
        *
        * `sender_id` and `sender_role` are both stored and are not redundant: the id is
@@ -707,36 +757,173 @@ export interface Database {
        * el atleta, el asistente o una burbuja de error. `session_id` la agrupa bajo
        * su conversación; borrar la sesión la arrastra mediante ON DELETE CASCADE.
        */
-      chat_messages: {
-        Row: {
-          id: string;
-          session_id: string;
-          user_id: string;
-          role: "user" | "assistant" | "error";
-          content: string;
-          created_at: string;
+        chat_messages: {
+          Row: {
+            id: string;
+            session_id: string;
+            user_id: string;
+            role: "user" | "assistant" | "error";
+            content: string;
+            created_at: string;
+          };
+          Insert: {
+            id?: string;
+            session_id: string;
+            user_id: string;
+            role: "user" | "assistant" | "error";
+            content: string;
+            created_at?: string;
+          };
+          Update: {
+            id?: string;
+            content?: string;
+          };
+          Relationships: ForeignKey[];
         };
-        Insert: {
-          id?: string;
-          session_id: string;
-          user_id: string;
-          role: "user" | "assistant" | "error";
-          content: string;
-          created_at?: string;
+        announcements: {
+          Row: {
+            id: string;
+            title: string;
+            message: string;
+            kind: "promo" | "notice" | "event";
+            banner_path: string | null;
+            starts_at: string;
+            expires_at: string;
+            created_by: string | null;
+            created_at: string;
+          };
+          Insert: {
+            id?: string;
+            title: string;
+            message: string;
+            kind?: "promo" | "notice" | "event";
+            banner_path?: string | null;
+            starts_at?: string;
+            expires_at: string;
+            created_by?: string | null;
+            created_at?: string;
+          };
+          Update: {
+            id?: string;
+            title?: string;
+            message?: string;
+            kind?: "promo" | "notice" | "event";
+            banner_path?: string | null;
+            starts_at?: string;
+            expires_at?: string;
+            created_by?: string | null;
+            created_at?: string;
+          };
+          Relationships: ForeignKey[];
         };
-        Update: {
-          id?: string;
-          content?: string;
+        products: {
+          Row: {
+            id: string;
+            name: string;
+            description: string | null;
+            price_cents: number;
+            stock: number;
+            category: "supplements" | "accessories" | "clothing" | "other";
+            image_path: string | null;
+            is_active: boolean;
+            created_at: string;
+            updated_at: string;
+          };
+          Insert: {
+            id?: string;
+            name: string;
+            description?: string | null;
+            price_cents: number;
+            stock?: number;
+            category?: "supplements" | "accessories" | "clothing" | "other";
+            image_path?: string | null;
+            is_active?: boolean;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Update: {
+            id?: string;
+            name?: string;
+            description?: string | null;
+            price_cents?: number;
+            stock?: number;
+            category?: "supplements" | "accessories" | "clothing" | "other";
+            image_path?: string | null;
+            is_active?: boolean;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Relationships: ForeignKey[];
         };
-        Relationships: ForeignKey[];
-      };
-    };
-  };
-}
-
-// Convenience aliases for the catalog and training rows used across views.
-export type Exercise = Database["public"]["Tables"]["exercises"]["Row"];
-export type Routine = Database["public"]["Tables"]["routines"]["Row"];
+        purchase_tickets: {
+          Row: {
+            id: string;
+            ticket_number: string;
+            user_id: string;
+            product_id: string;
+            quantity: number;
+            unit_price_cents: number;
+            total_cents: number;
+            status: "pending" | "paid" | "delivered" | "cancelled";
+            notes: string | null;
+            created_at: string;
+            updated_at: string;
+          };
+          Insert: {
+            id?: string;
+            ticket_number: string;
+            user_id: string;
+            product_id: string;
+            quantity?: number;
+            unit_price_cents: number;
+            total_cents: number;
+            status?: "pending" | "paid" | "delivered" | "cancelled";
+            notes?: string | null;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Update: {
+            id?: string;
+            ticket_number?: string;
+            user_id?: string;
+            product_id?: string;
+            quantity?: number;
+            unit_price_cents?: number;
+            total_cents?: number;
+            status?: "pending" | "paid" | "delivered" | "cancelled";
+            notes?: string | null;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Relationships: ForeignKey[];
+        };
+        gym_classes: {
+          Row: {
+            id: string;
+            name: string;
+            description: string | null;
+            instructor: string | null;
+            capacity: number;
+            duration_minutes: number;
+            is_active: boolean;
+            created_at: string;
+          };
+          Insert: {
+            id?: string;
+            name: string;
+            description?: string | null;
+            instructor?: string | null;
+            capacity?: number;
+            duration_minutes?: number;
+            is_active?: boolean;
+            created_at?: string;
+          };
+          Update: {
+            id?: string;
+            name?: string;
+            description?: string | null;
+            instructor?: string | null;
+            capacity?: number;
 export type RoutineExercise = Database["public"]["Tables"]["routine_exercises"]["Row"];
 export type WorkoutLog = Database["public"]["Tables"]["workout_logs"]["Row"];
 export type CompletedSet = Database["public"]["Tables"]["completed_sets"]["Row"];
@@ -746,6 +933,11 @@ export type UserRoleRow = Database["public"]["Tables"]["user_roles"]["Row"];
 export type BodyweightEntry = Database["public"]["Tables"]["bodyweight_entries"]["Row"];
 export type BodyMeasurement = Database["public"]["Tables"]["body_measurements"]["Row"];
 export type SessionCheckin = Database["public"]["Tables"]["session_checkins"]["Row"];
+export type AnnouncementRow = Database["public"]["Tables"]["announcements"]["Row"];
+export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
+export type PurchaseTicketRow = Database["public"]["Tables"]["purchase_tickets"]["Row"];
+export type GymClassRow = Database["public"]["Tables"]["gym_classes"]["Row"];
+export type GymScheduleRow = Database["public"]["Tables"]["gym_schedules"]["Row"];
 
 /**
  * The four human-coaching rows.
@@ -760,6 +952,8 @@ export type CoachProfileRow = Database["public"]["Tables"]["coaches"]["Row"];
 export type CoachLoginAttemptRow = Database["public"]["Tables"]["coach_login_attempts"]["Row"];
 export type CoachRequestRow = Database["public"]["Tables"]["coach_session_requests"]["Row"];
 export type CoachMessageRow = Database["public"]["Tables"]["coach_messages"]["Row"];
+export type CoachNoteRow = Database["public"]["Tables"]["coach_notes"]["Row"];
+export type AthletePhaseRow = Database["public"]["Tables"]["athlete_phases"]["Row"];
 export type ChatSessionRow = Database["public"]["Tables"]["chat_sessions"]["Row"];
 export type ChatMessageRow = Database["public"]["Tables"]["chat_messages"]["Row"];
 

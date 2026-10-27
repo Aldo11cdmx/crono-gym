@@ -42,6 +42,8 @@ import { useMuscleRanks } from "@/hooks/useMuscleRanks";
 import { supabase } from "@lib/supabase";
 import type { Exercise, Routine, RoutineExercise } from "@/types/supabase";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import { CoachAthleteNotes } from "./CoachAthleteNotes";
+import { AthletePhaseSelector } from "./AthletePhaseSelector";
 
 /** How many routines the history section shows. */
 const HISTORY_LIMIT = 10;
@@ -264,6 +266,10 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
         <Section title={T.crmCheckinsSection}>
           <p style={bodyStyle}>{T.checkinsPending}</p>
         </Section>
+
+        <CoachAthleteNotes athleteId={athleteId} />
+
+        <AthletePhaseSelector athleteId={athleteId} />
       </GlassCard>
     </section>
   );

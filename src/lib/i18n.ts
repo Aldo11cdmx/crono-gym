@@ -2070,6 +2070,37 @@ export const COACH_PORTAL_LABELS = {
   portalEmptyBody:
     "Abre una conversación con un atleta para ver su ficha, hablar y preparar su rutina.",
 
+  // ---- live gym feed -------------------------------------------------------
+  liveFeedTitle: "Entrenando ahora",
+  liveFeedEmpty: "Nadie está entrenando en este momento.",
+  liveFeedStarted: (when: string): string => `desde ${when}`,
+  liveFeedNoAthlete: "Atleta sin nombre",
+
+  // ---- coach notes ---------------------------------------------------------
+  coachNotesTitle: "Notas privadas del coach",
+  coachNotesPlaceholder: "Observaciones internas: lesiones, preferencias, horario…",
+  coachNotesSaving: "Guardando…",
+  coachNotesSaved: "Guardado.",
+  coachNotesSaveError: "No se pudo guardar la nota.",
+  coachNotesOnlyCoach: "Solo tú puedes leer estas notas.",
+
+  // ---- fase e intensidad ---------------------------------------------------
+  phaseTitle: "Fase de entrenamiento",
+  phaseLabel: "Fase actual",
+  phaseDeload: "Descarga",
+  phaseMaintenance: "Mantenimiento",
+  phaseOverload: "Sobrecarga",
+  phaseSaving: "Guardando…",
+  phaseSaved: "Fase actualizada.",
+  phaseSaveError: "No se pudo actualizar la fase.",
+
+  // ---- sustituto de ejercicios ---------------------------------------------
+  substituteTitle: "Sustituir ejercicio",
+  substituteByMuscle: "Alternativas por grupo muscular",
+  substituteCurrent: "Actual: {name}",
+  substituteNoAlternatives: "No hay alternativas para este grupo muscular.",
+  substituteReplace: "Reemplazar",
+
   /**
    * Minutes remaining in a PIN lockout, for the live countdown in `CoachAccessGate`.
    *

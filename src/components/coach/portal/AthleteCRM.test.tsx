@@ -42,7 +42,7 @@ vi.mock("@lib/supabase", () => ({
       const calls: Call[] = [];
       const builder: Record<string, unknown> = {};
 
-      for (const method of ["select", "eq", "in", "order", "limit"]) {
+      for (const method of ["select", "eq", "in", "order", "limit", "maybeSingle"]) {
         builder[method] = (...args: unknown[]) => {
           calls.push([method as string, ...args]);
           return builder;
@@ -291,6 +291,7 @@ describe("AthleteCRM · secciones", () => {
       T.crmPrsSection,
       T.crmHistorySection,
       T.crmCheckinsSection,
+      T.phaseTitle,
     ]);
   });
 });

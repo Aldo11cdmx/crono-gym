@@ -45,6 +45,7 @@ import type { WorkspaceOutletContext } from "@/App";
 
 import { AthleteCRM } from "./AthleteCRM";
 import { HumanCoachChat } from "./HumanCoachChat";
+import { LiveGymFeed } from "./LiveGymFeed";
 import { RequestQueue } from "./RequestQueue";
 import { VipRoutineBuilder } from "./VipRoutineBuilder";
 import { ShiftPanel } from "./ShiftPanel";
@@ -139,6 +140,7 @@ export function PortalPanel({ userId }: { userId: string }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section aria-label={T.queueTitle} className="flex min-w-0 flex-col gap-3">
           <RequestQueue onOpenConversation={openConversation} />
+          <LiveGymFeed />
           <ShiftPanel userId={userId} />
         </section>
 

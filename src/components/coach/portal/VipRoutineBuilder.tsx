@@ -28,7 +28,7 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, RefreshCw } from "lucide-react";
 
 import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
@@ -49,6 +49,7 @@ import type { Exercise } from "@/types/supabase";
 
 import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import { ExerciseSubstitutionModal } from "./ExerciseSubstitutionModal";
 
 /** How many search hits to offer before the list stops being a list. */
 const MAX_HITS = 8;
@@ -96,6 +97,10 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  const [substituteOpen, setSubstituteOpen] = useState(false);
+  const [substitutingExercise, setSubstitutingExercise] = useState<CoachRoutineExercise | null>(null);
+  const [substituteDayIndex, setSubstituteDayIndex] = useState<number | null>(null);
+  const [substituteExerciseIndex, setSubstituteExerciseIndex] = useState<number | null>(null);
 
   /**
    * The coach's own row id, read once per save rather than held in state.
@@ -144,6 +149,56 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
     onSaved?.(savedTitle);
   }, [athleteId, days, onSaved, saving, title]);
 
+  /**
+   * Reemplaza el ejercicio de una fila por uno del mismo grupo muscular.
+   *
+   * `dayIndex` y `exerciseIndex` identifican la fila; el catálogo se filtra
+   * por `body_part` dentro del modal.
+   */
+  const openSubstitute = useCallback(
+    (dayIndex: number, exerciseIndex: number) => {
+      const exercise = days[dayIndex]?.exercises[exerciseIndex];
+      if (!exercise || !exercise.exerciseId) return;
+
+      const current = exercises.find((e) => e.id === exercise.exerciseId);
+      if (!current) return;
+
+      setSubstitutingExercise(exercise);
+      setSubstituteDayIndex(dayIndex);
+      setSubstituteExerciseIndex(exerciseIndex);
+      setSubstituteOpen(true);
+    },
+    [days, exercises],
+  );
+
+  const doSubstitute = useCallback(
+    (replacement: Exercise) => {
+      if (substituteDayIndex === null || substituteExerciseIndex === null) return;
+
+      setDays((current) =>
+        current.map((day, d) => {
+          if (d !== substituteDayIndex) return day;
+          return {
+            ...day,
+            exercises: day.exercises.map((e, i) => {
+              if (i !== substituteExerciseIndex) return e;
+              return {
+                ...e,
+                exerciseId: replacement.id,
+                exerciseName: replacement.name,
+              };
+            }),
+          };
+        }),
+      );
+      setSubstituteOpen(false);
+      setSubstitutingExercise(null);
+      setSubstituteDayIndex(null);
+      setSubstituteExerciseIndex(null);
+    },
+    [substituteDayIndex, substituteExerciseIndex],
+  );
+
   if (athleteId === null) {
     return (
       <GlassCard>
@@ -191,6 +246,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
               onRemove={() =>
                 setDays((current) => current.filter((_, i) => i !== dayIndex))
               }
+              onSubstitute={openSubstitute}
               removable={days.length > 1}
             />
           ))}
@@ -225,6 +281,16 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
           </GlassButton>
         </div>
       </GlassCard>
+
+      {substitutingExercise && (
+        <ExerciseSubstitutionModal
+          current={exercises.find((e) => e.id === substitutingExercise.exerciseId) ?? substitutingExercise}
+          catalog={exercises}
+          open={substituteOpen}
+          onSubstitute={doSubstitute}
+          onClose={() => setSubstituteOpen(false)}
+        />
+      )}
     </section>
   );
 }
@@ -238,6 +304,7 @@ function DayEditor({
   catalogLoading,
   onChange,
   onRemove,
+  onSubstitute,
   removable,
 }: {
   day: CoachRoutineDay;
@@ -246,6 +313,7 @@ function DayEditor({
   catalogLoading: boolean;
   onChange: (next: CoachRoutineDay) => void;
   onRemove: () => void;
+  onSubstitute: (dayIndex: number, exerciseIndex: number) => void;
   /**
    * Whether this day can go.
    *
@@ -310,6 +378,7 @@ function DayEditor({
                 exercises: day.exercises.filter((_, i) => i !== exerciseIndex),
               })
             }
+            onSubstitute={() => onSubstitute(dayNumber - 1, exerciseIndex)}
           />
           <NumbersRow
             idPrefix={`${prefix}-e${exerciseIndex}`}
@@ -351,6 +420,7 @@ function ExercisePicker({
   loading,
   onPick,
   onRemove,
+  onSubstitute,
 }: {
   idPrefix: string;
   exercise: CoachRoutineExercise;
@@ -358,6 +428,7 @@ function ExercisePicker({
   loading: boolean;
   onPick: (exerciseId: string, name: string) => void;
   onRemove: () => void;
+  onSubstitute: () => void;
 }) {
   const [query, setQuery] = useState("");
 
@@ -400,6 +471,16 @@ function ExercisePicker({
           ? T.builderNoExerciseChosen
           : getExerciseDisplayName({ name: pickedName ?? exercise.exerciseId })}
       </p>
+
+      {exercise.exerciseId !== "" && (
+        <GlassButton
+          variant="ghost"
+          icon={<RefreshCw size={14} aria-hidden="true" />}
+          onClick={onSubstitute}
+          style={{ padding: 4, minHeight: "auto", minWidth: "auto", width: 32, height: 32 }}
+          aria-label={T.substituteReplace}
+        />
+      )}
 
       <div className="flex items-end gap-2">
         <Field label={T.builderExerciseSearchLabel} htmlFor={`${idPrefix}-search`}>

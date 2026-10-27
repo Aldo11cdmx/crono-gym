@@ -104,6 +104,10 @@ vi.mock("./ShiftPanel", () => ({
   ShiftPanel: () => <div>shift panel</div>,
 }));
 
+vi.mock("./LiveGymFeed", () => ({
+  LiveGymFeed: () => <div>live gym feed</div>,
+}));
+
 const crmProps: { athleteId: string | null }[] = [];
 
 vi.mock("./AthleteCRM", () => ({

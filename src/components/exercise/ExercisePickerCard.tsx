@@ -49,17 +49,16 @@ export function ExercisePickerCard({
 
   return (
     <div
-      className={selected ? 'relative flex cursor-pointer flex-col rounded-lg border p-3 transition-colors border-accent bg-accent/10' : 'relative flex cursor-pointer flex-col rounded-lg border p-3 transition-colors border-white/10 bg-neutral-950/40 hover:border-white/20'}
+      className={`relative flex cursor-pointer flex-col rounded-lg border p-3 transition-all active:scale-[0.98] hover:border-red-500/50 ${selected ? 'border-red-500/50 bg-accent/10' : 'border-white/10 bg-neutral-950/40'}`}
       onClick={handleSelect}
     >
       <div className='mb-2 flex items-center justify-between'>
         <div className='flex items-center gap-2'>
-          <input
-            type='checkbox'
-            checked={selected}
-            onChange={handleSelect}
-            className='h-4 w-4 rounded border-white/30 bg-neutral-950 text-accent focus:ring-accent'
-          />
+          <span
+            className={`flex h-4 w-4 items-center justify-center rounded-full border ${selected ? 'border-red-500 bg-red-500 text-white' : 'border-white/30 bg-neutral-950'}`}
+          >
+            {selected && <span className='text-[10px]'>✓</span>}
+          </span>
           {alreadyAdded && <span className='text-[10px] text-neutral-400'>Añadido</span>}
         </div>
       </div>

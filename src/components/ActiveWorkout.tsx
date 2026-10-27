@@ -1850,7 +1850,7 @@ export function ActiveWorkout({
                 color: TEXT.primary,
               }}
             >
-              ConfiguraciÃ³n del gimnasio
+              Configuración del gimnasio
             </h3>
             <div
               style={{

@@ -21,6 +21,7 @@
  */
 
 import {
+  useEffect,
   useMemo,
   useState,
   type CSSProperties,
@@ -465,14 +466,27 @@ function BiometricTabContent({
   saving: boolean;
   update: (patch: Partial<Profile>) => Promise<boolean>;
 }) {
+  const [displayName, setDisplayName] = useState(profile.display_name ?? "");
+  useEffect(() => {
+    setDisplayName(profile.display_name ?? "");
+  }, [profile.display_name]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (displayName !== (profile.display_name ?? "")) {
+        void update({ display_name: displayName });
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [displayName]);
   return (
     <>
       <GroupedSection title={PROFILE_LABELS.identityLabel}>
         <input
           type="text"
-          value={profile.display_name ?? ""}
+          value={displayName}
           placeholder={PROFILE_LABELS.namePlaceholder}
-          onChange={(event) => void update({ display_name: event.target.value })}
+          onChange={(event) => setDisplayName(event.target.value)}
+          onBlur={() => void update({ display_name: displayName })}
           style={inputStyle}
           disabled={saving}
         />

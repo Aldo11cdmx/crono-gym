@@ -190,7 +190,7 @@ export function ExerciseCard({
       <button
         type="button"
         onClick={onOpenDetail}
-        className="absolute inset-0 rounded-xl"
+        className="absolute inset-0 z-10 rounded-xl"
         aria-label="Ver detalles"
       />
     </div>

@@ -912,6 +912,7 @@ const pageStyle: CSSProperties = {
   flexDirection: "column",
   maxWidth: 640,
   padding: SPACE.lg,
+  paddingBottom: 128,
   margin: "0 auto",
 };
 

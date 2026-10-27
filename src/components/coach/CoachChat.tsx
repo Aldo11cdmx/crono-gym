@@ -120,6 +120,7 @@ export function CoachChat({
   const [persisted, setPersisted] = useState(true);
   const [proposedRoutine, setProposedRoutine] = useState<GeneratedRoutine | null>(null);
   const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
   const listEndRef = useRef<HTMLDivElement | null>(null);
@@ -336,13 +337,15 @@ export function CoachChat({
     ? {
         position: "fixed",
         inset: 0,
-        zIndex: MOTION.minTouchTarget ? 1000 : 50,
+        zIndex: 1000,
         display: "flex",
         flexDirection: "column",
-        backgroundColor: SURFACE.base,
+        backgroundColor: "#000000",
         color: TEXT.primary,
       }
-    : {};
+    : {
+        backgroundColor: "transparent",
+      };
 
   const headerStyle: React.CSSProperties = {
     display: "flex",
@@ -398,6 +401,9 @@ export function CoachChat({
     paddingBottom: SPACE.md,
     scrollbarWidth: "none",
     WebkitOverflowScrolling: "touch",
+    scrollSnapType: "x mandatory",
+    paddingLeft: SPACE.xl,
+    paddingRight: SPACE.xl,
   };
 
   const chipStyle = (): React.CSSProperties => ({
@@ -407,32 +413,45 @@ export function CoachChat({
     minHeight: MOTION.minTouchTarget,
     padding: `${SPACE.xs} ${SPACE.md}`,
     borderRadius: RADIUS.pill,
-    border: `1px solid ${TEXT.tertiary}33`,
-    backgroundColor: SCRIM.recessed,
+    border: "1px solid rgba(39,39,42,0.5)",
+    backgroundColor: "rgba(24,24,27,0.8)",
     color: TEXT.secondary,
     fontSize: TYPE.caption.size,
     fontWeight: TYPE.subhead.weight,
     whiteSpace: "nowrap",
     cursor: "pointer",
     flexShrink: 0,
+    scrollSnapAlign: "start",
+    transition: `transform ${MOTION.fast} ${MOTION.spring}`,
   });
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    resize: "vertical",
-    borderRadius: RADIUS.control,
-    border: `1px solid ${tooLong ? STATUS.warning.text : `${TEXT.tertiary}33`}`,
-    backgroundColor: SCRIM.recessed,
+    resize: "none",
+    borderRadius: RADIUS.card,
+    border: `1px solid ${tooLong ? STATUS.warning.text : focused ? "rgba(220,38,38,0.45)" : "rgba(255,255,255,0.08)"}`,
+    backgroundColor: "rgba(9,9,11,0.6)",
     color: TEXT.primary,
-    padding: "10px 12px",
+    padding: "12px 14px",
     fontSize: TYPE.subhead.size,
     fontFamily: "inherit",
+    backdropFilter: "blur(24px)",
+    WebkitBackdropFilter: "blur(24px)",
+    transform: focused ? "translateY(-2px)" : "translateY(0)",
+    transition: `border-color ${MOTION.fast} ${MOTION.easeOut}, box-shadow ${MOTION.fast} ${MOTION.easeOut}, transform ${MOTION.fast} ${MOTION.spring}`,
+    boxShadow: busy
+      ? "0 0 25px rgba(220,38,38,0.12)"
+      : focused
+      ? "0 0 18px rgba(220,38,38,0.08), 0 4px 24px rgba(0,0,0,0.4)"
+      : "0 4px 24px rgba(0,0,0,0.4)",
   };
 
   const inputAreaStyle: React.CSSProperties = {
     padding: `${SPACE.lg} ${SPACE.xl}`,
-    borderTop: `1px solid ${TEXT.tertiary}22`,
-    backgroundColor: SURFACE.base,
+    borderTop: "1px solid rgba(255,255,255,0.04)",
+    backgroundColor: "rgba(0,0,0,0.6)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
   };
 
   // --------------------------------------------------------------- historial
@@ -604,6 +623,7 @@ export function CoachChat({
           <button
             key={suggestion}
             type="button"
+            className="bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800/50 active:scale-95 transition-transform"
             onClick={() => {
               setDraft(suggestion);
               send(suggestion);
@@ -620,12 +640,15 @@ export function CoachChat({
         <label
           htmlFor="coach-chat-input"
           style={{
-            display: "block",
-            marginBottom: 6,
-            fontSize: TYPE.label.size,
-            textTransform: "uppercase",
-            letterSpacing: TYPE.label.tracking,
-            color: tooLong ? STATUS.warning.text : TEXT.tertiary,
+            position: "absolute",
+            width: 1,
+            height: 1,
+            padding: 0,
+            margin: -1,
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
           }}
         >
           {T.chatPlaceholder}
@@ -635,6 +658,8 @@ export function CoachChat({
           ref={inputRef}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();

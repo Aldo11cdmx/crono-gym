@@ -103,7 +103,7 @@ type AdminClient = SupabaseClient<CoachDatabase>;
  * started answering 404. Pinned still beats the router alias, which trades that 404 for
  * a silent change of model under the same config.
  */
-const MODEL = "nvidia/nemotron-3-ultra:free";
+const MODEL = "nvidia/nemotron-3.5-super-vl:free";
 
 /**
  * Output budget for the visible answer.
@@ -137,7 +137,7 @@ const TOP_P = 0.9;
 const REASONING = { effort: "none" } as const;
 
 /** Fallback model when the primary is rate-limited or unavailable. */
-const FALLBACK_MODEL = "thinkingmachines/inkling-small:free";
+const FALLBACK_MODEL = "dots-studio/dots3-note-preview:free";
 
 /** Upstream budget. Past this the user is better served by a clear "busy". */
 const TIMEOUT_MS = 15_000;

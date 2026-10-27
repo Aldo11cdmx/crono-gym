@@ -2101,6 +2101,12 @@ export const COACH_PORTAL_LABELS = {
   substituteNoAlternatives: "No hay alternativas para este grupo muscular.",
   substituteReplace: "Reemplazar",
 
+  // ---- coach banner ----------------------------------------------------------
+  coachBannerTitle: "Tu coach",
+  coachBannerAvailable: "Disponible",
+  coachBannerUnavailable: "No disponible ahora",
+  coachBannerRequestRoutine: "Pedir nueva rutina",
+
   /**
    * Minutes remaining in a PIN lockout, for the live countdown in `CoachAccessGate`.
    *

@@ -27,6 +27,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { FatigueAlertCard } from "@/components/FatigueAlertCard";
 import { supabase } from "@/lib/supabase";
+import { CoachBanner } from "@/components/coach/portal/CoachBanner";
+import { RequestRoutineModal } from "@/components/coach/portal/RequestRoutineModal";
 import {
   ACCENT,
   GLASS,
@@ -162,6 +164,30 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
   const [tipIndex, setTipIndex] = useState(0);
+  const [coachId, setCoachId] = useState<string | null>(null);
+  const [requestOpen, setRequestOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await (supabase as any)
+          .from("coaches")
+          .select("id")
+          .eq("is_active", true)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data) setCoachId(data.id);
+      } catch {
+        // Si no se puede leer el coach, el banner simplemente no se muestra.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -412,6 +438,19 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           </div>
         </div>
       </GlassCard>
+
+      {/* Coach asignado y solicitud de rutina */}
+      {coachId && (
+        <>
+          <CoachBanner coachId={coachId} onRequestRoutine={() => setRequestOpen(true)} />
+          <RequestRoutineModal
+            coachId={coachId}
+            open={requestOpen}
+            onClose={() => setRequestOpen(false)}
+            onSuccess={() => setRequestOpen(false)}
+          />
+        </>
+      )}
 
       {/* Consistencia semanal — barra de dias y racha en una sola tarjeta horizontal */}
       <GlassCard raised style={{ padding: SPACE.card }}>

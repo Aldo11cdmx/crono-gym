@@ -49,10 +49,13 @@ export function ExercisePickerCard({
 
   return (
     <div
-      className={`relative flex cursor-pointer flex-col rounded-lg border p-3 transition-all active:scale-[0.98] hover:border-red-500/50 ${selected ? 'border-red-500/50 bg-accent/10' : 'border-white/10 bg-neutral-950/40'}`}
+      role="button"
+      tabIndex={0}
+      className={`relative z-10 flex cursor-pointer pointer-events-auto flex-col rounded-lg border p-3 transition-all active:scale-[0.98] hover:border-red-500/50 ${selected ? 'border-red-500/50 bg-accent/10' : 'border-white/10 bg-neutral-950/40'}`}
       onClick={handleSelect}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect() } }}
     >
-      <div className='mb-2 flex items-center justify-between'>
+      <div className='mb-2 flex items-center justify-between pointer-events-none'>
         <div className='flex items-center gap-2'>
           <span
             className={`flex h-4 w-4 items-center justify-center rounded-full border ${selected ? 'border-red-500 bg-red-500 text-white' : 'border-white/30 bg-neutral-950'}`}
@@ -62,14 +65,14 @@ export function ExercisePickerCard({
           {alreadyAdded && <span className='text-[10px] text-neutral-400'>Añadido</span>}
         </div>
       </div>
-      <div className='mb-2 aspect-square overflow-hidden rounded bg-neutral-900/50'>
+      <div className='mb-2 aspect-square overflow-hidden rounded bg-neutral-900/50 pointer-events-none'>
         {resolvedSrc ? (
-          <img src={resolvedSrc as any} alt={getExerciseDisplayName(exercise)} className='h-full w-full object-cover' loading='lazy' />
+          <img src={resolvedSrc as any} alt={getExerciseDisplayName(exercise)} className='h-full w-full object-cover pointer-events-none' loading='lazy' />
         ) : (
           <div className='flex h-full w-full items-center justify-center text-xs text-neutral-600'>Sin imagen</div>
         )}
       </div>
-      <div className='flex-1'>
+      <div className='flex-1 pointer-events-none'>
         <p className='line-clamp-2 text-xs font-medium text-neutral-100'>{getExerciseDisplayName(exercise)}</p>
         <p className='mt-1 text-[10px] text-neutral-400'>
           {(exercise as any).body_part} • {(exercise as any).equipment}

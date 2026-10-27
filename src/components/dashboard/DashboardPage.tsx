@@ -141,14 +141,14 @@ interface DashboardPageProps {
 
 type SessionState = "idle" | "scheduled" | "in-progress" | "completed";
 
-/** Resolves the hero routine title: falls back to day label when raw title is "xd" or empty. */
+/** Resolves the hero routine title: falls back to day label when raw title is invalid. */
 function resolveRoutineTitle(
   routine: { title: string | null | undefined } | null,
   dayLabel: string | null | undefined,
 ): string {
   const raw = routine?.title?.trim();
-  if (!raw || raw.toLowerCase() === "xd") {
-    return dayLabel ?? "Rutina del Dia";
+  if (!raw || raw.toLowerCase() === "xd" || raw.length <= 1) {
+    return dayLabel ?? "Entrenamiento de Hoy";
   }
   return raw;
 }
@@ -323,9 +323,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         raised
         style={{
           padding: SPACE.card,
-          border: `1px solid ${data.isSessionActive ? ACCENT.border : GLASS.border}`,
+          border: `1px solid ${data.isSessionActive ? "rgba(239, 68, 68, 0.3)" : GLASS.border}`,
           boxShadow: data.isSessionActive
-            ? `0 0 24px ${ACCENT.glow}`
+            ? `0 0 20px rgba(239, 68, 68, 0.15), 0 0 24px ${ACCENT.glow}`
             : GLASS.shadow,
         }}
       >

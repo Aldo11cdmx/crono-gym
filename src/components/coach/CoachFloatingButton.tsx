@@ -59,7 +59,7 @@ export function CoachFloatingButton({ userId }: CoachFloatingButtonProps = {}) {
         type="button"
         className={[
           "fixed right-4 z-[55]",
-          "bottom-[calc(16px+var(--cronos-nav-height,56px)+16px)]",
+          "bottom-[calc(24px+var(--cronos-nav-height,56px)+16px)]",
           "bg-neutral-900/95 border border-white/15 backdrop-blur-xl",
           "rounded-full px-4 py-2 flex items-center gap-2",
           "transition-colors cursor-pointer",

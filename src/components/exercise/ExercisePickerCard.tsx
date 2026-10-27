@@ -65,7 +65,7 @@ export function ExercisePickerCard({
           {alreadyAdded && <span className='text-[10px] text-neutral-400'>Añadido</span>}
         </div>
       </div>
-      <div className='mb-2 aspect-square overflow-hidden rounded bg-neutral-900/50 pointer-events-none'>
+      <div className='mb-2 aspect-square overflow-hidden rounded bg-neutral-900/50 pointer-events-none' onClick={handleSelect}>
         {resolvedSrc ? (
           <img src={resolvedSrc as any} alt={getExerciseDisplayName(exercise)} className='h-full w-full object-cover pointer-events-none' loading='lazy' />
         ) : (

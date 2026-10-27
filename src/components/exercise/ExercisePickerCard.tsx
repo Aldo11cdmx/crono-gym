@@ -57,11 +57,14 @@ export function ExercisePickerCard({
     >
       <div className='mb-2 flex items-center justify-between pointer-events-none'>
         <div className='flex items-center gap-2'>
-          <span
-            className={`flex h-4 w-4 items-center justify-center rounded-full border ${selected ? 'border-red-500 bg-red-500 text-white' : 'border-white/30 bg-neutral-950'}`}
+          <button
+            type='button'
+            onClick={(e) => { e.stopPropagation(); handleSelect() }}
+            className={`pointer-events-auto flex h-4 w-4 items-center justify-center rounded-full border ${selected ? 'border-red-500 bg-red-500 text-white' : 'border-white/30 bg-neutral-950'}`}
+            aria-label='Seleccionar ejercicio'
           >
             {selected && <span className='text-[10px]'>✓</span>}
-          </span>
+          </button>
           {alreadyAdded && <span className='text-[10px] text-neutral-400'>Añadido</span>}
         </div>
       </div>

@@ -33,7 +33,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Lock, Users, List, FileText } from "lucide-react";
+import { Lock, FileText } from "lucide-react";
 
 import { ACCENT, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
@@ -300,14 +300,6 @@ function PortalEmptyState() {
       <p style={{ margin: `${SPACE.xs} 0 ${SPACE.lg} 0`, fontSize: TYPE.subhead.size, color: TEXT.tertiary, textAlign: "center", maxWidth: 320 }}>
         {T.chatSelectPrompt}
       </p>
-      <div style={{ display: "flex", gap: SPACE.sm, justifyContent: "center", flexWrap: "wrap" }}>
-        <GlassButton variant="secondary" icon={<List size={16} aria-hidden="true" />}>
-          {T.portalEmptyViewTemplates}
-        </GlassButton>
-        <GlassButton variant="ghost" icon={<Users size={16} aria-hidden="true" />}>
-          {T.portalEmptyAssignedAthletes}
-        </GlassButton>
-      </div>
     </GlassCard>
   );
 }

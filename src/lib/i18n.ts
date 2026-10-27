@@ -2045,12 +2045,30 @@ export const COACH_PORTAL_LABELS = {
   /** Announced by the queue and the chat when their polling finds nothing new. */
   nothingNew: "Nada nuevo",
 
+  // ---- request routine modal -----------------------------------------------
+  requestRoutineTitle: "Pedir rutina al coach",
+  requestRoutineGoalLabel: "Objetivo",
+  requestRoutineGoalHipertrofia: "Hipertrofia",
+  requestRoutineGoalFuerza: "Ganar fuerza",
+  requestRoutineGoalGrasa: "Perder grasa",
+  requestRoutineGoalRecomposicion: "Recomposición",
+  requestRoutineDaysLabel: "Días a la semana",
+  requestRoutineDays: (n: number): string => `${n} días`,
+  requestRoutineNotesLabel: "Notas para el coach",
+  requestRoutineNotesPlaceholder:
+    "Ej. Tengo molestia en el hombro derecho, evita press de banca.",
+  requestRoutineEquipment: "Gym completo",
+  requestRoutineSubmit: "Enviar solicitud",
+  requestRoutineSending: "Enviando…",
+  requestRoutineSuccess:
+    "Tu coach recibió la solicitud. Te escribirá cuando la rutina esté lista.",
+  requestRoutineError: "No se pudo enviar la solicitud. Inténtalo de nuevo.",
+  requestRoutineClose: "Cerrar",
+
   // ---- portal empty state ------------------------------------------------
   portalEmptyTitle: "Elige una solicitud",
   portalEmptyBody:
     "Abre una conversación con un atleta para ver su ficha, hablar y preparar su rutina.",
-  portalEmptyViewTemplates: "Ver plantillas de rutinas",
-  portalEmptyAssignedAthletes: "Atletas asignados",
 
   /**
    * Minutes remaining in a PIN lockout, for the live countdown in `CoachAccessGate`.

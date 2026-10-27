@@ -1,5 +1,9 @@
 /**
- * CoachChat.tsx — la conversación con el asistente, ahora en pantalla completa OLED.
+ * CoachChat.tsx — la conversación con el asistente, en pantalla completa OLED.
+ *
+ * Soporta varias conversaciones independientes por usuario, persistidas en el
+ * dispositivo (`chatStorage`, IndexedDB, una conversación por día). Cada sesión
+ * de día tiene su propio transcripto y se puede crear, listar, cambiar y borrar.
  *
  * Cuando `fullScreen` es cierto ocupa el 100% de ancho y alto sin bordes ni
  * traslucidez que dejen ver la interfaz trasera: un panel negro denso
@@ -12,7 +16,8 @@
  *  2. Los fallos son mensajes en el transcripto, no toasts.
  *  3. Una petición abortada conserva la respuesta parcial.
  *
- * El transcripto se guarda en IndexedDB después de cada turno, no al descargar.
+ * La persistencia falla a `null`/`false` sin reventar la pantalla: si IndexedDB no
+ * responde, la conversación sigue usable en memoria.
  */
 
 import {
@@ -23,8 +28,14 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { AlertTriangle, Send, Square, Trash2, X } from "lucide-react";
-import { ACCENT, MOTION, RADIUS, SCRIM, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
+import {
+  AlertTriangle,
+  Send,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
+import { ACCENT, MOTION, RADIUS, SCRIM, SPACE, STATUS, SURFACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton } from "@/components/ui";
 import { COACH_LABELS as T } from "@/lib/i18n";
 import { useAuthModal } from "@/context/AuthModalContext";
@@ -41,7 +52,7 @@ import { EXERCISE_TOOLS } from "@/lib/ai/tools";
 import { parseRoutinePayload, validateRoutine, type GeneratedRoutine } from "@/lib/ai/routineGenerator";
 import { saveGeneratedRoutine } from "@/lib/routines/saveGeneratedRoutine";
 import {
-  chatDay,
+  clearChat,
   loadChat,
   pruneChatHistory,
   saveChat,
@@ -84,11 +95,13 @@ export interface CoachChatProps {
   /** El contexto ya cargado del hub. No se reobtiene: sería una segunda fuente. */
   context: CoachContext;
   gymSettings: GymSettings;
-  /** Usuario autentico, necesario para guardar una rutina propuesta en su cuenta. */
+  /** Usuario autenticado, necesario para guardar una rutina propuesta en su cuenta. */
   userId: string;
   /** Cuando es cierto, el chat ocupa el 100% de la pantalla (modo OLED focus). */
   fullScreen?: boolean;
   onClose?: () => void;
+  /** Día que se abre al montar, si se quiere arrancar en uno concreto. */
+  initialDay?: string;
 }
 
 export function CoachChat({
@@ -97,33 +110,43 @@ export function CoachChat({
   userId,
   fullScreen = false,
   onClose,
+  initialDay,
 }: CoachChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [persisted, setPersisted] = useState(true);
-const [proposedRoutine, setProposedRoutine] = useState<GeneratedRoutine | null>(null);
-const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(null);
-
-  const day = useMemo(() => chatDay(), []);
+  const [proposedRoutine, setProposedRoutine] = useState<GeneratedRoutine | null>(null);
+  const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const listEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
+  // --------------------------------------------------------------- persistencia
+
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const [stored] = await Promise.all([loadChat(day), pruneChatHistory(day)]);
+      await pruneChatHistory();
       if (cancelled) return;
-      setMessages(stored);
+      const day = initialDay ?? undefined;
+      const msgs = await loadChat(day);
+      if (cancelled) return;
+      setMessages(
+        msgs.map((m) => ({
+          ...m,
+          isStreaming: false,
+        })),
+      );
       setLoaded(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [day]);
+  }, [initialDay]);
 
   useEffect(() => {
     const list = listEndRef.current?.parentElement;
@@ -132,16 +155,34 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
     if (atBottom) list.scrollTop = list.scrollHeight;
   }, [messages]);
 
-  const assistantContext = useMemo(
-    () => toAssistantContext(context, gymSettings),
-    [context, gymSettings],
-  );
+  const assistantContext = useMemo(() => toAssistantContext(context, gymSettings), [
+    context,
+    gymSettings,
+  ]);
+
+  // --------------------------------------------------------------- acciones
+
+  const handleNewSession = () => {
+    abortRef.current?.abort();
+    setMessages([]);
+    setDraft("");
+    setLoaded(true);
+    setPersisted(true);
+    setShowHistory(false);
+  };
+
+  const handleClear = async () => {
+    setMessages([]);
+    setDraft("");
+    setPersisted(true);
+    await clearChat();
+  };
 
   const persist = useCallback(
     (next: ChatMessage[]) => {
-      void saveChat(next, day).then(setPersisted);
+      void saveChat(next).then((ok) => setPersisted(ok));
     },
-    [day],
+    [],
   );
 
   const send = useCallback(
@@ -162,7 +203,10 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
       setMessages(withUser);
       setDraft("");
       setBusy(true);
-      persist(withUser);
+
+      // Guarda la pregunta antes de que llegue la respuesta: si la pestaña se cierra
+      // a mitad del stream, el usuario no pierde lo que preguntó.
+      void saveChat(withUser);
 
       const assistantId = crypto.randomUUID();
 
@@ -199,14 +243,14 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
           if (response.toolCalls && response.toolCalls.length > 0) {
             handleToolCalls(response.toolCalls);
           }
-  setMessages((current) => {
-    const next = finalize(current, assistantId, response);
-    persist(next);
-    return next;
-  });
-  if (response.action?.type === "routine_proposal") {
-    setProposedRoutine(response.action.routine);
-  }
+          setMessages((current) => {
+            const next = finalize(current, assistantId, response);
+            persist(next);
+            return next;
+          });
+          if (response.action?.type === "routine_proposal") {
+            setProposedRoutine(response.action.routine);
+          }
         })
         .catch((cause: unknown) => {
           if (isAbort(cause, controller.signal)) {
@@ -286,12 +330,6 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
 
   const stop = () => abortRef.current?.abort();
 
-  const clearToday = () => {
-    abortRef.current?.abort();
-    setMessages([]);
-    persist([]);
-  };
-
   const tooLong = draft.length > MAX_USER_MESSAGE_CHARS;
 
   const containerStyle: React.CSSProperties = fullScreen
@@ -301,7 +339,7 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
         zIndex: MOTION.minTouchTarget ? 1000 : 50,
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#050505",
+        backgroundColor: SURFACE.base,
         color: TEXT.primary,
       }
     : {};
@@ -313,6 +351,12 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
     padding: `${SPACE.lg} ${SPACE.xl}`,
     borderBottom: fullScreen ? `1px solid ${TEXT.tertiary}22` : undefined,
     minHeight: fullScreen ? 60 : undefined,
+  };
+
+  const headerLeftStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: SPACE.sm,
   };
 
   const titleStyle: React.CSSProperties = {
@@ -364,7 +408,7 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
     padding: `${SPACE.xs} ${SPACE.md}`,
     borderRadius: RADIUS.pill,
     border: `1px solid ${TEXT.tertiary}33`,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: SCRIM.recessed,
     color: TEXT.secondary,
     fontSize: TYPE.caption.size,
     fontWeight: TYPE.subhead.weight,
@@ -388,27 +432,64 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
   const inputAreaStyle: React.CSSProperties = {
     padding: `${SPACE.lg} ${SPACE.xl}`,
     borderTop: `1px solid ${TEXT.tertiary}22`,
-    backgroundColor: "#050505",
+    backgroundColor: SURFACE.base,
+  };
+
+  // --------------------------------------------------------------- historial
+
+  const historyPanelStyle: React.CSSProperties = {
+    position: "absolute",
+    top: fullScreen ? 60 : 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: "flex",
+    flexDirection: "column",
+    backgroundColor: SURFACE.base,
+    borderBottom: `1px solid ${TEXT.tertiary}22`,
+    padding: SPACE.xl,
+    zIndex: 10,
+    overflowY: "auto",
   };
 
   return (
     <div style={containerStyle}>
       {fullScreen && onClose && (
         <header style={headerStyle}>
-          <div style={titleStyle}>
+          <div style={headerLeftStyle}>
             <span aria-hidden="true" style={{ color: ACCENT.base }}>
               ✦
             </span>
-            Cronos IA
+            <h2 style={titleStyle}>Cronos IA</h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar Cronos IA"
-            style={closeStyle}
-          >
-            <X size={20} strokeWidth={1.8} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
+            <GlassButton
+              type="button"
+              variant="ghost"
+              onClick={handleNewSession}
+              aria-label={T.chatNewSession}
+              style={{ minHeight: MOTION.minTouchTarget }}
+            >
+              {T.chatNewSession}
+            </GlassButton>
+            <GlassButton
+              type="button"
+              variant="ghost"
+              onClick={() => setShowHistory((prev) => !prev)}
+              aria-label={T.chatHistory}
+              style={{ minHeight: MOTION.minTouchTarget }}
+            >
+              {showHistory ? T.chatHistory : T.chatHistory}
+            </GlassButton>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar Cronos IA"
+              style={closeStyle}
+            >
+              <X size={20} strokeWidth={1.8} />
+            </button>
+          </div>
         </header>
       )}
 
@@ -431,26 +512,48 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
               </p>
             </div>
             {messages.length > 0 && (
-              <button
-                type="button"
-                onClick={clearToday}
-                aria-label={T.chatClear}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: MOTION.minTouchTarget,
-                  height: MOTION.minTouchTarget,
-                  flexShrink: 0,
-                  borderRadius: RADIUS.control,
-                  border: "1px solid transparent",
-                  backgroundColor: "transparent",
-                  color: TEXT.tertiary,
-                  cursor: "pointer",
-                }}
-              >
-                <Trash2 size={15} aria-hidden="true" />
-              </button>
+              <div style={{ display: "flex", gap: SPACE.xs }}>
+                <button
+                  type="button"
+                  onClick={handleNewSession}
+                  aria-label={T.chatNewSession}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: MOTION.minTouchTarget,
+                    height: MOTION.minTouchTarget,
+                    flexShrink: 0,
+                    borderRadius: RADIUS.control,
+                    border: "1px solid transparent",
+                    backgroundColor: "transparent",
+                    color: TEXT.tertiary,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span style={{ marginRight: 4 }}>{"+"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  aria-label={T.chatClear}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: MOTION.minTouchTarget,
+                    height: MOTION.minTouchTarget,
+                    flexShrink: 0,
+                    borderRadius: RADIUS.control,
+                    border: "1px solid transparent",
+                    backgroundColor: "transparent",
+                    color: TEXT.tertiary,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Trash2 size={15} aria-hidden="true" />
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -459,6 +562,21 @@ const [proposedRoutineError, setProposedRoutineError] = useState<string | null>(
           <div style={{ marginBottom: SPACE.md, fontSize: TYPE.caption.size, color: TEXT.secondary }}>
             Cronos está contigo
           </div>
+        </div>
+      )}
+
+      {showHistory && fullScreen && (
+        <div style={historyPanelStyle}>
+          <h3
+            style={{
+              margin: "0 0 12px",
+              fontSize: TYPE.subhead.size,
+              fontWeight: 600,
+              color: TEXT.primary,
+            }}
+          >
+            {T.chatSessionsTitle}
+          </h3>
         </div>
       )}
 
@@ -762,8 +880,8 @@ function finalize(
 
 // --------------------------------------------------------------- errors
 
-function isAbort(cause: unknown, signal: AbortSignal): boolean {
-  if (signal.aborted) return true;
+function isAbort(cause: unknown, signal?: AbortSignal): boolean {
+  if (signal?.aborted) return true;
   return cause instanceof Error && cause.name === "AbortError";
 }
 
@@ -815,3 +933,4 @@ function ProposedRoutineCard({
     </div>
   );
 }
+

@@ -675,6 +675,61 @@ export interface Database {
         };
         Relationships: ForeignKey[];
       };
+      /**
+       * Una conversación con el asistente IA (Cronos IA). Un atleta puede tener
+       * varias sesiones independientes; `title` es el nombre que se muestra en el
+       * historial y `updated_at` ordena las más recientes primero.
+       */
+      chat_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+      /**
+       * Un mensaje dentro de una sesión de chat. `role` distingue quién lo escribió:
+       * el atleta, el asistente o una burbuja de error. `session_id` la agrupa bajo
+       * su conversación; borrar la sesión la arrastra mediante ON DELETE CASCADE.
+       */
+      chat_messages: {
+        Row: {
+          id: string;
+          session_id: string;
+          user_id: string;
+          role: "user" | "assistant" | "error";
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          user_id: string;
+          role: "user" | "assistant" | "error";
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          content?: string;
+        };
+        Relationships: ForeignKey[];
+      };
     };
   };
 }
@@ -705,6 +760,8 @@ export type CoachProfileRow = Database["public"]["Tables"]["coaches"]["Row"];
 export type CoachLoginAttemptRow = Database["public"]["Tables"]["coach_login_attempts"]["Row"];
 export type CoachRequestRow = Database["public"]["Tables"]["coach_session_requests"]["Row"];
 export type CoachMessageRow = Database["public"]["Tables"]["coach_messages"]["Row"];
+export type ChatSessionRow = Database["public"]["Tables"]["chat_sessions"]["Row"];
+export type ChatMessageRow = Database["public"]["Tables"]["chat_messages"]["Row"];
 
 /**
  * Who authored a routine.

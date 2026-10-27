@@ -1575,6 +1575,21 @@ export const COACH_LABELS = {
   // ---- error -----------------------------------------------------------
   errorTitle: "No se pudo reunir tu contexto",
   retry: "Reintentar",
+
+  // ---- multichat ---------------------------------------------------------
+  /**
+   * Gestión de varias conversaciones con el asistente IA.
+   */
+  chatNewSession: "Nueva conversación",
+  chatHistory: "Historial",
+  chatSessionsTitle: "Tus conversaciones",
+  chatUntitled: "Conversación sin título",
+  chatNoSessions: "Aún no tienes conversaciones.",
+  chatDeleteSession: "Eliminar conversación",
+  chatDeleteConfirm:
+    "¿Eliminar esta conversación? Se borrarán todos sus mensajes y no se puede deshacer.",
+  chatDeleteYes: "Eliminar",
+  chatDeleteNo: "Cancelar",
 } as const;
 
 /**

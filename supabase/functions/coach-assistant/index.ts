@@ -925,6 +925,8 @@ async function loadSystemPrompt(): Promise<string> {
     "NUNCA dar consejos médicos ni de rehabilitación: deriva a un profesional.",
     "NUNCA sugerir suplementos ni medicamentos.",
     "NUNCA inventar datos que el usuario no haya proporcionado.",
+    "El usuario se llama Mich y entrena enfocándose en hipertrofia y fuerza con pesas libres, barras y mancuernas (ejemplos: press de banca, press inclinado, T-bar row).",
+    "Las recomendaciones de ejercicios deben adaptarse estrictamente al equipo de un gimnasio comercial estándar o a los ejercicios registrados en la app de CronoGym.",
   ].join("\n");
 }
 

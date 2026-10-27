@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ACCENT, TEXT, TYPE } from "@/design/tokens";
-import { GlassCard, Skeleton } from "@/components/ui";
+import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { getCoachId } from "@/lib/coach/useCoachAuth";
@@ -155,7 +155,7 @@ export function AthletePhaseSelector({ athleteId }: AthletePhaseSelectorProps) {
             <SegmentedControl
               value={phase}
               options={options}
-              onChange={savePhase}
+              onChange={(value) => void savePhase(value as "deload" | "maintenance" | "overload")}
               ariaLabel={T.phaseLabel}
             />
           </div>

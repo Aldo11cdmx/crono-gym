@@ -17,7 +17,6 @@ import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { getCoachId } from "@/lib/coach/useCoachAuth";
 import { supabase } from "@lib/supabase";
-import type { CoachNoteRow } from "@/types/supabase";
 
 export interface CoachAthleteNotesProps {
   /** El atleta cuyas notas se están editando. */
@@ -30,7 +29,6 @@ export function CoachAthleteNotes({ athleteId }: CoachAthleteNotesProps) {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
 
   const mounted = useRef(true);
   useEffect(() => {
@@ -44,7 +42,6 @@ export function CoachAthleteNotes({ athleteId }: CoachAthleteNotesProps) {
   const load = useCallback(async () => {
     if (!athleteId || !coachId) {
       setContent("");
-      setLoaded(true);
       return;
     }
 
@@ -59,12 +56,10 @@ export function CoachAthleteNotes({ athleteId }: CoachAthleteNotesProps) {
 
     if (readError) {
       setError(T.coachNotesSaveError);
-      setLoaded(true);
       return;
     }
 
     setContent((data ?? { content: "" }).content);
-    setLoaded(true);
   }, [athleteId, coachId]);
 
   useEffect(() => {

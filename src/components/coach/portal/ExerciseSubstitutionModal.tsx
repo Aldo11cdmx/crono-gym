@@ -10,7 +10,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { X } from "lucide-react";
 
-import { ACCENT, MOTION, TEXT, TYPE } from "@/design/tokens";
+import { MOTION, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";

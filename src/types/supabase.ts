@@ -924,6 +924,37 @@ export interface Database {
             description?: string | null;
             instructor?: string | null;
             capacity?: number;
+            duration_minutes?: number;
+          };
+          Relationships: ForeignKey[];
+        };
+      gym_schedules: {
+        Row: {
+          id: string;
+          class_id: string;
+          day_of_week: number;
+          start_time: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          class_id: string;
+          day_of_week: number;
+          start_time: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          class_id?: string;
+          day_of_week?: number;
+          start_time?: string;
+          created_at?: string;
+        };
+        Relationships: ForeignKey[];
+      };
+    };
+  };
+};
 export type RoutineExercise = Database["public"]["Tables"]["routine_exercises"]["Row"];
 export type WorkoutLog = Database["public"]["Tables"]["workout_logs"]["Row"];
 export type CompletedSet = Database["public"]["Tables"]["completed_sets"]["Row"];

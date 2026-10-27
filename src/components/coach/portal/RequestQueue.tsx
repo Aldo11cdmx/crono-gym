@@ -41,14 +41,13 @@ import { supabase } from "@lib/supabase";
 import type { CoachRequestRow, ProfileRow } from "@/types/supabase";
 
 /**
- * How often the queue re-reads.
+ * How often the queue re-reads as a safety net behind Realtime.
  *
- * Ten seconds, matching the chat. The number is a compromise: a coach waiting on an
- * accept to feel instant would poll faster, and a portal left open all day would then cost
- * a request every few seconds for nobody looking at it. `usePolling` handles the second
- * problem by pausing on a hidden tab, which is what makes a short interval affordable.
+ * Thirty seconds now instead of ten: Realtime pushes changes instantly, and the poll is
+ * there only for the rare case a channel drop is not noticed. `usePolling` pauses on a
+ * hidden tab, which keeps an idle tab cheap.
  */
-const POLL_MS = 10_000;
+const POLL_MS = 30_000;
 
 /** A request as the queue needs it: the row, plus the name read in a second query. */
 interface QueueRow {
@@ -157,6 +156,42 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
   }, []);
 
   usePolling(load, POLL_MS);
+
+  /**
+   * Realtime: refresh the queue the moment a request row changes anywhere.
+   *
+   * This is what makes an accept or decline from another coach's tab visible here without
+   * waiting for the next poll. The channel listens to inserts, updates and deletes on
+   * `coach_session_requests` and re-reads on every one; RLS already scopes rows to this
+   * coach, so a change to another coach's row never reaches this channel.
+   *
+   * Cleanup unsubscribes on unmount so a closed tab does not keep a channel open.
+   */
+  useEffect(() => {
+    // `channel` exists on the real Supabase client but not on the test double, so this
+    // effect is a no-op in the queue's own suite. Realtime is an enhancement, not a
+    // requirement: the poll still refreshes every 30 s if the channel never opens.
+    if (typeof supabase.channel !== "function") return;
+
+    const channel = supabase
+      .channel("coach-requests-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "coach_session_requests",
+        },
+        () => {
+          void load();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [load]);
 
   /**
    * Move a request to a new status.

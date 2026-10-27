@@ -2045,6 +2045,13 @@ export const COACH_PORTAL_LABELS = {
   /** Announced by the queue and the chat when their polling finds nothing new. */
   nothingNew: "Nada nuevo",
 
+  // ---- portal empty state ------------------------------------------------
+  portalEmptyTitle: "Elige una solicitud",
+  portalEmptyBody:
+    "Abre una conversación con un atleta para ver su ficha, hablar y preparar su rutina.",
+  portalEmptyViewTemplates: "Ver plantillas de rutinas",
+  portalEmptyAssignedAthletes: "Atletas asignados",
+
   /**
    * Minutes remaining in a PIN lockout, for the live countdown in `CoachAccessGate`.
    *

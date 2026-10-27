@@ -33,9 +33,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Lock } from "lucide-react";
+import { Lock, Users, List, FileText } from "lucide-react";
 
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { supabase } from "@lib/supabase";
@@ -143,29 +143,37 @@ export function PortalPanel({ userId }: { userId: string }) {
         </section>
 
         <div className="flex min-w-0 flex-col gap-4">
-          <section aria-label={T.chatTitle} className="flex min-w-0 flex-col gap-3">
-            {selection === null ? (
-              <SelectionPrompt />
-            ) : (
-              <HumanCoachChat requestId={selection.requestId} userId={userId} />
-            )}
-          </section>
-
           {/*
-           * The CRM follows the same selection, so the athlete the coach is talking to and
-           * the athlete whose records are on screen cannot be two different people.
+           * The right column shows one thing at a time, driven by the selection:
            *
-           * The builder shares that selection for the same reason and with more force: it
-           * *writes* to this athlete's library. A builder pointed at the previous athlete
-           * would put a coach's prescription in somebody else's account, which is the one
-           * mistake in this feature that cannot be undone by the athlete.
+           *   - No selection: a single unified empty state (was three separate cards:
+           *     chat prompt, CRM prompt, builder prompt — now one container).
+           *   - Selection: the chat, CRM and builder, all bound to the same athlete so
+           *     a coach never reads one athlete's records beside another's conversation.
            */}
-          <AthleteCRM athleteId={selection?.athleteId ?? null} />
-
-          <VipRoutineBuilder
-            athleteId={selection?.athleteId ?? null}
-            onSaved={(savedTitle) => setLastSaved(savedTitle)}
-          />
+          {/*
+           * The right column: the chat is replaced by the unified empty state when nothing is
+           * selected, but the CRM and the builder stay mounted with `null` so each owns its
+           * own empty prompt and the parent never has to know what they show.
+           */}
+          {selection === null ? (
+            <>
+              <PortalEmptyState />
+              <AthleteCRM athleteId={null} />
+              <VipRoutineBuilder athleteId={null} />
+            </>
+          ) : (
+            <>
+              <section aria-label={T.chatTitle} className="flex min-w-0 flex-col gap-3">
+                <HumanCoachChat requestId={selection.requestId} userId={userId} />
+              </section>
+              <AthleteCRM athleteId={selection.athleteId} />
+              <VipRoutineBuilder
+                athleteId={selection.athleteId}
+                onSaved={(savedTitle) => setLastSaved(savedTitle)}
+              />
+            </>
+          )}
 
           {lastSaved !== null && (
             <p aria-live="polite" style={savedStyle}>
@@ -233,7 +241,7 @@ function PortalHeader({ userId, onClose }: { userId: string; onClose: () => void
   }, [onClose]);
 
   return (
-    <GlassCard>
+    <GlassCard style={{ padding: `${SPACE.sm} ${SPACE.md}` }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col">
           <h1
@@ -265,21 +273,41 @@ const savedStyle = {
   color: ACCENT.text,
 } as const;
 
-/** Stands in for the chat before an athlete has been chosen. */
-function SelectionPrompt() {
+/**
+ * Unified empty state for the right column.
+ *
+ * Replaces the three separate empty cards (chat, CRM, builder) that each printed
+ * their own "choose a request" prompt when no athlete was selected. One container,
+ * one icon, one sentence, two quick-access buttons.
+ */
+function PortalEmptyState() {
   return (
-    <GlassCard>
-      <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
-        {T.chatTitle}
-      </p>
-      {/*
-       * Its own copy, not the CRM's prompt. The CRM and the builder sit directly below this
-       * card in the same column and are empty for exactly the same reason, so reusing their
-       * sentence printed it three times in a row.
-       */}
-      <p style={{ margin: "6px 0 0", fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+    <GlassCard
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: SPACE.xl,
+        minHeight: 400,
+      }}
+    >
+      <FileText size={48} strokeWidth={1.5} style={{ color: TEXT.tertiary, marginBottom: SPACE.md }} aria-hidden="true" />
+      <h3 style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary, textAlign: "center" }}>
+        {T.portalEmptyTitle}
+      </h3>
+      <p style={{ margin: `${SPACE.xs} 0 ${SPACE.lg} 0`, fontSize: TYPE.subhead.size, color: TEXT.tertiary, textAlign: "center", maxWidth: 320 }}>
         {T.chatSelectPrompt}
       </p>
+      <div style={{ display: "flex", gap: SPACE.sm, justifyContent: "center", flexWrap: "wrap" }}>
+        <GlassButton variant="secondary" icon={<List size={16} aria-hidden="true" />}>
+          {T.portalEmptyViewTemplates}
+        </GlassButton>
+        <GlassButton variant="ghost" icon={<Users size={16} aria-hidden="true" />}>
+          {T.portalEmptyAssignedAthletes}
+        </GlassButton>
+      </div>
     </GlassCard>
   );
 }

@@ -997,3 +997,12 @@ export type ChatMessageRow = Database["public"]["Tables"]["chat_messages"]["Row"
  */
 export type RoutineAuthor = "user" | "human_coach" | "ai";
 export type RoutineSource = RoutineAuthor | null;
+
+/**
+ * Tipos de dominio que varios módulos importan de `@/types/supabase`.
+ *
+ * `Exercise` y `Routine` se derivan directamente de las tablas de Supabase, así
+ * que cualquier cambio en el esquema se refleja aquí automáticamente.
+ */
+export type Exercise = Database["public"]["Tables"]["exercises"]["Row"];
+export type Routine = Database["public"]["Tables"]["routines"]["Row"];

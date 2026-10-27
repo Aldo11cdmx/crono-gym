@@ -1039,7 +1039,7 @@ const hudValueStyle: CSSProperties = {
 
 const tabStripStyle: CSSProperties = {
   display: "flex",
-  gap: SPACE.xs,
+  gap: SPACE.md,
   padding: SPACE.xs,
   marginBottom: SPACE.lg,
   borderRadius: RADIUS.pill,
@@ -1050,17 +1050,17 @@ const tabStripStyle: CSSProperties = {
 };
 
 const segmentedTabStyle: CSSProperties = {
-  flex: "1 1 0",
+  flex: "0 0 auto",
   minWidth: 0,
+  padding: `${SPACE.sm} ${SPACE.md}`,
+  whiteSpace: "nowrap",
+  flexShrink: 0,
   minHeight: MOTION.minTouchTarget,
-  padding: `0 ${SPACE.md}`,
   borderRadius: RADIUS.pill,
   border: `1px solid transparent`,
   background: "transparent",
   color: TEXT.tertiary,
   fontSize: TYPE.subhead.size,
-  fontWeight: TYPE.subhead.weight,
-  whiteSpace: "nowrap",
   cursor: "pointer",
   transition: `background-color ${MOTION.fast} ${MOTION.standard}, border-color ${MOTION.fast} ${MOTION.standard}, color ${MOTION.fast} ${MOTION.standard}`,
 };

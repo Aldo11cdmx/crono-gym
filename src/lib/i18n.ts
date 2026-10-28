@@ -2036,6 +2036,7 @@ export const COACH_PORTAL_LABELS = {
   builderSaveError: "No se pudo guardar la rutina.",
   builderSaved: (title: string): string => `«${title}» guardada en la biblioteca del atleta.`,
   builderSavedToast: "¡Rutina guardada correctamente!",
+  builderOfflineToast: "Guardado localmente. Se sincronizará al reconectar.",
   builderNeedsDay: "Añade al menos un día con un ejercicio antes de guardar.",
   builderNeedsExerciseChoice: "Elige el ejercicio de cada fila antes de guardar.",
   builderNeedsCoach: "Tu sesión de entrenador no tiene id. Recarga la página.",
@@ -2084,6 +2085,8 @@ export const COACH_PORTAL_LABELS = {
   coachNotesSaved: "Guardado.",
   coachNotesSaveError: "No se pudo guardar la nota.",
   coachNotesOnlyCoach: "Solo tú puedes leer estas notas.",
+  coachNotesDictate: "Dictar notas",
+  coachNotesListening: "Escuchando…",
 
   // ---- fase e intensidad ---------------------------------------------------
   phaseTitle: "Fase de entrenamiento",

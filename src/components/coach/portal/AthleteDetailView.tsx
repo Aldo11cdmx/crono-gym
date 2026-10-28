@@ -10,10 +10,10 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Dumbbell, MessageSquare, Sparkles, User } from "lucide-react";
+import { ArrowLeft, Dumbbell, MessageSquare, Mic, Sparkles, User } from "lucide-react";
 
-import { ACCENT, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
-import { GlassButton, GlassCard } from "@/components/ui";
+import { ACCENT, GLASS, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
+import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { HumanCoachChat } from "./HumanCoachChat";
 import { supabase } from "@lib/supabase";
@@ -62,6 +62,7 @@ export function AthleteDetailView({
   const [phase, setPhase] = useState<"deload" | "maintenance" | "overload" | null>(null);
   const [activeTab, setActiveTab] = useState<"ficha" | "chat" | "rutina">("ficha");
   const [coachNotes, setCoachNotes] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pullDistance, setPullDistance] = useState(0);
@@ -72,6 +73,7 @@ export function AthleteDetailView({
 
   const contentRef = useRef<HTMLDivElement>(null);
   const mounted = useRef(true);
+  const recognitionRef = useRef<any>(null);
   const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
@@ -80,6 +82,32 @@ export function AthleteDetailView({
       mounted.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = "es-MX";
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setCoachNotes((prev) => (prev ?? "") + " " + transcript.trim());
+      setIsListening(false);
+    };
+    recognitionRef.current.onerror = () => setIsListening(false);
+    recognitionRef.current.onend = () => setIsListening(false);
+    return () => {
+      recognitionRef.current!.abort();
+    };
+  }, []);
+
+  const startDictation = useCallback(() => {
+    const recognition = recognitionRef.current;
+    if (!recognition || isListening) return;
+    setIsListening(true);
+    recognition.start();
+  }, [isListening]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -215,11 +243,17 @@ export function AthleteDetailView({
 
   if (loading) {
     return (
-      <GlassCard raised style={{ padding: SPACE.card }}>
-        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-          {T.loading}
-        </p>
-      </GlassCard>
+      <div style={{ display: "flex", flexDirection: "column", gap: SPACE.card, padding: SPACE.card }}>
+        <Skeleton variant="block" height="64" style={{ borderRadius: RADIUS.card }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <Skeleton variant="text" width="45%" style={{ borderRadius: RADIUS.sm }} />
+          <Skeleton variant="text" width="65%" style={{ borderRadius: RADIUS.sm }} />
+          <Skeleton variant="text" width="30%" style={{ borderRadius: RADIUS.sm }} />
+        </div>
+        <Skeleton variant="block" height="120" style={{ borderRadius: RADIUS.card }} />
+        <Skeleton variant="block" height="88" style={{ borderRadius: RADIUS.card }} />
+        <Skeleton variant="block" height="160" style={{ borderRadius: RADIUS.card }} />
+      </div>
     );
   }
 
@@ -410,16 +444,39 @@ export function AthleteDetailView({
             >
               {T.athleteDetailNotes}
             </h4>
-            <p
-              style={{
-                margin: 0,
-                fontSize: TYPE.subhead.size,
-                color: coachNotes ? TEXT.primary : TEXT.tertiary,
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {coachNotes ?? T.athleteDetailNoNotes}
-            </p>
+            <div style={{ display: "flex", gap: 2, alignItems: "flex-end" }}>
+              <textarea
+                value={coachNotes ?? ""}
+                onChange={(e) => setCoachNotes(e.target.value || null)}
+                placeholder={T.athleteDetailNoNotes}
+                rows={3}
+                style={{
+                  flex: 1,
+                  minHeight: 88,
+                  padding: "10px 12px",
+                  borderRadius: 16,
+                  border: `1px solid ${GLASS.border}`,
+                  background: SURFACE_ROLE.well,
+                  color: TEXT.primary,
+                  fontSize: TYPE.subhead.size,
+                  resize: "vertical",
+                }}
+              />
+              <GlassButton
+                variant="ghost"
+                icon={<Mic size={16} aria-hidden="true" />}
+                onClick={startDictation}
+                style={{
+                  padding: 6,
+                  minHeight: "auto",
+                  minWidth: "auto",
+                  background: isListening ? ACCENT.base : "transparent",
+                  color: isListening ? TEXT.onAccent : TEXT.secondary,
+                }}
+                aria-label={isListening ? T.coachNotesListening : T.coachNotesDictate}
+                disabled={!recognitionRef.current}
+              />
+            </div>
           </div>
         </GlassCard>
 

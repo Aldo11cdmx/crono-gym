@@ -119,6 +119,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [offlinePending, setOfflinePending] = useState(false);
   const [substituteOpen, setSubstituteOpen] = useState(false);
   const [substitutingExercise, setSubstitutingExercise] = useState<CoachRoutineExercise | null>(null);
   const [substituteDayIndex, setSubstituteDayIndex] = useState<number | null>(null);
@@ -175,6 +176,41 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
     const t = setTimeout(() => setToast(null), 4000);
     return () => clearTimeout(t);
   }, [toast]);
+
+  /**
+   * Persiste el borrador en localStorage cada vez que cambia, para que
+   * sobreviva a recargas y a fallos de red. Clave por atleta.
+   */
+  useEffect(() => {
+    if (!athleteId) return;
+    try {
+      localStorage.setItem(
+        `draft_routine_${athleteId}`,
+        JSON.stringify({ title, days, updatedAt: Date.now() }),
+      );
+    } catch {
+      // localStorage no disponible o cuota excedida: se ignora, el flujo online sigue funcionando.
+    }
+  }, [athleteId, title, days]);
+
+  /**
+   * Restaura el borrador guardado cuando se monta para un atleta y aún no hay
+   * nada escrito. Evita perder lo escrito si el coach cierra la pestaña a mitad.
+   */
+  useEffect(() => {
+    if (!athleteId) return;
+    try {
+      const raw = localStorage.getItem(`draft_routine_${athleteId}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if ((parsed.title ?? "").trim() || (parsed.days ?? []).length > 0) {
+        setTitle(parsed.title ?? "");
+        setDays(parsed.days ?? [emptyDay()]);
+      }
+    } catch {
+      // Borrador corrupto: se ignora y se empieza limpio.
+    }
+  }, [athleteId]);
 
   /**
    * Genera una rutina estructurada con ejercicios del catálogo,
@@ -267,11 +303,15 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
     setSaving(false);
 
     if (!ok) {
-      // Rollback: devuelve el borrador y muestra el error.
+      // Rollback: devuelve el borrador para que el coach no pierda lo escrito.
       setTitle(savedTitle);
       setDays(draft.days);
+      // Marca la sincronización pendiente: localStorage ya tiene el draft y se
+      // reintentará al volver online.
+      setOfflinePending(true);
       setSaved(null);
       setError(T.builderSaveError);
+      setToast(T.builderOfflineToast);
       return;
     }
 
@@ -280,6 +320,32 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
     setToast(T.builderSavedToast);
     onSaved?.(savedTitle);
   }, [athleteId, days, onSaved, saving, title]);
+
+  /**
+   * Reintenta el guardado pendiente cuando vuelve la conexión. Lee el borrador
+   * de localStorage y vuelve a disparar `save()`.
+   */
+  useEffect(() => {
+    const onOnline = () => {
+      if (!offlinePending || !athleteId) return;
+      try {
+        const raw = localStorage.getItem(`draft_routine_${athleteId}`);
+        if (!raw) {
+          setOfflinePending(false);
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        setTitle(parsed.title ?? "");
+        setDays(parsed.days ?? [emptyDay()]);
+        setOfflinePending(false);
+        void save();
+      } catch {
+        setOfflinePending(false);
+      }
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [offlinePending, athleteId, save]);
 
   /**
    * Reemplaza el ejercicio de una fila por uno del mismo grupo muscular.

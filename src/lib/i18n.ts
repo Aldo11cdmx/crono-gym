@@ -2106,6 +2106,23 @@ export const COACH_PORTAL_LABELS = {
   coachBannerAvailable: "Disponible",
   coachBannerUnavailable: "No disponible ahora",
   coachBannerRequestRoutine: "Pedir nueva rutina",
+  coachBannerExerciseHelp: "Consultar sobre un ejercicio",
+
+  // ---- athlete detail view -------------------------------------------------
+  athleteDetailTitle: "Ficha del atleta",
+  athleteDetailBack: "Volver",
+  athleteDetailGoal: "Objetivo",
+  athleteDetailDays: "Días a la semana",
+  athleteDetailEquipment: "Equipo",
+  athleteDetailPhase: "Fase actual",
+  athleteDetailNotes: "Notas privadas",
+  athleteDetailNoNotes: "Sin notas privadas todavía.",
+  athleteDetailUnknown: "Sin dato",
+
+  // ---- IA routine generation ----------------------------------------------
+  builderGenerateAiButton: "Sugerir rutina con IA",
+  builderGeneratingAi: "Generando rutina…",
+  builderAiSaved: "Rutina generada con IA guardada en la biblioteca del atleta.",
 
   /**
    * Minutes remaining in a PIN lockout, for the live countdown in `CoachAccessGate`.

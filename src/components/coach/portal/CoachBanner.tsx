@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { User } from "lucide-react";
+import { MessageSquare, User } from "lucide-react";
 
 import { GLASS, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
@@ -23,9 +23,11 @@ export interface CoachBannerProps {
   coachId: string;
   /** Se dispara cuando el atleta pide una nueva rutina. */
   onRequestRoutine: () => void;
+  /** Se dispara cuando el atleta pide ayuda con un ejercicio. Opcional. */
+  onExerciseHelp?: () => void;
 }
 
-export function CoachBanner({ coachId, onRequestRoutine }: CoachBannerProps) {
+export function CoachBanner({ coachId, onRequestRoutine, onExerciseHelp }: CoachBannerProps) {
   const [coach, setCoach] = useState<{
     display_name: string;
     is_available: boolean;
@@ -147,6 +149,16 @@ export function CoachBanner({ coachId, onRequestRoutine }: CoachBannerProps) {
           >
             {T.coachBannerRequestRoutine}
           </GlassButton>
+          {onExerciseHelp && (
+            <GlassButton
+              variant="ghost"
+              icon={<MessageSquare size={14} />}
+              onClick={() => void onExerciseHelp()}
+              style={{ minHeight: 40 }}
+            >
+              {T.coachBannerExerciseHelp}
+            </GlassButton>
+          )}
         </div>
       </div>
     </GlassCard>

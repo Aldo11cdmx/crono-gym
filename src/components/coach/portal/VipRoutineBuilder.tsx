@@ -27,8 +27,8 @@
  * clean up if the second insert failed.
  */
 
-import { useCallback, useMemo, useState } from "react";
-import { Plus, Trash2, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Plus, Trash2, RefreshCw, Sparkles } from "lucide-react";
 
 import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
@@ -46,6 +46,7 @@ import {
   useExerciseCatalog,
 } from "@/hooks/useExerciseCatalog";
 import type { Exercise } from "@/types/supabase";
+import { supabase } from "@lib/supabase";
 
 import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
@@ -77,6 +78,25 @@ function emptyExercise(): CoachRoutineExercise {
   return { exerciseId: "", sets: 4, repsMin: 8, repsMax: 12, restSeconds: 90 };
 }
 
+/** Plan de 4 días: cada día con grupos musculares para buscar en el catálogo. */
+const DAY_PLAN: { label: string; bodyParts: string[] }[] = [
+  { label: "Día 1 - Empuje", bodyParts: ["chest", "upper arms"] },
+  { label: "Día 2 - Tirón", bodyParts: ["back", "upper arms"] },
+  { label: "Día 3 - Piernas", bodyParts: ["upper legs", "lower legs"] },
+  { label: "Día 4 - Hombros y core", bodyParts: ["shoulders", "waist"] },
+];
+
+/** Series/reps/descanso por objetivo. */
+const GOAL_PRESETS: Record<
+  string,
+  { sets: number; repsMin: number; repsMax: number; restSeconds: number }
+> = {
+  hipertrofia: { sets: 3, repsMin: 8, repsMax: 12, restSeconds: 90 },
+  fuerza: { sets: 4, repsMin: 3, repsMax: 6, restSeconds: 180 },
+  perder_grasa: { sets: 3, repsMin: 12, repsMax: 15, restSeconds: 60 },
+  recomposicion: { sets: 3, repsMin: 10, repsMax: 12, restSeconds: 90 },
+};
+
 export interface VipRoutineBuilderProps {
   /** The athlete the routine is written for. */
   athleteId: string | null;
@@ -101,6 +121,109 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
   const [substitutingExercise, setSubstitutingExercise] = useState<CoachRoutineExercise | null>(null);
   const [substituteDayIndex, setSubstituteDayIndex] = useState<number | null>(null);
   const [substituteExerciseIndex, setSubstituteExerciseIndex] = useState<number | null>(null);
+  const [generatingAi, setGeneratingAi] = useState(false);
+  const [athleteGoal, setAthleteGoal] = useState<string | null>(null);
+  const [athletePhase, setAthletePhase] = useState<"deload" | "maintenance" | "overload" | null>(null);
+
+  /** Lee la fase y el objetivo del atleta para personalizar la rutina generada. */
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  const loadAthleteContext = useCallback(async () => {
+    if (!athleteId) return;
+
+    const [phaseRow, requestRow] = await Promise.all([
+      supabase
+        .from("athlete_phases")
+        .select("phase")
+        .eq("athlete_id", athleteId)
+        .single(),
+      supabase
+        .from("coach_session_requests")
+        .select("athlete_notes, created_at")
+        .eq("athlete_id", athleteId)
+        .single(),
+    ]);
+
+    if (!mounted.current) return;
+
+    if (phaseRow.data?.phase) {
+      setAthletePhase(phaseRow.data.phase);
+    }
+
+    const notes = requestRow.data?.athlete_notes ?? null;
+    const goalMatch = notes?.match(/Objetivo:\s*([^\n]+)/);
+    if (goalMatch?.[1]?.trim()) {
+      setAthleteGoal(goalMatch[1].trim());
+    }
+  }, [athleteId]);
+
+  useEffect(() => {
+    void loadAthleteContext();
+  }, [loadAthleteContext]);
+
+  /**
+   * Genera una rutina estructurada con ejercicios del catálogo,
+   * ajustada al objetivo y fase del atleta.
+   *
+   * Nunca inventa ejercicios: cada `exerciseId` viene de una fila real de
+   * `exercises` filtrada por `body_part`. El coach puede editar todo antes
+   * de guardar.
+   */
+  const generateAIRoutine = useCallback(() => {
+    if (!athleteId || generatingAi || exercises.length === 0) return;
+
+    setGeneratingAi(true);
+    setError(null);
+
+    try {
+      const preset =
+        GOAL_PRESETS[athleteGoal ?? "hipertrofia"] ?? GOAL_PRESETS.hipertrofia;
+      let sets = preset.sets;
+      if (athletePhase === "deload") sets = Math.max(2, sets - 1);
+      if (athletePhase === "overload") sets = preset.sets + 1;
+
+      const newDays: CoachRoutineDay[] = DAY_PLAN.map((plan) => {
+        const exercisesForDay: CoachRoutineExercise[] = plan.bodyParts.flatMap(
+          (bodyPart) => {
+            const match = exercises.find(
+              (e) => e.body_part === bodyPart,
+            );
+            if (!match) return [];
+            return [
+              {
+                exerciseId: match.id,
+                exerciseName: match.name,
+                sets,
+                repsMin: preset.repsMin,
+                repsMax: preset.repsMax,
+                restSeconds: preset.restSeconds,
+              },
+            ];
+          },
+        );
+        return { label: plan.label, exercises: exercisesForDay };
+      });
+
+      const titleByGoal: Record<string, string> = {
+        hipertrofia: "Hipertrofia 4 días",
+        fuerza: "Fuerza 4 días",
+        perder_grasa: "Pérdida de grasa 4 días",
+        recomposicion: "Recomposición 4 días",
+      };
+
+      setTitle(titleByGoal[athleteGoal ?? "hipertrofia"] ?? titleByGoal.hipertrofia);
+      setDays(newDays);
+      setSaved(null);
+    } finally {
+      setGeneratingAi(false);
+    }
+  }, [athleteId, athleteGoal, athletePhase, exercises.length, generatingAi]);
 
   /**
    * The coach's own row id, read once per save rather than held in state.
@@ -258,6 +381,17 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
           >
             {T.builderAddDay}
           </GlassButton>
+
+          {athleteId !== null && (
+            <GlassButton
+              variant="ghost"
+              icon={<Sparkles size={16} aria-hidden="true" />}
+              disabled={generatingAi || exercises.length === 0 || catalogLoading}
+              onClick={() => void generateAIRoutine()}
+            >
+              {generatingAi ? T.builderGeneratingAi : T.builderGenerateAiButton}
+            </GlassButton>
+          )}
 
           {error && (
             <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>

@@ -44,6 +44,7 @@ import { useCoachAuth } from "@/lib/coach/useCoachAuth";
 import type { WorkspaceOutletContext } from "@/App";
 
 import { AthleteCRM } from "./AthleteCRM";
+import { AthleteDetailView } from "./AthleteDetailView";
 import { HumanCoachChat } from "./HumanCoachChat";
 import { LiveGymFeed } from "./LiveGymFeed";
 import { RequestQueue } from "./RequestQueue";
@@ -83,6 +84,25 @@ export function CoachPortal() {
 export function PortalPanel({ userId }: { userId: string }) {
   const auth = useCoachAuth();
   const [selection, setSelection] = useState<PortalSelection | null>(null);
+
+  /**
+   * Detecta móvil para cambiar a vista de ficha del atleta a pantalla completa.
+   *
+   * Tailwind `lg` empieza en 1024px; por debajo, una selección abre
+   * `AthleteDetailView` en lugar de la columna dividida.
+   */
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") {
+      setIsMobile(false);
+      return;
+    }
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsMobile(mq.matches);
+    const handler = (event: MediaQueryListEvent) => setIsMobile(event.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   /*
    * The last routine handed over, echoed at the portal level rather than inside the builder.
@@ -158,7 +178,19 @@ export function PortalPanel({ userId }: { userId: string }) {
            * selected, but the CRM and the builder stay mounted with `null` so each owns its
            * own empty prompt and the parent never has to know what they show.
            */}
-          {selection === null ? (
+          {/*
+           * En móvil, una selección abierta muestra la ficha del atleta a
+           * pantalla completa en lugar de la columna dividida. El botón
+           * "Volver" de AthleteDetailView limpia la selección.
+           */}
+          {isMobile !== null && isMobile && selection !== null ? (
+            <AthleteDetailView
+              requestId={selection.requestId}
+              athleteId={selection.athleteId}
+              coachUserId={userId}
+              onBack={() => setSelection(null)}
+            />
+          ) : selection === null ? (
             <>
               <PortalEmptyState />
               <AthleteCRM athleteId={null} />

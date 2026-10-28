@@ -2035,6 +2035,7 @@ export const COACH_PORTAL_LABELS = {
   builderSaving: "Guardando…",
   builderSaveError: "No se pudo guardar la rutina.",
   builderSaved: (title: string): string => `«${title}» guardada en la biblioteca del atleta.`,
+  builderSavedToast: "¡Rutina guardada correctamente!",
   builderNeedsDay: "Añade al menos un día con un ejercicio antes de guardar.",
   builderNeedsExerciseChoice: "Elige el ejercicio de cada fila antes de guardar.",
   builderNeedsCoach: "Tu sesión de entrenador no tiene id. Recarga la página.",

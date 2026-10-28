@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@lib/supabase";
+import { metricsCache, profileCache } from "@/lib/cache";
 import {
   computeEnergyTargets,
   type EnergyReport,
@@ -63,13 +64,23 @@ export function useProfile(userId: string | null): ProfileState {
     }
     setLoading(true);
     setError(null);
-    const { data, error: err } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (err) setError(err.message);
-    else if (data) setProfile(toProfile(data as Record<string, unknown>));
+    const cached = profileCache.get(userId);
+    let data;
+    if (cached) {
+      data = cached;
+    } else {
+      const { data: fetched, error: err } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (err) setError(err.message);
+      if (fetched) {
+        profileCache.set(userId, fetched as Record<string, unknown>);
+        data = fetched;
+      }
+    }
+    if (data) setProfile(toProfile(data as Record<string, unknown>));
     setLoading(false);
   }, [userId]);
 
@@ -100,7 +111,10 @@ export function useProfile(userId: string | null): ProfileState {
         setError(err.message);
         return false;
       }
-      if (data) setProfile(toProfile(data as Record<string, unknown>));
+      if (data) {
+        setProfile(toProfile(data as Record<string, unknown>));
+        profileCache.set(userId, data as Record<string, unknown>);
+      }
       return true;
     },
     [userId],
@@ -150,26 +164,50 @@ export function useBodyMetrics(userId: string | null): BodyMetricsState {
     setLoading(true);
     setError(null);
 
-    const [w, m, c] = await Promise.all([
-      supabase
-        .from("bodyweight_entries")
-        .select("*")
-        .eq("user_id", userId)
-        .order("measured_on", { ascending: false })
-        .limit(WEIGHT_WINDOW),
-      supabase
-        .from("body_measurements")
-        .select("*")
-        .eq("user_id", userId)
-        .order("measured_on", { ascending: false })
-        .limit(12),
-      supabase
-        .from("session_checkins")
-        .select("*")
-        .eq("user_id", userId)
-        .order("checked_on", { ascending: false })
-        .limit(30),
-    ]);
+    const weightKey = `${userId}:weights`;
+    const measureKey = `${userId}:measurements`;
+    const checkinKey = `${userId}:checkins`;
+
+    const cachedWeights = metricsCache.get(weightKey);
+    const cachedMeasures = metricsCache.get(measureKey);
+    const cachedCheckins = metricsCache.get(checkinKey);
+
+    const allCached = cachedWeights !== null && cachedMeasures !== null && cachedCheckins !== null;
+
+    let w, m, c;
+    if (allCached) {
+      w = { data: cachedWeights, error: null };
+      m = { data: cachedMeasures, error: null };
+      c = { data: cachedCheckins, error: null };
+    } else {
+      [w, m, c] = await Promise.all([
+        supabase
+          .from("bodyweight_entries")
+          .select("*")
+          .eq("user_id", userId)
+          .order("measured_on", { ascending: false })
+          .limit(WEIGHT_WINDOW),
+        supabase
+          .from("body_measurements")
+          .select("*")
+          .eq("user_id", userId)
+          .order("measured_on", { ascending: false })
+          .limit(12),
+        supabase
+          .from("session_checkins")
+          .select("*")
+          .eq("user_id", userId)
+          .order("checked_on", { ascending: false })
+          .limit(30),
+      ]);
+
+      if (!w.error && w.data)
+        metricsCache.set(weightKey, w.data as unknown as Record<string, unknown>);
+      if (!m.error && m.data)
+        metricsCache.set(measureKey, m.data as unknown as Record<string, unknown>);
+      if (!c.error && c.data)
+        metricsCache.set(checkinKey, c.data as unknown as Record<string, unknown>);
+    }
 
     if (w.error) setError(w.error.message);
     if (m.error) setError(m.error.message);
@@ -201,6 +239,7 @@ export function useBodyMetrics(userId: string | null): BodyMetricsState {
         setError(err.message);
         return false;
       }
+      metricsCache.delete(`${userId}:weights`);
       await refresh();
       return true;
     },

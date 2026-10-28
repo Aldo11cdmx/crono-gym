@@ -23,7 +23,7 @@
  */
 
 import { supabase } from "@lib/supabase";
-import { filledDays, type CoachRoutineDraft } from "./coachRoutineDraft";
+import type { CoachRoutineDraft } from "./coachRoutineDraft";
 
 /**
  * Persists a coach's routine for an athlete and returns whether it worked.
@@ -65,24 +65,26 @@ export async function saveCoachRoutine(
      * `day_index` is positional, leaving one in the middle would punch a hole in the
      * sequence the reader groups by.
      */
-    const rows = filledDays(draft).flatMap((day, dayIndex) =>
-      day.exercises.map((exercise, index) => ({
-        routine_id: routineId as string,
-        exercise_id: exercise.exerciseId,
-        target_sets: exercise.sets,
-        rest_seconds: exercise.restSeconds,
-        order_index: index,
-        day_index: dayIndex,
-        day_label: day.label,
-        /*
-         * The reps, which `saveGeneratedRoutine` has to drop because the columns did not
-         * exist when it was written. This path writes them: a coach prescribing "8-10" and
-         * the athlete only being able to see "4 series" is a plan that lost its point on the
-         * way to the database.
-         */
-        target_reps_min: exercise.repsMin,
-        target_reps_max: exercise.repsMax,
-      })),
+    const rows = draft.days.flatMap((day, dayIndex) =>
+      day.exercises
+        .filter((exercise) => exercise.exerciseId !== "")
+        .map((exercise, index) => ({
+          routine_id: routineId as string,
+          exercise_id: exercise.exerciseId,
+          target_sets: exercise.sets,
+          rest_seconds: exercise.restSeconds,
+          order_index: index,
+          day_index: dayIndex,
+          day_label: day.label,
+          /*
+           * The reps, which `saveGeneratedRoutine` has to drop because the columns did not
+           * exist when it was written. This path writes them: a coach prescribing "8-10" and
+           * the athlete only being able to see "4 series" is a plan that lost its point on the
+           * way to the database.
+           */
+          target_reps_min: exercise.repsMin,
+          target_reps_max: exercise.repsMax,
+        })),
     );
 
     /*

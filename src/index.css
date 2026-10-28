@@ -348,6 +348,12 @@ background: radial-gradient(
     }
   }
 
+  @keyframes cronos-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   /*
    * Button interaction states.
    *

@@ -71,6 +71,23 @@ const pkg = JSON.parse(
   readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "package.json"), "utf8"),
 );
 
+/** Quita llamadas a consola en el build de producción (sin nueva dependencia). */
+function dropConsole() {
+  return {
+    name: "cronos:drop-console",
+    enforce: "post",
+    transform(code: string, id: string) {
+      if (!id.match(/\.[jt]sx?$/)) return null;
+      if (id.includes("node_modules")) return null;
+      const next = code.replace(
+        /console\.(log|debug|info|warn|error|trace)\([^)]*\)\s*;?/g,
+        "",
+      );
+      return next === code ? null : { code, map: null };
+    },
+  } as Plugin;
+}
+
 export default defineConfig({
   plugins: [react(), tsconfigPaths(), devModuleHygiene()],
   define: {
@@ -82,11 +99,12 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      plugins: [dropConsole()],
       output: {
         manualChunks: {
           react: ["react", "react-dom"],
-          supabase: ["@supabase/supabase-js"],
-          ui: ["lucide-react"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-icons": ["lucide-react"],
         },
       },
     },

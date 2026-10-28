@@ -21,6 +21,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import { toExercises } from "@/lib/catalog/exerciseAdapter";
+import { catalogCache } from "@/lib/cache";
 import type { Exercise } from "@/types/supabase";
 
 export interface ExerciseCatalogState {
@@ -58,7 +59,17 @@ export function useExerciseCatalog(): ExerciseCatalogState {
     setLoading(true);
     setError(null);
     try {
-      const rows = await loadCatalog();
+      const cached = catalogCache.get("catalog");
+      let rows;
+      if (cached) {
+        rows = cached;
+      } else {
+        rows = await loadCatalog();
+        catalogCache.set("catalog", rows);
+        // El catálogo ya vive en IndexedDB; la caché en memoria solo acelera
+        // los re-lecturas dentro de la sesión. `resetCatalogCache` invalida
+        // ambas cuando el catálogo se regénere.
+      }
       setExercises(toExercises(rows));
     } catch (err) {
       setError(

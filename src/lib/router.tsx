@@ -31,13 +31,12 @@ import {
   TrainView,
 } from "@/App";
 import { ProfilePage } from "@/components/profile/ProfilePage";
-import { CoachPortal } from "@/components/coach/portal/CoachPortal";
 import { HubSkeleton } from "@/components/hub/HubSkeleton";
 import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
 import { CoachPortalPreview } from "@/components/dev/CoachPortalPreview";
 import { AdminGate } from "@/components/profile/AdminGate";
 import { DeveloperGate } from "@/components/profile/DeveloperGate";
-import { AdminHub } from "@/components/admin/AdminHub";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   COACH_PATH,
   EXERCISE_PATH,
@@ -58,6 +57,27 @@ import {
 const ExerciseHub = lazy(() =>
   import("@/components/hub/ExerciseHub").then((mod) => ({
     default: mod.ExerciseHub,
+  })),
+);
+
+/**
+ * El portal del coach pesa: trae el vault, la ficha del atleta, el armador de
+ * rutinas y todo el catálogo del coach. Se carga bajo demanda en `/coach/portal`
+ * para que el atleta libre que nunca lo abre no lo pague en el bundle inicial.
+ */
+const LazyCoachPortal = lazy(() =>
+  import("@/components/coach/portal/CoachPortal").then((mod) => ({
+    default: mod.CoachPortal,
+  })),
+);
+
+/**
+ * El hub de administración solo lo toca el staff. Carga diferida: nunca forma
+ * parte del camino crítico de un atleta.
+ */
+const LazyAdminHub = lazy(() =>
+  import("@/components/admin/AdminHub").then((mod) => ({
+    default: mod.AdminHub,
   })),
 );
 
@@ -168,12 +188,18 @@ export const router = createBrowserRouter([
            * `BottomNav` and `SideNav`, and this is not an athlete's tab: it would put a
            * coach's inbox one thumb-tap away from every free user's home screen.
            */
-          { path: "/coach/portal", element: <CoachPortal /> },
+          { path: "/coach/portal", element: (
+            <Suspense fallback={<LoadingSpinner label="Cargando el portal del coach…" />}>
+              <LazyCoachPortal />
+            </Suspense>
+          ) },
           {
             path: "/admin",
             element: (
               <AdminGate>
-                <AdminHub />
+                <Suspense fallback={<LoadingSpinner label="Cargando administración…" />}>
+                  <LazyAdminHub />
+                </Suspense>
               </AdminGate>
             ),
           },

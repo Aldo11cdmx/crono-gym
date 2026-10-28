@@ -117,6 +117,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [substituteOpen, setSubstituteOpen] = useState(false);
   const [substitutingExercise, setSubstitutingExercise] = useState<CoachRoutineExercise | null>(null);
   const [substituteDayIndex, setSubstituteDayIndex] = useState<number | null>(null);
@@ -166,6 +167,13 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
   useEffect(() => {
     void loadAthleteContext();
   }, [loadAthleteContext]);
+
+  /** Auto-dismissa el toast de confirmación tras 4 segundos. */
+  useEffect(() => {
+    if (toast === null) return;
+    const t = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   /**
    * Genera una rutina estructurada con ejercicios del catálogo,
@@ -269,6 +277,7 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
     setTitle("");
     setDays([emptyDay()]);
     setSaved(T.builderSaved(savedTitle));
+    setToast(T.builderSavedToast);
     onSaved?.(savedTitle);
   }, [athleteId, days, onSaved, saving, title]);
 
@@ -407,6 +416,12 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
           {saved && (
             <p aria-live="polite" style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
               {saved}
+            </p>
+          )}
+
+          {toast && (
+            <p role="status" aria-live="polite" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+              {toast}
             </p>
           )}
 

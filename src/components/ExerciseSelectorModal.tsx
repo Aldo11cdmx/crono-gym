@@ -16,7 +16,7 @@
  * tarjeta se invoca `onSelect` con el ejercicio elegido.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { X, Search, Dumbbell, Loader2 } from "lucide-react";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
@@ -44,7 +44,6 @@ export interface ExerciseSelectorModalProps {
   onSelect: (exercise: CatalogExercise) => void;
 }
 
-const ITEM_HEIGHT = 112;
 const THUMB_SIZE = 48;
 
 /** Lowercase, accent-free, so "Máquina" and "maquina" are the same token. */
@@ -63,11 +62,10 @@ function ExerciseSelectorModal({
 }: ExerciseSelectorModalProps) {
   const [query, setQuery] = useState("");
   const [onlyCronos, setOnlyCronos] = useState(true);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
   const [catalog, setCatalog] = useState<CatalogExercise[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
-  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -128,10 +126,19 @@ function ExerciseSelectorModal({
     [filtered],
   );
 
-  const visibleCount = Math.ceil(Math.max(listRef.current?.clientHeight ?? 336, 336) / ITEM_HEIGHT) + 2;
-  const start = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 1);
-  const end = Math.min(filtered.length, start + visibleCount);
-  const offset = start * ITEM_HEIGHT;
+  const visible = filtered.slice(0, pageSize);
+
+  const hasMore = visible.length < filtered.length;
+
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+      if (scrollTop + clientHeight >= scrollHeight - 50 && hasMore) {
+        setPageSize((p) => p + 25);
+      }
+    },
+    [hasMore],
+  );
 
   const handleSelect = useCallback(
     (ex: CatalogExercise) => {
@@ -325,15 +332,13 @@ function ExerciseSelectorModal({
           </label>
         </div>
 
-        {/* Lista virtualizada */}
+        {/* Lista paginada: 25 iniciales, más al hacer scroll */}
         <div
-          ref={listRef}
           style={{
             flex: 1,
             overflowY: "auto",
-            position: "relative",
           }}
-          onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+          onScroll={handleScroll}
         >
           {loadError !== null ? (
             <div
@@ -383,164 +388,157 @@ function ExerciseSelectorModal({
             </div>
           ) : (
             <>
-              <div style={{ height: filtered.length * ITEM_HEIGHT, position: "relative" }}>
-                {filtered.slice(start, end).map((ex, i) => {
-                  const suggestion = suggestions.get(ex.id);
-                  const primary = suggestion?.primary ?? null;
-                  const machineImg = primary?.views?.[0]?.src;
-                  const displayName = displayNames.get(ex.id) ?? ex.name;
-                  return (
+              {visible.map((ex) => {
+                const suggestion = suggestions.get(ex.id);
+                const primary = suggestion?.primary ?? null;
+                const machineImg = primary?.views?.[0]?.src;
+                const displayName = displayNames.get(ex.id) ?? ex.name;
+                return (
+                  <div
+                    key={ex.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: SPACE.md,
+                      padding: `${SPACE.xs} ${SPACE.sm}`,
+                      borderBottom: `1px solid ${GLASS.border}`,
+                      background: SURFACE_ROLE.card,
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = SOLID.popover;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = SURFACE_ROLE.card;
+                    }}
+                    onClick={() => handleSelect(ex)}
+                    role="option"
+                    aria-label={displayName}
+                  >
+                    {/* Miniatura GIF 48 × 48 */}
                     <div
-                      key={ex.id}
                       style={{
-                        position: "absolute",
-                        top: (start + i) * ITEM_HEIGHT - offset,
-                        left: 0,
-                        right: 0,
-                        height: ITEM_HEIGHT,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: SPACE.md,
-                        padding: `${SPACE.xs} ${SPACE.sm}`,
-                        borderBottom: `1px solid ${GLASS.border}`,
-                        background: SURFACE_ROLE.card,
-                        cursor: "pointer",
+                        width: THUMB_SIZE,
+                        height: THUMB_SIZE,
+                        flexShrink: 0,
+                        borderRadius: RADIUS.sm,
+                        overflow: "hidden",
+                        background: SURFACE_ROLE.well,
+                        border: `1px solid ${GLASS.border}`,
                       }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = SOLID.popover;
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = SURFACE_ROLE.card;
-                      }}
-                      onClick={() => handleSelect(ex)}
-                      role="option"
-                      aria-label={displayName}
                     >
-                      {/* Miniatura GIF 48 × 48 */}
-                      <div
-                        style={{
-                          width: THUMB_SIZE,
-                          height: THUMB_SIZE,
-                          flexShrink: 0,
-                          borderRadius: RADIUS.sm,
-                          overflow: "hidden",
-                          background: SURFACE_ROLE.well,
-                          border: `1px solid ${GLASS.border}`,
-                        }}
-                      >
-                        {ex.gif_url ? (
-                          <img
-                            src={resolveMediaUrl(ex.gif_url)}
-                            alt={`Animación de ${displayName}`}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                            }}
-                            onError={(ev) => {
-                              (ev.currentTarget as HTMLImageElement).style.display = "none";
-                            }}
-                          />
-                        ) : null}
-                        {!ex.gif_url && (
-                          <div
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: TEXT.tertiary,
-                            }}
-                          >
-                            <Dumbbell style={{ width: 20, height: 20 }} aria-hidden="true" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
+                      {ex.gif_url ? (
+                        <img
+                          src={resolveMediaUrl(ex.gif_url)}
+                          alt={`Animación de ${displayName}`}
                           style={{
-                            fontSize: TYPE.body.size,
-                            fontWeight: 600,
-                            color: TEXT.primary,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
                           }}
-                        >
-                          {displayName}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: TYPE.caption.size,
-                            color: TEXT.tertiary,
-                            marginTop: 2,
+                          onError={(ev) => {
+                            (ev.currentTarget as HTMLImageElement).style.display = "none";
                           }}
-                        >
-                          {translateBodyPart(ex.body_part)}
-                        </div>
-                      </div>
-
-                      {/* Chip con la foto HD de la máquina asignada (CG-EQP-XXXX) */}
-                      {primary && (
+                        />
+                      ) : null}
+                      {!ex.gif_url && (
                         <div
                           style={{
+                            width: "100%",
+                            height: "100%",
                             display: "flex",
-                            flexDirection: "column",
                             alignItems: "center",
-                            gap: SPACE.xs,
-                            flexShrink: 0,
+                            justifyContent: "center",
+                            color: TEXT.tertiary,
                           }}
                         >
-                          <div
-                            style={{
-                              width: 34,
-                              height: 34,
-                              borderRadius: RADIUS.round,
-                              overflow: "hidden",
-                              border: `1px solid ${GLASS.border}`,
-                              background: SURFACE_ROLE.well,
-                            }}
-                          >
-                            {machineImg ? (
-                              <img
-                                src={resolveMediaUrl(machineImg)}
-                                alt={`Foto de ${primary.name}`}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                  display: "block",
-                                }}
-                                onError={(ev) => {
-                                  (ev.currentTarget as HTMLImageElement).style.display = "none";
-                                }}
-                              />
-                            ) : (
-                              <Dumbbell style={{ width: 18, height: 18 }} aria-hidden="true" />
-                            )}
-                          </div>
-                          <span
-                            style={{
-                              fontSize: TYPE.label.size,
-                              fontFamily: TYPE.mono.font,
-                              color: TEXT.tertiary,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              maxWidth: 70,
-                            }}
-                          >
-                            {primary.id}
-                          </span>
+                          <Dumbbell style={{ width: 20, height: 20 }} aria-hidden="true" />
                         </div>
                       )}
                     </div>
-                  );
-                })}
-              </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: TYPE.body.size,
+                          fontWeight: 600,
+                          color: TEXT.primary,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {displayName}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: TYPE.caption.size,
+                          color: TEXT.tertiary,
+                          marginTop: 2,
+                        }}
+                      >
+                        {translateBodyPart(ex.body_part)}
+                      </div>
+                    </div>
+
+                    {/* Chip con la foto HD de la máquina asignada (CG-EQP-XXXX) */}
+                    {primary && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: SPACE.xs,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: RADIUS.round,
+                            overflow: "hidden",
+                            border: `1px solid ${GLASS.border}`,
+                            background: SURFACE_ROLE.well,
+                          }}
+                        >
+                          {machineImg ? (
+                            <img
+                              src={resolveMediaUrl(machineImg)}
+                              alt={`Foto de ${primary.name}`}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                display: "block",
+                              }}
+                              onError={(ev) => {
+                                (ev.currentTarget as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <Dumbbell style={{ width: 18, height: 18 }} aria-hidden="true" />
+                          )}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: TYPE.label.size,
+                            fontFamily: TYPE.mono.font,
+                            color: TEXT.tertiary,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: 70,
+                          }}
+                        >
+                          {primary.id}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {filtered.length === 0 && (
                 <div
                   style={{
@@ -551,6 +549,18 @@ function ExerciseSelectorModal({
                   }}
                 >
                   No se encontró ningún ejercicio con esos filtros.
+                </div>
+              )}
+              {hasMore && (
+                <div
+                  style={{
+                    padding: SPACE.md,
+                    textAlign: "center",
+                    color: TEXT.secondary,
+                    fontSize: TYPE.caption.size,
+                  }}
+                >
+                  Desplázate para cargar más ejercicios…
                 </div>
               )}
             </>

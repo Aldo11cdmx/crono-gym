@@ -75,6 +75,36 @@ export interface RequestQueueProps {
   onOpenConversation: (requestId: string, athleteId: string) => void;
 }
 
+function titleCase(s: string): string {
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function parseAthleteNotes(raw: string | null | undefined): {
+  objetivo?: string;
+  dias_semana?: string | number;
+  nivel_experiencia?: string;
+  equipo?: string;
+  molestias_lesiones?: string;
+  text?: string;
+} {
+  if (!raw || !raw.trim()) return { text: "" };
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as {
+        objetivo?: string;
+        dias_semana?: string | number;
+        nivel_experiencia?: string;
+        equipo?: string;
+        molestias_lesiones?: string;
+      };
+    }
+  } catch {
+    // not JSON
+  }
+  return { text: titleCase(raw.trim()) };
+}
+
 export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
   const [pending, setPending] = useState<QueueRow[]>([]);
   const [active, setActive] = useState<QueueRow[]>([]);
@@ -376,9 +406,28 @@ function RequestCard({
           {T.requestStatus[request.status] ?? request.status}
         </p>
 
-        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
-          {request.athlete_notes?.trim() ? request.athlete_notes : T.requestNotesEmpty}
-        </p>
+        <div style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
+          {(() => {
+            const parsed = parseAthleteNotes(request.athlete_notes);
+            if (parsed.text) return parsed.text;
+            const chips: string[] = [];
+            if (parsed.objetivo) chips.push(`🔥 ${titleCase(parsed.objetivo)}`);
+            if (parsed.dias_semana) chips.push(`📅 ${parsed.dias_semana} días/sem`);
+            if (parsed.nivel_experiencia) chips.push(`⚡ ${titleCase(parsed.nivel_experiencia)}`);
+            if (parsed.equipo) chips.push(`🏋️ ${titleCase(parsed.equipo)}`);
+            if (parsed.molestias_lesiones) chips.push(`⚠️ ${titleCase(parsed.molestias_lesiones)}`);
+            if (chips.length === 0) return T.requestNotesEmpty;
+            return (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {chips.map((c, i) => (
+                  <span key={i} style={{ padding: "2px 8px", borderRadius: 999, background: "rgba(255,255,255,0.08)", fontSize: TYPE.caption.size }}>
+                    {c}
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
 
         <div className="flex flex-wrap items-center gap-2" style={{ marginTop: 4 }}>
           {actions}

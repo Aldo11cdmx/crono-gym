@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, User } from "lucide-react";
+import { ArrowLeft, Dumbbell, MessageSquare, Sparkles, User } from "lucide-react";
 
 import { SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
@@ -57,6 +57,7 @@ export function AthleteDetailView({
   } | null>(null);
   const [requestNotes, setRequestNotes] = useState<string | null>(null);
   const [phase, setPhase] = useState<"deload" | "maintenance" | "overload" | null>(null);
+  const [activeTab, setActiveTab] = useState<"ficha" | "chat" | "rutina">("ficha");
   const [coachNotes, setCoachNotes] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -215,6 +216,18 @@ export function AthleteDetailView({
         </div>
       </GlassCard>
 
+      {/* Segmented control */}
+      <div style={{ display: "flex", gap: 4, padding: 4, borderRadius: 999, background: "rgba(24,24,27,0.6)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        {(["ficha", "chat", "rutina"] as const).map((t) => (
+          <button key={t} onClick={() => setActiveTab(t)} style={{ flex: 1, padding: "6px 8px", borderRadius: 999, background: activeTab === t ? "rgba(255,255,255,0.1)" : "transparent", color: TEXT.primary, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: TYPE.caption.size }}>
+            {t === "ficha" && <User size={14} />}
+            {t === "chat" && <MessageSquare size={14} />}
+            {t === "rutina" && <Dumbbell size={14} />}
+            {t === "ficha" ? "Ficha" : t === "chat" ? "Chat" : "Rutina"}
+          </button>
+        ))}
+      </div>
+
       {/* Perfil: objetivo, días, equipo, fase */}
       <GlassCard raised style={{ padding: SPACE.card }}>
         <div className="flex flex-col gap-3">
@@ -292,7 +305,13 @@ export function AthleteDetailView({
             {T.chatSelectPrompt}
           </p>
         )}
-      </section>
+      {/* AI analyze button (Rutina tab) */}
+      {activeTab === "rutina" && (
+        <GlassButton variant="primary" icon={<Sparkles size={16} />}>
+          Analizar Atleta con IA
+        </GlassButton>
+      )}
+    </section>
     </section>
   );
 }

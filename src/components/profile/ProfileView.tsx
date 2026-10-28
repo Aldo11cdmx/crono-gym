@@ -422,6 +422,15 @@ export function ProfileView() {
         </Section>
       </DeveloperGate>
 
+      {/* Coach portal quick access for coach/admin roles */}
+      {(effectiveRole === "coach" || effectiveRole === "admin" || effectiveRole === "developer") && (
+        <Section title="Portal del Coach">
+          <GlassButton variant="primary" block onClick={() => void navigate(COACH_PATH)}>
+            Entrar al Portal del Coach
+          </GlassButton>
+        </Section>
+      )}
+
       {/* ------------------------------------------------- premium coach */}
       {/*
         The coach's pitch, which is where the redesign moved it from the bottom bar.

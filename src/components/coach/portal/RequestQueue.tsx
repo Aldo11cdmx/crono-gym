@@ -75,7 +75,12 @@ export interface RequestQueueProps {
   onOpenConversation: (requestId: string, athleteId: string) => void;
 }
 
-function titleCase(s: string): string {
+function titleCase(s: unknown): string {
+  if (typeof s !== "string") {
+    if (Array.isArray(s)) return s.map(titleCase).join(", ");
+    if (s === null || s === undefined) return "";
+    return String(s);
+  }
   return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 

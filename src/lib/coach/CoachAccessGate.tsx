@@ -193,11 +193,13 @@ function CoachPinForm() {
   }
 
   return (
+    <div className="flex min-h-[80vh] w-full items-center justify-center p-4">
     <form
       onSubmit={submit}
       aria-labelledby={titleId}
       aria-describedby={message ? errorId : undefined}
       style={cardStyle}
+      className="max-w-md w-full mx-auto text-center"
     >
       <h2 id={titleId} style={titleStyle}>
         {changing ? COACH_ACCESS_LABELS.pinChangeTitle : COACH_ACCESS_LABELS.pinTitle}
@@ -285,6 +287,7 @@ function CoachPinForm() {
             : COACH_ACCESS_LABELS.pinSubmit}
       </button>
     </form>
+    </div>
   );
 }
 

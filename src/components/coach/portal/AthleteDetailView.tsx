@@ -54,6 +54,8 @@ export function AthleteDetailView({
   const [profile, setProfile] = useState<{
     display_name: string | null;
     goal: string;
+    weight_kg: number | null;
+    height_cm: number | null;
   } | null>(null);
   const [requestNotes, setRequestNotes] = useState<string | null>(null);
   const [phase, setPhase] = useState<"deload" | "maintenance" | "overload" | null>(null);
@@ -78,7 +80,7 @@ export function AthleteDetailView({
       // 1. Perfil del atleta (nombre y objetivo guardado en onboarding)
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("display_name, goal")
+        .select("display_name, goal, weight_kg, height_cm")
         .eq("user_id", athleteId)
         .maybeSingle();
 
@@ -92,6 +94,8 @@ export function AthleteDetailView({
         goal: typeof profileData?.goal === "string" && profileData.goal.trim() !== ""
           ? profileData.goal
           : T.athleteDetailUnknown,
+        weight_kg: typeof profileData?.weight_kg === "number" ? profileData.weight_kg : null,
+        height_cm: typeof profileData?.height_cm === "number" ? profileData.height_cm : null,
       });
 
       // 2. Notas de la solicitud más reciente de este atleta (tiene objetivo, días, equipo)
@@ -254,6 +258,18 @@ export function AthleteDetailView({
               <span style={statLabelStyle}>{T.athleteDetailPhase}</span>
               <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
                 {phaseLabel}
+              </p>
+            </div>
+            <div style={statStyle}>
+              <span style={statLabelStyle}>Peso</span>
+              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                {profile?.weight_kg ? `${profile.weight_kg} kg` : T.athleteDetailUnknown}
+              </p>
+            </div>
+            <div style={statStyle}>
+              <span style={statLabelStyle}>Altura</span>
+              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                {profile?.height_cm ? `${profile.height_cm} cm` : T.athleteDetailUnknown}
               </p>
             </div>
           </div>

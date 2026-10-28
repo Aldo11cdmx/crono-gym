@@ -16,6 +16,18 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Elementos cliqueables: sin selección de texto ni resaltado de navegador web en móvil. */
+  button,
+  [role="button"],
+  [role="option"],
+  [role="tab"],
+  a {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {

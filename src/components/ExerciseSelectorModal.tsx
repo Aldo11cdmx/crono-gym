@@ -45,6 +45,7 @@ export interface ExerciseSelectorModalProps {
 }
 
 const THUMB_SIZE = 48;
+const MOBILE_BREAKPOINT = 640;
 
 /** Lowercase, accent-free, so "Máquina" and "maquina" are the same token. */
 function normaliseText(value: string): string {
@@ -66,6 +67,7 @@ function ExerciseSelectorModal({
   const [catalog, setCatalog] = useState<CatalogExercise[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT);
 
   useEffect(() => {
     if (!open) return;
@@ -86,6 +88,12 @@ function ExerciseSelectorModal({
       cancelled = true;
     };
   }, [open, reloadToken]);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   /**
    * The Spanish name of every catalog row, resolved once per catalog load.
@@ -150,6 +158,23 @@ function ExerciseSelectorModal({
 
   if (!open) return null;
 
+  // Mobile bottom sheet: fixed to the bottom, drag handle at top, scrollable content.
+  const sheetStyles = {
+    position: "fixed" as const,
+    insetX: 0 as const,
+    bottom: 0 as const,
+    zIndex: Z_INDEX.modal,
+    display: "flex",
+    flexDirection: "column",
+    width: "100vw",
+    maxHeight: isMobile ? "90vh" : "88vh",
+    borderRadius: isMobile ? `${RADIUS.sheet} ${RADIUS.sheet} 0 0` : RADIUS.modal,
+    background: SOLID.popover,
+    border: isMobile ? `1px solid ${GLASS.borderStrong}` : `1px solid ${GLASS.borderStrong}`,
+    borderTop: isMobile ? `1px solid ${GLASS.border}` : "none",
+    overflow: "hidden",
+  } as React.CSSProperties;
+
   return (
     <div
       role="dialog"
@@ -160,9 +185,10 @@ function ExerciseSelectorModal({
         inset: 0,
         zIndex: Z_INDEX.modal,
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: isMobile ? "flex-end" : "center",
+        justifyContent: isMobile ? "stretch" : "center",
         background: SCRIM.modal,
+        paddingBottom: isMobile ? "env(safe-area-inset-bottom)" : undefined,
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -173,17 +199,27 @@ function ExerciseSelectorModal({
     >
       <div
         style={{
+          ...sheetStyles,
           display: "flex",
           flexDirection: "column",
-          width: "min(92vw, 520px)",
-          maxHeight: "88vh",
-          borderRadius: RADIUS.modal,
-          background: SOLID.popover,
-          border: `1px solid ${GLASS.borderStrong}`,
+          width: isMobile ? "100vw" : "min(92vw, 520px)",
           boxShadow: GLASS.shadow,
-          overflow: "hidden",
         }}
       >
+        {/* Drag handle (mobile bottom sheet) */}
+        {isMobile && (
+          <div
+            style={{
+              width: 36,
+              height: 4,
+              margin: "8px auto",
+              borderRadius: 2,
+              background: GLASS.border,
+            }}
+            aria-hidden="true"
+          />
+        )}
+
         <div
           style={{
             display: "flex",
@@ -337,6 +373,7 @@ function ExerciseSelectorModal({
           style={{
             flex: 1,
             overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
           onScroll={handleScroll}
         >

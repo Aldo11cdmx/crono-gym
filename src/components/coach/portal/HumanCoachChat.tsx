@@ -36,6 +36,7 @@ import { GlassButton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
 import { supabase } from "@lib/supabase";
+import { hapticSuccess } from "@/lib/haptics";
 import type { CoachMessageRow } from "@/types/supabase";
 
 /**
@@ -142,14 +143,22 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
       const content = draft.trim();
       if (content === "" || sending) return;
 
+      const optimistic: CoachMessageRow = {
+        id: `opt-${Date.now()}`,
+        request_id: requestId,
+        sender_id: userId,
+        sender_role: "coach",
+        content,
+        created_at: new Date().toISOString(),
+      };
+
       setSending(true);
       setError(null);
+      setMessages((prev) => [...prev, optimistic]);
 
       const { error: writeError } = await supabase.from("coach_messages").insert({
         request_id: requestId,
         sender_id: userId,
-        // Forced rather than passed around: there is one caller and it is always the
-        // coach. Letting a prop decide would mean a component that can write as an athlete.
         sender_role: "coach",
         content,
       });
@@ -157,8 +166,7 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
       if (!mounted.current) return;
 
       if (writeError) {
-        // The draft is kept. Losing what someone typed because the network blipped is the
-        // one failure a chat must not have.
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
         setError(T.chatError);
         setSending(false);
         return;
@@ -166,6 +174,7 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
 
       setDraft("");
       setSending(false);
+      hapticSuccess();
       await load();
     },
     [draft, requestId, sending, userId, load],

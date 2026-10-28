@@ -5,7 +5,7 @@
  * Al finalizar se envía todo el objeto recopilado a `coach_session_requests` con status 'pending'.
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, X } from "lucide-react";
 
 import { ACCENT, MOTION, TEXT, TYPE } from "@/design/tokens";
@@ -100,8 +100,17 @@ export function RequestRoutineModal({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" && window.innerWidth < 640,
+  );
 
   const totalSteps = 3;
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const toggleEquipment = useCallback((value: string) => {
     setEquipment((prev) =>
@@ -200,39 +209,80 @@ export function RequestRoutineModal({
 
   if (!open) return null;
 
+  const cardRadius = 24;
+  const mobileSheetStyles: React.CSSProperties = {
+    position: "fixed",
+    inset: "0 0 auto 0",
+    width: "100vw",
+    maxHeight: "90vh",
+    borderRadius: `${cardRadius}px ${cardRadius}px 0 0`,
+    overflow: "hidden",
+    paddingBottom: "env(safe-area-inset-bottom)",
+  };
+
   return (
-    <GlassCard
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 60,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-        background: "rgba(9, 9, 11, 0.8)",
-        backdropFilter: "blur(40px)",
-        WebkitBackdropFilter: "blur(40px)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
-        borderRadius: 24,
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="request-routine-heading"
-        id="request-routine-heading"
+      <div
         style={{
-          maxWidth: 420,
-          width: "100%",
+          position: "fixed",
+          inset: 0,
+          zIndex: 60,
           display: "flex",
-          flexDirection: "column",
-          gap: 16,
-          position: "relative",
+          alignItems: isMobile ? "flex-end" : "center",
+          justifyContent: isMobile ? "stretch" : "center",
+          background: "rgba(9, 9, 11, 0.8)",
+          backdropFilter: "blur(40px)",
+          WebkitBackdropFilter: "blur(40px)",
+        }}
+        onClick={(e: React.MouseEvent) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === "Escape") onClose();
         }}
       >
+      <GlassCard
+        style={{
+          ...(isMobile
+            ? mobileSheetStyles
+            : {
+                display: "flex",
+                flexDirection: "column",
+                padding: 20,
+                width: "min(92vw, 460px)",
+                maxHeight: "88vh",
+                borderRadius: cardRadius,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
+                overflow: "hidden",
+              }),
+        }}
+      >
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="request-routine-heading"
+          id="request-routine-heading"
+          style={{
+            maxWidth: 420,
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            position: "relative",
+          }}
+        >
+          {/* Drag handle (mobile bottom sheet) */}
+          {isMobile && (
+            <div
+              style={{
+                width: 36,
+                height: 4,
+                margin: "8px auto",
+                borderRadius: 2,
+                background: "rgba(255, 255, 255, 0.18)",
+              }}
+              aria-hidden="true"
+            />
+          )}
         {/* Header */}
         <div className="flex items-center justify-between gap-2">
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -759,5 +809,6 @@ export function RequestRoutineModal({
         `}
       </style>
     </GlassCard>
+    </div>
   );
 }

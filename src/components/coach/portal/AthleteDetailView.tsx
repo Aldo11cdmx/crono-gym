@@ -12,11 +12,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Dumbbell, MessageSquare, Sparkles, User } from "lucide-react";
 
-import { SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { HumanCoachChat } from "./HumanCoachChat";
 import { supabase } from "@lib/supabase";
+import { hapticLight } from "@/lib/haptics";
 
 export interface AthleteDetailViewProps {
   /** La solicitud activa (lleva el id para el chat). */
@@ -63,8 +64,16 @@ export function AthleteDetailView({
   const [coachNotes, setCoachNotes] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [pullStartY, setPullStartY] = useState<number | null>(null);
 
+  const PULL_THRESHOLD = 80;
+  const SWIPE_THRESHOLD = 50;
+
+  const contentRef = useRef<HTMLDivElement>(null);
   const mounted = useRef(true);
+  const touchStartX = useRef<number | null>(null);
+
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -145,6 +154,51 @@ export function AthleteDetailView({
     }
   }, [athleteId]);
 
+  const handlePullTouchStart = useCallback((e: React.TouchEvent) => {
+    const el = contentRef.current;
+    if (el?.scrollTop ?? 0 > 0) return;
+    setPullStartY(e.touches[0].clientY);
+  }, []);
+
+  const handlePullTouchMove = useCallback((e: React.TouchEvent) => {
+    if (pullStartY === null) return;
+    const el = contentRef.current;
+    if (el?.scrollTop ?? 0 > 0) return;
+    const distance = e.touches[0].clientY - pullStartY;
+    if (distance > 0) {
+      e.preventDefault();
+      setPullDistance(Math.min(distance, PULL_THRESHOLD + 60));
+    }
+  }, [pullStartY]);
+
+  const handlePullTouchEnd = useCallback(async () => {
+    setPullStartY(null);
+    if (pullDistance >= PULL_THRESHOLD && mounted.current) {
+      void load();
+    }
+    setPullDistance(0);
+  }, [pullDistance, load]);
+
+  const handleTabTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTabTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+    if (Math.abs(diff) > SWIPE_THRESHOLD) {
+      const tabs = ["ficha", "chat", "rutina"] as const;
+      const idx = tabs.indexOf(activeTab);
+      const nextIdx = diff > 0 ? Math.min(idx + 1, tabs.length - 1) : Math.max(idx - 1, 0);
+      const nextTab = tabs[nextIdx];
+      if (nextTab !== activeTab) {
+        hapticLight();
+        setActiveTab(nextTab);
+      }
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     void load();
   }, [load]);
@@ -179,156 +233,236 @@ export function AthleteDetailView({
     );
   }
 
-  return (
-    <section className="flex min-w-0 flex-col gap-4">
-      {/* Header con nombre y botón volver */}
-      <GlassCard raised style={{ padding: SPACE.card }}>
-        <div className="flex items-center justify-between gap-3">
-          <GlassButton
-            variant="ghost"
-            icon={<ArrowLeft size={16} aria-hidden="true" />}
-            onClick={onBack}
-            style={{ padding: 6, minHeight: "auto", minWidth: "auto" }}
-            aria-label={T.athleteDetailBack}
-          />
-          <div className="flex items-center gap-3">
-            <User size={24} strokeWidth={1.5} style={{ color: TEXT.tertiary }} aria-hidden="true" />
-            <div className="flex flex-col">
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: TYPE.title2.size,
-                  fontWeight: 700,
-                  color: TEXT.primary,
-                  wordBreak: "break-word",
-                }}
-              >
-                {profile?.display_name ?? T.athleteDetailUnknown}
-              </p>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: TYPE.subhead.size,
-                  fontWeight: 500,
-                  color: TEXT.secondary,
-                }}
-              >
-                Atleta asignado
-              </p>
+    return (
+      <>
+        <div
+          ref={contentRef}
+      onTouchStart={handlePullTouchStart}
+      onTouchMove={handlePullTouchMove}
+      onTouchEnd={handlePullTouchEnd}
+      style={{
+        touchAction: pullDistance > 0 ? "none" : "auto",
+      }}
+    >
+      <section className="flex min-w-0 flex-col gap-4">
+        {/* Header con nombre y botón volver */}
+        <GlassCard raised style={{ padding: SPACE.card }}>
+          <div className="flex items-center justify-between gap-3">
+            <GlassButton
+              variant="ghost"
+              icon={<ArrowLeft size={16} aria-hidden="true" />}
+              onPointerDown={() => hapticLight()}
+              onClick={() => onBack()}
+              style={{ padding: 6, minHeight: "auto", minWidth: "auto" }}
+              aria-label={T.athleteDetailBack}
+            />
+            <div className="flex items-center gap-3">
+              <User size={24} strokeWidth={1.5} style={{ color: TEXT.tertiary }} aria-hidden="true" />
+              <div className="flex flex-col">
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: TYPE.title2.size,
+                    fontWeight: 700,
+                    color: TEXT.primary,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {profile?.display_name ?? T.athleteDetailUnknown}
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: TYPE.subhead.size,
+                    fontWeight: 500,
+                    color: TEXT.secondary,
+                  }}
+                >
+                  Atleta asignado
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </GlassCard>
+        </GlassCard>
 
-      {/* Segmented control */}
-      <div style={{ display: "flex", gap: 4, padding: 4, borderRadius: 999, background: "rgba(24,24,27,0.6)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
-        {(["ficha", "chat", "rutina"] as const).map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{ flex: 1, padding: "6px 8px", borderRadius: 999, background: activeTab === t ? "rgba(255,255,255,0.1)" : "transparent", color: TEXT.primary, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: TYPE.caption.size }}>
-            {t === "ficha" && <User size={14} />}
-            {t === "chat" && <MessageSquare size={14} />}
-            {t === "rutina" && <Dumbbell size={14} />}
-            {t === "ficha" ? "Ficha" : t === "chat" ? "Chat" : "Rutina"}
-          </button>
-        ))}
-      </div>
-
-      {/* Perfil: objetivo, días, equipo, fase */}
-      <GlassCard raised style={{ padding: SPACE.card }}>
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div style={statStyle}>
-              <span style={statLabelStyle}>{T.athleteDetailGoal}</span>
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                {parsed?.goal ?? profile?.goal ?? T.athleteDetailUnknown}
-              </p>
-            </div>
-            <div style={statStyle}>
-              <span style={statLabelStyle}>{T.athleteDetailDays}</span>
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                {parsed?.days ?? T.athleteDetailUnknown}
-              </p>
-            </div>
-            <div style={statStyle}>
-              <span style={statLabelStyle}>{T.athleteDetailEquipment}</span>
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                {parsed?.equipment ?? T.athleteDetailUnknown}
-              </p>
-            </div>
-            <div style={statStyle}>
-              <span style={statLabelStyle}>{T.athleteDetailPhase}</span>
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                {phaseLabel}
-              </p>
-            </div>
-            <div style={statStyle}>
-              <span style={statLabelStyle}>Peso</span>
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                {profile?.weight_kg ? `${profile.weight_kg} kg` : T.athleteDetailUnknown}
-              </p>
-            </div>
-            <div style={statStyle}>
-              <span style={statLabelStyle}>Altura</span>
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                {profile?.height_cm ? `${profile.height_cm} cm` : T.athleteDetailUnknown}
-              </p>
-            </div>
-          </div>
-        </div>
-      </GlassCard>
-
-      {/* Notas privadas del coach */}
-      <GlassCard raised style={{ padding: SPACE.card }}>
-        <div className="flex flex-col gap-2">
-          <h4
-            style={{
-              margin: 0,
-              fontSize: TYPE.subhead.size,
-              fontWeight: 600,
-              color: TEXT.secondary,
-            }}
-          >
-            {T.athleteDetailNotes}
-          </h4>
-          <p
-            style={{
-              margin: 0,
-              fontSize: TYPE.subhead.size,
-              color: coachNotes ? TEXT.primary : TEXT.tertiary,
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {coachNotes ?? T.athleteDetailNoNotes}
-          </p>
-        </div>
-      </GlassCard>
-
-      {/* Chat en vivo */}
-      <section className="flex min-h-0 flex-1 flex-col gap-3" aria-label={T.chatTitle}>
-        <h3
+        {/* Segmented control */}
+        <div
           style={{
-            margin: 0,
-            fontSize: TYPE.callout.size,
-            fontWeight: 600,
-            color: TEXT.primary,
+            display: "flex",
+            gap: 4,
+            padding: 4,
+            borderRadius: 999,
+            background: "rgba(24,24,27,0.6)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.1)",
           }}
+          onTouchStart={handleTabTouchStart}
+          onTouchEnd={handleTabTouchEnd}
         >
-          {T.chatTitle}
-        </h3>
-        {requestId ? (
-          <HumanCoachChat requestId={requestId} userId={coachUserId} />
-        ) : (
-          <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-            {T.chatSelectPrompt}
-          </p>
+          {(["ficha", "chat", "rutina"] as const).map((t) => (
+            <button
+              key={t}
+              onPointerDown={() => setActiveTab(t)}
+              onClick={() => {
+                hapticLight();
+                setActiveTab(t);
+              }}
+              style={{
+                flex: 1,
+                padding: "6px 8px",
+                borderRadius: 999,
+                background: activeTab === t ? "rgba(255,255,255,0.1)" : "transparent",
+                color: TEXT.primary,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+                fontSize: TYPE.caption.size,
+              }}
+            >
+              {t === "ficha" && <User size={14} />}
+              {t === "chat" && <MessageSquare size={14} />}
+              {t === "rutina" && <Dumbbell size={14} />}
+              {t === "ficha" ? "Ficha" : t === "chat" ? "Chat" : "Rutina"}
+            </button>
+          ))}
+        </div>
+
+        {/* Pull-to-refresh indicator */}
+        {pullDistance > 0 && (
+          <div
+            style={{
+              height: pullDistance,
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                border: `2px solid ${TEXT.tertiary}`,
+                borderTopColor: ACCENT.base,
+                borderRadius: "50%",
+                animation: `spin ${Math.max(600, 1200 - pullDistance * 4)}ms linear infinite`,
+              }}
+              aria-hidden="true"
+            />
+          </div>
         )}
-      {/* AI analyze button (Rutina tab) */}
-      {activeTab === "rutina" && (
-        <GlassButton variant="primary" icon={<Sparkles size={16} />}>
-          Analizar Atleta con IA
-        </GlassButton>
-      )}
-    </section>
-    </section>
+
+        {/* Perfil: objetivo, días, equipo, fase */}
+        <GlassCard raised style={{ padding: SPACE.card }}>
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div style={statStyle}>
+                <span style={statLabelStyle}>{T.athleteDetailGoal}</span>
+                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                  {parsed?.goal ?? profile?.goal ?? T.athleteDetailUnknown}
+                </p>
+              </div>
+              <div style={statStyle}>
+                <span style={statLabelStyle}>{T.athleteDetailDays}</span>
+                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                  {parsed?.days ?? T.athleteDetailUnknown}
+                </p>
+              </div>
+              <div style={statStyle}>
+                <span style={statLabelStyle}>{T.athleteDetailEquipment}</span>
+                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                  {parsed?.equipment ?? T.athleteDetailUnknown}
+                </p>
+              </div>
+              <div style={statStyle}>
+                <span style={statLabelStyle}>{T.athleteDetailPhase}</span>
+                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                  {phaseLabel}
+                </p>
+              </div>
+              <div style={statStyle}>
+                <span style={statLabelStyle}>Peso</span>
+                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                  {profile?.weight_kg ? `${profile.weight_kg} kg` : T.athleteDetailUnknown}
+                </p>
+              </div>
+              <div style={statStyle}>
+                <span style={statLabelStyle}>Altura</span>
+                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                  {profile?.height_cm ? `${profile.height_cm} cm` : T.athleteDetailUnknown}
+                </p>
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Notas privadas del coach */}
+        <GlassCard raised style={{ padding: SPACE.card }}>
+          <div className="flex flex-col gap-2">
+            <h4
+              style={{
+                margin: 0,
+                fontSize: TYPE.subhead.size,
+                fontWeight: 600,
+                color: TEXT.secondary,
+              }}
+            >
+              {T.athleteDetailNotes}
+            </h4>
+            <p
+              style={{
+                margin: 0,
+                fontSize: TYPE.subhead.size,
+                color: coachNotes ? TEXT.primary : TEXT.tertiary,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {coachNotes ?? T.athleteDetailNoNotes}
+            </p>
+          </div>
+        </GlassCard>
+
+        {/* Chat en vivo */}
+        <section className="flex min-h-0 flex-1 flex-col gap-3" aria-label={T.chatTitle}>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: TYPE.callout.size,
+              fontWeight: 600,
+              color: TEXT.primary,
+            }}
+          >
+            {T.chatTitle}
+          </h3>
+          {requestId ? (
+            <HumanCoachChat requestId={requestId} userId={coachUserId} />
+          ) : (
+            <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+              {T.chatSelectPrompt}
+            </p>
+          )}
+          {/* AI analyze button (Rutina tab) */}
+          {activeTab === "rutina" && (
+            <GlassButton
+              variant="primary"
+              icon={<Sparkles size={16} />}
+              onPointerDown={() => hapticLight()}
+              onClick={() => {}}
+            >
+              Analizar Atleta con IA
+            </GlassButton>
+          )}
+        </section>
+      </section>
+    </div>
+    <style>{`
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    `}</style>
+      </>
   );
 }
 

@@ -47,6 +47,7 @@ import {
 } from "@/hooks/useExerciseCatalog";
 import type { Exercise } from "@/types/supabase";
 import { supabase } from "@lib/supabase";
+import { hapticSuccess } from "@/lib/haptics";
 
 import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
@@ -253,29 +254,28 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
       return;
     }
 
+    // Optimistic: muestra "guardada" inmediatamente; se revierte si falla.
+    const savedTitle = draft.title.trim();
+    setTitle("");
+    setDays([emptyDay()]);
+    setSaved(T.builderSaved(savedTitle));
     setSaving(true);
     setError(null);
-    setSaved(null);
 
     const ok = await saveCoachRoutine(athleteId, coachId as string, draft);
 
     setSaving(false);
 
     if (!ok) {
+      // Rollback: devuelve el borrador y muestra el error.
+      setTitle(savedTitle);
+      setDays(draft.days);
+      setSaved(null);
       setError(T.builderSaveError);
       return;
     }
 
-    /*
-     * Cleared on success rather than kept.
-     *
-     * Keeping the draft would leave a coach who has just handed over a plan looking at it
-     * again next to a "guardada" message, with no way to tell whether the button would save
-     * it twice. Starting empty makes the second save an explicit act.
-     */
-    const savedTitle = draft.title.trim();
-    setTitle("");
-    setDays([emptyDay()]);
+    hapticSuccess();
     setSaved(T.builderSaved(savedTitle));
     setToast(T.builderSavedToast);
     onSaved?.(savedTitle);

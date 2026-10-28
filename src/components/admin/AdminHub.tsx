@@ -12,7 +12,7 @@ const TABS = ["avisos", "tienda", "clases", "usuarios"] as const;
 export function AdminHub() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("avisos");
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg, padding: SPACE.lg }}>
+    <div style={{ minHeight: "100vh", width: "100%", display: "flex", flexDirection: "column", gap: SPACE.lg, padding: SPACE.lg }}>
       <div style={{ display: "flex", alignItems: "center", gap: SPACE.md }}>
         <Shield size={24} strokeWidth={2} color={ACCENT.base} />
         <h1 style={{ fontSize: TYPE.title.size, fontWeight: TYPE.title.weight, color: TEXT.primary, margin: 0 }}>

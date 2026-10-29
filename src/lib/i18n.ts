@@ -540,6 +540,32 @@ export const SET_LOGGER_LABELS = {
 } as const;
 
 /**
+ * Copy for the exercise picker modal (`ExerciseSelectorModal`).
+ *
+ * Los textos del buscador, el modo multi-selección y la sección de ejercicios
+ * frecuentes viven aquí para que todo el vocabulario del selector esté en un
+ * solo lugar y sea traducible.
+ */
+export const PICKER_LABELS = {
+  title: "Seleccionar ejercicio",
+  searchPlaceholder: "Buscar ejercicio…",
+  onlyCronos: "Solo Cronos Gym",
+  frequentTitle: "Frecuentes",
+  multiSelect: "Multi-selección",
+  multiSelectAriaLabel: (active: boolean): string =>
+    active
+      ? "Desactivar la multi-selección"
+      : "Activar la multi-selección",
+  addSelected: (n: number): string =>
+    `Agregar ${n} ejercicio${n !== 1 ? "s" : ""}`,
+  close: "Cerrar",
+  loading: "Cargando…",
+  retry: "Reintentar",
+  noResults: "No se encontró ningún ejercicio con esos filtros.",
+  loadMore: "Desplázate para cargar más ejercicios…",
+} as const;
+
+/**
  * Copy for the rest timer.
  *
  * Every control has a spoken label as well as a visible one,

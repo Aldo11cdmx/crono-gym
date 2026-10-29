@@ -16,13 +16,14 @@
  * tarjeta se invoca `onSelect` con el ejercicio elegido.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { X, Search, Dumbbell, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Check, X, Search, Dumbbell, Loader2 } from "lucide-react";
+import { hapticSuccess } from "@/lib/haptics";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import type { CatalogExercise } from "@/lib/catalog/types";
 import { resolveMediaUrl } from "@/lib/media/mediaResolver";
-import { translateBodyPart } from "@/lib/i18n";
+import { translateBodyPart, PICKER_LABELS } from "@/lib/i18n";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
   ACCENT,
@@ -42,10 +43,15 @@ export interface ExerciseSelectorModalProps {
   open: boolean;
   onClose: () => void;
   onSelect: (exercise: CatalogExercise) => void;
+  /** Cuando el modo multi-selección está activo, se entrega el lote completo en vez de uno por uno. */
+  onSelectMultiple?: (exercises: CatalogExercise[]) => void;
 }
 
 const THUMB_SIZE = 48;
 const MOBILE_BREAKPOINT = 640;
+const DEBOUNCE_MS = 150;
+const FREQUENT_KEY = "frequent_exercises";
+const MAX_FREQUENT = 6;
 
 /** Lowercase, accent-free, so "Máquina" and "maquina" are the same token. */
 function normaliseText(value: string): string {
@@ -56,18 +62,84 @@ function normaliseText(value: string): string {
     .trim();
 }
 
+/** Devuelve el término de búsqueda difiereado ~150 ms tras la última pulsación. */
+function useDebouncedValue(value: string, delay = DEBOUNCE_MS): string {
+  const [debounced, setDebounced] = useState(value);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      setDebounced(value);
+      return;
+    }
+    const h = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(h);
+  }, [value, delay]);
+  return debounced;
+}
+
+function loadFrequentIds(): string[] {
+  try {
+    const raw = window.localStorage.getItem(FREQUENT_KEY);
+    if (!raw) return [];
+    const ids = JSON.parse(raw);
+    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFrequentIds(ids: string[]): void {
+  if (import.meta.env.MODE === "test") return;
+  try {
+    window.localStorage.setItem(FREQUENT_KEY, JSON.stringify(ids.slice(0, MAX_FREQUENT)));
+  } catch {
+    // localStorage no disponible o lleno: no bloquea el entrenamiento.
+  }
+}
+
+function addFrequentId(id: string, current: string[]): string[] {
+  const next = [id, ...current.filter((existing) => existing !== id)];
+  return next.slice(0, MAX_FREQUENT);
+}
+
 function ExerciseSelectorModal({
   open,
   onClose,
   onSelect,
+  onSelectMultiple,
 }: ExerciseSelectorModalProps) {
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, DEBOUNCE_MS);
   const [onlyCronos, setOnlyCronos] = useState(true);
   const [pageSize, setPageSize] = useState(25);
   const [catalog, setCatalog] = useState<CatalogExercise[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT);
+  const [multiSelect, setMultiSelect] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [frequentIds, setFrequentIds] = useState<string[]>(() => loadFrequentIds());
+
+  const persistFrequent = useCallback(
+    (id: string) =>
+      setFrequentIds((prev) => {
+        const next = addFrequentId(id, prev);
+        saveFrequentIds(next);
+        return next;
+      }),
+    [],
+  );
+
+  const persistFrequentBatch = useCallback(
+    (exercises: CatalogExercise[]) =>
+      setFrequentIds((prev) => {
+        const next = exercises.reduce((acc, ex) => addFrequentId(ex.id, acc), prev);
+        saveFrequentIds(next);
+        return next;
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -109,7 +181,7 @@ function ExerciseSelectorModal({
   }, [catalog]);
 
   const filtered = useMemo(() => {
-    const q = normaliseText(query);
+    const q = normaliseText(debouncedQuery);
     const rows = catalog ?? [];
     return rows.filter((ex) => {
       if (onlyCronos && ex.availableInCronosGym !== true) return false;
@@ -121,7 +193,7 @@ function ExerciseSelectorModal({
         normaliseText(displayNames.get(ex.id) ?? ex.name).includes(q)
       );
     });
-  }, [catalog, displayNames, query, onlyCronos]);
+  }, [catalog, displayNames, debouncedQuery, onlyCronos]);
 
   const suggestions = useMemo(
     () =>
@@ -150,11 +222,54 @@ function ExerciseSelectorModal({
 
   const handleSelect = useCallback(
     (ex: CatalogExercise) => {
+      if (multiSelect) {
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(ex.id)) next.delete(ex.id);
+          else next.add(ex.id);
+          return next;
+        });
+        return;
+      }
+      void persistFrequent(ex.id);
       onSelect(ex);
       onClose();
     },
-    [onClose, onSelect],
+    [multiSelect, onClose, onSelect, persistFrequent],
   );
+
+  const handleAddBatch = useCallback(() => {
+    const exercises = catalog?.filter((ex) => selectedIds.has(ex.id)) ?? [];
+    if (exercises.length === 0 || !onSelectMultiple) return;
+    void persistFrequentBatch(exercises);
+    onSelectMultiple(exercises);
+    hapticSuccess();
+    onClose();
+  }, [catalog, onClose, onSelectMultiple, persistFrequentBatch, selectedIds]);
+
+  const toggleMulti = useCallback(() => {
+    if (multiSelect) setSelectedIds(new Set());
+    setMultiSelect((m) => !m);
+  }, [multiSelect]);
+
+  const isSelected = useCallback((id: string) => selectedIds.has(id), [selectedIds]);
+
+  function cardStyle(ex: CatalogExercise): Record<string, string | number> {
+    const selected = multiSelect && isSelected(ex.id);
+    return {
+      display: "flex",
+      alignItems: "center",
+      gap: SPACE.md,
+      padding: `${SPACE.xs} ${SPACE.sm}`,
+      borderBottom: `1px solid ${GLASS.border}`,
+      borderLeft: selected ? `4px solid ${ACCENT.base}` : "none",
+      background: selected ? `${ACCENT.base}1a` : SURFACE_ROLE.card,
+      cursor: "pointer",
+      // content-visibility salta el render de las tarjetas fuera de la pantalla.
+      contentVisibility: "auto",
+      containIntrinsicSize: "0 72px",
+    };
+  }
 
   if (!open) return null;
 
@@ -202,6 +317,7 @@ function ExerciseSelectorModal({
           ...sheetStyles,
           display: "flex",
           flexDirection: "column",
+          position: "relative",
           width: isMobile ? "100vw" : "min(92vw, 520px)",
           boxShadow: GLASS.shadow,
         }}
@@ -231,7 +347,7 @@ function ExerciseSelectorModal({
             background: SURFACE_ROLE.card,
           }}
         >
-          <div style={{ minWidth: 0 }}>
+          <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: SPACE.sm }}>
             <h2
               style={{
                 margin: 0,
@@ -240,7 +356,7 @@ function ExerciseSelectorModal({
                 color: TEXT.primary,
               }}
             >
-              Seleccionar ejercicio
+              {PICKER_LABELS.title}
             </h2>
             <p
               style={{
@@ -250,14 +366,35 @@ function ExerciseSelectorModal({
               }}
             >
               {catalog === null && loadError === null
-                ? "Cargando…"
+                ? PICKER_LABELS.loading
                 : `${filtered.length} ejercicio${filtered.length !== 1 ? "s" : ""}`}
             </p>
+            <button
+              type="button"
+              onClick={toggleMulti}
+              aria-pressed={multiSelect}
+              aria-label={PICKER_LABELS.multiSelectAriaLabel(multiSelect)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: MOTION.minTouchTarget,
+                minHeight: MOTION.minTouchTarget,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${multiSelect ? ACCENT.base : GLASS.border}`,
+                background: multiSelect ? ACCENT.base : "transparent",
+                color: multiSelect ? TEXT.onAccent : TEXT.secondary,
+                cursor: "pointer",
+                padding: `0 ${SPACE.sm}`,
+              }}
+            >
+              {PICKER_LABELS.multiSelect}
+            </button>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={PICKER_LABELS.close}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -309,7 +446,7 @@ function ExerciseSelectorModal({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar ejercicio…"
+              placeholder={PICKER_LABELS.searchPlaceholder}
               style={{
                 width: "100%",
                 minHeight: MOTION.minTouchTarget,
@@ -364,9 +501,115 @@ function ExerciseSelectorModal({
               }}
               aria-hidden="true"
             />
-            <span>Solo Cronos Gym</span>
+            <span>{PICKER_LABELS.onlyCronos}</span>
           </label>
         </div>
+
+        {/* Ejercicios frecuentes / recientes (localStorage: últimos 6 seleccionados) */}
+        {catalog !== null && frequentIds.length > 0 && (
+          <div style={{ padding: `${SPACE.sm} 0 ${SPACE.xs} ${SPACE.lg}` }}>
+            <p
+              style={{
+                margin: `0 0 ${SPACE.xs} ${SPACE.sm}`,
+                fontSize: TYPE.caption.size,
+                fontWeight: 600,
+                color: TEXT.tertiary,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {PICKER_LABELS.frequentTitle}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: SPACE.sm,
+                overflowX: "auto",
+                paddingBottom: SPACE.xs,
+                scrollbarWidth: "none",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {frequentIds.map((id) => {
+                const ex = catalog.find((row) => row.id === id);
+                if (!ex) return null;
+                const selected = isSelected(ex.id);
+                const displayName = displayNames.get(ex.id) ?? ex.name;
+                return (
+                  <button
+                    key={ex.id}
+                    type="button"
+                    onClick={() => handleSelect(ex)}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: SPACE.xs,
+                      minWidth: 92,
+                      padding: `${SPACE.xs} ${SPACE.sm}`,
+                      borderRadius: RADIUS.card,
+                      border: `1px solid ${selected ? ACCENT.base : GLASS.border}`,
+                      background: selected ? ACCENT.base : SURFACE_ROLE.card,
+                      color: selected ? TEXT.onAccent : TEXT.primary,
+                      cursor: "pointer",
+                      overflow: "hidden",
+                    }}
+                    aria-label={displayName}
+                  >
+                    <div
+                      style={{
+                        width: THUMB_SIZE,
+                        height: THUMB_SIZE,
+                        flexShrink: 0,
+                        borderRadius: RADIUS.sm,
+                        overflow: "hidden",
+                        background: SURFACE_ROLE.well,
+                        border: `1px solid ${GLASS.border}`,
+                      }}
+                    >
+                      {ex.gif_url ? (
+                        <img
+                          src={resolveMediaUrl(ex.gif_url)}
+                          alt={`Animación de ${displayName}`}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                          onError={(ev) => {
+                            (ev.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <Dumbbell style={{ width: 20, height: 20 }} aria-hidden="true" />
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: TYPE.label.size,
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: 92,
+                        display: "block",
+                      }}
+                    >
+                      {displayName}
+                    </span>
+                    {selected && (
+                      <Check
+                        size={14}
+                        style={{ color: selected ? TEXT.onAccent : TEXT.onAccent, flexShrink: 0 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Lista paginada: 25 iniciales, más al hacer scroll */}
         <div
@@ -405,7 +648,7 @@ function ExerciseSelectorModal({
                   fontSize: TYPE.body.size,
                 }}
               >
-                Reintentar
+                {PICKER_LABELS.retry}
               </button>
             </div>
           ) : catalog === null ? (
@@ -433,15 +676,7 @@ function ExerciseSelectorModal({
                 return (
                   <div
                     key={ex.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: SPACE.md,
-                      padding: `${SPACE.xs} ${SPACE.sm}`,
-                      borderBottom: `1px solid ${GLASS.border}`,
-                      background: SURFACE_ROLE.card,
-                      cursor: "pointer",
-                    }}
+                    style={cardStyle(ex) as React.CSSProperties}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLElement).style.background = SOLID.popover;
                     }}
@@ -451,6 +686,7 @@ function ExerciseSelectorModal({
                     onClick={() => handleSelect(ex)}
                     role="option"
                     aria-label={displayName}
+                    aria-selected={multiSelect ? isSelected(ex.id) : undefined}
                   >
                     {/* Miniatura GIF 48 × 48 */}
                     <div
@@ -573,6 +809,9 @@ function ExerciseSelectorModal({
                         </span>
                       </div>
                     )}
+                    {multiSelect && isSelected(ex.id) && (
+                      <Check size={16} style={{ color: ACCENT.base, flexShrink: 0 }} />
+                    )}
                   </div>
                 );
               })}
@@ -585,7 +824,7 @@ function ExerciseSelectorModal({
                     fontSize: TYPE.body.size,
                   }}
                 >
-                  No se encontró ningún ejercicio con esos filtros.
+                  {PICKER_LABELS.noResults}
                 </div>
               )}
               {hasMore && (
@@ -597,12 +836,41 @@ function ExerciseSelectorModal({
                     fontSize: TYPE.caption.size,
                   }}
                 >
-                  Desplázate para cargar más ejercicios…
+                  {PICKER_LABELS.loadMore}
                 </div>
               )}
             </>
           )}
         </div>
+
+        {multiSelect && selectedIds.size > 0 && (
+          <button
+            type="button"
+            onClick={handleAddBatch}
+            style={{
+              position: "absolute",
+              left: SPACE.lg,
+              right: SPACE.lg,
+              bottom: isMobile ? "env(safe-area-inset-bottom)" : SPACE.lg,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: SPACE.sm,
+              minHeight: MOTION.minTouchTarget,
+              padding: `0 ${SPACE.lg}`,
+              borderRadius: RADIUS.control,
+              border: `1px solid ${ACCENT.base}`,
+              background: ACCENT.base,
+              color: TEXT.onAccent,
+              fontSize: TYPE.body.size,
+              fontWeight: 600,
+              cursor: "pointer",
+              boxShadow: GLASS.shadow,
+            }}
+          >
+            {PICKER_LABELS.addSelected(selectedIds.size)}
+          </button>
+        )}
       </div>
     </div>
   );

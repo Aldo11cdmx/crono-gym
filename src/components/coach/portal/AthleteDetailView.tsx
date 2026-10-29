@@ -31,18 +31,36 @@ export interface AthleteDetailViewProps {
 }
 
 function parseAthleteNotes(notes: string | null): {
-  goal: string;
-  days: string;
-  equipment: string;
+  goal: string | null;
+  days: string | null;
+  equipment: string | null;
+  level: string | null;
+  phase: string | null;
 } {
-  const goalMatch = notes?.match(/Objetivo:\s*([^\n]+)/);
-  const daysMatch = notes?.match(/Días a la semana:\s*([^\n]+)/);
-  const equipmentMatch = notes?.match(/Equipo:\s*([^\n]+)/);
-
+  if (!notes) return { goal: null, days: null, equipment: null, level: null, phase: null };
+  try {
+    const parsed = JSON.parse(notes);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return {
+        goal: typeof parsed.objetivo === "string" ? parsed.objetivo : null,
+        days: parsed.dias_semana != null ? String(parsed.dias_semana) : null,
+        equipment: typeof parsed.equipo === "string" ? parsed.equipo : null,
+        level: typeof parsed.nivel_experiencia === "string" ? parsed.nivel_experiencia : null,
+        phase: typeof parsed.fase === "string" ? parsed.fase : null,
+      };
+    }
+  } catch {
+    // not JSON; fall through to regex
+  }
+  const goalMatch = notes.match(/Objetivo:\s*([^\n]+)/);
+  const daysMatch = notes.match(/D[ií]as a la semana:\s*([^\n]+)/);
+  const equipmentMatch = notes.match(/Equipo:\s*([^\n]+)/);
   return {
-    goal: goalMatch?.[1]?.trim() ?? T.athleteDetailUnknown,
-    days: daysMatch?.[1]?.trim() ?? T.athleteDetailUnknown,
-    equipment: equipmentMatch?.[1]?.trim() ?? T.athleteDetailUnknown,
+    goal: goalMatch?.[1]?.trim() ?? null,
+    days: daysMatch?.[1]?.trim() ?? null,
+    equipment: equipmentMatch?.[1]?.trim() ?? null,
+    level: null,
+    phase: null,
   };
 }
 
@@ -136,13 +154,21 @@ export function AthleteDetailView({
       });
 
       // 2. Notas de la solicitud más reciente de este atleta (tiene objetivo, días, equipo)
-      const { data: requestData, error: requestError } = await supabase
+      // 2. Notas de la solicitud (activa si requestId existe, si no la mas reciente)
+      let requestQuery = supabase
         .from("coach_session_requests")
         .select("athlete_notes")
         .eq("athlete_id", athleteId)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+      if (requestId) {
+        requestQuery = supabase
+          .from("coach_session_requests")
+          .select("athlete_notes")
+          .eq("id", requestId)
+          .limit(1) as typeof requestQuery;
+      }
+      const { data: requestData, error: requestError } = await requestQuery.maybeSingle();
 
       if (!mounted.current) return;
       if (requestError) throw requestError;

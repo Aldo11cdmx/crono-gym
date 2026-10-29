@@ -164,7 +164,7 @@ export function PortalPanel({ userId }: { userId: string }) {
            <ShiftPanel userId={userId} />
          </section>
 
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className={`flex min-w-0 flex-col gap-4 ${selection === null ? "hidden md:flex" : "flex"}`}>
           {/*
            * The right column shows one thing at a time, driven by the selection:
            *

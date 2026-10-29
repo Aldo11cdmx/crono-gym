@@ -134,6 +134,46 @@ vi.mock("@/lib/coach/useCoachAuth", () => ({
   getCoachId: () => COACH,
 }));
 
+let selectedSheetExercises: typeof CATALOG = [];
+
+vi.mock("@/components/UnifiedExerciseSelectorSheet", () => ({
+  UnifiedExerciseSelectorSheet: ({ isOpen, onClose, onSelectMultiple }: any) => {
+    if (!isOpen) return null;
+    return (
+      <div data-testid="unified-selector-sheet">
+        {CATALOG.map((ex) => (
+          <button
+            key={ex.id}
+            data-testid={`selector-exercise-${ex.id}`}
+            onClick={() => {
+              if (selectedSheetExercises.some((e) => e.id === ex.id)) {
+                selectedSheetExercises = selectedSheetExercises.filter((e) => e.id !== ex.id);
+              } else {
+                selectedSheetExercises = [...selectedSheetExercises, ex];
+              }
+            }}
+          >
+            {ex.name}
+          </button>
+        ))}
+        <button
+          data-testid="selector-confirm"
+          onClick={() => {
+            onSelectMultiple(selectedSheetExercises);
+            selectedSheetExercises = [];
+            onClose();
+          }}
+        >
+          Confirmar
+        </button>
+        <button data-testid="selector-cancel" onClick={onClose}>
+          Cancelar
+        </button>
+      </div>
+    );
+  },
+}));
+
 /** Mounts the builder with a title and one exercise already chosen. */
 async function mountReady(title = "Fuerza 4 días") {
   const view = render(<VipRoutineBuilder athleteId={ATHLETE} />);
@@ -141,13 +181,8 @@ async function mountReady(title = "Fuerza 4 días") {
     target: { value: title },
   });
   fireEvent.click(screen.getByRole("button", { name: T.builderAddExercise }));
-  fireEvent.change(screen.getByLabelText(T.builderExerciseSearchLabel), {
-    target: { value: "banca" },
-  });
-  await act(async () => {
-    await Promise.resolve();
-  });
   fireEvent.click(screen.getByRole("button", { name: "Press de banca" }));
+  fireEvent.click(screen.getByTestId("selector-confirm"));
   return view;
 }
 
@@ -161,6 +196,7 @@ beforeEach(() => {
   fixture = {};
   writes = [];
   releaseExercises = null;
+  selectedSheetExercises = [];
 });
 
 afterEach(() => {
@@ -245,13 +281,8 @@ describe("VipRoutineBuilder · la escritura", () => {
     });
     const addButtons = screen.getAllByRole("button", { name: T.builderAddExercise });
     fireEvent.click(addButtons[1]);
-    fireEvent.change(screen.getAllByLabelText(T.builderExerciseSearchLabel)[1], {
-      target: { value: "sentadilla" },
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
     fireEvent.click(screen.getByRole("button", { name: "Sentadilla" }));
+    fireEvent.click(screen.getByTestId("selector-confirm"));
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: T.builderSave }));
@@ -352,41 +383,47 @@ describe("VipRoutineBuilder · lo que no se puede guardar", () => {
   });
 });
 
-describe("VipRoutineBuilder · el catálogo", () => {
-  it("sólo ofrece ejercicios reales, sin aproximaciones", async () => {
+describe("VipRoutineBuilder · selector unificado", () => {
+  it("abre la hoja unificada al agregar ejercicios a un día", async () => {
     await mountReady();
 
-    fireEvent.change(screen.getByLabelText(T.builderExerciseSearchLabel), {
-      target: { value: "zzz" },
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // Unlike the model path, there is no `substituteUnknownExercises` to repair a wrong id,
-    // because a human cannot invent a uuid by accident. A near-miss offered here would be a
-    // set written against the wrong movement and credited to the wrong muscle.
-    expect(screen.getByText(T.builderNoExercisesFound)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: T.builderAddExercise }));
+    expect(screen.getByTestId("unified-selector-sheet")).toBeTruthy();
   });
 
-  it("busca sin distinguir mayúsculas ni acentos", async () => {
+  it("inyecta el lote seleccionado en el día al confirmar", async () => {
     await mountReady();
 
-    fireEvent.change(screen.getByLabelText(T.builderExerciseSearchLabel), {
-      target: { value: "REMO" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: T.builderAddExercise }));
+    fireEvent.click(screen.getByRole("button", { name: "Sentadilla" }));
+    fireEvent.click(screen.getByTestId("selector-confirm"));
+
     await act(async () => {
-      await Promise.resolve();
+      fireEvent.click(screen.getByRole("button", { name: T.builderSave }));
     });
 
-    expect(screen.getByRole("button", { name: "Remo con barra" })).toBeTruthy();
+    expect(exerciseRows()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ exercise_id: "ex-banca" }),
+        expect.objectContaining({ exercise_id: "ex-squat" }),
+      ]),
+    );
   });
 
-  it("no lista el catálogo entero bajo una caja vacía", async () => {
+  it("no inyecta ejercicios al cancelar la hoja", async () => {
     await mountReady();
 
-    // Offering nothing until there is a query: 1,300 rows under an empty box is a wall.
-    expect(screen.queryAllByRole("option")).toHaveLength(0);
+    fireEvent.click(screen.getByRole("button", { name: T.builderAddExercise }));
+    fireEvent.click(screen.getByRole("button", { name: "Sentadilla" }));
+    fireEvent.click(screen.getByTestId("selector-cancel"));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: T.builderSave }));
+    });
+
+    expect(exerciseRows()).toEqual([
+      expect.objectContaining({ exercise_id: "ex-banca" }),
+    ]);
   });
 });
 

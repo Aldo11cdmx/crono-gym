@@ -29,7 +29,6 @@ import { useRole } from "@/hooks/useRole";
 import { useNavigate } from "react-router-dom";
 import { TRAIN_PATH } from "@/components/shell/navItems";
 import { supabase } from "@lib/supabase";
-import { ExerciseBrowser } from "@/components/ExerciseBrowser";
 import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
 import { WeeklyPlanEditor } from "@/components/routines/WeeklyPlanEditor";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -920,13 +919,16 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
       )}
 
       {sheet === "browse" && (
-        <ExerciseBrowser
-          onAdd={(exercises) => {
+        <UnifiedExerciseSelectorSheet
+          isOpen
+          mode="multiple"
+          onClose={() => setSheet("closed")}
+          onSelectMultiple={(exercises) => {
             exercises.forEach((ex) => addExercise(ex));
             setSheet("edit");
           }}
-          onClose={() => setSheet("closed")}
-          isAdded={(id) => draft.items.some((i) => i.exercise.id === id)}
+          excludeIds={draft.items.map((i) => i.exercise.id)}
+          title={LABELS.addExercise}
         />
       )}
 

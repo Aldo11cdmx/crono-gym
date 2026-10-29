@@ -27,11 +27,12 @@
  * clean up if the second insert failed.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Trash2, RefreshCw, Sparkles } from "lucide-react";
 
 import { ACCENT, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
+import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { getCoachId } from "@/lib/coach/useCoachAuth";
 import {
@@ -41,20 +42,13 @@ import {
   type CoachRoutineExercise,
   type DraftProblem,
 } from "@/lib/routines/coachRoutineDraft";
-import {
-  normaliseExerciseName,
-  useExerciseCatalog,
-} from "@/hooks/useExerciseCatalog";
+import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import type { Exercise } from "@/types/supabase";
 import { supabase } from "@lib/supabase";
 import { hapticSuccess } from "@/lib/haptics";
 
 import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
-import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { ExerciseSubstitutionModal } from "./ExerciseSubstitutionModal";
-
-/** How many search hits to offer before the list stops being a list. */
-const MAX_HITS = 8;
 
 /** A fresh day, so two days never share an array by accident. */
 function emptyDay(): CoachRoutineDay {
@@ -74,10 +68,6 @@ const PROBLEM_MESSAGE = {
   noExercises: T.builderNeedsDay,
   unpickedExercise: T.builderNeedsExerciseChoice,
 } satisfies Record<DraftProblem, string>;
-
-function emptyExercise(): CoachRoutineExercise {
-  return { exerciseId: "", sets: 4, repsMin: 8, repsMax: 12, restSeconds: 90 };
-}
 
 /** Plan de 4 días: cada día con grupos musculares para buscar en el catálogo. */
 const DAY_PLAN: { label: string; bodyParts: string[] }[] = [
@@ -124,6 +114,8 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
   const [substitutingExercise, setSubstitutingExercise] = useState<CoachRoutineExercise | null>(null);
   const [substituteDayIndex, setSubstituteDayIndex] = useState<number | null>(null);
   const [substituteExerciseIndex, setSubstituteExerciseIndex] = useState<number | null>(null);
+  const [selectorOpen, setSelectorOpen] = useState(false);
+  const [selectorDayIndex, setSelectorDayIndex] = useState<number | null>(null);
   const [generatingAi, setGeneratingAi] = useState(false);
   const [athleteGoal, setAthleteGoal] = useState<string | null>(null);
   const [athletePhase, setAthletePhase] = useState<"deload" | "maintenance" | "overload" | null>(null);
@@ -322,6 +314,37 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
   }, [athleteId, days, onSaved, saving, title]);
 
   /**
+   * Inyecta un lote de ejercicios seleccionados en el día indicado.
+   * Cada ejercicio llega del catálogo con valores por defecto de serie.
+   */
+  const handleSelectExercises = useCallback(
+    (selected: Exercise[], dayIndex: number) => {
+      setDays((current) =>
+        current.map((d, i) => {
+          if (i !== dayIndex) return d;
+          return {
+            ...d,
+            exercises: [
+              ...d.exercises,
+              ...selected.map((ex) => ({
+                exerciseId: ex.id,
+                exerciseName: ex.name,
+                sets: 4,
+                repsMin: 8,
+                repsMax: 12,
+                restSeconds: 90,
+              })),
+            ],
+          };
+        }),
+      );
+      setSelectorOpen(false);
+      setSelectorDayIndex(null);
+    },
+    [],
+  );
+
+  /**
    * Reintenta el guardado pendiente cuando vuelve la conexión. Lee el borrador
    * de localStorage y vuelve a disparar `save()`.
    */
@@ -431,18 +454,30 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
 
           {days.map((day, dayIndex) => (
             <DayEditor
-              // Stable across a reorder because it *is* the position, and reordering days
-              // is the whole point of the remove button.
               key={dayIndex}
               day={day}
               dayNumber={dayIndex + 1}
-              exercises={exercises}
-              catalogLoading={catalogLoading}
               onChange={(next) =>
                 setDays((current) => current.map((d, i) => (i === dayIndex ? next : d)))
               }
               onRemove={() =>
                 setDays((current) => current.filter((_, i) => i !== dayIndex))
+              }
+              onAddExercises={() => {
+                setSelectorDayIndex(dayIndex);
+                setSelectorOpen(true);
+              }}
+              onRemoveExercise={(exerciseIndex) =>
+                setDays((current) =>
+                  current.map((d, i) =>
+                    i === dayIndex
+                      ? {
+                          ...d,
+                          exercises: d.exercises.filter((_, idx) => idx !== exerciseIndex),
+                        }
+                      : d,
+                  ),
+                )
               }
               onSubstitute={openSubstitute}
               removable={days.length > 1}
@@ -514,6 +549,17 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
           onClose={() => setSubstituteOpen(false)}
         />
       )}
+
+      {selectorOpen && selectorDayIndex !== null && (
+        <UnifiedExerciseSelectorSheet
+          isOpen
+          mode="multiple"
+          onClose={() => setSelectorOpen(false)}
+          onSelectMultiple={(selected) =>
+            handleSelectExercises(selected, selectorDayIndex!)
+          }
+        />
+      )}
     </section>
   );
 }
@@ -523,19 +569,19 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
 function DayEditor({
   day,
   dayNumber,
-  exercises,
-  catalogLoading,
   onChange,
   onRemove,
+  onAddExercises,
+  onRemoveExercise,
   onSubstitute,
   removable,
 }: {
   day: CoachRoutineDay;
   dayNumber: number;
-  exercises: Exercise[];
-  catalogLoading: boolean;
   onChange: (next: CoachRoutineDay) => void;
   onRemove: () => void;
+  onAddExercises: () => void;
+  onRemoveExercise: (index: number) => void;
   onSubstitute: (dayIndex: number, exerciseIndex: number) => void;
   /**
    * Whether this day can go.
@@ -582,27 +628,27 @@ function DayEditor({
 
       {day.exercises.map((exercise, exerciseIndex) => (
         <div key={exerciseIndex} className="flex flex-col gap-2">
-          <ExercisePicker
-            idPrefix={`${prefix}-e${exerciseIndex}`}
-            exercise={exercise}
-            exercises={exercises}
-            loading={catalogLoading}
-            onPick={(exerciseId, name) =>
-              onChange({
-                ...day,
-                exercises: day.exercises.map((e, i) =>
-                  i === exerciseIndex ? { ...e, exerciseId, exerciseName: name } : e,
-                ),
-              })
-            }
-            onRemove={() =>
-              onChange({
-                ...day,
-                exercises: day.exercises.filter((_, i) => i !== exerciseIndex),
-              })
-            }
-            onSubstitute={() => onSubstitute(dayNumber - 1, exerciseIndex)}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+              {exercise.exerciseName || exercise.exerciseId || T.builderNoExerciseChosen}
+            </p>
+            <div className="flex items-center gap-1">
+              {exercise.exerciseId !== "" && (
+                <GlassButton
+                  variant="ghost"
+                  icon={<RefreshCw size={14} aria-hidden="true" />}
+                  onClick={() => onSubstitute(dayNumber - 1, exerciseIndex)}
+                  style={{ padding: 4, minHeight: "auto", minWidth: "auto", width: 32, height: 32 }}
+                  aria-label={T.substituteReplace}
+                />
+              )}
+              <GlassButton
+                variant="ghost"
+                icon={<Trash2 size={16} aria-hidden="true" />}
+                onClick={() => onRemoveExercise(exerciseIndex)}
+              />
+            </div>
+          </div>
           <NumbersRow
             idPrefix={`${prefix}-e${exerciseIndex}`}
             exercise={exercise}
@@ -619,7 +665,7 @@ function DayEditor({
       <GlassButton
         variant="ghost"
         icon={<Plus size={16} aria-hidden="true" />}
-        onClick={() => onChange({ ...day, exercises: [...day.exercises, emptyExercise()] })}
+        onClick={onAddExercises}
       >
         {T.builderAddExercise}
       </GlassButton>
@@ -629,133 +675,6 @@ function DayEditor({
 
 // -------------------------------------------------------------- exercise picker
 
-/**
- * The catalogue search, per exercise row.
- *
- * The picked name travels on the row rather than being looked up on render, because a coach
- * who has just built a four-day split should see the same names when they come back to this
- * screen -- and because re-deriving it would mean trusting a search index to be stable.
- */
-function ExercisePicker({
-  idPrefix,
-  exercise,
-  exercises,
-  loading,
-  onPick,
-  onRemove,
-  onSubstitute,
-}: {
-  idPrefix: string;
-  exercise: CoachRoutineExercise;
-  exercises: Exercise[];
-  loading: boolean;
-  onPick: (exerciseId: string, name: string) => void;
-  onRemove: () => void;
-  onSubstitute: () => void;
-}) {
-  const [query, setQuery] = useState("");
-
-  const hits = useMemo(() => {
-    const wanted = normaliseExerciseName(query);
-    // An empty query offers nothing: listing 1,300 rows under an empty box is not a
-    // shortcut, it is a wall, and the coach already knows roughly what they are typing.
-    if (wanted === "") return [];
-
-    const out: Exercise[] = [];
-    for (const candidate of exercises) {
-      // The card shows the Spanish name, so the query has to match it; the
-      // catalog name stays as a second chance.
-      if (
-        normaliseExerciseName(candidate.name).includes(wanted) ||
-        normaliseExerciseName(getExerciseDisplayName(candidate)).includes(wanted)
-      ) {
-        out.push(candidate);
-        if (out.length >= MAX_HITS) break;
-      }
-    }
-    return out;
-  }, [exercises, query]);
-
-  const pickedName =
-    exercise.exerciseName ?? exercises.find((e) => e.id === exercise.exerciseId)?.name;
-
-  return (
-    <div className="flex flex-col gap-1">
-      {/*
-       * The chosen exercise, above the search rather than inside it.
-       *
-       * Clearing the query on pick is what keeps the field usable for the *next* exercise,
-       * and that is only safe if the current choice is visible somewhere else -- otherwise
-       * an empty box reads as "nothing chosen" and the coach cannot tell what they already
-       * wrote into this row.
-       */}
-      <p style={hintStyle}>
-        {exercise.exerciseId === ""
-          ? T.builderNoExerciseChosen
-          : getExerciseDisplayName({ name: pickedName ?? exercise.exerciseId })}
-      </p>
-
-      {exercise.exerciseId !== "" && (
-        <GlassButton
-          variant="ghost"
-          icon={<RefreshCw size={14} aria-hidden="true" />}
-          onClick={onSubstitute}
-          style={{ padding: 4, minHeight: "auto", minWidth: "auto", width: 32, height: 32 }}
-          aria-label={T.substituteReplace}
-        />
-      )}
-
-      <div className="flex items-end gap-2">
-        <Field label={T.builderExerciseSearchLabel} htmlFor={`${idPrefix}-search`}>
-          <input
-            id={`${idPrefix}-search`}
-            type="text"
-            value={query}
-            placeholder={T.builderExerciseSearchPlaceholder}
-            onChange={(event) => setQuery(event.target.value)}
-            style={inputStyle}
-          />
-        </Field>
-
-        <GlassButton
-          variant="ghost"
-          icon={<Trash2 size={16} aria-hidden="true" />}
-          onClick={onRemove}
-        >
-          {T.builderRemoveExercise}
-        </GlassButton>
-      </div>
-
-      {/*
-       * A listbox rather than a `<datalist>`: the coach needs to know *which* row they are
-       * about to write a set against, and a datalist has nowhere to show the muscle that
-       * disambiguates two exercises sharing a name.
-       */}
-      {hits.length > 0 && (
-        <ul role="listbox" aria-label={T.builderExerciseSearchLabel} style={listStyle}>
-          {hits.map((hit) => (
-            <li key={hit.id} role="option" aria-selected={hit.id === exercise.exerciseId}>
-              <button
-                type="button"
-                onClick={() => {
-                  onPick(hit.id, hit.name);
-                  setQuery("");
-                }}
-                style={hitStyle}
-              >
-                {getExerciseDisplayName(hit)}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {query.trim() !== "" && hits.length === 0 && !loading && (
-        <p style={hintStyle}>{T.builderNoExercisesFound}</p>
-      )}
-    </div>
-  );
-}
 
 // ------------------------------------------------------------------ numbers row
 
@@ -820,8 +739,6 @@ function Field({
 
 const bodyStyle = { margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary } as const;
 const labelStyle = { fontSize: TYPE.caption.size, fontWeight: 600, color: TEXT.tertiary } as const;
-const hintStyle = { margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary } as const;
-const listStyle = { margin: 0, padding: 0, listStyle: "none" } as const;
 
 const inputStyle = {
   width: "100%",
@@ -838,14 +755,4 @@ const dayStyle = {
   padding: 12,
   borderRadius: 12,
   border: `1px solid ${TEXT.tertiary}22`,
-} as const;
-
-const hitStyle = {
-  display: "block",
-  width: "100%",
-  textAlign: "left" as const,
-  padding: "6px 8px",
-  borderRadius: 8,
-  fontSize: TYPE.subhead.size,
-  color: TEXT.primary,
 } as const;

@@ -32,9 +32,9 @@
  */
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Check, MessageSquare, X } from "lucide-react";
+import { Check, ChevronDown, MessageSquare, X } from "lucide-react";
 import { ACCENT, TEXT, TYPE } from "@/design/tokens";
-import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
+import { GlassButton, GlassCard, Skeleton, Collapsible } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
 import { supabase } from "@lib/supabase";
@@ -314,10 +314,11 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
            */}
           {pending.length > 0 && (
             <ul className="flex flex-col gap-2" style={{ margin: 0, padding: 0, listStyle: "none" }}>
-              {pending.map((row) => (
+              {pending.map((row, index) => (
                 <RequestCard
                   key={row.request.id}
                   row={row}
+                  defaultOpen={index === 0}
                   busyLabel={
                     working?.id === row.request.id
                       ? working.kind === "accept"
@@ -352,10 +353,11 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
 
           {active.length > 0 && (
             <ul className="flex flex-col gap-2" style={{ margin: 0, padding: 0, listStyle: "none" }}>
-              {active.map((row) => (
+              {active.map((row, index) => (
                 <RequestCard
                   key={row.request.id}
                   row={row}
+                  defaultOpen={index === 0}
                   busyLabel={null}
                   actions={
                     <GlassButton
@@ -387,63 +389,72 @@ function RequestCard({
   row,
   actions,
   busyLabel,
+  defaultOpen = false,
 }: {
   row: QueueRow;
   actions: ReactNode;
   /** Non-null while one of this card's own buttons is mid-flight. */
   busyLabel: string | null;
+  defaultOpen?: boolean;
 }) {
   const { request } = row;
 
   return (
-    <GlassCard>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-2">
-          <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
+    <Collapsible
+      defaultOpen={defaultOpen}
+      trigger={
+        <div className="flex min-w-0 items-center gap-2" style={{ minHeight: 44 }}>
+          <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {row.displayName}
-          </p>
-          <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-            {T.requestSentAt(formatWhen(request.created_at))}
           </span>
+          <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>•</span>
+          <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary, textTransform: "uppercase" }}>
+            {T.requestStatus[request.status] ?? request.status}
+          </span>
+          <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>•</span>
+          <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary, fontVariantNumeric: "tabular-nums" }}>
+            {formatWhen(request.created_at)}
+          </span>
+          <ChevronDown size={14} style={{ marginLeft: "auto", color: TEXT.tertiary }} aria-hidden="true" />
         </div>
+      }
+    >
+      <GlassCard>
+        <div className="flex flex-col gap-2">
+          <div style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
+            {(() => {
+              const parsed = parseAthleteNotes(request.athlete_notes);
+              if (parsed.text) return parsed.text;
+              const chips: string[] = [];
+              if (parsed.objetivo) chips.push(titleCase(parsed.objetivo));
+              if (parsed.dias_semana) chips.push(`${parsed.dias_semana} dias/sem`);
+              if (parsed.nivel_experiencia) chips.push(titleCase(parsed.nivel_experiencia));
+              if (parsed.equipo) chips.push(titleCase(parsed.equipo));
+              if (parsed.molestias_lesiones) chips.push(titleCase(parsed.molestias_lesiones));
+              if (chips.length === 0) return T.requestNotesEmpty;
+              return (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {chips.map((c, i) => (
+                    <span key={i} style={{ padding: "2px 8px", borderRadius: 999, background: "rgba(255,255,255,0.08)", fontSize: TYPE.caption.size }}>
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
 
-        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-          {T.requestStatus[request.status] ?? request.status}
-        </p>
-
-        <div style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
-          {(() => {
-            const parsed = parseAthleteNotes(request.athlete_notes);
-            if (parsed.text) return parsed.text;
-            const chips: string[] = [];
-            if (parsed.objetivo) chips.push(`🔥 ${titleCase(parsed.objetivo)}`);
-            if (parsed.dias_semana) chips.push(`📅 ${parsed.dias_semana} días/sem`);
-            if (parsed.nivel_experiencia) chips.push(`⚡ ${titleCase(parsed.nivel_experiencia)}`);
-            if (parsed.equipo) chips.push(`🏋️ ${titleCase(parsed.equipo)}`);
-            if (parsed.molestias_lesiones) chips.push(`⚠️ ${titleCase(parsed.molestias_lesiones)}`);
-            if (chips.length === 0) return T.requestNotesEmpty;
-            return (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {chips.map((c, i) => (
-                  <span key={i} style={{ padding: "2px 8px", borderRadius: 999, background: "rgba(255,255,255,0.08)", fontSize: TYPE.caption.size }}>
-                    {c}
-                  </span>
-                ))}
-              </div>
-            );
-          })()}
+          <div className="flex flex-wrap items-center gap-2" style={{ marginTop: 4 }}>
+            {actions}
+            {busyLabel && (
+              <span aria-live="polite" style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                {busyLabel}
+              </span>
+            )}
+          </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2" style={{ marginTop: 4 }}>
-          {actions}
-          {busyLabel && (
-            <span aria-live="polite" style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-              {busyLabel}
-            </span>
-          )}
-        </div>
-      </div>
-    </GlassCard>
+      </GlassCard>
+    </Collapsible>
   );
 }
 

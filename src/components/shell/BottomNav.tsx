@@ -25,8 +25,10 @@
  * `GlassButton` so that every button in the app buzzes the same amount.
  */
 
+import { useState } from "react";
 import type { CSSProperties } from "react";
 import { NavLink } from "react-router-dom";
+import { hapticLight } from "@/lib/haptics";
 import { ACCENT, GLASS, MOTION, RADIUS, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { SHELL_LABELS } from "@/lib/i18n";
 import { useActiveSession } from "@/context/ActiveSessionContext";
@@ -70,7 +72,7 @@ export function BottomNav() {
          */
         zIndex: Z_INDEX.nav,
         height: `calc(${NAV_CONTENT_HEIGHT}px + env(safe-area-inset-bottom, 0px))`,
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        paddingBottom: `calc(0.5rem + env(safe-area-inset-bottom, 0px))`,
         /*
          * Opaque rather than glass. The bar sits directly on a page whose content
          * changes as the athlete scrolls, and a 6% white fill over moving content reads
@@ -78,9 +80,9 @@ export function BottomNav() {
          * sells it; the fill only has to hide what is behind.
          */
         backgroundColor: GLASS.fillRaised,
-        borderTop: `1px solid ${GLASS.borderStrong}`,
-        backdropFilter: "blur(20px) saturate(140%)",
-        WebkitBackdropFilter: "blur(20px) saturate(140%)",
+        borderTop: `1px solid ${GLASS.border}`,
+        backdropFilter: "blur(24px) saturate(140%)",
+        WebkitBackdropFilter: "blur(24px) saturate(140%)",
       }}
     >
       <ul
@@ -114,23 +116,27 @@ export function BottomNav() {
 function NavItem({ destination }: { destination: NavDestination }) {
   const Icon = destination.icon;
   const reducedMotion = useReducedMotion();
-  // Only the centre action needs this, and only the centre action is allowed to read the
-  // session store -- a nav item that lit up for reasons of its own would be a second
-  // signal competing with the pill.
   const sessionActive = useActiveSession().session !== null;
+  const [pressed, setPressed] = useState(false);
+
+  const onPointerDown = () => {
+    hapticLight();
+    setPressed(true);
+  };
+  const onPointerUp = () => setPressed(false);
+  const onPointerLeave = () => setPressed(false);
 
   return (
     <li style={{ display: "flex" }}>
       <NavLink
         to={destination.path}
-        // NavLink owns `aria-current="page"`; setting it here too would be a
-        // second source of truth for the same fact. `end` unconditionally: every
-        // destination is a literal with no children, so prefix matching can only
-        // ever light up the wrong row.
         end
         aria-label={destination.ariaLabel}
         className="cronos-nav-item"
         data-active={undefined}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerLeave}
         style={
           {
             display: "flex",
@@ -144,7 +150,8 @@ function NavItem({ destination }: { destination: NavDestination }) {
             minHeight: MOTION.minTouchTarget,
             minWidth: MOTION.minTouchTarget,
             paddingTop: destination.primary ? 0 : 8,
-            transition: `color ${MOTION.normal} ${MOTION.easeOut}`,
+            transition: `color ${MOTION.normal} ${MOTION.easeOut}, transform ${MOTION.instant} ${MOTION.standard}`,
+            transform: pressed ? "scale(0.94)" : undefined,
           } satisfies CSSProperties
         }
       >
@@ -162,7 +169,13 @@ function NavItem({ destination }: { destination: NavDestination }) {
                   aria-hidden="true"
                   size={24}
                   strokeWidth={isActive ? 2.4 : 2}
-                  style={{ color: isActive ? TEXT.primary : TEXT.tertiary }}
+                  style={{
+                    color: isActive ? ACCENT.base : TEXT.tertiary,
+                    transform: isActive ? "scale(1.1)" : "scale(1)",
+                    transition: reducedMotion
+                      ? "none"
+                      : `transform ${MOTION.instant} ${MOTION.standard}, color ${MOTION.normal} ${MOTION.easeOut}`,
+                  }}
                 />
                 {/*
                   The active marker is a dot, not a border or a fill.

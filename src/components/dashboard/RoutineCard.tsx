@@ -34,6 +34,8 @@ import {
 import type { Role } from "@/lib/localSession";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
 import type { RoutineDraft } from "@/lib/routines/routineDraftModel";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { ActionSheet } from "../ActionSheet";
 import {
   ACCENT,
   COPPER,
@@ -160,6 +162,7 @@ export function RoutineCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuAnchor = useRef<DOMRect | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const isMobile = useMediaQuery("(max-width: 639px)");
 
   const openMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -498,87 +501,142 @@ export function RoutineCard({
         </div>
       </div>
 
-      {menuOpen && menuAnchor.current && (
-        <>
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: Z_INDEX.modal,
-              backgroundColor: SCRIM.modal,
-            }}
-            onClick={closeMenu}
+      {menuOpen && menuAnchor.current ? (
+        isMobile ? (
+          <ActionSheet
+            isOpen={menuOpen}
+            onClose={closeMenu}
+            title="Acciones de la rutina"
+            items={[
+              {
+                icon: <Pencil style={{ width: 14, height: 14 }} strokeWidth={1.5} />,
+                label: "Editar",
+                onClick: () => {
+                  onEdit();
+                  closeMenu();
+                },
+              },
+              ...(canManage && onDuplicate
+                ? [
+                    {
+                      icon: <Copy style={{ width: 14, height: 14 }} strokeWidth={1.5} />,
+                      label: "Duplicar",
+                      onClick: () => {
+                        onDuplicate();
+                        closeMenu();
+                      },
+                    },
+                  ]
+                : []),
+              ...(canManage && onShare
+                ? [
+                    {
+                      icon: <Share2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />,
+                      label: "Compartir",
+                      onClick: () => {
+                        void onShare();
+                        closeMenu();
+                      },
+                    },
+                  ]
+                : []),
+              ...(canManage && onDelete
+                ? [
+                    {
+                      icon: <Trash2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />,
+                      label: "Eliminar",
+                      destructive: true,
+                      onClick: () => {
+                        onDelete();
+                        closeMenu();
+                      },
+                    },
+                  ]
+                : []),
+            ]}
           />
-          <div
-            role="menu"
-            aria-label="Acciones de la rutina"
-            style={{
-              ...menuStyle,
-              left: Math.min(Math.max(8, menuAnchor.current.left), window.innerWidth - 180),
-              top: Math.min(
-                Math.max(8, menuAnchor.current.bottom + 8),
-                window.innerHeight - 150,
-              ),
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                onEdit();
-                closeMenu();
+        ) : (
+          <>
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: Z_INDEX.modal,
+                backgroundColor: SCRIM.modal,
               }}
-              style={menuItemStyle()}
+              onClick={closeMenu}
+            />
+            <div
+              role="menu"
+              aria-label="Acciones de la rutina"
+              style={{
+                ...menuStyle,
+                left: Math.min(Math.max(8, menuAnchor.current.left), window.innerWidth - 180),
+                top: Math.min(
+                  Math.max(8, menuAnchor.current.bottom + 8),
+                  window.innerHeight - 150,
+                ),
+              }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <Pencil style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-              Editar
-            </button>
-            {canManage && onDuplicate && (
               <button
                 type="button"
                 role="menuitem"
                 onClick={() => {
-                  onDuplicate();
+                  onEdit();
                   closeMenu();
                 }}
                 style={menuItemStyle()}
               >
-                <Copy style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-                Duplicar
+                <Pencil style={{ width: 14, height: 14 }} strokeWidth={1.5} />
+                Editar
               </button>
-            )}
-            {canManage && onShare && (
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  void onShare();
-                  closeMenu();
-                }}
-                style={menuItemStyle()}
-              >
-                <Share2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-                Compartir
-              </button>
-            )}
-            {canManage && onDelete && (
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  onDelete();
-                  closeMenu();
-                }}
-                style={menuItemStyle(true)}
-              >
-                <Trash2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />
-                Eliminar
-              </button>
-            )}
-          </div>
-        </>
-      )}
+              {canManage && onDuplicate && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    onDuplicate();
+                    closeMenu();
+                  }}
+                  style={menuItemStyle()}
+                >
+                  <Copy style={{ width: 14, height: 14 }} strokeWidth={1.5} />
+                  Duplicar
+                </button>
+              )}
+              {canManage && onShare && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    void onShare();
+                    closeMenu();
+                  }}
+                  style={menuItemStyle()}
+                >
+                  <Share2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />
+                  Compartir
+                </button>
+              )}
+              {canManage && onDelete && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    onDelete();
+                    closeMenu();
+                  }}
+                  style={menuItemStyle(true)}
+                >
+                  <Trash2 style={{ width: 14, height: 14 }} strokeWidth={1.5} />
+                  Eliminar
+                </button>
+              )}
+            </div>
+          </>
+        )
+      ) : null}
     </>
   );
 }

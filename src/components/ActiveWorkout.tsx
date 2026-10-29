@@ -46,8 +46,7 @@ import {
 } from "@/design/tokens";
 import type { PlannedExercise } from "../hooks/useGymData";
 import { ExerciseCarousel } from "./ExerciseCarousel";
-import { ExerciseSelectorModal } from "./ExerciseSelectorModal";
-import type { CatalogExercise } from "@/lib/catalog/types";
+import { UnifiedExerciseSelectorSheet } from "./UnifiedExerciseSelectorSheet";
 import type { Exercise } from "@/types/supabase";
 import {
   EMPTY_PERFORMANCE,
@@ -1311,7 +1310,7 @@ export function ActiveWorkout({
      setPickerOpen(true);
    }
 
-  function handleExerciseSelected(exercise: CatalogExercise) {
+  function handleExerciseSelected(exercise: Exercise) {
     const existingIndex = items.findIndex((i) => i.exercise.id === exercise.id);
     if (existingIndex !== -1) {
       setSelectedKey(items[existingIndex].key);
@@ -2173,10 +2172,11 @@ export function ActiveWorkout({
       <SmartSwapModal open={false} onClose={() => {}} />
       <WarmupPyramidSection />
       {pickerOpen && (
-        <ExerciseSelectorModal
-          open={pickerOpen}
+        <UnifiedExerciseSelectorSheet
+          isOpen={pickerOpen}
+          mode="single"
           onClose={() => setPickerOpen(false)}
-          onSelect={handleExerciseSelected}
+          onSelectSingle={handleExerciseSelected}
         />
       )}
     </div>

@@ -30,7 +30,7 @@ import { useNavigate } from "react-router-dom";
 import { TRAIN_PATH } from "@/components/shell/navItems";
 import { supabase } from "@lib/supabase";
 import { ExerciseBrowser } from "@/components/ExerciseBrowser";
-import { ExercisePickerModal } from "@/components/exercise/ExercisePickerModal";
+import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
 import { WeeklyPlanEditor } from "@/components/routines/WeeklyPlanEditor";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { RoutineCard } from "./RoutineCard";
@@ -908,12 +908,12 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
       )}
 
       {pickerDay !== null && (
-        <ExercisePickerModal
-          open
+        <UnifiedExerciseSelectorSheet
+          isOpen
+          mode="single"
           onClose={() => setPickerDay(null)}
-          exercises={catalogExercises}
-          onSelect={(exercise) => {
-            addExerciseToDay(exercise, pickerDay);
+          onSelectSingle={(exercise) => {
+            addExerciseToDay(exercise, pickerDay!);
             setPickerDay(null);
           }}
         />

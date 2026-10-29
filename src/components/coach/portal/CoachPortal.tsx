@@ -157,12 +157,12 @@ export function PortalPanel({ userId }: { userId: string }) {
        * layout, and the queue is the only thing on the screen that can *change* the state
        * below it -- so it has to come first for a keyboard as well as for a thumb.
        */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <section aria-label={T.queueTitle} className="flex min-w-0 flex-col gap-3">
-          <RequestQueue onOpenConversation={openConversation} />
-          <LiveGymFeed />
-          <ShiftPanel userId={userId} />
-        </section>
+       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+         <section aria-label={T.queueTitle} className={`flex min-w-0 flex-col gap-3 ${selection !== null ? "hidden md:flex" : "flex"}`}>
+           <RequestQueue onOpenConversation={openConversation} />
+           <LiveGymFeed />
+           <ShiftPanel userId={userId} />
+         </section>
 
         <div className="flex min-w-0 flex-col gap-4">
           {/*
@@ -318,13 +318,11 @@ function PortalEmptyState() {
   return (
     <GlassCard
       style={{
-        flex: 1,
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         padding: SPACE.xl,
-        minHeight: 400,
       }}
     >
       <FileText size={48} strokeWidth={1.5} style={{ color: TEXT.tertiary, marginBottom: SPACE.md }} aria-hidden="true" />

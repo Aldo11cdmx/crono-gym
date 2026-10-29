@@ -25,8 +25,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
-import { GlassCard } from "@/components/ui";
+import { Clock } from "lucide-react";
+import { TEXT } from "@/design/tokens";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { localOffsetMinutes, shiftAt, startsAt } from "@/lib/coach/access";
 import { supabase } from "@lib/supabase";
@@ -93,6 +93,8 @@ export function ShiftPanel({ userId }: ShiftPanelProps) {
     if (isAvailable === null || saving) return;
 
     const next = !isAvailable;
+    // Optimistic: flip immediately.
+    setIsAvailable(next);
     setSaving(true);
     setError(null);
 
@@ -106,64 +108,97 @@ export function ShiftPanel({ userId }: ShiftPanelProps) {
     setSaving(false);
 
     if (writeError) {
-      // The switch keeps its old value rather than flipping optimistically. The column
-      // grant is the only thing making this write legal, so a refusal means the row is not
-      // the one we thought it was -- and a toggle that shows the wrong state is worse than
-      // one that does not move.
+      // Revert on failure.
+      setIsAvailable(!next);
       setError(T.queueError);
       return;
     }
-
-    setIsAvailable(next);
   }, [isAvailable, saving, userId]);
 
   const tzOffset = localOffsetMinutes(now);
   const shift = shiftAt(now, tzOffset);
 
+  let shiftLabel = "";
+  if (shift) {
+    shiftLabel = T.shiftHours(shift.startHour, shift.endHour);
+  } else {
+    shiftLabel = `Tu turno abre ${formatClock(startsAt(now, tzOffset).isoString)}`;
+  }
+
   return (
-    <GlassCard>
-      <div className="flex flex-col gap-3">
-        <h3 style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}>
-          {T.availabilityTitle}
-        </h3>
-
-        {/*
-         * Derived from the same helpers the athlete's tier gate uses, so the panel and the
-         * athlete's screen cannot disagree about what time it is where the coach is.
-         */}
-        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
-          {shift
-            ? T.shiftHours(shift.startHour, shift.endHour)
-            : T.nextShiftAt(formatClock(startsAt(now, tzOffset).isoString))}
-        </p>
-
-        <label
-          className="flex items-center gap-3"
+    <div
+      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 px-3 py-2"
+      style={{ minHeight: 44 }}
+    >
+      <span
+        aria-live="polite"
+        className="flex items-center gap-2 text-sm"
+        style={{ color: TEXT.primary }}
+      >
+        <span
+          aria-hidden="true"
           style={{
-            fontSize: TYPE.subhead.size,
-            color: TEXT.primary,
-            cursor: isAvailable === null || saving ? "not-allowed" : "pointer",
+            width: 8,
+            height: 8,
+            borderRadius: 9999,
+            background: isAvailable ? "#22c55e" : "#6b7280",
+            boxShadow: isAvailable ? "0 0 6px #22c55e" : "none",
           }}
+        />
+        {isAvailable ? T.availabilityOn : T.availabilityOff}
+      </span>
+
+      {shiftLabel && (
+        <span
+          className="flex items-center gap-1 truncate text-xs tabular-nums"
+          style={{ color: TEXT.secondary, minWidth: 0 }}
         >
-          <input
-            type="checkbox"
-            checked={isAvailable === true}
-            disabled={isAvailable === null || saving}
-            onChange={() => void toggle()}
-            style={{ width: 18, height: 18, accentColor: ACCENT.base }}
-          />
-          {isAvailable ? T.availabilityOn : T.availabilityOff}
-        </label>
+          <Clock size={12} aria-hidden="true" />
+          {shiftLabel}
+        </span>
+      )}
 
-        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>{T.availabilityHint}</p>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isAvailable === true}
+        disabled={isAvailable === null || saving}
+        onClick={() => void toggle()}
+        style={{
+          marginLeft: "auto",
+          width: 51,
+          height: 31,
+          borderRadius: 9999,
+          border: "none",
+          background: isAvailable ? "#22c55e" : "#3f3f46",
+          position: "relative",
+          cursor: isAvailable === null || saving ? "not-allowed" : "pointer",
+          padding: 0,
+          flexShrink: 0,
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 2,
+            left: isAvailable ? 22 : 2,
+            width: 27,
+            height: 27,
+            borderRadius: 9999,
+            background: "#fff",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            transition: "left 150ms ease-out",
+          }}
+        />
+      </button>
 
-        {error && (
-          <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
-            {error}
-          </p>
-        )}
-      </div>
-    </GlassCard>
+      {error && (
+        <p role="alert" style={{ margin: 0, fontSize: 12, color: "#ef4444" }}>
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 

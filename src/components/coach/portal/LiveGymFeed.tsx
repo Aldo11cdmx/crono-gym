@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { TEXT, TYPE } from "@/design/tokens";
-import { GlassCard, Skeleton } from "@/components/ui";
+import { Collapsible } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { supabase } from "@lib/supabase";
 import type { WorkoutLog } from "@/types/supabase";
@@ -135,62 +135,60 @@ export function LiveGymFeed() {
     };
   }, [load]);
 
+  const [expanded, setExpanded] = useState(false);
+
   if (loading) {
-    return (
-      <GlassCard>
-        <Skeleton />
-      </GlassCard>
-    );
+    return <div className="h-9 animate-pulse rounded-full bg-zinc-900/60" />;
   }
 
   if (error) {
     return (
-      <GlassCard>
-        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-          {error}
-        </p>
-      </GlassCard>
+      <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+        {error}
+      </p>
     );
   }
 
-  if (sessions.length === 0) {
-    return (
-      <GlassCard>
-        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-          {T.liveFeedEmpty}
-        </p>
-      </GlassCard>
-    );
-  }
+  const count = sessions.length;
+  const label = count === 1 ? "1 atleta activo en gym" : `${count} atletas activos en gym`;
 
   return (
-    <GlassCard>
-      <section aria-label={T.liveFeedTitle} className="flex flex-col gap-2">
-        <p style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}>
-          {T.liveFeedTitle}
-        </p>
+    <Collapsible
+      open={expanded}
+      onOpenChange={setExpanded}
+      trigger={
+        <button
+          type="button"
+          className="flex h-9 items-center gap-2 rounded-full border border-white/10 bg-zinc-900/60 px-3 text-sm"
+          style={{ color: TEXT.primary, width: "100%" }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 9999,
+              background: count > 0 ? "#22c55e" : "#6b7280",
+            }}
+          />
+          <span className="tabular-nums">{label}</span>
+        </button>
+      }
+    >
+      {count > 0 && (
         <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
           {sessions.map((session) => (
-            <li key={session.logId} className="flex items-baseline justify-between gap-2">
+            <li key={session.logId} className="flex items-baseline justify-between gap-2 py-1">
               <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>
                 {session.athleteName}
               </span>
-              <span
-                style={{
-                  fontSize: TYPE.caption.size,
-                  color: TEXT.tertiary,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {T.liveFeedStarted(new Date(session.startedAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }))}
+              <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary, whiteSpace: "nowrap" }}>
+                {T.liveFeedStarted(new Date(session.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))}
               </span>
             </li>
           ))}
         </ul>
-      </section>
-    </GlassCard>
+      )}
+    </Collapsible>
   );
 }

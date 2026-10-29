@@ -13,3 +13,4 @@ export {
   type GlassButtonVariant,
 } from "./GlassButton";
 export { Skeleton, type SkeletonProps } from "./Skeleton";
+export { Collapsible, type CollapsibleProps } from "./Collapsible";

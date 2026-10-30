@@ -537,16 +537,21 @@ function ExerciseStage({
       }}
     >
       {/* Escenario principal: GIF del ejercicio sobre negro puro */}
-      <div
+<div
         style={{
-          maxHeight: 96,
-          width: "auto",
-          margin: "0 auto",
-          background: SURFACE.base,
+          position: "relative",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          position: "relative",
+          width: "100%",
+          maxWidth: 320,
+          margin: "8px auto",
+          height: 176,
+          borderRadius: 16,
+          background: "rgba(23,23,23,0.4)",
+          border: "1px solid rgba(255,255,255,0.05)",
+          overflow: "hidden",
+          padding: 8,
         }}
       >
         {media.url && !failed ? (
@@ -556,9 +561,10 @@ function ExerciseStage({
             onLoad={onLoad}
             onError={onError}
             style={{
-              maxHeight: "100%",
-              width: "auto",
+              height: "100%",
+              width: "100%",
               objectFit: "contain",
+              margin: "0 auto",
               background: "transparent",
               filter: "invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)",
               imageRendering: "-webkit-optimize-contrast",

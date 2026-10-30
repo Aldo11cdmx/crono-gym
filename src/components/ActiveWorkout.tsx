@@ -25,7 +25,6 @@ import {
   Timer,
 } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { WarmupPyramidSection } from "@/components/WarmupPyramidSection";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
 import { GYM_LABELS } from "../lib/i18n";
@@ -1737,7 +1736,7 @@ export function ActiveWorkout({
   const showSummary = !started && !recoverableDraft && items.length > 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg, paddingTop: SPACE.xl, flex: 1, overflowY: "auto", paddingBottom: "12rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg, paddingTop: SPACE.xl, flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
       {recoverableDraft && (
         <div
           style={{
@@ -2214,7 +2213,6 @@ onDemo={() => setIsDemoOpen(true)}
           </div>
         </div>
       )}
-      <WarmupPyramidSection />
       {pickerOpen && (
         <UnifiedExerciseSelectorSheet
           isOpen={pickerOpen}

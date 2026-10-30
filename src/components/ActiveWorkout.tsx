@@ -546,7 +546,7 @@ function ExerciseStage({
           width: "100%",
           maxWidth: 320,
           margin: "2px auto",
-          height: 80,
+          height: 130,
           overflow: "hidden",
         }}
       >

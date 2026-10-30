@@ -23,6 +23,7 @@ import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { getCoachId } from "@/lib/coach/useCoachAuth";
 import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
 import type { CoachRoutineDraft } from "@/lib/routines/coachRoutineDraft";
+import { resolveExercise } from "@/lib/routines/routineTemplates";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
 
@@ -68,7 +69,7 @@ export function AthleteDetailView({
   const PULL_THRESHOLD = 80;
   const SWIPE_THRESHOLD = 50;
 
-  const { find: findCatalog } = useExerciseCatalog();
+  const { exercises: catalog } = useExerciseCatalog();
   const [assigningTemplate, setAssigningTemplate] = useState<string | null>(null);
   const [templateMessage, setTemplateMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
@@ -227,7 +228,7 @@ export function AthleteDetailView({
           label: day.label,
           exercises: day.exercises
             .map((e) => {
-              const found = findCatalog(e.name);
+              const found = resolveExercise(e.name, catalog);
               if (!found) return null;
               return {
                 exerciseId: found.id,
@@ -242,7 +243,7 @@ export function AthleteDetailView({
         }))
         .filter((day) => day.exercises.length > 0);
     },
-    [findCatalog],
+    [catalog],
   );
 
   const templatesWithDays: { template: (typeof ROUTINE_TEMPLATES)[number]; days: { label: string; exercises: { exerciseId: string; exerciseName: string; sets: number; repsMin: number; repsMax: number; restSeconds: number }[] }[] }[] = useMemo(

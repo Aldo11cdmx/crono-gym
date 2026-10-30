@@ -48,6 +48,7 @@ import { supabase } from "@lib/supabase";
 import { hapticSuccess } from "@/lib/haptics";
 
 import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
+import { saveCoachTemplate } from "@/lib/routines/saveCoachTemplate";
 import { ExerciseSubstitutionModal } from "./ExerciseSubstitutionModal";
 
 /** A fresh day, so two days never share an array by accident. */
@@ -89,13 +90,15 @@ const GOAL_PRESETS: Record<
 };
 
 export interface VipRoutineBuilderProps {
-  /** The athlete the routine is written for. */
+  /** The athlete the routine is written for. Null when building a global template. */
   athleteId: string | null;
+  /** When true, saves as a global template (`is_template`) instead of an athlete routine. */
+  isTemplate?: boolean;
   /** Reports the saved routine's title, so the portal can acknowledge it. */
   onSaved?: (title: string) => void;
 }
 
-export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps) {
+export function VipRoutineBuilder({ athleteId, isTemplate = false, onSaved }: VipRoutineBuilderProps) {
   /*
    * The catalogue gate is the athlete, not the coach: the hook only reads `exercises`, and
    * passing the athlete keeps it consistent with every other read in this panel. Passing the
@@ -429,12 +432,51 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
     );
   }
 
+  const saveTemplate = useCallback(async () => {
+    if (saving) return;
+
+    const draft: CoachRoutineDraft = { title, days };
+    const coachId = getCoachId();
+
+    const problem = draftProblem(draft, coachId);
+    if (problem !== null) {
+      setSaved(null);
+      setError(PROBLEM_MESSAGE[problem]);
+      return;
+    }
+
+    const savedTitle = draft.title.trim();
+    setTitle("");
+    setDays([emptyDay()]);
+    setSaved(T.builderSaved(savedTitle));
+    setSaving(true);
+    setError(null);
+
+    const ok = await saveCoachTemplate(coachId as string, draft);
+
+    setSaving(false);
+
+    if (!ok) {
+      setTitle(savedTitle);
+      setDays(draft.days);
+      setSaved(null);
+      setError(T.builderSaveError);
+      setToast(T.builderOfflineToast);
+      return;
+    }
+
+    hapticSuccess();
+    setSaved(T.builderSaved(savedTitle));
+    setToast(T.builderSavedToast);
+    onSaved?.(savedTitle);
+  }, [days, onSaved, saving, title]);
+
   const saveDisabled = saving || draftProblem({ title, days }, getCoachId()) !== null;
 
   return (
     <section aria-labelledby="builder-heading" className="flex min-w-0 flex-col gap-3">
       <h3 id="builder-heading" style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary }}>
-        {T.builderTitle}
+        {isTemplate ? T.templateBuilderTitle : T.builderTitle}
       </h3>
 
       <GlassCard>
@@ -526,8 +568,8 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
             </p>
           )}
 
-          <GlassButton variant="primary" disabled={saveDisabled} onClick={() => void save()}>
-            {saving ? T.builderSaving : T.builderSave}
+          <GlassButton variant="primary" disabled={saveDisabled} onClick={() => void (isTemplate ? saveTemplate() : save())}>
+            {saving ? (isTemplate ? T.templateSaving : T.builderSaving) : (isTemplate ? T.templateSave : T.builderSave)}
           </GlassButton>
         </div>
       </GlassCard>

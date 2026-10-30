@@ -37,6 +37,15 @@ create policy exercises_update_coach
   using (public.is_coach())
   with check (public.is_coach());
 
+-- El coach puede crear ejercicios nuevos en el catálogo (INSERT).
+grant insert on public.exercises to authenticated;
+drop policy if exists exercises_insert_coach on public.exercises;
+create policy exercises_insert_coach
+  on public.exercises
+  for insert
+  to authenticated
+  with check (public.is_coach());
+
 -- ---------------------------------------------------------------------------
 -- 3. Rutinas: marca de plantilla base clonable al plan de un atleta.
 -- ---------------------------------------------------------------------------
@@ -44,3 +53,13 @@ alter table if exists public.routines
   add column if not exists is_template boolean not null default false;
 
 create index if not exists idx_routines_is_template on public.routines (is_template);
+
+-- Cualquier coach autenticado puede leer plantillas globales (is_template = true),
+-- sin importar quién las creó. Las plantillas propias siguen bajo la política
+-- routines_crud_own (auth.uid() = user_id).
+drop policy if exists routines_select_templates on public.routines;
+create policy routines_select_templates
+  on public.routines
+  for select
+  to authenticated
+  using (is_template = true);

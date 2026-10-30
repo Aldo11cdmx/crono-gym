@@ -38,6 +38,7 @@ import { GlassButton, GlassCard, Skeleton, Collapsible } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
 import { supabase } from "@lib/supabase";
+import { parseAthleteNotes as parseAthleteNotesShared } from "@/lib/coach/athleteNotes";
 import type { CoachRequestRow, ProfileRow } from "@/types/supabase";
 
 /**
@@ -92,22 +93,11 @@ function parseAthleteNotes(raw: string | null | undefined): {
   molestias_lesiones?: string;
   text?: string;
 } {
-  if (!raw || !raw.trim()) return { text: "" };
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed as {
-        objetivo?: string;
-        dias_semana?: string | number;
-        nivel_experiencia?: string;
-        equipo?: string;
-        molestias_lesiones?: string;
-      };
-    }
-  } catch {
-    // not JSON
+  const parsed = parseAthleteNotesShared(raw);
+  if (parsed.text !== undefined) {
+    return { text: titleCase(parsed.text) };
   }
-  return { text: titleCase(raw.trim()) };
+  return parsed;
 }
 
 export function RequestQueue({ onOpenConversation }: RequestQueueProps) {

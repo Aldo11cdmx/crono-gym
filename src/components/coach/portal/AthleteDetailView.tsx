@@ -18,6 +18,7 @@ import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { HumanCoachChat } from "./HumanCoachChat";
 import { supabase } from "@lib/supabase";
 import { hapticLight } from "@/lib/haptics";
+import { parseAthleteNotes, phaseLabelFor } from "@/lib/coach/athleteNotes";
 
 export interface AthleteDetailViewProps {
   /** La solicitud activa (lleva el id para el chat). */
@@ -28,22 +29,6 @@ export interface AthleteDetailViewProps {
   coachUserId: string;
   /** Regresa a la pantalla anterior (cola de solicitudes). */
   onBack: () => void;
-}
-
-function parseAthleteNotes(notes: string | null): {
-  goal: string;
-  days: string;
-  equipment: string;
-} {
-  const goalMatch = notes?.match(/Objetivo:\s*([^\n]+)/);
-  const daysMatch = notes?.match(/Días a la semana:\s*([^\n]+)/);
-  const equipmentMatch = notes?.match(/Equipo:\s*([^\n]+)/);
-
-  return {
-    goal: goalMatch?.[1]?.trim() ?? T.athleteDetailUnknown,
-    days: daysMatch?.[1]?.trim() ?? T.athleteDetailUnknown,
-    equipment: equipmentMatch?.[1]?.trim() ?? T.athleteDetailUnknown,
-  };
 }
 
 export function AthleteDetailView({
@@ -233,13 +218,16 @@ export function AthleteDetailView({
 
   const parsed = requestNotes ? parseAthleteNotes(requestNotes) : null;
 
-  const phaseLabel = (() => {
-    if (!phase) return T.athleteDetailUnknown;
-    if (phase === "deload") return T.phaseDeload;
-    if (phase === "maintenance") return T.phaseMaintenance;
-    if (phase === "overload") return T.phaseOverload;
-    return phase;
-  })();
+  const phaseLabel = phaseLabelFor(phase, {
+    deload: T.phaseDeload,
+    maintenance: T.phaseMaintenance,
+    overload: T.phaseOverload,
+    unknown: T.athleteDetailUnknown,
+  });
+
+  const goalValue = parsed?.objetivo ?? profile?.goal ?? T.athleteDetailUnknown;
+  const daysValue = parsed?.dias_semana ?? T.athleteDetailUnknown;
+  const equipmentValue = parsed?.equipo ?? T.athleteDetailUnknown;
 
   if (loading) {
     return (
@@ -387,120 +375,141 @@ export function AthleteDetailView({
           </div>
         )}
 
-        {/* Perfil: objetivo, días, equipo, fase */}
-        <GlassCard raised style={{ padding: SPACE.card }}>
-          <div className="flex flex-col gap-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div style={statStyle}>
-                <span style={statLabelStyle}>{T.athleteDetailGoal}</span>
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                  {parsed?.goal ?? profile?.goal ?? T.athleteDetailUnknown}
-                </p>
-              </div>
-              <div style={statStyle}>
-                <span style={statLabelStyle}>{T.athleteDetailDays}</span>
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                  {parsed?.days ?? T.athleteDetailUnknown}
-                </p>
-              </div>
-              <div style={statStyle}>
-                <span style={statLabelStyle}>{T.athleteDetailEquipment}</span>
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                  {parsed?.equipment ?? T.athleteDetailUnknown}
-                </p>
-              </div>
-              <div style={statStyle}>
-                <span style={statLabelStyle}>{T.athleteDetailPhase}</span>
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                  {phaseLabel}
-                </p>
-              </div>
-              <div style={statStyle}>
-                <span style={statLabelStyle}>Peso</span>
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                  {profile?.weight_kg ? `${profile.weight_kg} kg` : T.athleteDetailUnknown}
-                </p>
-              </div>
-              <div style={statStyle}>
-                <span style={statLabelStyle}>Altura</span>
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
-                  {profile?.height_cm ? `${profile.height_cm} cm` : T.athleteDetailUnknown}
-                </p>
+        {/* Perfil: objetivo, días, equipo, fase — solo en pestaña ficha */}
+        {activeTab === "ficha" && (
+          <GlassCard raised style={{ padding: SPACE.card }}>
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div style={statStyle}>
+                  <span style={statLabelStyle}>{T.athleteDetailGoal}</span>
+                  <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                    {goalValue}
+                  </p>
+                </div>
+                <div style={statStyle}>
+                  <span style={statLabelStyle}>{T.athleteDetailDays}</span>
+                  <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                    {daysValue}
+                  </p>
+                </div>
+                <div style={statStyle}>
+                  <span style={statLabelStyle}>{T.athleteDetailEquipment}</span>
+                  <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                    {equipmentValue}
+                  </p>
+                </div>
+                <div style={statStyle}>
+                  <span style={statLabelStyle}>{T.athleteDetailPhase}</span>
+                  <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                    {phaseLabel}
+                  </p>
+                </div>
+                <div style={statStyle}>
+                  <span style={statLabelStyle}>Peso</span>
+                  <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                    {profile?.weight_kg ? `${profile.weight_kg} kg` : T.athleteDetailUnknown}
+                  </p>
+                </div>
+                <div style={statStyle}>
+                  <span style={statLabelStyle}>Altura</span>
+                  <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>
+                    {profile?.height_cm ? `${profile.height_cm} cm` : T.athleteDetailUnknown}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </GlassCard>
+          </GlassCard>
+        )}
 
-        {/* Notas privadas del coach */}
-        <GlassCard raised style={{ padding: SPACE.card }}>
-          <div className="flex flex-col gap-2">
-            <h4
-              style={{
-                margin: 0,
-                fontSize: TYPE.subhead.size,
-                fontWeight: 600,
-                color: TEXT.secondary,
-              }}
-            >
-              {T.athleteDetailNotes}
-            </h4>
-            <div style={{ display: "flex", gap: 2, alignItems: "flex-end" }}>
-              <textarea
-                value={coachNotes ?? ""}
-                onChange={(e) => setCoachNotes(e.target.value || null)}
-                placeholder={T.athleteDetailNoNotes}
-                rows={3}
+        {/* Notas privadas del coach — solo en pestaña ficha */}
+        {activeTab === "ficha" && (
+          <GlassCard raised style={{ padding: SPACE.card }}>
+            <div className="flex flex-col gap-2">
+              <h4
                 style={{
-                  flex: 1,
-                  minHeight: 88,
-                  padding: "10px 12px",
-                  borderRadius: 16,
-                  border: `1px solid ${GLASS.border}`,
-                  background: SURFACE_ROLE.well,
-                  color: TEXT.primary,
+                  margin: 0,
                   fontSize: TYPE.subhead.size,
-                  resize: "vertical",
+                  fontWeight: 600,
+                  color: TEXT.secondary,
                 }}
-              />
-              <GlassButton
-                variant="ghost"
-                icon={<Mic size={16} aria-hidden="true" />}
-                onClick={startDictation}
-                style={{
-                  padding: 6,
-                  minHeight: "auto",
-                  minWidth: "auto",
-                  background: isListening ? ACCENT.base : "transparent",
-                  color: isListening ? TEXT.onAccent : TEXT.secondary,
-                }}
-                aria-label={isListening ? T.coachNotesListening : T.coachNotesDictate}
-                disabled={!recognitionRef.current}
-              />
+              >
+                {T.athleteDetailNotes}
+              </h4>
+              <div style={{ display: "flex", gap: 2, alignItems: "flex-end" }}>
+                <textarea
+                  value={coachNotes ?? ""}
+                  onChange={(e) => setCoachNotes(e.target.value || null)}
+                  placeholder={T.athleteDetailNoNotes}
+                  rows={3}
+                  style={{
+                    flex: 1,
+                    minHeight: 88,
+                    padding: "10px 12px",
+                    borderRadius: 16,
+                    border: `1px solid ${GLASS.border}`,
+                    background: SURFACE_ROLE.well,
+                    color: TEXT.primary,
+                    fontSize: TYPE.subhead.size,
+                    resize: "vertical",
+                  }}
+                />
+                <GlassButton
+                  variant="ghost"
+                  icon={<Mic size={16} aria-hidden="true" />}
+                  onClick={startDictation}
+                  style={{
+                    padding: 6,
+                    minHeight: "auto",
+                    minWidth: "auto",
+                    background: isListening ? ACCENT.base : "transparent",
+                    color: isListening ? TEXT.onAccent : TEXT.secondary,
+                  }}
+                  aria-label={isListening ? T.coachNotesListening : T.coachNotesDictate}
+                  disabled={!recognitionRef.current}
+                />
+              </div>
             </div>
-          </div>
-        </GlassCard>
+          </GlassCard>
+        )}
 
-        {/* Chat en vivo */}
-        <section className="flex min-h-0 flex-1 flex-col gap-3" aria-label={T.chatTitle}>
-          <h3
-            style={{
-              margin: 0,
-              fontSize: TYPE.callout.size,
-              fontWeight: 600,
-              color: TEXT.primary,
-            }}
+        {/* Chat en vivo — solo en pestaña chat */}
+        {activeTab === "chat" && (
+          <section
+            className="flex min-h-0 flex-1 flex-col gap-3"
+            aria-label={T.chatTitle}
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 96px)" }}
           >
-            {T.chatTitle}
-          </h3>
-          {requestId ? (
-            <HumanCoachChat requestId={requestId} userId={coachUserId} />
-          ) : (
-            <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-              {T.chatSelectPrompt}
-            </p>
-          )}
-          {/* AI analyze button (Rutina tab) */}
-          {activeTab === "rutina" && (
+            {requestId ? (
+              <HumanCoachChat requestId={requestId} userId={coachUserId} />
+            ) : (
+              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+                {T.chatSelectPrompt}
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* Rutina VIP — solo en pestaña rutina */}
+        {activeTab === "rutina" && (
+          <section className="flex min-h-0 flex-col gap-3" aria-label="Rutina del atleta">
+            <GlassCard raised style={{ padding: SPACE.card }}>
+              <div className="flex flex-col gap-2">
+                <h4
+                  style={{
+                    margin: 0,
+                    fontSize: TYPE.subhead.size,
+                    fontWeight: 600,
+                    color: TEXT.secondary,
+                  }}
+                >
+                  Creador de rutina VIP
+                </h4>
+                <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                  Usa los datos de la ficha ({goalValue} · {daysValue} · {equipmentValue}) para
+                  generar una rutina personalizada.
+                </p>
+              </div>
+            </GlassCard>
             <GlassButton
               variant="primary"
               icon={<Sparkles size={16} />}
@@ -509,8 +518,8 @@ export function AthleteDetailView({
             >
               Analizar Atleta con IA
             </GlassButton>
-          )}
-        </section>
+          </section>
+        )}
       </section>
     </div>
     <style>{`

@@ -25,7 +25,6 @@ import {
   Timer,
 } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { SmartSwapModal } from "@/components/SmartSwapModal";
 import { WarmupPyramidSection } from "@/components/WarmupPyramidSection";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
@@ -504,8 +503,8 @@ interface ExerciseStageProps {
   totalSets: number;
   lastSessionLabel: string | null;
   equipment: EquipmentEntry | null;
-   onDemo: () => void;
-   onAdvance: () => void;
+   onDemo?: () => void;
+   onAdvance?: () => void;
    onChangeExercise: () => void;
    onAdjustEquipment: () => void;
 }
@@ -540,7 +539,7 @@ function ExerciseStage({
       {/* Escenario principal: GIF del ejercicio sobre negro puro */}
       <div
         style={{
-          maxHeight: 112,
+          maxHeight: 96,
           width: "auto",
           margin: "0 auto",
           background: SURFACE.base,
@@ -690,8 +689,8 @@ function ExerciseStage({
            backdropFilter: "blur(12px)",
          }}
        >
-         <ActionChip label="Demo" icon={<Play size={16} aria-hidden="true" />} onClick={onDemo} />
-         <ActionChip label="Avance" icon={<Target size={16} aria-hidden="true" />} onClick={onAdvance} />
+         <ActionChip label="Demo" icon={<Play size={16} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
+         <ActionChip label="Avance" icon={<Target size={16} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
          <ActionChip label="Cambiar" icon={<ArrowRight size={16} aria-hidden="true" />} onClick={onChangeExercise} />
          <ActionChip label="Ajustar" icon={<RefreshCw size={16} aria-hidden="true" />} onClick={onAdjustEquipment} />
        </div>
@@ -1240,6 +1239,8 @@ export function ActiveWorkout({
     entry: SetEntry;
   } | null>(null);
   const [equipmentSheetOpen, setEquipmentSheetOpen] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
+  const [isAvanceOpen, setIsAvanceOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentEntry | null>(
     null,
   );
@@ -2040,8 +2041,8 @@ export function ActiveWorkout({
                 totalSets={selected.sets.length}
                 lastSessionLabel={lastSessionFor(selected.exercise.id)}
                 equipment={equipmentForSelected}
-                 onDemo={() => {}}
-                 onAdvance={() => {}}
+onDemo={() => setIsDemoOpen(true)}
+                  onAdvance={() => setIsAvanceOpen(true)}
                  onChangeExercise={() => {
                   setPickerMode("replace");
                   setPickerOpen(true);
@@ -2183,7 +2184,34 @@ export function ActiveWorkout({
         />
       )}
 
-      <SmartSwapModal open={false} onClose={() => {}} />
+      {isDemoOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsDemoOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
+            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
+            <h3 style={{ color: TEXT.primary, margin: 0 }}>Demo</h3>
+            <p style={{ color: TEXT.secondary }}>Técnica y biomecánica</p>
+          </div>
+        </div>
+      )}
+      {isAvanceOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsAvanceOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
+            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
+            <h3 style={{ color: TEXT.primary, margin: 0 }}>Avance</h3>
+            <p style={{ color: TEXT.secondary }}>Progreso de 1RM e historial</p>
+          </div>
+        </div>
+      )}
       <WarmupPyramidSection />
       {pickerOpen && (
         <UnifiedExerciseSelectorSheet

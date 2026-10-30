@@ -677,36 +677,24 @@ function ExerciseStage({
         {completedSets} de {totalSets} series
       </div>
 
-      {/* Botones de acción rápida */}
-      <div
-        style={{
-          display: "flex",
-          gap: SPACE.sm,
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
-        <ActionChip
-          label="Demo"
-          icon={<Play size={16} aria-hidden="true" />}
-          onClick={onDemo}
-        />
-        <ActionChip
-          label="Avance"
-          icon={<Target size={16} aria-hidden="true" />}
-          onClick={onAdvance}
-        />
-         <ActionChip
-           label="Cambiar"
-           icon={<ArrowRight size={16} aria-hidden="true" />}
-           onClick={onChangeExercise}
-         />
-        <ActionChip
-          label="Ajustar"
-          icon={<RefreshCw size={16} aria-hidden="true" />}
-          onClick={onAdjustEquipment}
-        />
-      </div>
+<div
+         style={{
+           display: "flex",
+           gap: SPACE.xs,
+           justifyContent: "center",
+           width: "100%",
+           background: "rgba(255,255,255,0.05)",
+           padding: SPACE.xs,
+           borderRadius: RADIUS.control,
+           border: `1px solid ${GLASS.border}`,
+           backdropFilter: "blur(12px)",
+         }}
+       >
+         <ActionChip label="Demo" icon={<Play size={16} aria-hidden="true" />} onClick={onDemo} />
+         <ActionChip label="Avance" icon={<Target size={16} aria-hidden="true" />} onClick={onAdvance} />
+         <ActionChip label="Cambiar" icon={<ArrowRight size={16} aria-hidden="true" />} onClick={onChangeExercise} />
+         <ActionChip label="Ajustar" icon={<RefreshCw size={16} aria-hidden="true" />} onClick={onAdjustEquipment} />
+       </div>
     </section>
   );
 }

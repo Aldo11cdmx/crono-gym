@@ -2022,7 +2022,7 @@ export function ActiveWorkout({
                 alignItems: "center",
                 width: "100%",
                 marginTop: SPACE.md,
-                paddingBottom: 176,
+                paddingBottom: SPACE.sm,
               }}
             >
               <ExerciseCarousel

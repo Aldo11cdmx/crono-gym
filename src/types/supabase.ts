@@ -328,13 +328,26 @@ export interface Database {
           is_premium: boolean;
           /** When the tier began. Non-null whenever `is_premium` is true. */
           premium_since: string | null;
-          /**
-           * When the tier ends, or null for a perpetual subscription. Null here is
-           * meaningful and load-bearing -- it is the representation of "never expires",
-           * which is why the column is nullable rather than defaulted.
-           */
-          premium_expires_at: string | null;
-        };
+/**
+            * When the tier ends, or null for a perpetual subscription. Null here is
+            * meaningful and load-bearing -- it is the representation of "never expires",
+            * which is why the column is nullable rather than defaulted.
+            */
+           premium_expires_at: string | null;
+           /**
+            * VIP activation by a coach paying in cash. `not null default false`, so a
+            * read never has to distinguish "not VIP" from "never activated".
+            *
+            * Coach-only, like the premium columns: the migration revokes
+            * table-level UPDATE and re-grants it per column, so these three are absent
+            * from the grant and a coach writes them through the service role.
+            */
+           is_vip: boolean;
+           /** The human label the coach chose at activation time ("Efectivo", …). */
+           vip_status: string | null;
+           /** When the coach activated the athlete as VIP. Null until then. */
+           vip_activated_at: string | null;
+         };
         Insert: {
           user_id: string;
           display_name?: string | null;

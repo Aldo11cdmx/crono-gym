@@ -10,14 +10,14 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Dumbbell, MessageSquare, Mic, Sparkles, User } from "lucide-react";
+import { ArrowLeft, Banknote, CheckCircle2, Dumbbell, MessageSquare, Mic, Sparkles, User } from "lucide-react";
 
 import { ACCENT, GLASS, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { HumanCoachChat } from "./HumanCoachChat";
 import { supabase } from "@lib/supabase";
-import { hapticLight } from "@/lib/haptics";
+import { hapticLight, hapticSuccess } from "@/lib/haptics";
 import { parseAthleteNotes, phaseLabelFor } from "@/lib/coach/athleteNotes";
 
 export interface AthleteDetailViewProps {
@@ -42,6 +42,9 @@ export function AthleteDetailView({
     goal: string;
     weight_kg: number | null;
     height_cm: number | null;
+    is_vip: boolean;
+    vip_status: string | null;
+    vip_activated_at: string | null;
   } | null>(null);
   const [requestNotes, setRequestNotes] = useState<string | null>(null);
   const [phase, setPhase] = useState<"deload" | "maintenance" | "overload" | null>(null);
@@ -50,6 +53,8 @@ export function AthleteDetailView({
   const [isListening, setIsListening] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [vipActivating, setVipActivating] = useState(false);
+  const [vipMessage, setVipMessage] = useState<string | null>(null);
   const [pullDistance, setPullDistance] = useState(0);
   const [pullStartY, setPullStartY] = useState<number | null>(null);
 
@@ -102,7 +107,7 @@ export function AthleteDetailView({
       // 1. Perfil del atleta (nombre y objetivo guardado en onboarding)
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("display_name, goal, weight_kg, height_cm")
+        .select("display_name, goal, weight_kg, height_cm, is_vip, vip_status, vip_activated_at")
         .eq("user_id", athleteId)
         .maybeSingle();
 
@@ -118,6 +123,12 @@ export function AthleteDetailView({
           : T.athleteDetailUnknown,
         weight_kg: typeof profileData?.weight_kg === "number" ? profileData.weight_kg : null,
         height_cm: typeof profileData?.height_cm === "number" ? profileData.height_cm : null,
+        is_vip: typeof profileData?.is_vip === "boolean" ? profileData.is_vip : false,
+        vip_status: typeof profileData?.vip_status === "string" ? profileData.vip_status : null,
+        vip_activated_at:
+          typeof profileData?.vip_activated_at === "string"
+            ? profileData.vip_activated_at
+            : null,
       });
 
       // 2. Notas de la solicitud más reciente de este atleta (tiene objetivo, días, equipo)
@@ -166,6 +177,36 @@ export function AthleteDetailView({
       if (mounted.current) setLoading(false);
     }
   }, [athleteId]);
+
+  /**
+   * Activa al atleta como VIP (pago en efectivo) a través del RPC
+   * `activate_vip`, que verifica que el coach es activo y que el atleta tiene
+   * una solicitud activa con él. Relee la ficha al terminar para reflejar el
+   * estado sin pedirle al coach que pulse de nuevo.
+   */
+  const activateVip = useCallback(async () => {
+    if (!athleteId || vipActivating || profile?.is_vip) return;
+    setVipActivating(true);
+    setVipMessage(null);
+    setError(null);
+
+    try {
+      const { error: rpcError } = await (supabase as any).rpc("activate_vip", {
+        target_user_id: athleteId,
+      });
+      if (rpcError) throw rpcError;
+
+      hapticSuccess();
+      setVipMessage(T.athleteVipActivated);
+      await load();
+    } catch (err) {
+      setVipMessage(
+        err instanceof Error ? err.message : T.athleteVipActivateError,
+      );
+    } finally {
+      if (mounted.current) setVipActivating(false);
+    }
+  }, [athleteId, vipActivating, profile?.is_vip, load]);
 
   const handlePullTouchStart = useCallback((e: React.TouchEvent) => {
     const el = contentRef.current;
@@ -417,6 +458,94 @@ export function AthleteDetailView({
                   </p>
                 </div>
               </div>
+            </div>
+          </GlassCard>
+        )}
+
+        {/* Activación VIP (efectivo) — solo en pestaña ficha */}
+        {activeTab === "ficha" && (
+          <GlassCard raised style={{ padding: SPACE.card }}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Banknote size={18} strokeWidth={1.5} style={{ color: ACCENT.base }} aria-hidden="true" />
+                  <h4
+                    style={{
+                      margin: 0,
+                      fontSize: TYPE.subhead.size,
+                      fontWeight: 600,
+                      color: TEXT.primary,
+                    }}
+                  >
+                    {T.athleteVipStatus}
+                  </h4>
+                </div>
+                {profile?.is_vip ? (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "3px 10px",
+                      borderRadius: 999,
+                      background: `${ACCENT.base}1f`,
+                      border: `1px solid ${ACCENT.base}55`,
+                      fontSize: TYPE.caption.size,
+                      fontWeight: 600,
+                      color: ACCENT.base,
+                    }}
+                  >
+                    <CheckCircle2 size={12} aria-hidden="true" />
+                    {profile.vip_status ?? T.athleteVipBadge}
+                  </span>
+                ) : null}
+              </div>
+
+              {profile?.is_vip ? (
+                <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                  {T.athleteVipBadge}
+                  {profile.vip_activated_at
+                    ? ` · ${T.athleteVipActivatedAt} ${new Date(
+                        profile.vip_activated_at,
+                      ).toLocaleDateString("es-MX", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}`
+                    : ""}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                    Activa la suscripción VIP cuando el atleta pague en efectivo. El coach
+                    conserve el comprobante; el registro aquí es el registro del pago.
+                  </p>
+                  <GlassButton
+                    variant="primary"
+                    icon={<Banknote size={16} />}
+                    disabled={vipActivating}
+                    onClick={() => void activateVip()}
+                    style={{ minHeight: 44 }}
+                  >
+                    {vipActivating ? "Activando…" : T.athleteVipActivate}
+                  </GlassButton>
+                  {vipMessage && (
+                    <p
+                      role={vipMessage === T.athleteVipActivated ? "status" : "alert"}
+                      style={{
+                        margin: 0,
+                        fontSize: TYPE.caption.size,
+                        color:
+                          vipMessage === T.athleteVipActivated
+                            ? STATUS.success.text
+                            : STATUS.error.text,
+                      }}
+                    >
+                      {vipMessage}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </GlassCard>
         )}

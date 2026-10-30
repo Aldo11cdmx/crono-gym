@@ -2147,9 +2147,17 @@ export const COACH_PORTAL_LABELS = {
   athleteDetailPhase: "Fase actual",
   athleteDetailNotes: "Notas privadas",
   athleteDetailNoNotes: "Sin notas privadas todavía.",
-  athleteDetailUnknown: "Sin dato",
+athleteDetailUnknown: "Sin dato",
 
-  // ---- IA routine generation ----------------------------------------------
+   // ---- activación VIP (efectivo) -------------------------------------------
+   athleteVipBadge: "VIP Activo (Efectivo)",
+   athleteVipActivate: "Activar Suscripción VIP (Efectivo)",
+   athleteVipActivated: "Atleta activado como VIP correctamente.",
+   athleteVipActivateError: "No se pudo activar al atleta como VIP.",
+   athleteVipStatus: "Estado VIP",
+   athleteVipActivatedAt: "Activado el",
+
+   // ---- IA routine generation ----------------------------------------------
   builderGenerateAiButton: "Sugerir rutina con IA",
   builderGeneratingAi: "Generando rutina…",
   builderAiSaved: "Rutina generada con IA guardada en la biblioteca del atleta.",

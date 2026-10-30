@@ -13,6 +13,7 @@ import type { PlannedExercise } from "../../hooks/useGymData";
 import type { DraftExercise } from "../../lib/offlineStore";
 import { useActiveSession } from "../../context/ActiveSessionContext";
 import { ActiveWorkout } from "../ActiveWorkout";
+import { ErrorBoundary } from "../ErrorBoundary";
 import { WorkoutSummaryModal } from "./WorkoutSummaryModal";
 
 export interface ActiveWorkoutViewProps {
@@ -55,13 +56,15 @@ export function ActiveWorkoutView({
          paddingTop: "env(safe-area-inset-top, 0px)",
        }}
      >
-       <ActiveWorkout
-         userId={userId}
-         routineId={routineId}
-         routineTitle={routineTitle}
-         planned={planned}
-         onFinished={handleFinish}
-       />
+<ErrorBoundary>
+        <ActiveWorkout
+          userId={userId}
+          routineId={routineId}
+          routineTitle={routineTitle}
+          planned={planned}
+          onFinished={handleFinish}
+        />
+      </ErrorBoundary>
 
        <WorkoutSummaryModal
         isOpen={summaryOpen}

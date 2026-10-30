@@ -10,8 +10,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Singleton. Auth persistence (localStorage) is the library default, which is
-// correct for a browser app; we keep it explicit for clarity.
 export const supabase: SupabaseClient<Database> = createClient<Database>(
   supabaseUrl,
   supabaseAnonKey,
@@ -21,6 +19,10 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       storage: window.localStorage,
+    },
+    realtime: {
+      params: { eventsPerSecond: 2 },
+      heartbeatIntervalMs: 30000,
     },
   }
 );

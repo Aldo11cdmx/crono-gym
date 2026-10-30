@@ -545,13 +545,9 @@ function ExerciseStage({
           justifyContent: "center",
           width: "100%",
           maxWidth: 320,
-          margin: "8px auto",
-          height: 176,
-          borderRadius: 16,
-          background: "rgba(23,23,23,0.4)",
-          border: "1px solid rgba(255,255,255,0.05)",
+          margin: "2px auto",
+          height: 80,
           overflow: "hidden",
-          padding: 8,
         }}
       >
         {media.url && !failed ? (

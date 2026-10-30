@@ -1242,6 +1242,8 @@ export function ActiveWorkout({
   const [equipmentSheetOpen, setEquipmentSheetOpen] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
   const [isAvanceOpen, setIsAvanceOpen] = useState(false);
+  const [isCambiarOpen, setIsCambiarOpen] = useState(false);
+  const [isAjustarOpen, setIsAjustarOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentEntry | null>(
     null,
   );
@@ -2192,7 +2194,7 @@ onDemo={() => setIsDemoOpen(true)}
           onClick={() => setIsDemoOpen(false)}
           style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
             <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
             <h3 style={{ color: TEXT.primary, margin: 0 }}>Demo</h3>
             <p style={{ color: TEXT.secondary }}>Técnica y biomecánica</p>
@@ -2206,10 +2208,28 @@ onDemo={() => setIsDemoOpen(true)}
           onClick={() => setIsAvanceOpen(false)}
           style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
             <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
             <h3 style={{ color: TEXT.primary, margin: 0 }}>Avance</h3>
             <p style={{ color: TEXT.secondary }}>Progreso de 1RM e historial</p>
+          </div>
+        </div>
+      )}
+{isCambiarOpen && (
+        <div role="dialog" aria-modal="true" onClick={() => setIsCambiarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
+            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
+            <h3 style={{ color: TEXT.primary, margin: 0 }}>Cambiar</h3>
+            <p style={{ color: TEXT.secondary }}>Reemplazo biomecánico</p>
+          </div>
+        </div>
+      )}
+      {isAjustarOpen && (
+        <div role="dialog" aria-modal="true" onClick={() => setIsAjustarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
+            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
+            <h3 style={{ color: TEXT.primary, margin: 0 }}>Ajustar</h3>
+            <p style={{ color: TEXT.secondary }}>Configuración de máquina</p>
           </div>
         </div>
       )}

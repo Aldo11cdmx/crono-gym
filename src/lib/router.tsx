@@ -36,6 +36,7 @@ import { UiCatalogPage } from "@/components/dev/UiCatalogPage";
 import { CoachPortalPreview } from "@/components/dev/CoachPortalPreview";
 import { AdminGate } from "@/components/profile/AdminGate";
 import { DeveloperGate } from "@/components/profile/DeveloperGate";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   COACH_PATH,
@@ -189,26 +190,32 @@ export const router = createBrowserRouter([
            * coach's inbox one thumb-tap away from every free user's home screen.
            */
           { path: "/coach/portal", element: (
-            <Suspense fallback={<LoadingSpinner label="Cargando el portal del coach…" />}>
-              <LazyCoachPortal />
-            </Suspense>
+            <ProtectedRoute requiredRoles={["coach", "admin"]}>
+              <Suspense fallback={<LoadingSpinner label="Cargando el portal del coach…" />}>
+                <LazyCoachPortal />
+              </Suspense>
+            </ProtectedRoute>
           ) },
           {
             path: "/admin",
             element: (
-              <AdminGate>
-                <Suspense fallback={<LoadingSpinner label="Cargando administración…" />}>
-                  <LazyAdminHub />
-                </Suspense>
-              </AdminGate>
+              <ProtectedRoute requiredRoles={["admin"]}>
+                <AdminGate>
+                  <Suspense fallback={<LoadingSpinner label="Cargando administración…" />}>
+                    <LazyAdminHub />
+                  </Suspense>
+                </AdminGate>
+              </ProtectedRoute>
             ),
           },
           {
             path: "/developer",
             element: (
-              <DeveloperGate>
-                <UiCatalogPage />
-              </DeveloperGate>
+              <ProtectedRoute requiredRoles={["developer"]}>
+                <DeveloperGate>
+                  <UiCatalogPage />
+                </DeveloperGate>
+              </ProtectedRoute>
             ),
           },
         ],

@@ -132,13 +132,21 @@ export function AthleteDetailView({
       });
 
       // 2. Notas de la solicitud más reciente de este atleta (tiene objetivo, días, equipo)
-      const { data: requestData, error: requestError } = await supabase
+      // 2. Notas de la solicitud (activa si requestId existe, si no la mas reciente)
+      let requestQuery = supabase
         .from("coach_session_requests")
         .select("athlete_notes")
         .eq("athlete_id", athleteId)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+      if (requestId) {
+        requestQuery = supabase
+          .from("coach_session_requests")
+          .select("athlete_notes")
+          .eq("id", requestId)
+          .limit(1) as typeof requestQuery;
+      }
+      const { data: requestData, error: requestError } = await requestQuery.maybeSingle();
 
       if (!mounted.current) return;
       if (requestError) throw requestError;

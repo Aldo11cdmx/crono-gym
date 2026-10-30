@@ -67,6 +67,8 @@ export interface AuthValue {
   ready: boolean;
   /** The role this device is currently acting as. */
   activeRole: Role;
+  roles: string[];
+  hasAnyRole: (required: string[]) => boolean;
   /**
    * Switch the active role.
    *
@@ -82,6 +84,8 @@ const NOOP: AuthValue = {
   user: null,
   ready: false,
   activeRole: "athlete",
+  roles: [],
+  hasAnyRole: () => false,
   setActiveRole: () => undefined,
 };
 
@@ -89,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ready, setReady] = useState(false);
   const [activeRole, setActiveRoleState] = useState<Role>(readActiveRole);
+  const [roles, setRoles] = useState<string[]>([]);
 
   useEffect(() => {
     let alive = true;
@@ -107,6 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           : null,
       );
+      if (session?.user) {
+        const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+        if (alive) setRoles((r ?? []).map((x: { role: string }) => x.role));
+      } else {
+        setRoles([]);
+      }
       setReady(true);
     }
 
@@ -124,6 +135,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           : null,
       );
+      if (next?.user) {
+        void supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", next.user.id)
+          .then(({ data: r }) => {
+            if (alive) setRoles((r ?? []).map((x: { role: string }) => x.role));
+          });
+      } else {
+        setRoles([]);
+      }
       setReady(true);
     });
 
@@ -143,9 +165,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const hasAnyRole = useCallback((required: string[]) => required.some((r) => roles.includes(r)), [roles]);
+
   const value = useMemo<AuthValue>(
-    () => ({ user, ready, activeRole, setActiveRole }),
-    [user, ready, activeRole, setActiveRole],
+    () => ({ user, ready, activeRole, roles, hasAnyRole, setActiveRole }),
+    [user, ready, activeRole, roles, hasAnyRole, setActiveRole],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

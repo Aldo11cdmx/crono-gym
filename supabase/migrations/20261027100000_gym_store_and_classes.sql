@@ -1,8 +1,10 @@
 -- Gym Store
-do  begin
+do $$
+begin
   create type public.product_category as enum ('supplements','accessories','clothing','other');
 exception when duplicate_object then null;
-end ;
+end
+$$;
 
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
@@ -30,10 +32,12 @@ create policy products_admin_all on public.products
 
 
 -- Purchase tickets
-do  begin
+do $$
+begin
   create type public.purchase_ticket_status as enum ('pending','paid','delivered','cancelled');
 exception when duplicate_object then null;
-end ;
+end
+$$;
 
 create table if not exists public.purchase_tickets (
   id uuid primary key default gen_random_uuid(),
@@ -63,6 +67,39 @@ drop policy if exists purchase_tickets_admin_all on public.purchase_tickets;
 create policy purchase_tickets_admin_all on public.purchase_tickets
   for all to authenticated using (public.has_role('admin'))
   with check (public.has_role('admin'));
+
+create or replace function public.purchase_tickets_before_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_price integer;
+  v_active boolean;
+begin
+  select price_cents, is_active into v_price, v_active
+  from public.products where id = new.product_id;
+
+  if v_price is null or not v_active then
+    raise exception 'product_unavailable';
+  end if;
+
+  if not public.has_role('admin') then
+    new.unit_price_cents := v_price;
+    new.total_cents := v_price * new.quantity;
+    new.status := 'pending';
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function public.purchase_tickets_before_insert() from public, anon, authenticated;
+
+drop trigger if exists purchase_tickets_before_insert on public.purchase_tickets;
+create trigger purchase_tickets_before_insert
+  before insert on public.purchase_tickets
+  for each row execute function public.purchase_tickets_before_insert();
 
 
 -- Gym Classes & Schedules

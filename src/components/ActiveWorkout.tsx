@@ -540,7 +540,7 @@ function ExerciseStage({
       {/* Escenario principal: GIF del ejercicio sobre negro puro */}
       <div
         style={{
-          maxHeight: 120,
+          maxHeight: 112,
           width: "auto",
           margin: "0 auto",
           background: SURFACE.base,
@@ -1746,7 +1746,7 @@ export function ActiveWorkout({
   const showSummary = !started && !recoverableDraft && items.length > 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg, paddingTop: SPACE.xl }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg, paddingTop: SPACE.xl, flex: 1, overflowY: "auto", paddingBottom: "12rem" }}>
       {recoverableDraft && (
         <div
           style={{

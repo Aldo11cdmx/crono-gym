@@ -20,9 +20,12 @@ const makeExercise = (overrides: Partial<Exercise> = {}): Exercise => ({
   body_part: overrides.body_part ?? "chest",
   target: overrides.target ?? "pectorals",
   equipment: overrides.equipment ?? "barbell",
-  gif_url: overrides.gif_url ?? "",
-  instructions: overrides.instructions ?? [],
-});
+    gif_url: overrides.gif_url ?? "",
+    instructions: overrides.instructions ?? [],
+    name_es: overrides.name_es ?? null,
+    is_active: overrides.is_active ?? true,
+    is_hidden: overrides.is_hidden ?? false,
+  });
 
 const makeDraft = (exercise: Exercise, overrides: Partial<DraftExercise> = {}): DraftExercise => ({
   exercise,

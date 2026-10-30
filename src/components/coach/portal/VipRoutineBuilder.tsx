@@ -537,11 +537,14 @@ export function VipRoutineBuilder({ athleteId, onSaved }: VipRoutineBuilderProps
           current={exercises.find((e) => e.id === substitutingExercise.exerciseId) ?? ({
             id: substitutingExercise.exerciseId,
             name: substitutingExercise.exerciseName ?? "",
+            name_es: null,
             body_part: "",
             target: "",
             equipment: "",
             gif_url: "",
             instructions: [],
+            is_active: true,
+            is_hidden: false,
           } as Exercise)}
           catalog={exercises}
           open={substituteOpen}

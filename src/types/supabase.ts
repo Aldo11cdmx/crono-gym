@@ -23,29 +23,38 @@ export interface Database {
         Row: {
           id: string;
           name: string;
+          name_es: string | null;
           body_part: string;
           target: string;
           equipment: string;
           gif_url: string;
           instructions: string[];
+          is_active: boolean;
+          is_hidden: boolean;
         };
         Insert: {
           id: string;
           name: string;
+          name_es?: string | null;
           body_part: string;
           target: string;
           equipment: string;
           gif_url: string;
           instructions?: string[];
+          is_active?: boolean;
+          is_hidden?: boolean;
         };
         Update: {
           id?: string;
           name?: string;
+          name_es?: string | null;
           body_part?: string;
           target?: string;
           equipment?: string;
           gif_url?: string;
           instructions?: string[];
+          is_active?: boolean;
+          is_hidden?: boolean;
         };
         Relationships: ForeignKey[];
       };
@@ -80,6 +89,12 @@ export interface Database {
            * it.
            */
           authored_by_coach: string | null;
+          /**
+           * Whether this routine is a base template the coach can clone into an
+           * athlete's plan. Defaults to false, so existing routines are never
+           * mistaken for templates.
+           */
+          is_template: boolean;
         };
         Insert: {
           id?: string;
@@ -101,6 +116,8 @@ export interface Database {
            * cleanup; everyone else leaves it off and the row reads as unattributed.
            */
           authored_by_coach?: string | null;
+          /** Whether this routine is a base template the coach can clone into an athlete's plan. */
+          is_template?: boolean;
         };
         Update: {
           id?: string;
@@ -111,6 +128,8 @@ export interface Database {
           is_favorite?: boolean;
           source?: "user" | "human_coach" | "ai" | null;
           authored_by_coach?: string | null;
+          /** Whether this routine is a base template the coach can clone into an athlete's plan. */
+          is_template?: boolean;
         };
         Relationships: ForeignKey[];
       };
@@ -347,6 +366,8 @@ export interface Database {
            vip_status: string | null;
            /** When the coach activated the athlete as VIP. Null until then. */
            vip_activated_at: string | null;
+           /** URL de la foto de perfil / avatar del atleta. Solo lectura desde el cliente. */
+           avatar_url: string | null;
          };
         Insert: {
           user_id: string;

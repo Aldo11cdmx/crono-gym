@@ -76,6 +76,9 @@ function draft(overrides: Partial<SessionDraft> = {}): SessionDraft {
           equipment: "barbell",
           gif_url: "",
           instructions: [],
+          name_es: null,
+          is_active: true,
+          is_hidden: false,
         },
         restSeconds: 90,
         sets: [
@@ -294,6 +297,9 @@ describe("ActiveSessionProvider set kinds", () => {
               equipment: "barbell",
               gif_url: "",
               instructions: [],
+              name_es: null,
+              is_active: true,
+              is_hidden: false,
             },
             restSeconds: 90,
             sets: [

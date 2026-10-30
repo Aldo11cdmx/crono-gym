@@ -17,11 +17,14 @@ import {
 const makeExercise = (overrides: Partial<Exercise> = {}): Exercise => ({
   id: overrides.id ?? "e-test",
   name: overrides.name ?? "Test Exercise",
+  name_es: overrides.name_es ?? null,
   body_part: overrides.body_part ?? "chest",
   target: overrides.target ?? "pectorals",
   equipment: overrides.equipment ?? "barbell",
   gif_url: "",
   instructions: [],
+  is_active: overrides.is_active ?? true,
+  is_hidden: overrides.is_hidden ?? false,
 });
 
 const makeRoutine = (
@@ -37,6 +40,7 @@ const makeRoutine = (
   is_favorite: false,
   source: "user",
   authored_by_coach: null,
+  is_template: false,
   exercises: exercises.map((e) => ({
     exercise: e.exercise,
     target_sets: e.target_sets,

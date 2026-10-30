@@ -50,11 +50,14 @@ import { DemoTab } from "@/components/hub/DemoTab";
 const EXERCISE: Exercise = {
   id: "bench",
   name: "Press de banca",
+  name_es: null,
   body_part: "chest",
   target: "pectorals",
   equipment: "barbell",
   gif_url: "",
   instructions: [],
+  is_active: true,
+  is_hidden: false,
 } as Exercise;
 
 const GYM_INVENTORY: PlateInventory = { 2.5: 2, 5: 2, 10: 2, 15: 2, 20: 2 };

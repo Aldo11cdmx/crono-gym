@@ -29,13 +29,16 @@ function exercise(over: Partial<Exercise> = {}): Exercise {
   return {
     id: "press-banca",
     name: "Press banca",
+    name_es: null,
     body_part: "chest",
     target: "pectorals",
     equipment: "barbell",
     gif_url: "https://example.test/bench.gif",
     instructions: [],
+    is_active: true,
+    is_hidden: false,
     ...over,
-  };
+  } as Exercise;
 }
 
 /**

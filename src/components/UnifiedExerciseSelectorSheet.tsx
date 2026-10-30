@@ -36,6 +36,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
 import { translateEquipment } from "@/lib/i18n";
 import { isAvailableInMyGym } from "@/data/myGymEquipment";
+import { supabase } from "@lib/supabase";
 import {
   ACCENT,
   GLASS,
@@ -143,6 +144,8 @@ export function UnifiedExerciseSelectorSheet({
   const [isAnatomicalOpen, setIsAnatomicalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [localExercises, setLocalExercises] = useState<Exercise[]>([]);
+  const [opError, setOpError] = useState<string | null>(null);
   const [previouslyFocused, setPreviouslyFocused] = useState<HTMLElement | null>(null);
   const scrollContainer = useRef<HTMLDivElement>(null);
   const focusIndexRef = useRef<number>(-1);
@@ -172,7 +175,7 @@ export function UnifiedExerciseSelectorSheet({
   const handleConfirm = useCallback(() => {
     if (mode === "single") return;
     const selected = [...selectedIds]
-      .map((id) => exercises.find((ex) => ex.id === id))
+      .map((id) => localExercises.find((ex) => ex.id === id))
       .filter((ex): ex is Exercise => ex !== undefined);
     if (selected.length === 0) return;
     void addBatch(selected.map((ex) => ex.id));
@@ -210,23 +213,32 @@ export function UnifiedExerciseSelectorSheet({
     return () => document.removeEventListener("keydown", onKey);
   }, [isOpen, mode, onClose, handleConfirm]);
 
-  // Índice de búsqueda: perezoso, una sola vez.
+  // Índice de búsqueda: perezoso, una sola vez, sobre el estado local del catálogo.
   const ensureIndex = useCallback((): Map<string, Set<string>> => {
     if (!searchIndexRef.current) {
-      searchIndexRef.current = buildSearchIndex(exercises);
+      searchIndexRef.current = buildSearchIndex(localExercises);
     }
     return searchIndexRef.current;
-  }, [exercises]);
+  }, [localExercises]);
 
-  // Catálogo base filtrado por pestaña y exclusiones.
+  // Catálogo base filtrado por pestaña y exclusiones. Los ejercicios ocultados o
+  // desactivados por el coach no aparecen al armar nuevas rutinas, pero su historial
+  // de series pasadas se conserva.
   const baseRows = useMemo(() => {
-    const rows = exercises.filter((ex) => !excluded.has(ex.id));
+    const rows = localExercises.filter((ex) => !excluded.has(ex.id) && ex.is_active && !ex.is_hidden);
     if (tab === "frequent") {
       const frequentSet = new Set(frequentIds);
       return rows.filter((ex) => frequentSet.has(ex.id));
     }
     return rows;
-  }, [exercises, tab, frequentIds, excluded]);
+  }, [localExercises, tab, frequentIds, excluded]);
+
+  // Se inicializa desde el catálogo del dispositivo y se mantiene en estado local
+  // para que renombrar / ocultar se reflejen inmediatamente sin volver a leer el catálogo.
+  useEffect(() => {
+    if (exercises.length === 0) return;
+    setLocalExercises(exercises);
+  }, [exercises]);
 
   // Filtrado: búsqueda diferida + filtros de atributo + mapa muscular.
   const filtered = useMemo(() => {
@@ -350,6 +362,47 @@ export function UnifiedExerciseSelectorSheet({
 
   const handleClearMuscles = useCallback(() => {
     setSelectedMuscles([]);
+  }, []);
+
+  const handleRenameExercise = useCallback(
+    async (id: string, name: string, name_es: string | null) => {
+      setOpError(null);
+      try {
+        const { error } = await supabase
+          .from("exercises")
+          .update({ name, name_es })
+          .eq("id", id);
+        if (error) throw error;
+        setLocalExercises((prev) =>
+          prev.map((ex) => (ex.id === id ? { ...ex, name, name_es } : ex)),
+        );
+        // El índice de búsqueda se reconstruye en la próxima búsqueda para reflejar el nuevo nombre.
+        searchIndexRef.current = null;
+        hapticSuccess();
+      } catch (err) {
+        setOpError(
+          err instanceof Error ? err.message : "No se pudo renombrar el ejercicio.",
+        );
+      }
+    },
+    [],
+  );
+
+  const handleHideExercise = useCallback(async (id: string) => {
+    setOpError(null);
+    try {
+      const { error } = await supabase
+        .from("exercises")
+        .update({ is_active: false })
+        .eq("id", id);
+      if (error) throw error;
+      setLocalExercises((prev) => prev.filter((ex) => ex.id !== id));
+      hapticSuccess();
+    } catch (err) {
+      setOpError(
+        err instanceof Error ? err.message : "No se pudo ocultar el ejercicio del catálogo.",
+      );
+    }
   }, []);
 
   const handleToggleAnatomical = useCallback(() => {
@@ -728,6 +781,19 @@ export function UnifiedExerciseSelectorSheet({
               {catalogError}
             </div>
           )}
+          {opError && (
+            <div
+              role="alert"
+              style={{
+                padding: SPACE.section,
+                textAlign: "center",
+                color: ACCENT.text,
+                marginBottom: SPACE.md,
+              }}
+            >
+              {opError}
+            </div>
+          )}
 
           {/* Listado */}
           {displayed.length > 0 && (
@@ -745,6 +811,9 @@ export function UnifiedExerciseSelectorSheet({
                     expanded={expandedId === ex.id}
                     onSelect={handleSelect}
                     onTogglePreview={handleTogglePreview}
+                    onRename={handleRenameExercise}
+                    onHide={handleHideExercise}
+                    hidden={!ex.is_active || ex.is_hidden}
                   />
                 );
               })}

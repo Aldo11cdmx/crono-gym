@@ -27,6 +27,9 @@ const EXERCISE: Exercise = {
   equipment: "body weight",
   gif_url: "",
   instructions: [],
+  name_es: null,
+  is_active: true,
+  is_hidden: false,
 };
 
 function makeItem(overrides: Partial<DraftExercise> = {}): DraftExercise {

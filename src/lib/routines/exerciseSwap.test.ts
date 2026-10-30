@@ -20,6 +20,9 @@ function makeExercise(overrides: Partial<Exercise>): Exercise {
     equipment: overrides.equipment ?? "body weight",
     gif_url: "",
     instructions: [],
+    name_es: overrides.name_es ?? null,
+    is_active: overrides.is_active ?? true,
+    is_hidden: overrides.is_hidden ?? false,
   };
 }
 

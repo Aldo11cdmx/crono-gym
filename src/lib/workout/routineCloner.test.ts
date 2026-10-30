@@ -40,6 +40,9 @@ function exercise(id: string, name: string): Exercise {
     equipment: "barbell",
     gif_url: "",
     instructions: ["Baja controlando el tempo."],
+    name_es: null,
+    is_active: true,
+    is_hidden: false,
   };
 }
 

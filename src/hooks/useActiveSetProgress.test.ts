@@ -26,6 +26,9 @@ const EXERCISE: Exercise = {
   equipment: "barbell",
   gif_url: "",
   instructions: ["stand", "squat"],
+  name_es: null,
+  is_active: true,
+  is_hidden: false,
 };
 
 function set(number: number, completed: boolean): SetEntry {

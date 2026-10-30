@@ -13,11 +13,14 @@ import type { DraftExercise } from "@/lib/routines/routineDraftModel";
 const makeExercise = (overrides: Partial<Exercise>): Exercise => ({
   id: overrides.id ?? "e-test",
   name: overrides.name ?? "Test",
+  name_es: overrides.name_es ?? null,
   body_part: overrides.body_part ?? "chest",
   target: overrides.target ?? "pectorals",
   equipment: overrides.equipment ?? "body weight",
   gif_url: "",
   instructions: [],
+  is_active: overrides.is_active ?? true,
+  is_hidden: overrides.is_hidden ?? false,
 });
 
 const SOURCE_EXERCISE = makeExercise({

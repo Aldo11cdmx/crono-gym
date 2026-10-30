@@ -50,6 +50,9 @@ function plan(target: string, target_sets: number, body_part = "cardio"): Planne
     equipment: "barbell",
     gif_url: "",
     instructions: [],
+    name_es: null,
+    is_active: true,
+    is_hidden: false,
   };
   return { exercise, target_sets, rest_seconds: 120, dayIndex: null, dayLabel: "" };
 }

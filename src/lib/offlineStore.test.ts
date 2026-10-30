@@ -148,6 +148,9 @@ const EXERCISE: Exercise = {
   equipment: "barbell",
   gif_url: "",
   instructions: [],
+  name_es: null,
+  is_active: true,
+  is_hidden: false,
 };
 
 /** A draft as the workout writes it. */

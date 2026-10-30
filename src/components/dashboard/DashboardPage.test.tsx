@@ -48,6 +48,9 @@ const mockState = vi.hoisted(() => {
           equipment: "barbell",
           gif_url: "",
           instructions: ["stand", "squat"],
+          name_es: null,
+          is_active: true,
+          is_hidden: false,
         },
         target_sets: 3,
         rest_seconds: 90,
@@ -61,6 +64,7 @@ const mockState = vi.hoisted(() => {
     created_at: "2026-01-01T00:00:00Z",
     source: "user",
     authored_by_coach: null,
+    is_template: false,
   };
 
   const session: DashboardSession = {
@@ -196,6 +200,9 @@ beforeEach(() => {
             equipment: "barbell",
             gif_url: "",
             instructions: ["stand", "squat"],
+            name_es: null,
+            is_active: true,
+            is_hidden: false,
           },
           target_sets: 3,
           rest_seconds: 90,
@@ -209,6 +216,7 @@ beforeEach(() => {
       created_at: "2026-01-01T00:00:00Z",
       source: "user",
       authored_by_coach: null,
+      is_template: false,
     },
   ];
   mockState.routinesLoading = false;

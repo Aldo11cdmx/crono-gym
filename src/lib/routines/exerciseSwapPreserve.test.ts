@@ -15,6 +15,9 @@ const SOURCE: Exercise = {
   equipment: "barbell",
   gif_url: "",
   instructions: [],
+  name_es: null,
+  is_active: true,
+  is_hidden: false,
 };
 
 const REPLACEMENT: Exercise = {
@@ -25,6 +28,9 @@ const REPLACEMENT: Exercise = {
   equipment: "barbell",
   gif_url: "",
   instructions: [],
+  name_es: null,
+  is_active: true,
+  is_hidden: false,
 };
 
 describe("exercise swap immutability", () => {

@@ -2157,8 +2157,33 @@ athleteDetailUnknown: "Sin dato",
    athleteVipStatus: "Estado VIP",
    athleteVipActivatedAt: "Activado el",
 
+   // ---- avatar del atleta ----------------------------------------------------
+   athleteDetailAvatarAlt: "Foto de perfil del atleta",
+   athleteDetailAvatarFallback: "Avatar de Cronos",
+
+   // ---- gestión de ejercicios por el coach -----------------------------------
+   exerciseMenu: "Más opciones",
+   exerciseRename: "Renombrar",
+   exerciseRenameLabel: "Nuevo nombre",
+   exerciseRenamePlaceholder: "Nombre del ejercicio",
+   exerciseSave: "Guardar",
+   exerciseCancel: "Cancelar",
+   exerciseHide: "Ocultar del catálogo",
+   exerciseHidden: "Ocultado del catálogo",
+   exerciseRenameError: "No se pudo renombrar el ejercicio.",
+   exerciseHideError: "No se pudo ocultar el ejercicio del catálogo.",
+
+   // ---- plantillas de rutina -------------------------------------------------
+   templateSectionTitle: "Asignar plantilla base",
+   templateAssign: "Asignar al atleta",
+   templateAssigned: "Plantilla asignada al plan del atleta.",
+   templateAssignError: "No se pudo asignar la plantilla.",
+   templateFullbody: "Principiante - Fullbody 3 Días",
+   templatePushPullLegs: "Push / Pull / Legs",
+   templateNoCatalog: "No hay plantillas disponibles todavía.",
+
    // ---- IA routine generation ----------------------------------------------
-  builderGenerateAiButton: "Sugerir rutina con IA",
+   builderGenerateAiButton: "Sugerir rutina con IA",
   builderGeneratingAi: "Generando rutina…",
   builderAiSaved: "Rutina generada con IA guardada en la biblioteca del atleta.",
 

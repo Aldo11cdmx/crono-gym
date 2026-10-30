@@ -1320,11 +1320,14 @@ export function ActiveWorkout({
     const loggerExercise: Exercise = {
       id: exercise.id,
       name: exercise.name,
+      name_es: exercise.name_es,
       body_part: exercise.body_part,
       target: exercise.target,
       equipment: exercise.equipment,
       gif_url: exercise.gif_url,
       instructions: [],
+      is_active: exercise.is_active,
+      is_hidden: exercise.is_hidden,
     };
     setPickerOpen(false);
     setItems((prev) => {

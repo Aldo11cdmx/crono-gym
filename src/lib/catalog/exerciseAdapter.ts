@@ -21,11 +21,14 @@ export function toExercise(row: CatalogExercise): Exercise {
   return {
     id: row.id,
     name: row.name,
+    name_es: null,
     body_part: row.body_part,
     target: row.target,
     equipment: row.equipment,
     gif_url: resolveMediaUrl(row.gif_url),
     instructions: row.instruction_steps?.es ?? [],
+    is_active: true,
+    is_hidden: false,
   };
 }
 

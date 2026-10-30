@@ -9,7 +9,7 @@
  * botón "Volver" regresa a la cola.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Banknote, CheckCircle2, Dumbbell, MessageSquare, Mic, Sparkles, User } from "lucide-react";
 
 import { ACCENT, GLASS, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
@@ -19,6 +19,12 @@ import { HumanCoachChat } from "./HumanCoachChat";
 import { supabase } from "@lib/supabase";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
 import { parseAthleteNotes, phaseLabelFor } from "@/lib/coach/athleteNotes";
+import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
+import { getCoachId } from "@/lib/coach/useCoachAuth";
+import { saveCoachRoutine } from "@/lib/routines/saveCoachRoutine";
+import type { CoachRoutineDraft } from "@/lib/routines/coachRoutineDraft";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
 
 export interface AthleteDetailViewProps {
   /** La solicitud activa (lleva el id para el chat). */
@@ -45,6 +51,7 @@ export function AthleteDetailView({
     is_vip: boolean;
     vip_status: string | null;
     vip_activated_at: string | null;
+    avatar_url: string | null;
   } | null>(null);
   const [requestNotes, setRequestNotes] = useState<string | null>(null);
   const [phase, setPhase] = useState<"deload" | "maintenance" | "overload" | null>(null);
@@ -60,6 +67,10 @@ export function AthleteDetailView({
 
   const PULL_THRESHOLD = 80;
   const SWIPE_THRESHOLD = 50;
+
+  const { find: findCatalog } = useExerciseCatalog();
+  const [assigningTemplate, setAssigningTemplate] = useState<string | null>(null);
+  const [templateMessage, setTemplateMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const mounted = useRef(true);
@@ -107,7 +118,7 @@ export function AthleteDetailView({
       // 1. Perfil del atleta (nombre y objetivo guardado en onboarding)
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("display_name, goal, weight_kg, height_cm, is_vip, vip_status, vip_activated_at")
+        .select("display_name, goal, weight_kg, height_cm, is_vip, vip_status, vip_activated_at, avatar_url")
         .eq("user_id", athleteId)
         .maybeSingle();
 
@@ -129,6 +140,7 @@ export function AthleteDetailView({
           typeof profileData?.vip_activated_at === "string"
             ? profileData.vip_activated_at
             : null,
+        avatar_url: typeof profileData?.avatar_url === "string" ? profileData.avatar_url : null,
       });
 
       // 2. Notas de la solicitud más reciente de este atleta (tiene objetivo, días, equipo)
@@ -207,6 +219,72 @@ export function AthleteDetailView({
       if (mounted.current) setVipActivating(false);
     }
   }, [athleteId, vipActivating, profile?.is_vip, load]);
+
+  const resolveTemplateDays = useCallback(
+    (template: (typeof ROUTINE_TEMPLATES)[number]) => {
+      return template.days
+        .map((day) => ({
+          label: day.label,
+          exercises: day.exercises
+            .map((e) => {
+              const found = findCatalog(e.name);
+              if (!found) return null;
+              return {
+                exerciseId: found.id,
+                exerciseName: getExerciseDisplayName(found),
+                sets: e.sets,
+                repsMin: e.repsMin,
+                repsMax: e.repsMax,
+                restSeconds: e.restSeconds,
+              };
+            })
+            .filter((ex): ex is { exerciseId: string; exerciseName: string; sets: number; repsMin: number; repsMax: number; restSeconds: number } => ex !== null),
+        }))
+        .filter((day) => day.exercises.length > 0);
+    },
+    [findCatalog],
+  );
+
+  const templatesWithDays: { template: (typeof ROUTINE_TEMPLATES)[number]; days: { label: string; exercises: { exerciseId: string; exerciseName: string; sets: number; repsMin: number; repsMax: number; restSeconds: number }[] }[] }[] = useMemo(
+    () => ROUTINE_TEMPLATES.map((template) => ({ template, days: resolveTemplateDays(template) })),
+    [resolveTemplateDays],
+  );
+
+  const handleAssignTemplate = useCallback(
+    async (templateId: string) => {
+      if (!athleteId) return;
+      const coachId = getCoachId();
+      if (!coachId) {
+        setTemplateMessage({ kind: "error", text: T.builderNeedsCoach });
+        return;
+      }
+      const entry = templatesWithDays.find((e) => e.template.id === templateId);
+      if (!entry || entry.days.length === 0) {
+        setTemplateMessage({
+          kind: "error",
+          text: "La plantilla no tiene ejercicios válidos en el catálogo.",
+        });
+        return;
+      }
+      setAssigningTemplate(templateId);
+      setTemplateMessage(null);
+      try {
+        const draft: CoachRoutineDraft = { title: entry.template.title, days: entry.days };
+        const ok = await saveCoachRoutine(athleteId, coachId, draft);
+        if (!ok) {
+          setTemplateMessage({ kind: "error", text: T.templateAssignError });
+          return;
+        }
+        hapticSuccess();
+        setTemplateMessage({ kind: "success", text: T.templateAssigned });
+      } catch {
+        setTemplateMessage({ kind: "error", text: T.templateAssignError });
+      } finally {
+        if (mounted.current) setAssigningTemplate(null);
+      }
+    },
+    [athleteId, templatesWithDays],
+  );
 
   const handlePullTouchStart = useCallback((e: React.TouchEvent) => {
     const el = contentRef.current;
@@ -320,7 +398,27 @@ export function AthleteDetailView({
               aria-label={T.athleteDetailBack}
             />
             <div className="flex items-center gap-3">
-              <User size={24} strokeWidth={1.5} style={{ color: TEXT.tertiary }} aria-hidden="true" />
+              <img
+                src={profile?.avatar_url ?? CRONOS_AVATAR_FALLBACK}
+                alt={T.athleteDetailAvatarAlt}
+                width={32}
+                height={32}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  background: "rgba(255,255,255,0.05)",
+                  border: `1px solid ${GLASS.border}`,
+                  display: "block",
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== CRONOS_AVATAR_FALLBACK) {
+                    target.src = CRONOS_AVATAR_FALLBACK;
+                  }
+                }}
+              />
               <div className="flex flex-col">
                 <p
                   style={{
@@ -550,6 +648,100 @@ export function AthleteDetailView({
           </GlassCard>
         )}
 
+        {/* Plantillas de rutina — solo en pestaña ficha */}
+        {activeTab === "ficha" && templatesWithDays.length > 0 && (
+          <GlassCard raised style={{ padding: SPACE.card }}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-2">
+                <h4
+                  style={{
+                    margin: 0,
+                    fontSize: TYPE.subhead.size,
+                    fontWeight: 600,
+                    color: TEXT.secondary,
+                  }}
+                >
+                  {T.templateSectionTitle}
+                </h4>
+              </div>
+              {templatesWithDays.map(({ template, days }) => (
+                <div key={template.id} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 12px",
+                      borderRadius: RADIUS.control,
+                      border: `1px solid ${GLASS.border}`,
+                      background: SURFACE_ROLE.well,
+                    }}
+                  >
+                    <div className="flex flex-col gap-1">
+                      <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
+                        {template.title}
+                      </p>
+                      <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                        {days.length} día{days.length > 1 ? "s" : ""} · {days.reduce((total, d) => total + d.exercises.length, 0)} ejercicio{days.reduce((total, d) => total + d.exercises.length, 0) > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <GlassButton
+                      variant="primary"
+                      disabled={assigningTemplate === template.id}
+                      onPointerDown={() => hapticLight()}
+                      onClick={() => void handleAssignTemplate(template.id)}
+                      style={{ minHeight: 44 }}
+                    >
+                      {assigningTemplate === template.id ? "Asignando…" : T.templateAssign}
+                    </GlassButton>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 1, paddingLeft: 16 }}>
+                    {days.map((day) => (
+                      <div key={day.label} style={{ marginLeft: 8 }}>
+                        <p style={{ margin: 0, fontSize: TYPE.caption.size, fontWeight: 600, color: TEXT.secondary, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                          {day.label}
+                        </p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2, marginLeft: 8 }}>
+                          {day.exercises.map((ex) => (
+                            <div key={ex.exerciseId} style={{ display: "flex", justifyContent: "space-between", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                              <span>{ex.exerciseName}</span>
+                              <span>{ex.sets}×{ex.repsMin}-{ex.repsMax} · {ex.restSeconds}s descanso</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        )}
+        {/* No hay plantillas disponibles */}
+        {activeTab === "ficha" && templatesWithDays.length === 0 && ROUTINE_TEMPLATES.length > 0 && (
+          <GlassCard raised style={{ padding: SPACE.card }}>
+            <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+              {T.templateNoCatalog}
+            </p>
+          </GlassCard>
+        )}
+
+        {templateMessage && (
+          <GlassCard raised style={{ padding: SPACE.card }}>
+            <p
+              role={templateMessage.kind === "success" ? "status" : "alert"}
+              style={{
+                margin: 0,
+                fontSize: TYPE.subhead.size,
+                color:
+                  templateMessage.kind === "success" ? STATUS.success.text : STATUS.error.text,
+              }}
+            >
+              {templateMessage.text}
+            </p>
+          </GlassCard>
+        )}
+
         {/* Notas privadas del coach — solo en pestaña ficha */}
         {activeTab === "ficha" && (
           <GlassCard raised style={{ padding: SPACE.card }}>
@@ -675,3 +867,6 @@ const statLabelStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.04em",
 } as const;
+
+/** Asset equivalente del proyecto para el avatar de mascota de Cronos. */
+const CRONOS_AVATAR_FALLBACK = "/media/symmetry/img_profile_avatar.png";

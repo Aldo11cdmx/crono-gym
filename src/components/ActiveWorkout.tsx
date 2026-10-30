@@ -538,7 +538,7 @@ function ExerciseStage({
       {/* Escenario principal: GIF del ejercicio sobre negro puro */}
       <div
         style={{
-          maxHeight: 200,
+          maxHeight: 120,
           width: "auto",
           margin: "0 auto",
           background: SURFACE.base,
@@ -2024,7 +2024,7 @@ export function ActiveWorkout({
                 alignItems: "center",
                 width: "100%",
                 marginTop: SPACE.md,
-                paddingBottom: 128,
+                paddingBottom: 176,
               }}
             >
               <ExerciseCarousel

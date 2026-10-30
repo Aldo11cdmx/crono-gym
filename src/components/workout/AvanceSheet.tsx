@@ -33,9 +33,19 @@ const MOCK_HISTORY: HistoryEntry[] = [
   { date: "Hace 1 mes", sets: [{ weight: 28, reps: 12 }] },
 ];
 
+const EXERCISE_NAME_ES: Record<string, string> = {
+  "sit-up with arms on chest": "Abdominales con brazos en el pecho",
+};
+
+function translateExerciseName(name?: string): string | undefined {
+  if (!name) return undefined;
+  const key = name.trim().toLowerCase();
+  return EXERCISE_NAME_ES[key] ?? name;
+}
+
 export function AvanceSheet({ isOpen, onClose, exerciseName, exercise, history }: AvanceSheetProps) {
   if (!isOpen) return null;
-  const name = exercise?.name_es || exercise?.name || exerciseName;
+  const name = translateExerciseName(exercise?.name_es || exercise?.name) || exerciseName;
   const data = !history || history.length === 0 ? MOCK_HISTORY : history;
   const allSets = data.flatMap((h) => h.sets.map((s) => ({ weight: s.weight, reps: s.reps })));
   const best1RM = !history || history.length === 0 ? 48 : getBest1RM(allSets);

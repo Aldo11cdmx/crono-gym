@@ -26,10 +26,20 @@ const STEPS = [
   { n: 3, title: "Tip de seguridad", body: "No bloquees articulaciones; detente si hay dolor." },
 ];
 
+const EXERCISE_NAME_ES: Record<string, string> = {
+  "sit-up with arms on chest": "Abdominales con brazos en el pecho",
+};
+
+function translateExerciseName(name?: string): string | undefined {
+  if (!name) return undefined;
+  const key = name.trim().toLowerCase();
+  return EXERCISE_NAME_ES[key] ?? name;
+}
+
 export function DemoSheet({ isOpen, onClose, exerciseName, exercise, primaryMuscle, secondaryMuscles = [] }: DemoSheetProps) {
   if (!isOpen) return null;
-  const name = exercise?.name_es || exercise?.name || exerciseName;
-  const gif = exercise?.gif_url || exercise?.gifUrl;
+  const name = translateExerciseName(exercise?.name_es || exercise?.name) || exerciseName;
+  const gifSource = exercise?.gifUrl || exercise?.gif_url || (exercise as any)?.gif || (exercise as any)?.mediaUrl || (exercise as any)?.videoUrl;
   const translateMuscle = (m: string) => (m === "abs" ? "Abdominales" : m);
   return (
     <div
@@ -48,14 +58,14 @@ export function DemoSheet({ isOpen, onClose, exerciseName, exercise, primaryMusc
           </button>
         </div>
         <div style={{ borderRadius: RADIUS.card, background: SURFACE.sunken, border: `1px solid ${GLASS.border}`, padding: SPACE.md, minHeight: "160px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-          {gif ? (
-            <img 
-         src={gif} 
-         alt={name} 
+{gifSource ? (
+       <img 
+         src={gifSource} 
+         alt={exercise?.name_es || exercise?.name || 'Demostración de ejercicio'} 
          className="h-36 w-full object-contain mx-auto" 
          style={{ filter: 'invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)' }}
        />
-          ) : (
+     ) : (
             <div className="text-xs text-neutral-500">Sin animación disponible</div>
           )}
         </div>

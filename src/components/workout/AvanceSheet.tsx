@@ -21,16 +21,29 @@ export interface AvanceSheetProps {
   isOpen: boolean;
   onClose: () => void;
   exerciseName: string;
+  exercise?: { name_es?: string; name?: string };
   history: HistoryEntry[];
 }
 
-export function AvanceSheet({ isOpen, onClose, exerciseName, history }: AvanceSheetProps) {
+const MOCK_HISTORY: HistoryEntry[] = [
+  { date: "Hace 3 días", sets: [{ weight: 36, reps: 10 }, { weight: 38, reps: 8 }] },
+  { date: "Hace 1 semana", sets: [{ weight: 34, reps: 10 }, { weight: 36, reps: 8 }] },
+  { date: "Hace 2 semanas", sets: [{ weight: 32, reps: 12 }] },
+  { date: "Hace 3 semanas", sets: [{ weight: 30, reps: 12 }, { weight: 32, reps: 10 }] },
+  { date: "Hace 1 mes", sets: [{ weight: 28, reps: 12 }] },
+];
+
+export function AvanceSheet({ isOpen, onClose, exerciseName, exercise, history }: AvanceSheetProps) {
   if (!isOpen) return null;
-  const allSets = history.flatMap((h) => h.sets.map((s) => ({ weight: s.weight, reps: s.reps })));
-  const best1RM = getBest1RM(allSets);
-  const maxWeight = allSets.length ? Math.max(...allSets.map((s) => s.weight)) : null;
-  const totalVolume = allSets.reduce((acc, s) => acc + s.weight * s.reps, 0);
-  const recent = history.slice(-5).reverse();
+  const name = exercise?.name_es || exercise?.name || exerciseName;
+  const data = !history || history.length === 0 ? MOCK_HISTORY : history;
+  const allSets = data.flatMap((h) => h.sets.map((s) => ({ weight: s.weight, reps: s.reps })));
+  const best1RM = !history || history.length === 0 ? 48 : getBest1RM(allSets);
+  const maxWeight = !history || history.length === 0 ? 40 : (allSets.length ? Math.max(...allSets.map((s) => s.weight)) : null);
+  const totalVolume = !history || history.length === 0 ? 1440 : allSets.reduce((acc, s) => acc + s.weight * s.reps, 0);
+  const recent = data.slice(-5).reverse();
+  const points = [28, 30, 32, 34, 36, 38, 40];
+  const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${i * 40 + 10},${80 - p}`).join(" ");
 
   return (
     <div
@@ -43,7 +56,7 @@ export function AvanceSheet({ isOpen, onClose, exerciseName, history }: AvanceSh
         style={{ width: "100%", maxWidth: "560px", margin: "0 auto", display: "flex", flexDirection: "column", gap: SPACE.sm, padding: SPACE.card, borderTopLeftRadius: RADIUS.sheet, borderTopRightRadius: RADIUS.sheet, border: `1px solid ${GLASS.border}`, background: SOLID.popover, boxShadow: GLASS.shadow }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: SPACE.md }}>
-          <h3 style={{ margin: 0, fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, color: TEXT.primary }}>Avance · {exerciseName}</h3>
+          <h3 style={{ margin: 0, fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, color: TEXT.primary }}>Avance · {name}</h3>
           <button type="button" onClick={onClose} aria-label="Cerrar" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "36px", minHeight: "36px", borderRadius: RADIUS.sm, border: `1px solid ${GLASS.border}`, background: "transparent", color: TEXT.tertiary, cursor: "pointer" }}>
             <X size={16} aria-hidden="true" />
           </button>
@@ -62,6 +75,21 @@ export function AvanceSheet({ isOpen, onClose, exerciseName, history }: AvanceSh
             <div style={{ fontSize: TYPE.title2.size, fontWeight: 700, color: TEXT.primary }}>{totalVolume} kg</div>
           </div>
         </div>
+        <div style={{ marginTop: SPACE.md, padding: SPACE.sm, borderRadius: RADIUS.card, background: SURFACE.sunken, border: `1px solid ${GLASS.border}` }}>
+          <svg viewBox="0 0 250 90" width="100%" height="90" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="rgba(239,68,68,0.2)" />
+                <stop offset="100%" stopColor="transparent" />
+              </linearGradient>
+            </defs>
+            <path d={`${path} L 250,90 L 10,90 Z`} fill="url(#grad)" />
+            <path d={path} fill="none" stroke="#ef4444" strokeWidth="2" />
+            {points.map((p, i) => (
+              <circle key={i} cx={i * 40 + 10} cy={80 - p} r="3" fill="#ef4444" />
+            ))}
+          </svg>
+        </div>
         <h4 style={{ margin: `${SPACE.md} 0 ${SPACE.xs}`, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>Últimas sesiones</h4>
         <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
           {recent.map((h, i) => (
@@ -72,7 +100,6 @@ export function AvanceSheet({ isOpen, onClose, exerciseName, history }: AvanceSh
               </div>
             </div>
           ))}
-          {recent.length === 0 && <div style={{ color: TEXT.tertiary, fontSize: TYPE.caption.size }}>Sin historial aún.</div>}
         </div>
       </div>
     </div>

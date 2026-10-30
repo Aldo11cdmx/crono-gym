@@ -24,7 +24,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Activity, Search, Sparkles, X } from "lucide-react";
+import { Activity, ChevronDown, Search, Sparkles, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { Slug } from "react-muscle-highlighter";
 import type { Exercise } from "@/types/supabase";
@@ -34,9 +34,8 @@ import { useFrequentExercises } from "@/hooks/useFrequentExercises";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
-import { translateEquipment, translateMuscle } from "@/lib/i18n";
+import { translateEquipment } from "@/lib/i18n";
 import { isAvailableInMyGym } from "@/data/myGymEquipment";
-import { muscleMatchLevel } from "@/lib/muscleMap";
 import {
   ACCENT,
   GLASS,
@@ -51,11 +50,19 @@ import {
 } from "@/design/tokens";
 import { ExerciseRow } from "./exercise-selector/ExerciseRow";
 import { FilterChips } from "./exercise-selector/FilterChips";
+import { MuscleSelector } from "./MuscleSelector";
 import { SelectionBar } from "./exercise-selector/SelectionBar";
+import {
+  filterByMuscles,
+  muscleCounts,
+  selectionLabels,
+} from "@/lib/muscleFilter";
+import { enabledSlugs as getEnabledSlugs } from "@/lib/muscleMap";
 
 const PAGE_SIZE = 12;
 const DEBOUNCE_MS = 150;
 const MOBILE_MAX_WIDTH = 767; // por debajo de md (768px)
+const ENABLED_MUSCLE_SLUGS = getEnabledSlugs();
 
 export type UnifiedExerciseSelectorSheetMode = "single" | "multiple";
 
@@ -111,7 +118,6 @@ export function UnifiedExerciseSelectorSheet({
   mode,
   onSelectSingle,
   onSelectMultiple,
-  initialMuscle,
   title = "Seleccionar ejercicio",
 }: UnifiedExerciseSelectorSheetProps) {
   const excluded = useMemo(
@@ -131,11 +137,10 @@ export function UnifiedExerciseSelectorSheet({
   const debouncedQuery = useDebouncedValue(query, DEBOUNCE_MS);
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState<Tab>("all");
-  const [muscleFilter, setMuscleFilter] = useState<Slug | null>(
-    initialMuscle ?? null,
-  );
-  const [equipmentFilter, setEquipmentFilter] = useState<string | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   const [onlyMyGym, setOnlyMyGym] = useState(false);
+  const [selectedMuscles, setSelectedMuscles] = useState<Slug[]>([]);
+  const [isAnatomicalOpen, setIsAnatomicalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [previouslyFocused, setPreviouslyFocused] = useState<HTMLElement | null>(null);
@@ -223,10 +228,10 @@ export function UnifiedExerciseSelectorSheet({
     return rows;
   }, [exercises, tab, frequentIds, excluded]);
 
-  // Filtrado: búsqueda diferida + filtros de atributo.
+  // Filtrado: búsqueda diferida + filtros de atributo + mapa muscular.
   const filtered = useMemo(() => {
     const q = normaliseExerciseName(debouncedQuery);
-    if (!q && !muscleFilter && !equipmentFilter && !onlyMyGym) {
+    if (!q && !selectedEquipment && !onlyMyGym && selectedMuscles.length === 0) {
       // Búsqueda vacía y sin filtros: no se filtra nada, slice directo.
       return baseRows;
     }
@@ -250,15 +255,15 @@ export function UnifiedExerciseSelectorSheet({
         ids = next;
       }
     }
-    const wantMuscle = muscleFilter ? muscleMatchPredicate(muscleFilter) : null;
-    return baseRows.filter((ex) => {
+    const attributeFiltered = baseRows.filter((ex) => {
       if (ids && !ids.has(ex.id)) return false;
-      if (wantMuscle && !muscleMatches(ex, wantMuscle)) return false;
-      if (equipmentFilter && normaliseExerciseName(ex.equipment) !== normaliseExerciseName(equipmentFilter)) return false;
+      if (selectedEquipment && normaliseExerciseName(ex.equipment) !== normaliseExerciseName(selectedEquipment)) return false;
       if (onlyMyGym && !isAvailableInMyGym(ex.equipment)) return false;
       return true;
     });
-  }, [baseRows, debouncedQuery, muscleFilter, equipmentFilter, onlyMyGym, ensureIndex]);
+    if (selectedMuscles.length === 0) return attributeFiltered;
+    return filterByMuscles(attributeFiltered, selectedMuscles).results;
+  }, [baseRows, debouncedQuery, selectedEquipment, onlyMyGym, selectedMuscles, ensureIndex]);
 
   // Paginación: 12 por página, nunca se montan todos los nodos.
   const visibleCount = page * PAGE_SIZE;
@@ -292,7 +297,7 @@ export function UnifiedExerciseSelectorSheet({
     const container = scrollContainer.current;
     if (container) container.scrollTop = 0;
     focusIndexRef.current = -1;
-  }, [query, tab, muscleFilter, equipmentFilter, onlyMyGym]);
+  }, [query, tab, selectedEquipment, onlyMyGym, selectedMuscles]);
 
   const isSelected = (id: string) => selectedIds.has(id);
   const orderOf = (id: string): number | null => {
@@ -332,17 +337,37 @@ export function UnifiedExerciseSelectorSheet({
   const handleClear = useCallback(() => {
     setQuery("");
     setTab("all");
-    setMuscleFilter(null);
-    setEquipmentFilter(null);
+    setSelectedEquipment(null);
     setOnlyMyGym(false);
+    setSelectedMuscles([]);
     setPage(1);
   }, []);
 
+  const handleMuscleSelectorChange = useCallback(
+    (next: Slug[]) => setSelectedMuscles(next),
+    [],
+  );
+
+  const handleClearMuscles = useCallback(() => {
+    setSelectedMuscles([]);
+  }, []);
+
+  const handleToggleAnatomical = useCallback(() => {
+    setIsAnatomicalOpen((prev) => !prev);
+  }, []);
+
   const activeFilterCount =
-    (muscleFilter ? 1 : 0) +
-    (equipmentFilter ? 1 : 0) +
+    (selectedEquipment ? 1 : 0) +
     (onlyMyGym ? 1 : 0) +
-    (query.length > 0 ? 1 : 0);
+    (query.length > 0 ? 1 : 0) +
+    (selectedMuscles.length > 0 ? 1 : 0);
+
+  const muscleCountsBySlug = useMemo(
+    () => muscleCounts(baseRows, ENABLED_MUSCLE_SLUGS),
+    [baseRows],
+  );
+
+  const muscleSelectionLabels = selectionLabels(selectedMuscles);
 
   const scrollStyle: CSSProperties = {
     overflowY: "auto",
@@ -444,49 +469,7 @@ export function UnifiedExerciseSelectorSheet({
             >
               <X size={18} aria-hidden="true" />
             </button>
-            {!isMobile && (
-              <button
-                type="button"
-                onClick={() => {
-                  setMuscleFilter(null);
-                  setExpandedId(null);
-                }}
-                aria-label="Mapa anatómico"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minWidth: MOTION.minTouchTarget,
-                  minHeight: MOTION.minTouchTarget,
-                  borderRadius: RADIUS.control,
-                  border: `1px solid ${GLASS.border}`,
-                  background: "transparent",
-                  color: TEXT.secondary,
-                  cursor: "pointer",
-                  padding: `0 ${SPACE.sm}`,
-                }}
-              >
-                <span style={{ position: "relative" }}>
-                  <Activity size={16} aria-hidden="true" />
-                  {muscleFilter && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        right: 0,
-                        width: 10,
-                        height: 10,
-                        borderRadius: RADIUS.round,
-                        background: ACCENT.base,
-                        border: `2px solid ${SOLID.popover}`,
-                      }}
-                      aria-hidden="true"
-                    />
-                  )}
-                </span>
-              </button>
-            )}
-          </div>
+</div>
         </div>
 
         {/* Contenido: buscador + chips + listado */}
@@ -567,12 +550,87 @@ export function UnifiedExerciseSelectorSheet({
             )}
           </div>
 
+          {/* Acordeón de mapa muscular (colapsado por defecto) */}
+          <div style={{ marginBottom: SPACE.md }}>
+            <button
+              type="button"
+              onClick={handleToggleAnatomical}
+              aria-expanded={isAnatomicalOpen}
+              aria-controls="anatomical-accordion"
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: SPACE.sm,
+                minHeight: MOTION.minTouchTarget,
+                padding: `0 ${SPACE.sm}`,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${GLASS.border}`,
+                background: isAnatomicalOpen ? ACCENT.subtle : "transparent",
+                color: isAnatomicalOpen ? TEXT.primary : TEXT.secondary,
+                fontSize: TYPE.subhead.size,
+                fontWeight: TYPE.subhead.weight,
+                cursor: "pointer",
+                transition: `background ${MOTION.fast} ${MOTION.easeOut}, color ${MOTION.fast} ${MOTION.easeOut}`,
+              }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
+                <Activity size={16} aria-hidden="true" />
+                Filtrar por mapa muscular
+                {selectedMuscles.length > 0 && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 18,
+                      height: 18,
+                      padding: `0 ${SPACE.xs}`,
+                      borderRadius: RADIUS.round,
+                      background: ACCENT.base,
+                      color: TEXT.onAccent,
+                      fontSize: TYPE.caption.size,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {selectedMuscles.length}
+                  </span>
+                )}
+              </span>
+              <ChevronDown
+                size={16}
+                aria-hidden="true"
+                style={{
+                  transition: `transform ${MOTION.fast} ${MOTION.easeOut}`,
+                  transform: isAnatomicalOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              />
+            </button>
+
+            {isAnatomicalOpen && (
+              <div
+                id="anatomical-accordion"
+                style={{
+                  marginTop: SPACE.sm,
+                  maxHeight: isMobile ? "50dvh" : "none",
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                }}
+              >
+                <MuscleSelector
+                  selected={selectedMuscles}
+                  onChange={handleMuscleSelectorChange}
+                  counts={muscleCountsBySlug}
+                  legendLabel="Músculos del catálogo"
+                  className=""
+                />
+              </div>
+            )}
+          </div>
+
           {/* Chips: músculo y equipamiento */}
           <div style={{ display: "flex", gap: SPACE.md, marginBottom: SPACE.md, flexWrap: "wrap" }}>
-            <FilterChips
-              groupLabel="Músculo"
-              chips={muscleChips()}
-            />
             <FilterChips
               groupLabel="Equipamiento"
               chips={equipmentChips()}
@@ -635,12 +693,12 @@ export function UnifiedExerciseSelectorSheet({
               >
                 Activos
               </p>
-              <div style={{ display: "flex", gap: SPACE.xs, flexWrap: "wrap" }}>
-                {muscleFilter && removableChip({ label: translateMuscle(muscleFilter), onRemove: () => setMuscleFilter(null) })}
-                {equipmentFilter && removableChip({ label: translateEquipment(equipmentFilter), onRemove: () => setEquipmentFilter(null) })}
-                {onlyMyGym && removableChip({ label: "Mi Gym", onRemove: () => setOnlyMyGym(false) })}
-                {query && removableChip({ label: `"${query}"`, onRemove: () => setQuery("") })}
-              </div>
+<div style={{ display: "flex", gap: SPACE.xs, flexWrap: "wrap" }}>
+                  {selectedEquipment && removableChip({ label: translateEquipment(selectedEquipment), onRemove: () => setSelectedEquipment(null) })}
+                  {onlyMyGym && removableChip({ label: "Mi Gym", onRemove: () => setOnlyMyGym(false) })}
+                  {query && removableChip({ label: `"${query}"`, onRemove: () => setQuery("") })}
+                  {selectedMuscles.length > 0 && removableChip({ label: muscleSelectionLabels, onRemove: handleClearMuscles })}
+                </div>
               <button
                 type="button"
                 onClick={handleClear}
@@ -776,28 +834,6 @@ export function UnifiedExerciseSelectorSheet({
 
   // ----------------------------------------------------------------- helpers
 
-  function muscleChips() {
-    // Los chips de músculo se derivan de las filas visibles (no valores crudos del dataset);
-    // cada músculo aparece una vez, traducido.
-    const seen = new Set<string>();
-    const chips: { key: string; label: string; active: boolean; onToggle: (k: string) => void }[] = [];
-    for (const ex of baseRows) {
-      const slug = normaliseExerciseName(ex.body_part);
-      if (!slug || seen.has(slug)) continue;
-      seen.add(slug);
-      chips.push({
-        key: slug,
-        label: translateMuscle(ex.body_part),
-        active: muscleFilter === slug,
-        onToggle: (k) => {
-          setMuscleFilter(k === slug ? null : (k as Slug));
-          setPage(1);
-        },
-      });
-    }
-    return chips;
-  }
-
   function equipmentChips() {
     // Equipamiento una sola vez, sin duplicados, del mapa de equipamiento (no del dataset crudo).
     const seen = new Set<string>();
@@ -809,9 +845,9 @@ export function UnifiedExerciseSelectorSheet({
       chips.push({
         key,
         label: translateEquipment(ex.equipment),
-        active: equipmentFilter === key,
+        active: selectedEquipment === key,
         onToggle: (k) => {
-          setEquipmentFilter(k === key ? null : k);
+          setSelectedEquipment(k === key ? null : k);
           setPage(1);
         },
       });
@@ -843,14 +879,6 @@ export function UnifiedExerciseSelectorSheet({
         <X size={12} aria-hidden="true" />
       </button>
     );
-  }
-
-  function muscleMatchPredicate(slug: Slug) {
-    return (ex: Exercise): boolean => muscleMatchLevel(ex, slug) === "primary";
-  }
-
-  function muscleMatches(ex: Exercise, predicate: (ex: Exercise) => boolean): boolean {
-    return predicate(ex);
   }
 
   function calcPaddingLeft(): string {

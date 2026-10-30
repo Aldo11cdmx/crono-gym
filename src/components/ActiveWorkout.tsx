@@ -45,6 +45,10 @@ import {
 import type { PlannedExercise } from "../hooks/useGymData";
 import { ExerciseCarousel } from "./ExerciseCarousel";
 import { UnifiedExerciseSelectorSheet } from "./UnifiedExerciseSelectorSheet";
+import { DemoSheet } from "./workout/DemoSheet";
+import { AvanceSheet } from "./workout/AvanceSheet";
+import { AjustarSheet } from "./workout/AjustarSheet";
+import { CambiarSheet } from "./workout/CambiarSheet";
 import type { Exercise } from "@/types/supabase";
 import {
   EMPTY_PERFORMANCE,
@@ -2188,50 +2192,50 @@ onDemo={() => setIsDemoOpen(true)}
       )}
 
       {isDemoOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setIsDemoOpen(false)}
-          style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}
-        >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
-            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
-            <h3 style={{ color: TEXT.primary, margin: 0 }}>Demo</h3>
-            <p style={{ color: TEXT.secondary }}>Técnica y biomecánica</p>
-          </div>
-        </div>
+        <DemoSheet
+          isOpen={isDemoOpen}
+          onClose={() => setIsDemoOpen(false)}
+          exerciseName={selected?.exercise.name ?? ""}
+          primaryMuscle={selected?.exercise.target ?? ""}
+          secondaryMuscles={[]}
+        />
       )}
       {isAvanceOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setIsAvanceOpen(false)}
-          style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}
-        >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
-            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
-            <h3 style={{ color: TEXT.primary, margin: 0 }}>Avance</h3>
-            <p style={{ color: TEXT.secondary }}>Progreso de 1RM e historial</p>
-          </div>
-        </div>
+        <AvanceSheet
+          isOpen={isAvanceOpen}
+          onClose={() => setIsAvanceOpen(false)}
+          exerciseName={selected?.exercise.name ?? ""}
+          history={[]}
+        />
       )}
 {isCambiarOpen && (
-        <div role="dialog" aria-modal="true" onClick={() => setIsCambiarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
-            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
-            <h3 style={{ color: TEXT.primary, margin: 0 }}>Cambiar</h3>
-            <p style={{ color: TEXT.secondary }}>Reemplazo biomecánico</p>
-          </div>
-        </div>
+        <CambiarSheet
+          isOpen={isCambiarOpen}
+          onClose={() => setIsCambiarOpen(false)}
+          currentExercise={(selected?.exercise as any) ?? { id: "", name: "" }}
+          availableEquipment={availableEquipmentList}
+          exerciseCatalog={catalog}
+          onReplace={(ex) => {
+            if (selected) {
+              setItems((prev) =>
+                prev.map((it) =>
+                  it.key === selected.key ? { ...it, exercise: ex as any } : it,
+                ),
+              );
+            }
+            setIsCambiarOpen(false);
+          }}
+        />
       )}
       {isAjustarOpen && (
-        <div role="dialog" aria-modal="true" onClick={() => setIsAjustarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: "flex-end", justifyContent: "center", background: SCRIM.modal }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", paddingBottom: 40, borderRadius: "32px 32px 0 0", background: SURFACE.base, padding: SPACE.lg }}>
-            <div style={{ width: 48, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 999, margin: "0 auto 12px" }} />
-            <h3 style={{ color: TEXT.primary, margin: 0 }}>Ajustar</h3>
-            <p style={{ color: TEXT.secondary }}>Configuración de máquina</p>
-          </div>
-        </div>
+        <AjustarSheet
+          isOpen={isAjustarOpen}
+          onClose={() => setIsAjustarOpen(false)}
+          equipmentName={equipmentForSelected?.name ?? "Sin equipo"}
+          equipmentImage={equipmentForSelected?.views?.[0]?.src}
+          notes=""
+          onNotesChange={() => {}}
+        />
       )}
       {pickerOpen && (
         <UnifiedExerciseSelectorSheet

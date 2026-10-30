@@ -82,6 +82,8 @@ import { SupersetBadge } from "./workout/SupersetBadge";
 import { WorkoutPreStartView } from "./workout/WorkoutPreStartView";
 import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
+import { findExerciseReplacements } from "@/lib/engines/exerciseReplacementEngine";
+import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
 import { resolveMedia, resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
@@ -1145,7 +1147,6 @@ function EquipmentInspectionSheet({
                 fontFamily: TYPE.mono.font,
                 resize: "vertical",
               }}
-              placeholder="Notas sobre esta máquina…"
             />
           </div>
         </div>
@@ -1172,6 +1173,12 @@ export function ActiveWorkout({
   onFinished,
 }: ActiveWorkoutProps) {
   const [logId] = useState(() => newSessionId());
+  const { exercises: catalogExercises } = useExerciseCatalog() as any;
+  const catalog = useMemo(() => catalogExercises || [], [catalogExercises]);
+  const availableEquipmentList = useMemo(
+    () => ["mancuernas", "polea", "barra", "maquina", "bandas", "cable"],
+    [],
+  );
 
   const {
     session,
@@ -2047,7 +2054,15 @@ export function ActiveWorkout({
                 equipment={equipmentForSelected}
                  onDemo={() => {}}
                  onAdvance={() => {}}
-                 onChangeExercise={() => { setPickerMode("replace"); setPickerOpen(true); }}
+                 onChangeExercise={() => {
+                  setPickerMode("replace");
+                  setPickerOpen(true);
+                  findExerciseReplacements({
+                    currentExercise: selected.exercise as any,
+                    availableEquipment: availableEquipmentList,
+                    exerciseCatalog: catalog || [],
+                  });
+                }}
                  onAdjustEquipment={() => {
                   setSelectedEquipment(
                     equipmentSuggestion.primary ?? {
@@ -2101,28 +2116,28 @@ export function ActiveWorkout({
                     <div style={{ width: "32px" }}></div>
                   </div>
 
-                  {selected.sets.map((entry, index) => (
-                    <SetTrackerTable
-                      key={index}
-                      index={index}
-                      entry={entry}
-                      previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
-                      previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
-                      formatWeight={displayKg}
-                      overloadTarget={overload[selected.key] ?? null}
-                      previousLabel={
-                        performance[selected.exercise.id]?.bestSet?.weight != null &&
-                        performance[selected.exercise.id]?.bestSet?.reps != null
-                          ? `Repetir la última vez: ${displayKg(
-                              performance[selected.exercise.id]?.bestSet?.weight ?? 0,
-                            )} kilos por ${performance[selected.exercise.id]?.bestSet?.reps ?? 0} repeticiones`
-                          : undefined
-                      }
-                      onChange={(i, e) => updateSet(selected.key, i, e)}
-                      onRemove={(i) => removeSet(selected.key, i)}
-                      onDuplicate={(i) => duplicateSet(selected.key, i)}
-                    />
-                  ))}
+            {selected.sets.map((entry, index) => (
+              <SetTrackerTable
+                key={index}
+                index={index}
+                entry={entry}
+                previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
+                previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
+                formatWeight={displayKg}
+                overloadTarget={overload[selected.key] ?? null}
+                previousLabel={
+                  performance[selected.exercise.id]?.bestSet?.weight != null &&
+                  performance[selected.exercise.id]?.bestSet?.reps != null
+                    ? `Repetir la última vez: ${displayKg(
+                        performance[selected.exercise.id]?.bestSet?.weight ?? 0,
+                      )} kilos por ${performance[selected.exercise.id]?.bestSet?.reps ?? 0} repeticiones`
+                    : undefined
+                }
+                onChange={(i, e) => updateSet(selected.key, i, e)}
+                onRemove={(i) => removeSet(selected.key, i)}
+                onDuplicate={(i) => duplicateSet(selected.key, i)}
+              />
+            ))}
 
                   <div style={{ display: "flex", justifyContent: "center", marginTop: "12px" }}>
                     <GlassButton

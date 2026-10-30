@@ -467,7 +467,12 @@ function SetTrackerTable({
       <button
         type="button"
         aria-label={`Marcar serie ${setNumber} completada`}
-        onClick={() => onChange(index, { ...entry, completed: !entry.completed })}
+        onClick={() => {
+            if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+              navigator.vibrate([40, 60, 80]);
+            }
+            onChange(index, { ...entry, completed: !entry.completed });
+          }}
         style={{
           display: "flex",
           alignItems: "center",
@@ -1551,6 +1556,9 @@ export function ActiveWorkout({
   function updateSet(itemKey: string, setIndex: number, entry: SetEntry) {
     patchEntry(itemKey, setIndex, () => entry);
     if (!entry.completed) return;
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate([40, 60, 80]);
+    }
     const restSeconds = loadRestSeconds(
       itemKey,
       items.find((i) => i.key === itemKey)?.restSeconds ?? DEFAULT_REST,
@@ -2016,7 +2024,7 @@ export function ActiveWorkout({
                 alignItems: "center",
                 width: "100%",
                 marginTop: SPACE.md,
-                paddingBottom: SPACE.sm,
+                paddingBottom: 128,
               }}
             >
               <ExerciseCarousel

@@ -1,4 +1,4 @@
--- Invitaciones de rol: se otorgan solo cuando el email está verificado y el proveedor es Google.
+-- Invitaciones de rol: se otorgan solo con email verificado y Google vinculado.
 
 create table if not exists public.role_invites (
   email text not null check (email = lower(email)),
@@ -47,25 +47,25 @@ $$;
 revoke execute on function public.apply_role_invites() from public, anon, authenticated;
 
 drop trigger if exists on_auth_user_created_apply_roles on auth.users;
-create trigger on_auth_user_created_apply_roles
-  after insert on auth.users
-  for each row
-  when (new.email_confirmed_at is not null and new.raw_app_meta_data->>'provider' = 'google')
-  execute function public.apply_role_invites();
-
 drop trigger if exists on_auth_user_confirmed_apply_roles on auth.users;
-create trigger on_auth_user_confirmed_apply_roles
-  after update of email_confirmed_at on auth.users
+drop trigger if exists on_auth_user_apply_roles on auth.users;
+
+create trigger on_auth_user_apply_roles
+  after insert or update of email_confirmed_at, raw_app_meta_data on auth.users
   for each row
-  when (old.email_confirmed_at is null and new.email_confirmed_at is not null and new.raw_app_meta_data->>'provider' = 'google')
+  when (
+    new.email_confirmed_at is not null
+    and new.raw_app_meta_data->'providers' @> '["google"]'::jsonb
+  )
   execute function public.apply_role_invites();
 
 insert into public.user_roles (user_id, role)
 select u.id, ri.role
 from public.role_invites ri
 join auth.users u on lower(u.email) = ri.email
-where u.email_confirmed_at is not null and ri.consumed_at is null
-  and u.raw_app_meta_data->>'provider' = 'google'
+where u.email_confirmed_at is not null
+  and ri.consumed_at is null
+  and u.raw_app_meta_data->'providers' @> '["google"]'::jsonb
 on conflict (user_id, role) do nothing;
 
 update public.role_invites ri
@@ -73,6 +73,7 @@ set consumed_at = now()
 where ri.consumed_at is null
   and exists (
     select 1 from auth.users u
-    where lower(u.email) = ri.email and u.email_confirmed_at is not null
-      and u.raw_app_meta_data->>'provider' = 'google'
+    where lower(u.email) = ri.email
+      and u.email_confirmed_at is not null
+      and u.raw_app_meta_data->'providers' @> '["google"]'::jsonb
   );

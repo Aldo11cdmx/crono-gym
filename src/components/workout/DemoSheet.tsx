@@ -49,9 +49,14 @@ export function DemoSheet({ isOpen, onClose, exerciseName, exercise, primaryMusc
         </div>
         <div style={{ borderRadius: RADIUS.card, background: SURFACE.sunken, border: `1px solid ${GLASS.border}`, padding: SPACE.md, minHeight: "160px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
           {gif ? (
-            <img src={gif} alt={name} className="h-full w-full object-contain mx-auto" style={{ filter: "invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)" }} />
+            <img 
+         src={gif} 
+         alt={name} 
+         className="h-36 w-full object-contain mx-auto" 
+         style={{ filter: 'invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)' }}
+       />
           ) : (
-            <span style={{ color: TEXT.tertiary, fontSize: TYPE.caption.size }}>Animación del ejercicio</span>
+            <div className="text-xs text-neutral-500">Sin animación disponible</div>
           )}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: SPACE.xs, marginTop: SPACE.sm }}>

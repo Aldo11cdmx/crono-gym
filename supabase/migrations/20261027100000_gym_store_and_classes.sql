@@ -1,8 +1,9 @@
 -- Gym Store
-do  begin
-  create type public.product_category as enum ('supplements','accessories','clothing','other');
-exception when duplicate_object then null;
-end ;
+DO $$
+BEGIN
+    CREATE TYPE public.product_category AS ENUM ('supplements','accessories','clothing','other');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
@@ -30,10 +31,11 @@ create policy products_admin_all on public.products
 
 
 -- Purchase tickets
-do  begin
-  create type public.purchase_ticket_status as enum ('pending','paid','delivered','cancelled');
-exception when duplicate_object then null;
-end ;
+DO $$
+BEGIN
+    CREATE TYPE public.purchase_ticket_status AS ENUM ('pending','paid','delivered','cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 create table if not exists public.purchase_tickets (
   id uuid primary key default gen_random_uuid(),

@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
@@ -125,7 +125,7 @@ export function AthletePhaseSelector({ athleteId }: AthletePhaseSelectorProps) {
 
   if (!loaded) {
     return (
-      <GlassCard style={{ padding: 20 }}>
+      <GlassCard style={{ padding: SPACE.card, borderRadius: RADIUS.card }}>
         <Skeleton style={{ width: 200, height: 32 }} />
       </GlassCard>
     );
@@ -161,7 +161,7 @@ export function AthletePhaseSelector({ athleteId }: AthletePhaseSelectorProps) {
           </div>
 
           {error && (
-            <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+            <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
               {error}
             </p>
           )}

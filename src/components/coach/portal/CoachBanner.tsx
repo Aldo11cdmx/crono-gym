@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSquare, User } from "lucide-react";
 
-import { GLASS, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { GLASS, MOTION, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { supabase } from "@lib/supabase";
@@ -145,7 +145,7 @@ export function CoachBanner({ coachId, onRequestRoutine, onExerciseHelp }: Coach
             variant="primary"
             icon={<User size={14} />}
             onClick={() => void onRequestRoutine()}
-            style={{ minHeight: 40 }}
+            style={{ minHeight: MOTION.minTouchTarget }}
           >
             {T.coachBannerRequestRoutine}
           </GlassButton>
@@ -154,7 +154,7 @@ export function CoachBanner({ coachId, onRequestRoutine, onExerciseHelp }: Coach
               variant="ghost"
               icon={<MessageSquare size={14} />}
               onClick={() => void onExerciseHelp()}
-              style={{ minHeight: 40 }}
+              style={{ minHeight: MOTION.minTouchTarget }}
             >
               {T.coachBannerExerciseHelp}
             </GlassButton>

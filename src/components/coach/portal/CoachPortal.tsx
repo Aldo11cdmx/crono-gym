@@ -35,8 +35,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Lock, FileText } from "lucide-react";
 
-import { ACCENT, GLASS, MOTION, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, GLASS, MOTION, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { supabase } from "@lib/supabase";
 import { CoachPinGate } from "@/lib/coach/CoachAccessGate";
@@ -57,6 +58,8 @@ export interface PortalSelection {
   requestId: string;
   athleteId: string;
 }
+
+type CoachTab = "queue" | "chat" | "crm" | "builder" | "feed";
 
 export function CoachPortal() {
   /*
@@ -85,6 +88,7 @@ export function CoachPortal() {
 export function PortalPanel({ userId }: { userId: string }) {
   const auth = useCoachAuth();
   const [selection, setSelection] = useState<PortalSelection | null>(null);
+  const [activeTab, setActiveTab] = useState<CoachTab>("queue");
 
   // ---- Plantillas Base ----
   const [templates, setTemplates] = useState<Array<{
@@ -279,6 +283,7 @@ export function PortalPanel({ userId }: { userId: string }) {
    */
   const openConversation = useCallback((requestId: string, athleteId: string) => {
     setSelection({ requestId, athleteId });
+    setActiveTab("chat");
   }, []);
 
   /**
@@ -297,415 +302,423 @@ export function PortalPanel({ userId }: { userId: string }) {
       onPointerDownCapture={reportActivity}
       onKeyDownCapture={reportActivity}
       className="flex flex-col gap-4"
+      style={{ backgroundColor: SURFACE_ROLE.canvas, minHeight: "100vh" }}
     >
       <PortalHeader userId={userId} onClose={auth.lock} />
 
-      {/*
-       * One column on a phone, two from `lg` up.
-       *
-       * `minmax(0, 1fr)` rather than `1fr`: a grid track sized `1fr` has an automatic
-       * minimum of `min-content`, so a single long exercise name in the CRM widens the
-       * column past the viewport instead of wrapping inside it. That is the difference
-       * between a panel that scrolls and a page that scrolls sideways on a 390px screen.
-       *
-       * The queue stays first in the DOM at every width rather than being reordered on
-       * mobile. Reordering it visually would leave the tab order disagreeing with the
-       * layout, and the queue is the only thing on the screen that can *change* the state
-       * below it -- so it has to come first for a keyboard as well as for a thumb.
-       */}
-       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-         <section aria-label={T.queueTitle} className={`flex min-w-0 flex-col gap-3 ${selection !== null ? "hidden md:flex" : "flex"}`}>
-           <RequestQueue onOpenConversation={openConversation} />
-           <LiveGymFeed />
-           <ShiftPanel userId={userId} />
-         </section>
+      <div className="max-w-7xl mx-auto px-4 pt-6 space-y-6" style={{ flex: 1 }}>
+        <ShiftPanel userId={userId} />
 
-        <div className="flex min-w-0 flex-col gap-4">
-          {/*
-           * The right column shows one thing at a time, driven by the selection:
-           *
-           *   - No selection: a single unified empty state (was three separate cards:
-           *     chat prompt, CRM prompt, builder prompt — now one container).
-           *   - Selection: the chat, CRM and builder, all bound to the same athlete so
-           *     a coach never reads one athlete's records beside another's conversation.
-           */}
-          {/*
-           * The right column: the chat is replaced by the unified empty state when nothing is
-           * selected, but the CRM and the builder stay mounted with `null` so each owns its
-           * own empty prompt and the parent never has to know what they show.
-           */}
-          {/*
-           * En móvil, una selección abierta muestra la ficha del atleta a
-           * pantalla completa en lugar de la columna dividida. El botón
-           * "Volver" de AthleteDetailView limpia la selección.
-           */}
-          {isMobile !== null && isMobile && selection !== null ? (
-            <AthleteDetailView
-              requestId={selection.requestId}
-              athleteId={selection.athleteId}
-              coachUserId={userId}
-              onBack={() => setSelection(null)}
-            />
-          ) : selection === null ? (
-            <>
-              <PortalEmptyState />
-              <AthleteCRM athleteId={null} />
-              <VipRoutineBuilder athleteId={null} />
-            </>
-          ) : (
-            <>
-              <section aria-label={T.chatTitle} className="flex min-w-0 flex-col gap-3">
-                <HumanCoachChat requestId={selection.requestId} userId={userId} />
+        <div className="overflow-x-auto pb-2">
+          <SegmentedControl
+            value={activeTab}
+            onChange={(val) => setActiveTab(val as CoachTab)}
+            ariaLabel={T.title}
+            options={[
+              { value: "queue", label: T.queueTitle },
+              { value: "chat", label: T.chatTitle },
+              { value: "crm", label: T.crmTitle },
+              { value: "builder", label: T.builderTitle },
+              { value: "feed", label: T.liveFeedTitle },
+            ]}
+          />
+        </div>
+
+        <section className="mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {activeTab === "queue" && (
+              <section aria-label={T.queueTitle} className={`flex min-w-0 flex-col gap-3 ${selection !== null ? "hidden md:flex" : "flex"}`}>
+                <RequestQueue onOpenConversation={openConversation} />
+                <LiveGymFeed />
               </section>
-              <AthleteCRM athleteId={selection.athleteId} />
-              <VipRoutineBuilder
-                athleteId={selection.athleteId}
-                onSaved={(savedTitle) => setLastSaved(savedTitle)}
-              />
-            </>
-          )}
+            )}
+            {activeTab === "feed" && (
+              <section aria-label={T.liveFeedTitle} className="flex min-w-0 flex-col gap-3">
+                <LiveGymFeed />
+              </section>
+            )}
 
-          {lastSaved !== null && (
-            <p aria-live="polite" style={savedStyle}>
-              {lastSaved}
-            </p>
-          )}
+            <div className="flex min-w-0 flex-col gap-4">
+              {/*
+               * En móvil, una selección abierta muestra la ficha del atleta a
+               * pantalla completa en lugar de la columna dividida. El botón
+               * "Volver" de AthleteDetailView limpia la selección.
+               */}
+              {isMobile !== null && isMobile && selection !== null ? (
+                <AthleteDetailView
+                  requestId={selection.requestId}
+                  athleteId={selection.athleteId}
+                  coachUserId={userId}
+                  onBack={() => setSelection(null)}
+                />
+              ) : selection === null ? (
+                <>
+                  {activeTab === "queue" && <PortalEmptyState />}
+                  {activeTab === "queue" && <AthleteCRM athleteId={null} />}
+                  {activeTab === "queue" && <VipRoutineBuilder athleteId={null} />}
+                  {activeTab === "crm" && <AthleteCRM athleteId={null} />}
+                  {activeTab === "builder" && <VipRoutineBuilder athleteId={null} />}
+                </>
+              ) : (
+                <>
+                  {activeTab === "chat" && (
+                    <section aria-label={T.chatTitle} className="flex min-w-0 flex-col gap-3">
+                      <HumanCoachChat requestId={selection.requestId} userId={userId} />
+                    </section>
+                  )}
+                  {activeTab === "crm" && <AthleteCRM athleteId={selection.athleteId} />}
+                  {activeTab === "builder" && (
+                    <VipRoutineBuilder
+                      athleteId={selection.athleteId}
+                      onSaved={(savedTitle) => setLastSaved(savedTitle)}
+                    />
+                  )}
+                </>
+              )}
 
-          {/* Plantillas Base — gestión de plantillas globales */}
-          <GlassCard raised style={{ padding: SPACE.card }}>
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-2">
-                <h4
-                  style={{
-                    margin: 0,
-                    fontSize: TYPE.subhead.size,
-                    fontWeight: 600,
-                    color: TEXT.primary,
-                  }}
-                >
-                  {T.templateBaseTitle}
-                </h4>
-                <GlassButton
-                  variant="primary"
-                  onClick={() => setCreatingTemplate(true)}
-                  style={{ minHeight: 44 }}
-                >
-                  {creatingTemplate ? T.templateCreating : T.templateCreate}
-                </GlassButton>
-              </div>
-
-              {templatesLoading && (
-                <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                  {T.templateLoading}
+              {lastSaved !== null && (
+                <p aria-live="polite" style={savedStyle}>
+                  {lastSaved}
                 </p>
               )}
 
-              {templateError && (
-                <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: STATUS.error.text }}>
-                  {templateError}
-                </p>
-              )}
-
-              {templates.length === 0 && !templatesLoading && !templateError && (
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-                  {T.templateEmpty}
-                </p>
-              )}
-
-              {templates.map((tmpl) => (
-                <div
-                  key={tmpl.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "10px 12px",
-                    borderRadius: RADIUS.control,
-                    border: `1px solid ${GLASS.border}`,
-                    background: SURFACE_ROLE.well,
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <p
+              {/* Plantillas Base — gestión de plantillas globales */}
+              <GlassCard raised style={{ padding: SPACE.card }}>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4
                       style={{
                         margin: 0,
                         fontSize: TYPE.subhead.size,
                         fontWeight: 600,
                         color: TEXT.primary,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
                       }}
                     >
-                      {tmpl.title}
-                    </p>
-                    <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                      {T.templateBy.replace("{coachId}", tmpl.user_id.slice(0, 8))}
-                    </p>
-                  </div>
-                  <div style={{ display: "flex", gap: SPACE.xs }}>
+                      {T.templateBaseTitle}
+                    </h4>
                     <GlassButton
-                      variant="ghost"
-                      onClick={() => {
-                        setCreatingTemplate(true);
-                      }}
+                      variant="primary"
+                      onClick={() => setCreatingTemplate(true)}
+                      style={{ minHeight: 44 }}
                     >
-                      {T.templateEdit}
+                      {creatingTemplate ? T.templateCreating : T.templateCreate}
                     </GlassButton>
                   </div>
-                </div>
-              ))}
 
-              {creatingTemplate && (
-                <VipRoutineBuilder
-                  athleteId={null}
-                  isTemplate={true}
-                  onSaved={(savedTitle) => {
-                    setCreatingTemplate(false);
-                    setLastSaved(savedTitle);
-                    void loadTemplates();
-                  }}
-                />
-              )}
-            </div>
-          </GlassCard>
+                  {templatesLoading && (
+                    <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                      {T.templateLoading}
+                    </p>
+                  )}
 
-          {/* Ejercicios — catálogo y creación de ejercicios del coach */}
-          <GlassCard raised style={{ padding: SPACE.card }}>
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-2">
-                <h4
-                  style={{
-                    margin: 0,
-                    fontSize: TYPE.subhead.size,
-                    fontWeight: 600,
-                    color: TEXT.primary,
-                  }}
-                >
-                  {T.exerciseCatalogTitle}
-                </h4>
-                <GlassButton
-                  variant="primary"
-                  onClick={() => setCreatingExercise(true)}
-                  style={{ minHeight: 44 }}
-                >
-                  {creatingExercise ? T.exerciseCreating : T.exerciseCreate}
-                </GlassButton>
-              </div>
+                  {templateError && (
+                    <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: STATUS.error.text }}>
+                      {templateError}
+                    </p>
+                  )}
 
-              {exercisesLoading && (
-                <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                  {T.exerciseLoading}
-                </p>
-              )}
+                  {templates.length === 0 && !templatesLoading && !templateError && (
+                    <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+                      {T.templateEmpty}
+                    </p>
+                  )}
 
-              {exerciseError && (
-                <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: STATUS.error.text }}>
-                  {exerciseError}
-                </p>
-              )}
-
-              <div style={{ display: "flex", gap: SPACE.xs, marginBottom: SPACE.xs }}>
-                <input
-                  type="text"
-                  placeholder={T.exerciseSearchPlaceholder}
-                  value={exerciseSearch}
-                  onChange={(e) => setExerciseSearch(e.target.value)}
-                  style={{
-                    flex: 1,
-                    minHeight: MOTION.minTouchTarget,
-                    padding: `0 ${SPACE.sm}`,
-                    borderRadius: RADIUS.control,
-                    border: `1px solid ${GLASS.border}`,
-                    background: "rgba(255,255,255,0.05)",
-                    color: TEXT.primary,
-                    fontSize: TYPE.subhead.size,
-                  }}
-                />
-              </div>
-
-              {exercises.length === 0 && !exercisesLoading && !exerciseError && (
-                <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-                  {T.exerciseEmpty}
-                </p>
-              )}
-
-              {exercises
-                .filter((ex) =>
-                  ex.name.toLowerCase().includes(exerciseSearch.toLowerCase()) ||
-                  (ex.name_es ?? "").toLowerCase().includes(exerciseSearch.toLowerCase()),
-                )
-                .map((ex) => (
-                  <ExerciseRow
-                    key={ex.id}
-                    exercise={{
-                      id: ex.id,
-                      name: ex.name,
-                      name_es: ex.name_es,
-                      body_part: ex.body_part,
-                      target: ex.target,
-                      equipment: ex.equipment,
-                      gif_url: "",
-                      instructions: [],
-                      is_active: ex.is_active,
-                      is_hidden: ex.is_hidden,
-                    }}
-                    order={null}
-                    selected={false}
-                    multiSelect={false}
-                    expanded={false}
-                    onSelect={() => {}}
-                    onTogglePreview={() => {}}
-                    onRename={(id, name, nameEs) => void renameExercise(id, name, nameEs)}
-                    onHide={(id) => void hideExercise(id)}
-                    hidden={ex.is_hidden}
-                  />
-                ))}
-
-              {creatingExercise && (
-                <GlassCard raised style={{ padding: SPACE.card }}>
-                  <div className="flex flex-col gap-2">
-                    <h5
+                  {templates.map((tmpl) => (
+                    <div
+                      key={tmpl.id}
                       style={{
-                        margin: 0,
-                        fontSize: TYPE.caption.size,
-                        fontWeight: 600,
-                        color: TEXT.secondary,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 12px",
+                        borderRadius: RADIUS.control,
+                        border: `1px solid ${GLASS.border}`,
+                        background: SURFACE_ROLE.well,
                       }}
                     >
-                      {T.exerciseNewTitle}
-                    </h5>
-                    <input
-                      placeholder={T.exerciseNamePlaceholder}
-                      value={exerciseForm.name}
-                      onChange={(e) => setExerciseForm((prev) => ({ ...prev, name: e.target.value }))}
-                      style={{
-                        minHeight: MOTION.minTouchTarget,
-                        padding: `0 ${SPACE.sm}`,
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT.primary,
-                        fontSize: TYPE.subhead.size,
-                      }}
-                    />
-                    <input
-                      placeholder={T.exerciseNameEsPlaceholder}
-                      value={exerciseForm.name_es}
-                      onChange={(e) =>
-                        setExerciseForm((prev) => ({ ...prev, name_es: e.target.value }))
-                      }
-                      style={{
-                        minHeight: MOTION.minTouchTarget,
-                        padding: `0 ${SPACE.sm}`,
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT.primary,
-                        fontSize: TYPE.subhead.size,
-                      }}
-                    />
-                    <input
-                      placeholder={T.exerciseBodyPartPlaceholder}
-                      value={exerciseForm.body_part}
-                      onChange={(e) =>
-                        setExerciseForm((prev) => ({ ...prev, body_part: e.target.value }))
-                      }
-                      style={{
-                        minHeight: MOTION.minTouchTarget,
-                        padding: `0 ${SPACE.sm}`,
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT.primary,
-                        fontSize: TYPE.subhead.size,
-                      }}
-                    />
-                    <input
-                      placeholder={T.exerciseTargetPlaceholder}
-                      value={exerciseForm.target}
-                      onChange={(e) =>
-                        setExerciseForm((prev) => ({ ...prev, target: e.target.value }))
-                      }
-                      style={{
-                        minHeight: MOTION.minTouchTarget,
-                        padding: `0 ${SPACE.sm}`,
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT.primary,
-                        fontSize: TYPE.subhead.size,
-                      }}
-                    />
-                    <input
-                      placeholder={T.exerciseEquipmentPlaceholder}
-                      value={exerciseForm.equipment}
-                      onChange={(e) =>
-                        setExerciseForm((prev) => ({ ...prev, equipment: e.target.value }))
-                      }
-                      style={{
-                        minHeight: MOTION.minTouchTarget,
-                        padding: `0 ${SPACE.sm}`,
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT.primary,
-                        fontSize: TYPE.subhead.size,
-                      }}
-                    />
-                    <textarea
-                      placeholder={T.exerciseInstructionsPlaceholder}
-                      value={exerciseForm.instructions}
-                      onChange={(e) =>
-                        setExerciseForm((prev) => ({ ...prev, instructions: e.target.value }))
-                      }
-                      rows={2}
-                      style={{
-                        minHeight: 80,
-                        padding: `${SPACE.sm} ${SPACE.sm}`,
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT.primary,
-                        fontSize: TYPE.subhead.size,
-                        resize: "vertical",
-                      }}
-                    />
-                    <div style={{ display: "flex", gap: SPACE.xs, marginTop: SPACE.xs }}>
-                      <GlassButton
-                        variant="primary"
-                        onClick={saveExercise}
-                        disabled={exercisesLoading || !exerciseForm.name.trim()}
-                        style={{ minHeight: 44, flex: 1 }}
-                      >
-                        {T.exerciseSave}
-                      </GlassButton>
-                      <GlassButton
-                        variant="ghost"
-                        onClick={() => {
-                          setCreatingExercise(false);
-                          setExerciseForm({
-                            name: "",
-                            name_es: "",
-                            body_part: "",
-                            target: "",
-                            equipment: "",
-                            instructions: "",
-                          });
-                        }}
-                        style={{ minHeight: 44 }}
-                      >
-                        {T.exerciseCancel}
-                      </GlassButton>
+                      <div style={{ minWidth: 0 }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: TYPE.subhead.size,
+                            fontWeight: 600,
+                            color: TEXT.primary,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {tmpl.title}
+                        </p>
+                        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                          {T.templateBy.replace("{coachId}", tmpl.user_id.slice(0, 8))}
+                        </p>
+                      </div>
+                      <div style={{ display: "flex", gap: SPACE.xs }}>
+                        <GlassButton
+                          variant="ghost"
+                          onClick={() => {
+                            setCreatingTemplate(true);
+                          }}
+                        >
+                          {T.templateEdit}
+                        </GlassButton>
+                      </div>
                     </div>
+                  ))}
+
+                  {creatingTemplate && (
+                    <VipRoutineBuilder
+                      athleteId={null}
+                      isTemplate={true}
+                      onSaved={(savedTitle) => {
+                        setCreatingTemplate(false);
+                        setLastSaved(savedTitle);
+                        void loadTemplates();
+                      }}
+                    />
+                  )}
+                </div>
+              </GlassCard>
+
+              {/* Ejercicios — catálogo y creación de ejercicios del coach */}
+              <GlassCard raised style={{ padding: SPACE.card }}>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4
+                      style={{
+                        margin: 0,
+                        fontSize: TYPE.subhead.size,
+                        fontWeight: 600,
+                        color: TEXT.primary,
+                      }}
+                    >
+                      {T.exerciseCatalogTitle}
+                    </h4>
+                    <GlassButton
+                      variant="primary"
+                      onClick={() => setCreatingExercise(true)}
+                      style={{ minHeight: 44 }}
+                    >
+                      {creatingExercise ? T.exerciseCreating : T.exerciseCreate}
+                    </GlassButton>
                   </div>
-                </GlassCard>
-              )}
+
+                  {exercisesLoading && (
+                    <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                      {T.exerciseLoading}
+                    </p>
+                  )}
+
+                  {exerciseError && (
+                    <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: STATUS.error.text }}>
+                      {exerciseError}
+                    </p>
+                  )}
+
+                  <div style={{ display: "flex", gap: SPACE.xs, marginBottom: SPACE.xs }}>
+                    <input
+                      type="text"
+                      placeholder={T.exerciseSearchPlaceholder}
+                      value={exerciseSearch}
+                      onChange={(e) => setExerciseSearch(e.target.value)}
+                      style={{
+                        flex: 1,
+                        minHeight: MOTION.minTouchTarget,
+                        padding: `0 ${SPACE.sm}`,
+                        borderRadius: RADIUS.control,
+                        border: `1px solid ${GLASS.border}`,
+                        background: "rgba(255,255,255,0.05)",
+                        color: TEXT.primary,
+                        fontSize: TYPE.subhead.size,
+                      }}
+                    />
+                  </div>
+
+                  {exercises.length === 0 && !exercisesLoading && !exerciseError && (
+                    <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+                      {T.exerciseEmpty}
+                    </p>
+                  )}
+
+                  {exercises
+                    .filter((ex) =>
+                      ex.name.toLowerCase().includes(exerciseSearch.toLowerCase()) ||
+                      (ex.name_es ?? "").toLowerCase().includes(exerciseSearch.toLowerCase()),
+                    )
+                    .map((ex) => (
+                      <ExerciseRow
+                        key={ex.id}
+                        exercise={{
+                          id: ex.id,
+                          name: ex.name,
+                          name_es: ex.name_es,
+                          body_part: ex.body_part,
+                          target: ex.target,
+                          equipment: ex.equipment,
+                          gif_url: "",
+                          instructions: [],
+                          is_active: ex.is_active,
+                          is_hidden: ex.is_hidden,
+                        }}
+                        order={null}
+                        selected={false}
+                        multiSelect={false}
+                        expanded={false}
+                        onSelect={() => {}}
+                        onTogglePreview={() => {}}
+                        onRename={(id, name, nameEs) => void renameExercise(id, name, nameEs)}
+                        onHide={(id) => void hideExercise(id)}
+                        hidden={ex.is_hidden}
+                      />
+                    ))}
+
+                  {creatingExercise && (
+                    <GlassCard raised style={{ padding: SPACE.card }}>
+                      <div className="flex flex-col gap-2">
+                        <h5
+                          style={{
+                            margin: 0,
+                            fontSize: TYPE.caption.size,
+                            fontWeight: 600,
+                            color: TEXT.secondary,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em",
+                          }}
+                        >
+                          {T.exerciseNewTitle}
+                        </h5>
+                        <input
+                          placeholder={T.exerciseNamePlaceholder}
+                          value={exerciseForm.name}
+                          onChange={(e) => setExerciseForm((prev) => ({ ...prev, name: e.target.value }))}
+                          style={{
+                            minHeight: MOTION.minTouchTarget,
+                            padding: `0 ${SPACE.sm}`,
+                            borderRadius: RADIUS.control,
+                            border: `1px solid ${GLASS.border}`,
+                            background: "rgba(255,255,255,0.05)",
+                            color: TEXT.primary,
+                            fontSize: TYPE.subhead.size,
+                          }}
+                        />
+                        <input
+                          placeholder={T.exerciseNameEsPlaceholder}
+                          value={exerciseForm.name_es}
+                          onChange={(e) =>
+                            setExerciseForm((prev) => ({ ...prev, name_es: e.target.value }))
+                          }
+                          style={{
+                            minHeight: MOTION.minTouchTarget,
+                            padding: `0 ${SPACE.sm}`,
+                            borderRadius: RADIUS.control,
+                            border: `1px solid ${GLASS.border}`,
+                            background: "rgba(255,255,255,0.05)",
+                            color: TEXT.primary,
+                            fontSize: TYPE.subhead.size,
+                          }}
+                        />
+                        <input
+                          placeholder={T.exerciseBodyPartPlaceholder}
+                          value={exerciseForm.body_part}
+                          onChange={(e) =>
+                            setExerciseForm((prev) => ({ ...prev, body_part: e.target.value }))
+                          }
+                          style={{
+                            minHeight: MOTION.minTouchTarget,
+                            padding: `0 ${SPACE.sm}`,
+                            borderRadius: RADIUS.control,
+                            border: `1px solid ${GLASS.border}`,
+                            background: "rgba(255,255,255,0.05)",
+                            color: TEXT.primary,
+                            fontSize: TYPE.subhead.size,
+                          }}
+                        />
+                        <input
+                          placeholder={T.exerciseTargetPlaceholder}
+                          value={exerciseForm.target}
+                          onChange={(e) =>
+                            setExerciseForm((prev) => ({ ...prev, target: e.target.value }))
+                          }
+                          style={{
+                            minHeight: MOTION.minTouchTarget,
+                            padding: `0 ${SPACE.sm}`,
+                            borderRadius: RADIUS.control,
+                            border: `1px solid ${GLASS.border}`,
+                            background: "rgba(255,255,255,0.05)",
+                            color: TEXT.primary,
+                            fontSize: TYPE.subhead.size,
+                          }}
+                        />
+                        <input
+                          placeholder={T.exerciseEquipmentPlaceholder}
+                          value={exerciseForm.equipment}
+                          onChange={(e) =>
+                            setExerciseForm((prev) => ({ ...prev, equipment: e.target.value }))
+                          }
+                          style={{
+                            minHeight: MOTION.minTouchTarget,
+                            padding: `0 ${SPACE.sm}`,
+                            borderRadius: RADIUS.control,
+                            border: `1px solid ${GLASS.border}`,
+                            background: "rgba(255,255,255,0.05)",
+                            color: TEXT.primary,
+                            fontSize: TYPE.subhead.size,
+                          }}
+                        />
+                        <textarea
+                          placeholder={T.exerciseInstructionsPlaceholder}
+                          value={exerciseForm.instructions}
+                          onChange={(e) =>
+                            setExerciseForm((prev) => ({ ...prev, instructions: e.target.value }))
+                          }
+                          rows={2}
+                          style={{
+                            minHeight: 80,
+                            padding: `${SPACE.sm} ${SPACE.sm}`,
+                            borderRadius: RADIUS.control,
+                            border: `1px solid ${GLASS.border}`,
+                            background: "rgba(255,255,255,0.05)",
+                            color: TEXT.primary,
+                            fontSize: TYPE.subhead.size,
+                            resize: "vertical",
+                          }}
+                        />
+                        <div style={{ display: "flex", gap: SPACE.xs, marginTop: SPACE.xs }}>
+                          <GlassButton
+                            variant="primary"
+                            onClick={saveExercise}
+                            disabled={exercisesLoading || !exerciseForm.name.trim()}
+                            style={{ minHeight: 44, flex: 1 }}
+                          >
+                            {T.exerciseSave}
+                          </GlassButton>
+                          <GlassButton
+                            variant="ghost"
+                            onClick={() => {
+                              setCreatingExercise(false);
+                              setExerciseForm({
+                                name: "",
+                                name_es: "",
+                                body_part: "",
+                                target: "",
+                                equipment: "",
+                                instructions: "",
+                              });
+                            }}
+                            style={{ minHeight: 44 }}
+                          >
+                            {T.exerciseCancel}
+                          </GlassButton>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  )}
+                </div>
+              </GlassCard>
             </div>
-          </GlassCard>
-        </div>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -770,7 +783,12 @@ function PortalHeader({ userId, onClose }: { userId: string; onClose: () => void
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col">
           <h1
-            style={{ margin: 0, fontSize: TYPE.title2.size, fontWeight: 700, color: TEXT.primary }}
+            style={{
+              margin: 0,
+              fontSize: TYPE.title2.size,
+              fontWeight: 600,
+              color: TEXT.primary,
+            }}
           >
             {name ?? T.title}
           </h1>
@@ -779,13 +797,26 @@ function PortalHeader({ userId, onClose }: { userId: string; onClose: () => void
           {loading && <span className="sr-only">{T.loading}</span>}
         </div>
 
-        <GlassButton
-          variant="ghost"
-          icon={<Lock size={16} aria-hidden="true" />}
-          onClick={confirmClose}
-        >
-          {T.closeSession}
-        </GlassButton>
+        <div className="flex items-center gap-2">
+          <span
+            className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+            style={{
+              backgroundColor: CRIMSON.subtle,
+              color: CRIMSON.text,
+              border: `1px solid ${CRIMSON.border}`,
+            }}
+          >
+            PRO
+          </span>
+          <GlassButton
+            variant="ghost"
+            icon={<Lock size={16} aria-hidden="true" />}
+            onClick={confirmClose}
+            style={{ minHeight: 44 }}
+          >
+            {T.closeSession}
+          </GlassButton>
+        </div>
       </div>
     </GlassCard>
   );
@@ -795,7 +826,7 @@ function PortalHeader({ userId, onClose }: { userId: string; onClose: () => void
 const savedStyle = {
   margin: 0,
   fontSize: TYPE.subhead.size,
-  color: ACCENT.text,
+  color: CRIMSON.text,
 } as const;
 
 /**

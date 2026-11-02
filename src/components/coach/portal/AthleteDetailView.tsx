@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Banknote, CheckCircle2, Dumbbell, MessageSquare, Mic, Sparkles, User } from "lucide-react";
 
-import { ACCENT, GLASS, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, GLASS, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { HumanCoachChat } from "./HumanCoachChat";
@@ -506,7 +506,7 @@ export function AthleteDetailView({
                 width: 24,
                 height: 24,
                 border: `2px solid ${TEXT.tertiary}`,
-                borderTopColor: ACCENT.base,
+                borderTopColor: CRIMSON.base,
                 borderRadius: "50%",
                 animation: `spin ${Math.max(600, 1200 - pullDistance * 4)}ms linear infinite`,
               }}
@@ -567,7 +567,7 @@ export function AthleteDetailView({
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Banknote size={18} strokeWidth={1.5} style={{ color: ACCENT.base }} aria-hidden="true" />
+                  <Banknote size={18} strokeWidth={1.5} style={{ color: CRIMSON.base }} aria-hidden="true" />
                   <h4
                     style={{
                       margin: 0,
@@ -587,11 +587,11 @@ export function AthleteDetailView({
                       gap: 4,
                       padding: "3px 10px",
                       borderRadius: 999,
-                      background: `${ACCENT.base}1f`,
-                      border: `1px solid ${ACCENT.base}55`,
+                      background: `${CRIMSON.base}1f`,
+                      border: `1px solid ${CRIMSON.base}55`,
                       fontSize: TYPE.caption.size,
                       fontWeight: 600,
-                      color: ACCENT.base,
+                      color: CRIMSON.base,
                     }}
                   >
                     <CheckCircle2 size={12} aria-hidden="true" />
@@ -783,7 +783,7 @@ export function AthleteDetailView({
                     padding: 6,
                     minHeight: "auto",
                     minWidth: "auto",
-                    background: isListening ? ACCENT.base : "transparent",
+                    background: isListening ? CRIMSON.base : "transparent",
                     color: isListening ? TEXT.onAccent : TEXT.secondary,
                   }}
                   aria-label={isListening ? T.coachNotesListening : T.coachNotesDictate}

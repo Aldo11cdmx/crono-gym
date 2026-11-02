@@ -154,8 +154,8 @@ function SessionHeader({
         gap: SPACE.md,
         padding: `calc(12px + env(safe-area-inset-top, 0px)) 16px 12px 16px`,
         background: "rgba(0, 0, 0, 0.7)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
+        backdropFilter: GLASS.blurPlain20,
+        WebkitBackdropFilter: GLASS.blurPlain20,
         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
         transition: "all 200ms ease",
       }}
@@ -340,7 +340,7 @@ function SetTrackerTable({
                 left: 0,
                 zIndex: 51,
                 background: "rgba(0, 0, 0, 0.85)",
-                backdropFilter: "blur(20px)",
+                backdropFilter: GLASS.blurPlain20,
                 border: "1px solid rgba(255, 255, 255, 0.15)",
                 borderRadius: "16px",
                 padding: "8px",
@@ -420,7 +420,7 @@ function SetTrackerTable({
         value={entry.weight}
         onChange={(e) => onChange(index, { ...entry, weight: e.target.value })}
         style={{
-          background: "rgba(255, 255, 255, 0.05)",
+          background: GLASS.fillFaint,
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: "12px",
           padding: "6px 8px",
@@ -438,7 +438,7 @@ function SetTrackerTable({
         value={entry.reps}
         onChange={(e) => onChange(index, { ...entry, reps: e.target.value })}
         style={{
-          background: "rgba(255, 255, 255, 0.05)",
+          background: GLASS.fillFaint,
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: "12px",
           padding: "6px 8px",
@@ -457,7 +457,7 @@ function SetTrackerTable({
         value={entry.rpe || ""}
         onChange={(e) => onChange(index, { ...entry, rpe: e.target.value })}
         style={{
-          background: "rgba(255, 255, 255, 0.05)",
+          background: GLASS.fillFaint,
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: "12px",
           padding: "6px 8px",
@@ -489,7 +489,7 @@ function SetTrackerTable({
           border: entry.completed ? "1px solid rgb(16, 185, 129)" : "1px solid rgba(255, 255, 255, 0.1)",
           cursor: "pointer",
           flexShrink: 0,
-          transition: "all 150ms ease",
+          transition: MOTION.transitionStandard,
         }}
       >
         <Check size={16} strokeWidth={3} />
@@ -687,11 +687,11 @@ function ExerciseStage({
            gap: SPACE.xs,
            justifyContent: "center",
            width: "100%",
-           background: "rgba(255,255,255,0.05)",
+           background: GLASS.fillFaint,
            padding: SPACE.xs,
            borderRadius: RADIUS.control,
            border: `1px solid ${GLASS.border}`,
-           backdropFilter: "blur(12px)",
+           backdropFilter: GLASS.blurPlain12,
          }}
        >
          <ActionChip label="Demo" icon={<Play size={16} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
@@ -1840,15 +1840,15 @@ export function ActiveWorkout({
             alignItems: "center",
             justifyContent: "center",
             background: SCRIM.modal,
-            backdropFilter: "blur(12px)",
+            backdropFilter: GLASS.blurPlain12,
           }}
         >
           <div
             style={{
               padding: "24px",
               borderRadius: "24px",
-              background: "rgba(0, 0, 0, 0.8)",
-              backdropFilter: "blur(20px)",
+              background: SCRIM.overlay,
+              backdropFilter: GLASS.blurPlain20,
               border: "1px solid rgba(255, 255, 255, 0.1)",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
               maxWidth: 480,
@@ -1892,7 +1892,7 @@ export function ActiveWorkout({
                   fontSize: TYPE.body.size,
                   fontWeight: gym.weightUnit === "kg" ? 600 : 500,
                   cursor: "pointer",
-                  transition: "all 150ms ease",
+                  transition: MOTION.transitionStandard,
                 }}
               >
                 Kilogramos (kg)
@@ -1914,7 +1914,7 @@ export function ActiveWorkout({
                   fontSize: TYPE.body.size,
                   fontWeight: gym.weightUnit === "lb" ? 600 : 500,
                   cursor: "pointer",
-                  transition: "all 150ms ease",
+                  transition: MOTION.transitionStandard,
                 }}
               >
                 Libras (lb)
@@ -2087,11 +2087,11 @@ onDemo={() => setIsDemoOpen(true)}
               {selected.sets.length > 0 && (
                 <div
                   style={{
-                    background: "rgba(255, 255, 255, 0.05)",
+                    background: GLASS.fillFaint,
                     border: "1px solid rgba(255, 255, 255, 0.1)",
                     borderRadius: "16px",
                     padding: "16px",
-                    backdropFilter: "blur(12px)",
+                    backdropFilter: GLASS.blurPlain12,
                   }}
                 >
                   <div

@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, GLASS, RADIUS, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { Collapsible } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { supabase } from "@lib/supabase";
@@ -138,12 +138,20 @@ export function LiveGymFeed() {
   const [expanded, setExpanded] = useState(false);
 
   if (loading) {
-    return <div className="h-9 animate-pulse rounded-full bg-zinc-900/60" />;
+    return (
+      <div
+        className="h-9 animate-pulse rounded-full border border-white/10"
+        style={{
+          backgroundColor: GLASS.fill,
+          borderColor: GLASS.border,
+        }}
+      />
+    );
   }
 
   if (error) {
     return (
-      <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+      <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
         {error}
       </p>
     );
@@ -157,20 +165,26 @@ export function LiveGymFeed() {
       open={expanded}
       onOpenChange={setExpanded}
       trigger={
-        <button
-          type="button"
-          className="flex h-9 items-center gap-2 rounded-full border border-white/10 bg-zinc-900/60 px-3 text-sm"
-          style={{ color: TEXT.primary, width: "100%" }}
-        >
-          <span
-            aria-hidden="true"
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 9999,
-              background: count > 0 ? "#22c55e" : "#6b7280",
-            }}
-          />
+      <button
+        type="button"
+        className="flex h-9 items-center gap-2 rounded-full border px-3 text-sm"
+        style={{
+          color: TEXT.primary,
+          width: "100%",
+          backgroundColor: GLASS.fill,
+          borderColor: GLASS.border,
+          fontSize: TYPE.caption.size,
+        }}
+      >
+            <span
+              aria-hidden="true"
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 9999,
+                background: count > 0 ? STATUS.success.base : TEXT.tertiary,
+              }}
+            />
           <span className="tabular-nums">{label}</span>
         </button>
       }
@@ -178,7 +192,16 @@ export function LiveGymFeed() {
       {count > 0 && (
         <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
           {sessions.map((session) => (
-            <li key={session.logId} className="flex items-baseline justify-between gap-2 py-1">
+            <li
+              key={session.logId}
+              className="flex items-baseline justify-between gap-2 py-1"
+              style={{
+                padding: `${SPACE.xs} ${SPACE.md}`,
+                borderRadius: RADIUS.control,
+                backgroundColor: GLASS.fill,
+                border: `1px solid ${GLASS.border}`,
+              }}
+            >
               <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>
                 {session.athleteName}
               </span>

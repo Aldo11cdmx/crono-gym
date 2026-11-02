@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ACCENT, MOTION, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { getCoachId } from "@/lib/coach/useCoachAuth";
@@ -147,28 +147,28 @@ export function CoachAthleteNotes({ athleteId }: CoachAthleteNotesProps) {
       </h3>
 
       <GlassCard>
-        <textarea
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          placeholder={T.coachNotesPlaceholder}
-          rows={6}
-          style={{
-            width: "100%",
-            minHeight: 132,
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: `1px solid ${TEXT.tertiary}33`,
-            background: "#ffffff08",
-            color: TEXT.primary,
-            fontSize: TYPE.subhead.size,
-            resize: "vertical",
-            transition: `border-color ${MOTION.fast} ${MOTION.easeOut}`,
-          }}
-        />
+          <textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder={T.coachNotesPlaceholder}
+            rows={6}
+            style={{
+              width: "100%",
+              minHeight: 132,
+              padding: `${SPACE.sm} ${SPACE.md}`,
+              borderRadius: RADIUS.input,
+              border: `1px solid ${GLASS.border}`,
+              backgroundColor: GLASS.fillSubtle,
+              color: TEXT.primary,
+              fontSize: TYPE.subhead.size,
+              resize: "vertical",
+              transition: `border-color ${MOTION.fast} ${MOTION.easeOut}`,
+            }}
+          />
 
-        <div className="flex items-center justify-between gap-3" style={{ marginTop: 12 }}>
+        <div className="flex items-center justify-between gap-3" style={{ marginTop: SPACE.md }}>
           {error && (
-            <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+            <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
               {error}
             </p>
           )}
@@ -186,7 +186,7 @@ export function CoachAthleteNotes({ athleteId }: CoachAthleteNotesProps) {
           </GlassButton>
         </div>
 
-        <p style={{ margin: "8px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+        <p style={{ margin: `${SPACE.xs} 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
           {T.coachNotesOnlyCoach}
         </p>
       </GlassCard>

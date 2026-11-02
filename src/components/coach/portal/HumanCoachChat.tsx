@@ -31,7 +31,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
-import { ACCENT, GLASS, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, GLASS, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
@@ -214,7 +214,7 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
       </div>
 
       {error && (
-        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
           {error}
         </p>
       )}
@@ -234,11 +234,11 @@ export function HumanCoachChat({ requestId, userId }: HumanCoachChatProps) {
           style={{
             flex: 1,
             resize: "vertical",
-            borderRadius: 12,
+            borderRadius: RADIUS.input,
             border: `1px solid ${GLASS.border}`,
             backgroundColor: GLASS.fill,
             color: TEXT.primary,
-            padding: "8px 10px",
+            padding: `${SPACE.sm} ${SPACE.md}`,
             fontSize: TYPE.subhead.size,
             fontFamily: "inherit",
           }}
@@ -283,8 +283,8 @@ function MessageBubble({ message, ownId }: { message: CoachMessageRow; ownId: st
       style={{
         alignSelf: mine ? "flex-end" : "flex-start",
         maxWidth: "85%",
-        borderRadius: 14,
-        padding: "8px 12px",
+        borderRadius: RADIUS.control,
+        padding: `${SPACE.sm} ${SPACE.md}`,
         backgroundColor: mine ? GLASS.fillRaised : GLASS.fill,
         border: `1px solid ${GLASS.border}`,
       }}

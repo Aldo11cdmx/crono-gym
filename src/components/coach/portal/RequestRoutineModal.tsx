@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, X } from "lucide-react";
 
-import { ACCENT, MOTION, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, MOTION, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { supabase } from "@lib/supabase";
@@ -361,7 +361,7 @@ export function RequestRoutineModal({
                 style={{
                   width: `${progressPercent}%`,
                   height: "100%",
-                  background: ACCENT.base,
+                  background: CRIMSON.base,
                   transition: `width ${MOTION.normal} ${MOTION.easeOut}`,
                 }}
               />

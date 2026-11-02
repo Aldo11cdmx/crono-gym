@@ -8,7 +8,7 @@
  */
 
 import type { CSSProperties, ReactNode } from "react";
-import { GLASS, MOTION, SOLID, TEXT, TYPE } from "@/design/tokens";
+import { GLASS, MOTION, RADIUS, SPACE, SOLID, TEXT, TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export interface SegmentedOption {
@@ -39,13 +39,16 @@ export function SegmentedControl({
     borderColor: GLASS.border,
     backdropFilter: "blur(16px) saturate(140%)",
     WebkitBackdropFilter: "blur(16px) saturate(140%)",
+    borderRadius: RADIUS.card,
+    gap: SPACE.xs,
+    padding: SPACE.xs,
   };
 
   return (
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className={`inline-flex items-center gap-1 overflow-hidden rounded-xl border p-1 ${className}`}
+      className={`inline-flex items-center overflow-hidden border ${className}`}
       style={glassStyle}
     >
       {options.map((option) => {
@@ -60,7 +63,7 @@ export function SegmentedControl({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(option.value)}
-            className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-center outline-none transition"
+            className="flex items-center justify-center gap-1.5 text-center outline-none transition"
             style={{
               backgroundColor: active ? SOLID.card : "transparent",
               color: active ? TEXT.primary : TEXT.tertiary,
@@ -71,6 +74,9 @@ export function SegmentedControl({
               letterSpacing: TYPE.subhead.tracking,
               border: "none",
               cursor: "pointer",
+              borderRadius: RADIUS.sm,
+              paddingLeft: SPACE.md,
+              paddingRight: SPACE.md,
             }}
           >
             {option.icon}

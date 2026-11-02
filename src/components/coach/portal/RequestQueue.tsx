@@ -33,7 +33,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronDown, MessageSquare, X } from "lucide-react";
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard, Skeleton, Collapsible } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { usePolling } from "@/hooks/usePolling";
@@ -270,13 +270,13 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
       </h3>
 
       {error && (
-        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
           {error}
         </p>
       )}
 
       {actionError && (
-        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+        <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
           {actionError}
         </p>
       )}
@@ -284,14 +284,14 @@ export function RequestQueue({ onOpenConversation }: RequestQueueProps) {
       {loading ? (
         <Skeleton />
       ) : pending.length === 0 && active.length === 0 ? (
-        <GlassCard>
-          <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
-            {T.queueEmptyTitle}
-          </p>
-          <p style={{ margin: "6px 0 0", fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-            {T.queueEmptyBody}
-          </p>
-        </GlassCard>
+      <GlassCard style={{ padding: SPACE.card, borderRadius: RADIUS.card }}>
+        <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
+          {T.queueEmptyTitle}
+        </p>
+        <p style={{ margin: `${SPACE.xs} 0 0`, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
+          {T.queueEmptyBody}
+        </p>
+      </GlassCard>
       ) : (
         <>
           {/*
@@ -409,7 +409,7 @@ function RequestCard({
         </div>
       }
     >
-      <GlassCard>
+      <GlassCard style={{ padding: SPACE.card, borderRadius: RADIUS.card }}>
         <div className="flex flex-col gap-2">
           <div style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
             {(() => {

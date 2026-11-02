@@ -26,7 +26,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Clock } from "lucide-react";
-import { TEXT } from "@/design/tokens";
+import { GLASS, MOTION, SPACE, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { localOffsetMinutes, shiftAt, startsAt } from "@/lib/coach/access";
 import { supabase } from "@lib/supabase";
@@ -126,79 +127,112 @@ export function ShiftPanel({ userId }: ShiftPanelProps) {
   }
 
   return (
-    <div
-      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 px-3 py-2"
-      style={{ minHeight: 44 }}
+    <GlassCard
+      raised={isAvailable === true}
+      style={{
+        padding: SPACE.card,
+        borderColor: isAvailable === true ? STATUS.success.border : GLASS.border,
+
+      }}
     >
-      <span
-        aria-live="polite"
-        className="flex items-center gap-2 text-sm"
-        style={{ color: TEXT.primary }}
-      >
-        <span
-          aria-hidden="true"
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 9999,
-            background: isAvailable ? "#22c55e" : "#6b7280",
-            boxShadow: isAvailable ? "0 0 6px #22c55e" : "none",
-          }}
-        />
-        {isAvailable ? T.availabilityOn : T.availabilityOff}
-      </span>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{
+backgroundColor: isAvailable === true ? STATUS.success.base : GLASS.borderStrong,
+boxShadow: isAvailable === true ? `0 0 10px ${STATUS.success.muted}` : "none",
+            }}
+          />
+          <div>
+            <h3
+              style={{
+                fontSize: TYPE.headline.size,
+                lineHeight: TYPE.headline.lineHeight,
+                fontWeight: TYPE.headline.weight,
+                color: TEXT.primary,
+              }}
+            >
+              {T.availabilityTitle}
+            </h3>
+            <p
+              style={{
+                fontSize: TYPE.caption.size,
+                lineHeight: TYPE.caption.lineHeight,
+                fontWeight: TYPE.caption.weight,
+                color: TEXT.secondary,
+                marginTop: SPACE.xs,
+              }}
+            >
+              {isAvailable === true ? T.availabilityOn : T.availabilityOff}
+            </p>
+          </div>
+        </div>
 
-      {shiftLabel && (
-        <span
-          className="flex items-center gap-1 truncate text-xs tabular-nums"
-          style={{ color: TEXT.secondary, minWidth: 0 }}
-        >
-          <Clock size={12} aria-hidden="true" />
-          {shiftLabel}
-        </span>
-      )}
+        <div className="flex flex-col gap-2">
+          {shiftLabel && (
+            <span
+              className="flex items-center gap-1 truncate text-xs tabular-nums"
+              style={{ color: TEXT.secondary, minWidth: 0 }}
+            >
+              <Clock size={12} aria-hidden="true" />
+              {shiftLabel}
+            </span>
+          )}
 
-      <button
-        type="button"
-        role="switch"
-        aria-checked={isAvailable === true}
-        disabled={isAvailable === null || saving}
-        onClick={() => void toggle()}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isAvailable === true}
+            disabled={isAvailable === null || saving}
+            onClick={() => void toggle()}
+            className="relative"
+            style={{
+              width: 51,
+              height: 31,
+              borderRadius: 9999,
+              border: "none",
+              background: isAvailable === true ? STATUS.success.base : GLASS.fill,
+              position: "relative",
+              cursor: isAvailable === null || saving ? "not-allowed" : "pointer",
+              padding: 0,
+              flexShrink: 0,
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                top: 2,
+                left: isAvailable === true ? 22 : 2,
+                width: 27,
+                height: 27,
+                borderRadius: 9999,
+                background: "#fff",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                transition: `left ${MOTION.fast} ${MOTION.easeOut}`,
+              }}
+            />
+          </button>
+        </div>
+
+        {error && (
+          <p role="alert" style={{ margin: 0, fontSize: TYPE.caption.size, color: STATUS.error.text }}>
+            {error}
+          </p>
+        )}
+      </div>
+
+      <p
         style={{
-          marginLeft: "auto",
-          width: 51,
-          height: 31,
-          borderRadius: 9999,
-          border: "none",
-          background: isAvailable ? "#22c55e" : "#3f3f46",
-          position: "relative",
-          cursor: isAvailable === null || saving ? "not-allowed" : "pointer",
-          padding: 0,
-          flexShrink: 0,
+          fontSize: TYPE.caption.size,
+          color: TEXT.tertiary,
+          marginTop: SPACE.sm,
         }}
       >
-        <span
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            top: 2,
-            left: isAvailable ? 22 : 2,
-            width: 27,
-            height: 27,
-            borderRadius: 9999,
-            background: "#fff",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-            transition: "left 150ms ease-out",
-          }}
-        />
-      </button>
-
-      {error && (
-        <p role="alert" style={{ margin: 0, fontSize: 12, color: "#ef4444" }}>
-          {error}
-        </p>
-      )}
-    </div>
+        {T.availabilityHint}
+      </p>
+    </GlassCard>
   );
 }
 

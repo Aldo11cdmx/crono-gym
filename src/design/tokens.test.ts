@@ -33,6 +33,7 @@ import {
   ACCENT,
   COLOR_TOKENS,
   COPPER,
+  CRIMSON,
   DANGER,
   DIAGRAM,
   FOCUS,
@@ -863,7 +864,6 @@ describe("the rest of the token set", () => {
       );
     }
     // The two legacy names resolve to their replacements rather than keeping an older feel.
-    expect(MOTION.ease).toBe(MOTION.standard);
     expect(MOTION.base).toBe(MOTION.normal);
     expect(MOTION.duration).toEqual({
       instant: MOTION.instant,
@@ -988,8 +988,28 @@ describe("the token set", () => {
     expect(SURFACE.glass).toBe(GLASS.fill);
     expect(TEXT.inverse).toBe(TEXT.onAccent);
     expect(ACCENT.muted).toBe(ACCENT.subtle);
+    expect(CRIMSON.base).toBe(ACCENT.base);
+    expect(CRIMSON.hover).toBe(ACCENT.hover);
+    expect(CRIMSON.pressed).toBe(ACCENT.pressed);
+    expect(CRIMSON.subtle).toBe(ACCENT.subtle);
+    expect(CRIMSON.text).toBe(ACCENT.text);
+    expect(CRIMSON.glow).toBe(ACCENT.glow);
+    expect(CRIMSON.border).toBe(ACCENT.border);
+    expect(CRIMSON.muted).toBe(ACCENT.muted);
+    expect(CRIMSON.ring).toBe(ACCENT.ring);
   });
 
+  it("adds DS 2.0 C2 tokens with exact values", () => {
+    expect(MOTION.duration200).toBe("200ms");
+    expect(MOTION.ease).toBe("ease");
+    expect(MOTION.transitionStandard).toBe("all 150ms ease");
+    expect(SCRIM.overlay).toBe("rgba(0, 0, 0, 0.8)");
+    expect(GLASS.blurPlain12).toBe("blur(12px)");
+    expect(GLASS.blurPlain20).toBe("blur(20px)");
+    expect(GLASS.fillFaint).toBe("rgba(255, 255, 255, 0.05)");
+    expect(GLASS.blurPlain12).not.toContain("saturate");
+    expect(GLASS.blurPlain20).not.toContain("saturate");
+  });
   it("keeps the accent's tints and its border at different alphas on purpose", () => {
     // A border has to survive against the fill behind it, which a 12% tint does not, so
     // `border` is deliberately the stronger of the two rather than an alias of `subtle`.

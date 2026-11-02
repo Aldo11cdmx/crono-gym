@@ -51,8 +51,8 @@ export function GlassCard({
     : {
         backgroundColor: raised ? GLASS.fillRaised : GLASS.fill,
         borderColor: GLASS.border,
-        backdropFilter: "blur(24px) saturate(140%)",
-        WebkitBackdropFilter: "blur(24px) saturate(140%)",
+        backdropFilter: GLASS.blurMedium,
+        WebkitBackdropFilter: GLASS.blurMedium,
       };
 
   return (

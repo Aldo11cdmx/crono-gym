@@ -199,11 +199,7 @@ describe("CoachPortal · la selección", () => {
     render(<CoachPortal />);
 
     // An empty chat pane reads as a broken one; the prompt says what to do next.
-    // The chat column's own copy, not the CRM's: the two are deliberately different sentences
-    // so a coach with nothing selected does not read the same line once per card.
     expect(screen.getByText(T.chatSelectPrompt)).toBeTruthy();
-    expect(screen.queryByText(T.crmSelectPrompt)).toBeNull();
-    expect(screen.queryByText(T.builderSelectPrompt)).toBeNull();
     expect(screen.queryByText(`chat:${REQUEST}`)).toBeNull();
     expect(screen.getByText("crm:none")).toBeTruthy();
     expect(builderProps.at(-1)).toEqual({ athleteId: null });
@@ -225,12 +221,18 @@ describe("CoachPortal · la selección", () => {
      * look the athlete up itself, on a filter that could disagree with the queue row that
      * produced the selection.
      */
+    await act(async () => {
+      fireEvent.click(screen.getByText(T.crmTitle));
+    });
     expect(crmProps.at(-1)).toEqual({ athleteId: ATHLETE });
     /*
      * The builder shares that selection, and with more force: it *writes* to the athlete's
      * library, so pointing it at the previous athlete would put a coach's prescription in
      * somebody else's account. That is the one mistake here the athlete cannot undo.
      */
+    await act(async () => {
+      fireEvent.click(screen.getByText(T.builderTitle));
+    });
     expect(builderProps.at(-1)).toEqual({ athleteId: ATHLETE });
   });
 
@@ -248,6 +250,10 @@ describe("CoachPortal · la selección", () => {
     render(<CoachPortal />);
     await act(async () => {
       fireEvent.click(screen.getByText("open conversation"));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText(T.builderTitle));
     });
 
     await act(async () => {

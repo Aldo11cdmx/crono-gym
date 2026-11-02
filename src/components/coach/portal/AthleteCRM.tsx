@@ -33,7 +33,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassCard, Skeleton } from "@/components/ui";
 import { AnatomicalRanksView } from "@/components/AnatomicalRanksView";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
@@ -155,8 +155,8 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
 
   if (athleteId === null) {
     return (
-      <GlassCard>
-        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>{T.crmSelectPrompt}</p>
+      <GlassCard style={{ padding: SPACE.xl, borderRadius: RADIUS.card }}>
+        <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>{T.crmSelectPrompt}</p>
       </GlassCard>
     );
   }
@@ -204,7 +204,7 @@ export function AthleteCRM({ athleteId }: AthleteCRMProps) {
                   <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>
                     {getExerciseDisplayName({ name: pr.exerciseName })}
                   </span>
-                  <span style={{ fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
+                  <span style={{ ...TYPE.mono, fontVariantNumeric: "tabular-nums", fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
                     {formatKg(pr.weightKg)}
                     {pr.reps !== null ? ` × ${pr.reps}` : ""}
                     {pr.achievedAt !== "" && (
@@ -290,7 +290,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function ErrorLine({ children }: { children: React.ReactNode }) {
   return (
-    <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+    <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
       {children}
     </p>
   );
@@ -321,7 +321,7 @@ function WeeklyVolume({ map }: { map: ReturnType<typeof useMuscleRanks>["map"] }
       {rows.map((row) => (
         <li key={row.label} className="flex items-baseline justify-between gap-3">
           <span style={{ fontSize: TYPE.subhead.size, color: TEXT.secondary }}>{row.label}</span>
-          <span style={{ fontSize: TYPE.subhead.size, color: TEXT.primary }}>{row.sets}</span>
+          <span style={{ ...TYPE.mono, fontVariantNumeric: "tabular-nums", color: TEXT.primary }}>{row.sets}</span>
         </li>
       ))}
     </ul>

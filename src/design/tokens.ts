@@ -96,6 +96,12 @@ export const GLASS = {
   fill: "rgba(255, 255, 255, 0.06)",
   /** Slightly denser, for a card sitting on another card. */
   fillRaised: "rgba(255, 255, 255, 0.09)",
+  /** Subtle fill for secondary glass surfaces. */
+  fillSubtle: "rgba(255, 255, 255, 0.04)",
+  /** Denser immersive fill for overlays/sheets/modals. */
+  fillImmersive: "rgba(255, 255, 255, 0.10)",
+  /** Faint translucent surface for separators and subtle highlights. */
+  fillFaint: "rgba(255, 255, 255, 0.05)",
   /** Hairline. Below 10% it disappears on OLED at arm's length. */
   border: "rgba(255, 255, 255, 0.10)",
   /** Emphasised border: hover, focus-adjacent. */
@@ -112,6 +118,16 @@ export const GLASS = {
   shadow: "0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 32px rgba(0, 0, 0, 0.4)",
   /** Large radius. The brief asks for 20-28px; 24 is the middle and reads soft. */
   radius: "24px",
+  /** Blur for subtle glass surfaces */
+  blurSubtle: "blur(12px) saturate(130%)",
+  /** Blur for elevated glass surfaces (default) */
+  blurMedium: "blur(24px) saturate(140%)",
+  /** Blur for immersive glass surfaces (sheets/modals/overlays) */
+  blurStrong: "blur(36px) saturate(150%)",
+  /** Plain blur without saturation, for functional surfaces. */
+  blurPlain12: "blur(12px)",
+  /** Plain blur without saturation, for functional surfaces. */
+  blurPlain20: "blur(20px)",
 } as const;
 
 /**
@@ -243,6 +259,75 @@ export const ACCENT = {
    * up visible on an idle button.
    */
   ring: "0 0 0 1px rgba(255, 59, 48, 0.3), 0 4px 16px rgba(255, 59, 48, 0.4)",
+} as const;
+
+/**
+ * Crimson palette aliases.
+ * Maps to existing ACCENT hierarchy to enforce single-accent policy.
+ */
+export const CRIMSON = {
+  /** Primary accent - maps to ACCENT.base */
+  base: ACCENT.base,
+  /** Alias for numeric scale */
+  500: ACCENT.base,
+  /** Hover - maps to ACCENT.hover */
+  hover: ACCENT.hover,
+  /** Alias for numeric scale */
+  600: ACCENT.hover,
+  /** Pressed - maps to ACCENT.pressed */
+  pressed: ACCENT.pressed,
+  /** Alias for numeric scale */
+  700: ACCENT.pressed,
+  /** Tinted background - maps to ACCENT.subtle */
+  subtle: ACCENT.subtle,
+  /** Text and icons on dark backgrounds - maps to ACCENT.text */
+  text: ACCENT.text,
+  /** Alias for numeric scale */
+  400: ACCENT.text,
+  /** Ambient glow - maps to ACCENT.glow */
+  glow: ACCENT.glow,
+  /** Alias for numeric scale */
+  GLOW: ACCENT.glow,
+  /** Hairline border - maps to ACCENT.border */
+  border: ACCENT.border,
+  /** Legacy name for subtle - maps to ACCENT.muted */
+  muted: ACCENT.muted,
+  /** Two-part ring - maps to ACCENT.ring */
+  ring: ACCENT.ring,
+} as const;
+
+/**
+ * Obsidian palette aliases.
+ * Maps to existing SURFACE and GLASS hierarchy to keep a single source of truth.
+ */
+export const OBSIDIAN = {
+  /** True black base - maps to SURFACE.base */
+  base: SURFACE.base,
+  /** Alias for numeric scale */
+  950: SURFACE.base,
+  /** Raised surfaces - maps to SURFACE.raised */
+  raised: SURFACE.raised,
+  /** Alias for numeric scale */
+  900: SURFACE.raised,
+  /** Overlay surfaces - maps to SURFACE.overlay */
+  overlay: SURFACE.overlay,
+  /** Alias for numeric scale */
+  850: SURFACE.overlay,
+  /** Elevated surfaces - maps to SURFACE.elevated */
+  elevated: SURFACE.elevated,
+  /** Alias for numeric scale */
+  800: SURFACE.elevated,
+  /**
+   * Interactive/elevated elements - maps to GLASS.fill
+   * Note: This is a translucent glass surface, not a solid color.
+   */
+  750: GLASS.fill,
+  /** Borders/dividers - maps to SURFACE.border */
+  border: SURFACE.border,
+  /** Alias for numeric scale */
+  700: SURFACE.border,
+  /** Secondary borders - maps to GLASS.borderStrong */
+  600: GLASS.borderStrong,
 } as const;
 
 /**
@@ -381,6 +466,10 @@ export const SCRIM = {
    * through is a dialog they will answer the wrong question on.
    */
   modal: "rgba(0, 0, 0, 0.72)",
+  /**
+   * An immersive overlay backdrop.
+   */
+  overlay: "rgba(0, 0, 0, 0.8)",
   /**
    * A surface nested inside a dark one, which has to read as *recessed* rather than
    * lighter.
@@ -978,6 +1067,12 @@ export const MOTION = {
   standard: "cubic-bezier(0.4, 0.0, 0.2, 1.0)",
   /** For opacity-only changes, where easing is invisible anyway. */
   easeLinear: "linear",
+  /** Intermediate duration for subtle transitions. */
+  duration200: "200ms",
+  /** Standard CSS easing curve. */
+  ease: "ease",
+  /** Standard transition preset: all 150ms ease. */
+  transitionStandard: "all 150ms ease",
   /** Minimum tap target, per WCAG 2.5.5 and the brief. */
   minTouchTarget: "44px",
 
@@ -1028,14 +1123,16 @@ export const MOTION = {
   } as const,
 
   /*
-   * Aliases. `ease` was the only curve the app had and `base` the only medium duration.
+   * Legacy alias. `base` is the only remaining medium-duration alias.
    *
-   * They resolve to their replacements rather than keeping their old values, so a call site
-   * that was never migrated gets the current motion instead of a second, older feel.
-   * `tokens.test.ts` pins both, and pins the call-site count to zero: an alias exists to
-   * be retired, and one that still has callers is just a name nobody chose.
+   * It resolves to its replacement rather than keeping an older value, so a call site
+   * that was never migrated gets the current motion. `tokens.test.ts` pins it, and pins
+   * the call-site count to zero: an alias exists to be retired, and one that still has
+   * callers is just a name nobody chose.
+   *
+   * Note: `MOTION.ease` is no longer an alias; it is now a first-class token holding the
+   * CSS keyword `ease` (see C2). Do not confuse the two.
    */
-  ease: "cubic-bezier(0.4, 0.0, 0.2, 1.0)",
   base: DURATION.normal,
 } as const;
 

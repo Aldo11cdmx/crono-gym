@@ -30,7 +30,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Trash2, RefreshCw, Sparkles } from "lucide-react";
 
-import { ACCENT, TEXT, TYPE } from "@/design/tokens";
+import { CRIMSON, GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
@@ -546,7 +546,7 @@ export function VipRoutineBuilder({ athleteId, isTemplate = false, onSaved }: Vi
           )}
 
           {error && (
-            <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+            <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
               {error}
             </p>
           )}
@@ -563,7 +563,7 @@ export function VipRoutineBuilder({ athleteId, isTemplate = false, onSaved }: Vi
           )}
 
           {toast && (
-            <p role="status" aria-live="polite" style={{ margin: 0, fontSize: TYPE.subhead.size, color: ACCENT.text }}>
+            <p role="status" aria-live="polite" style={{ margin: 0, fontSize: TYPE.subhead.size, color: CRIMSON.text }}>
               {toast}
             </p>
           )}
@@ -787,17 +787,17 @@ const labelStyle = { fontSize: TYPE.caption.size, fontWeight: 600, color: TEXT.t
 
 const inputStyle = {
   width: "100%",
-  minHeight: 40,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1px solid ${TEXT.tertiary}33`,
-  background: "#ffffff08",
+  minHeight: MOTION.minTouchTarget,
+  padding: `${SPACE.sm} ${SPACE.md}`,
+  borderRadius: RADIUS.input,
+  border: `1px solid ${GLASS.border}`,
+  backgroundColor: GLASS.fillSubtle,
   color: TEXT.primary,
   fontSize: TYPE.subhead.size,
 } as const;
 
 const dayStyle = {
-  padding: 12,
-  borderRadius: 12,
-  border: `1px solid ${TEXT.tertiary}22`,
+  padding: SPACE.md,
+  borderRadius: RADIUS.control,
+  border: `1px solid ${GLASS.border}`,
 } as const;

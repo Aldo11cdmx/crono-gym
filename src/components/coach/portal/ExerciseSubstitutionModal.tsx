@@ -10,7 +10,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { X } from "lucide-react";
 
-import { MOTION, TEXT, TYPE } from "@/design/tokens";
+import { MOTION, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
@@ -68,7 +68,7 @@ export function ExerciseSubstitutionModal({
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        padding: "20px",
+        padding: SPACE.card,
         transition: `opacity ${MOTION.fast} ${MOTION.easeOut}`,
       }}
     >
@@ -82,7 +82,7 @@ export function ExerciseSubstitutionModal({
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          gap: 16,
+          gap: SPACE.lg,
         }}
       >
         <div className="flex items-center justify-between gap-2">
@@ -105,7 +105,7 @@ export function ExerciseSubstitutionModal({
               border: "none",
               color: TEXT.tertiary,
               cursor: "pointer",
-              padding: 4,
+              padding: SPACE.xs,
               lineHeight: 1,
             }}
           >

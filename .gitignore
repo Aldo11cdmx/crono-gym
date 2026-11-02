@@ -1,4 +1,4 @@
-# Dependencies
+﻿# Dependencies
 /node_modules
 
 # Build output
@@ -20,16 +20,12 @@ Thumbs.db
 !.kilo/rules/
 !.kilo/rules/**
 
-# Supabase CLI scratch: project ref, cached settings.
+# Supabase CLI scratch
 /supabase/.temp/
 
-# Deno's lockfile is committed on purpose, so a function deploy resolves the same
-# versions the tests did. `supabase/functions/deno.json` and this file are what let
-# `deno check` run at all here.
-
-originals/supabase/.branches
-supabase/.temp
-
+# Original assets and Supabase branches
 originals/
 supabase/.branches/
-supabase/.temp/
+
+# Vercel local configuration
+.vercel/

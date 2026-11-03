@@ -1,0 +1,205 @@
+[
+  {
+    "pair": [
+      "0088",
+      "1371"
+    ],
+    "a": {
+      "id": "0088",
+      "name": "barbell seated calf raise",
+      "equip": "barbell",
+      "target": "calves",
+      "sec": [
+        "hamstrings",
+        "quadriceps"
+      ]
+    },
+    "b": {
+      "id": "1371",
+      "name": "barbell seated calf raise",
+      "equip": "barbell",
+      "target": "calves",
+      "sec": [
+        "hamstrings"
+      ]
+    }
+  },
+  {
+    "pair": [
+      "1731",
+      "0296"
+    ],
+    "a": {
+      "id": "1731",
+      "name": "dumbbell close grip press",
+      "equip": "dumbbell",
+      "target": "triceps",
+      "sec": [
+        "chest",
+        "shoulders"
+      ]
+    },
+    "b": {
+      "id": "0296",
+      "name": "dumbbell close-grip press",
+      "equip": "dumbbell",
+      "target": "triceps",
+      "sec": [
+        "chest",
+        "shoulders"
+      ]
+    }
+  },
+  {
+    "pair": [
+      "0422",
+      "1680"
+    ],
+    "a": {
+      "id": "0422",
+      "name": "dumbbell standing one arm curl (over incline bench)",
+      "equip": "dumbbell",
+      "target": "biceps",
+      "sec": [
+        "forearms"
+      ]
+    },
+    "b": {
+      "id": "1680",
+      "name": "dumbbell standing one arm curl over incline bench",
+      "equip": "dumbbell",
+      "target": "biceps",
+      "sec": [
+        "forearms"
+      ]
+    }
+  },
+  {
+    "pair": [
+      "0454",
+      "1628"
+    ],
+    "a": {
+      "id": "0454",
+      "name": "ez barbell spider curl",
+      "equip": "ez barbell",
+      "target": "biceps",
+      "sec": [
+        "forearms"
+      ]
+    },
+    "b": {
+      "id": "1628",
+      "name": "ez barbell spider curl",
+      "equip": "ez barbell",
+      "target": "biceps",
+      "sec": [
+        "forearms"
+      ]
+    }
+  },
+  {
+    "pair": [
+      "0577",
+      "0576"
+    ],
+    "a": {
+      "id": "0577",
+      "name": "lever chest press",
+      "equip": "leverage machine",
+      "target": "pectorals",
+      "sec": [
+        "triceps",
+        "shoulders"
+      ]
+    },
+    "b": {
+      "id": "0576",
+      "name": "lever chest press",
+      "equip": "leverage machine",
+      "target": "pectorals",
+      "sec": [
+        "triceps",
+        "shoulders"
+      ]
+    }
+  },
+  {
+    "pair": [
+      "0655",
+      "0656"
+    ],
+    "a": {
+      "id": "0655",
+      "name": "push-up (on stability ball)",
+      "equip": "stability ball",
+      "target": "pectorals",
+      "sec": [
+        "triceps",
+        "shoulders",
+        "core"
+      ]
+    },
+    "b": {
+      "id": "0656",
+      "name": "push-up (on stability ball)",
+      "equip": "stability ball",
+      "target": "pectorals",
+      "sec": [
+        "triceps",
+        "shoulders",
+        "core"
+      ]
+    }
+  },
+  {
+    "pair": [
+      "0697",
+      "1766"
+    ],
+    "a": {
+      "id": "0697",
+      "name": "self assisted inverse leg curl",
+      "equip": "body weight",
+      "target": "hamstrings",
+      "sec": [
+        "glutes",
+        "calves"
+      ]
+    },
+    "b": {
+      "id": "1766",
+      "name": "self assisted inverse leg curl",
+      "equip": "body weight",
+      "target": "hamstrings",
+      "sec": [
+        "glutes",
+        "calves"
+      ]
+    }
+  },
+  {
+    "pair": [
+      "0763",
+      "1394"
+    ],
+    "a": {
+      "id": "0763",
+      "name": "smith reverse calf raises",
+      "equip": "smith machine",
+      "target": "calves",
+      "sec": [
+        "hamstrings"
+      ]
+    },
+    "b": {
+      "id": "1394",
+      "name": "smith reverse calf raises",
+      "equip": "smith machine",
+      "target": "calves",
+      "sec": [
+        "hamstrings"
+      ]
+    }
+  }
+]

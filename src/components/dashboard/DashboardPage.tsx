@@ -7,8 +7,7 @@
  *    prominente ("Comenzar entrenamiento"). Sin CTA duplicados, sin FAB flotante.
  * 2. Consistencia semanal: barra de dias (L M X J V S D) y racha
  *    ("2/3 completados") en una sola GlassCard horizontal compacta.
- * 3. Feed de inteligencia: FatigueAlertCard y los anuncios activos de la tabla
- *    `announcements`, en lugar del bloque obsoleto de "Records recientes".
+ * 3. Feed de inteligencia: anuncios activos de la tabla `announcements`.
  *
  * Todos los textos staticos estan escritos con entidades HTML o sin tilde,
  * asi el UTF-8 no puede leerse mal como mojibake (A©, A·, A3).
@@ -25,7 +24,6 @@ import { PROGRESS_PATH, TRAIN_PATH } from "@/components/shell/navItems";
 import { MuscleReadonlyMap } from "@/components/MuscleReadonlyMap";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { FatigueAlertCard } from "@/components/FatigueAlertCard";
 import { supabase } from "@/lib/supabase";
 import { CoachBanner } from "@/components/coach/portal/CoachBanner";
 import { RequestRoutineModal } from "@/components/coach/portal/RequestRoutineModal";
@@ -520,7 +518,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             gap: SPACE.md,
           }}
         >
-          <FatigueAlertCard status="normal" muscle="pecho" />
           {announcements.map((announcement) => (
             <GlassCard key={announcement.id} raised flush>
               <span

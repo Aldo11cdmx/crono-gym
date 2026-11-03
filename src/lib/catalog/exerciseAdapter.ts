@@ -16,12 +16,86 @@ import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 import type { Exercise } from "@/types/supabase";
 import type { CatalogExercise } from "./types";
 
+/**
+ * Curated, explicit translations for complete exercise names only.
+ * No word-by-word substitution. No hybrid translations.
+ */
+const EXERCISE_NAME_ES_MAP: Record<string, string> = {
+  "barbell bench press": "Press de banca con barra",
+  "incline barbell bench press": "Press inclinado con barra",
+  "decline barbell bench press": "Press declinado con barra",
+  "dumbbell bench press": "Press de banca con mancuernas",
+  "incline dumbbell bench press": "Press inclinado con mancuernas",
+  "decline dumbbell bench press": "Press declinado con mancuernas",
+  "barbell squat": "Sentadilla con barra",
+  "front squat": "Sentadilla frontal",
+  "dumbbell squat": "Sentadilla con mancuernas",
+  "romanian deadlift": "Peso muerto rumano",
+  "barbell deadlift": "Peso muerto con barra",
+  "conventional deadlift": "Peso muerto convencional",
+  "lat pulldown": "Jalón al pecho",
+  "wide grip lat pulldown": "Jalón al pecho con agarre amplio",
+  "pull up": "Dominadas",
+  "chin up": "Dominadas con agarre supino",
+  "barbell row": "Remo con barra",
+  "bent over row": "Remo inclinado con barra",
+  "dumbbell row": "Remo con mancuerna a una mano",
+  "one arm dumbbell row": "Remo a una mano con mancuerna",
+  "barbell shoulder press": "Press militar con barra",
+  "dumbbell shoulder press": "Press de hombros con mancuernas",
+  "shoulder press": "Press de hombros",
+  "dumbbell lateral raise": "Elevación lateral con mancuernas",
+  "lateral raise": "Elevación lateral",
+  "dumbbell front raise": "Elevación frontal con mancuernas",
+  "front raise": "Elevación frontal",
+  "dumbbell rear lateral raise": "Elevación posterior con mancuernas",
+  "rear lateral raise": "Elevación posterior",
+  "dumbbell bicep curl": "Curl de bíceps con mancuernas",
+  "barbell curl": "Curl de bíceps con barra",
+  "bicep curl": "Curl de bíceps",
+  "dumbbell hammer curl": "Curl martillo con mancuernas",
+  "hammer curl": "Curl martillo",
+  "triceps pushdown": "Extensión de tríceps en polea",
+  "cable pushdown": "Extensión de tríceps en polea",
+  "leg extension": "Extensión de cuádriceps",
+  "leg curl": "Curl femoral",
+  "lying leg curl": "Curl femoral tumbado",
+  "seated leg curl": "Curl femoral sentado",
+  "leg press": "Prensa de piernas",
+  "dumbbell lunge": "Zancada con mancuernas",
+  "walking lunge": "Zancada caminando",
+  "lunge": "Zancada",
+  "standing calf raise": "Elevación de talones de pie",
+  "seated calf raise": "Elevación de talones sentado",
+  "calf raise": "Elevación de talones",
+  "plank": "Plancha",
+  "crunch": "Crunch abdominal",
+  "cable fly": "Aperturas en polea",
+  "dumbbell fly": "Aperturas con mancuernas",
+  "pec fly": "Aperturas en máquina",
+};
+
+function normalizeKey(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function deriveNameEs(name: string): string | null {
+  if (!name || typeof name !== "string") return null;
+  const key = normalizeKey(name);
+  const translated = EXERCISE_NAME_ES_MAP[key];
+  if (translated) {
+    return translated;
+  }
+  return null;
+}
+
 /** One catalog row as an exercise row. */
 export function toExercise(row: CatalogExercise): Exercise {
+  const nameEs = row.name_es ?? deriveNameEs(row.name);
   return {
     id: row.id,
     name: row.name,
-    name_es: null,
+    name_es: nameEs,
     body_part: row.body_part,
     target: row.target,
     equipment: row.equipment,

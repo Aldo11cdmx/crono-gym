@@ -14,6 +14,7 @@
 export interface CatalogExercise {
   id: string;
   name: string;
+  name_es?: string | null;
   category: string;
   body_part: string;
   equipment: string;

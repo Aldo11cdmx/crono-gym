@@ -25,6 +25,11 @@ Verifica este contexto contra los archivos actuales antes de asumir que sigue vi
 6. **Nunca afirmes que algo pasa sin haberlo ejecutado.** La suite completa `npm test` puede tardar aproximadamente 5 minutos. Ejecuta primero los tests del área (`npx vitest run <ruta>`) y la suite completa antes de cerrar un cambio amplio.
 7. **Los informes de `reports/architecture-research/` son una fotografía del 19–20 de octubre.** Úsalos como mapa de riesgos y dirección, pero verifica el código actual antes de citar cifras o hallazgos.
 
+8. **Preserva cambios y datos.** Conserva siempre los cambios locales existentes y no sobrescribas trabajo ajeno. No borres, purgues ni modifiques datos de usuario ni historial Git sin autorización explícita; protege la integridad de datos, la experiencia offline, la seguridad y la accesibilidad.
+9. **Disciplina Git.** No ejecutes commits, push, merge, rebase ni deploy sin autorización explícita del propietario. Usa staging selectivo y revisa `git diff --cached` antes de cualquier commit. No alteres historial Git ni elimines archivos de respaldo sin autorización.
+10. **Verificación real.** Nunca afirmes que una prueba pasa si no se ejecutó. Ejecuta las pruebas pertinentes al alcance y diferencia claramente validaciones ejecutadas de verificaciones pendientes.
+11. **Diseño coherente.** Mantén la interfaz en español, utiliza los tokens existentes del sistema de diseño y prioriza soluciones simples, accesibles y coherentes con la arquitectura.
+
 ## Precedencia en conflictos (1 = mayor prioridad)
 
 1. `cybersecurity-and-hardening-sentinel`, `domain-fitness-guardian`, `transactional-sync-and-rls-guardian`.

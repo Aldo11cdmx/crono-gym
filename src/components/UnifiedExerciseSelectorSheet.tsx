@@ -35,7 +35,8 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
 import { translateEquipment } from "@/lib/i18n";
-import { isAvailableInMyGym } from "@/data/myGymEquipment";
+import { MY_GYM_EQUIPMENT_TAGS } from "@/data/myGymEquipment";
+import { resolveAvailability } from "@/lib/equipment/availability";
 import { supabase } from "@lib/supabase";
 import {
   ACCENT,
@@ -61,6 +62,7 @@ import {
 import { enabledSlugs as getEnabledSlugs } from "@/lib/muscleMap";
 
 const PAGE_SIZE = 12;
+const MY_GYM_SCOPE = { tags: MY_GYM_EQUIPMENT_TAGS, complete: false };
 const DEBOUNCE_MS = 150;
 const MOBILE_MAX_WIDTH = 767; // por debajo de md (768px)
 const ENABLED_MUSCLE_SLUGS = getEnabledSlugs();
@@ -270,7 +272,10 @@ export function UnifiedExerciseSelectorSheet({
     const attributeFiltered = baseRows.filter((ex) => {
       if (ids && !ids.has(ex.id)) return false;
       if (selectedEquipment && normaliseExerciseName(ex.equipment) !== normaliseExerciseName(selectedEquipment)) return false;
-      if (onlyMyGym && !isAvailableInMyGym(ex.equipment)) return false;
+      if (onlyMyGym) {
+        const availability = resolveAvailability(ex.equipment, MY_GYM_SCOPE);
+        if (availability !== "available") return false;
+      }
       return true;
     });
     if (selectedMuscles.length === 0) return attributeFiltered;
@@ -852,6 +857,8 @@ export function UnifiedExerciseSelectorSheet({
           {/* Estado vacío */}
           {displayed.length === 0 && !catalogLoading && !catalogError && (
             <div
+              role="status"
+              aria-live="polite"
               style={{
                 padding: SPACE.section,
                 textAlign: "center",
@@ -864,7 +871,13 @@ export function UnifiedExerciseSelectorSheet({
             >
               <Search size={40} aria-hidden="true" style={{ color: "rgba(255,255,255,0.15)" }} />
               <p style={{ margin: 0, fontSize: TYPE.body.size, color: TEXT.primary }}>
-                No se encontró ningún ejercicio con esos filtros.
+                {localExercises.length === 0
+                  ? "El catálogo está vacío."
+                  : query || selectedEquipment || selectedMuscles.length > 0
+                    ? "No se encontraron coincidencias para la búsqueda."
+                    : onlyMyGym
+                      ? "No hay ejercicios con disponibilidad confirmada para Mi Gym."
+                      : "No se encontró ningún ejercicio con esos filtros."}
               </p>
               {activeFilterCount > 0 && (
                 <button

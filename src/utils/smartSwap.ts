@@ -1,3 +1,5 @@
+import type { EquipmentAvailability } from "@/lib/equipment/availability";
+
 export interface ExerciseLite {
   id: string;
   name: string;
@@ -6,6 +8,8 @@ export interface ExerciseLite {
   pattern?: string;
   equipment?: string;
   available?: boolean;
+  /** Fuente de verdad tri-state cuando está definida. */
+  equipmentAvailability?: EquipmentAvailability;
 }
 
 export interface SwapResult {
@@ -32,7 +36,12 @@ function score(a: ExerciseLite, b: ExerciseLite, opts: SwapOptions): number {
     const inter = a.secondaryMuscles.filter((m) => b.secondaryMuscles!.includes(m)).length;
     s += Math.min(15, inter * 5);
   }
-  if (b.available !== false) { s += 10; }
+  // Disponibilidad confirmada: +10. El tri-state prevalece sobre el booleano legacy.
+  if (b.equipmentAvailability !== undefined) {
+    if (b.equipmentAvailability === "available") { s += 10; }
+  } else if (b.available === true) {
+    s += 10;
+  }
   if (opts.excludeEquipment?.includes(b.equipment ?? "")) s -= 100;
   return s;
 }

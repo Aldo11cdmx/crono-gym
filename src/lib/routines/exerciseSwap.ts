@@ -12,6 +12,7 @@
 import type { Exercise } from "@/types/supabase";
 import { isAvailableInMyGym } from "@/data/myGymEquipment";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import type { EquipmentAvailability } from "@/lib/equipment/availability";
 
 export interface SwapCandidate {
   exercise: Exercise;
@@ -21,6 +22,8 @@ export interface SwapCandidate {
   secondaryMatch: boolean;
   /** true when the candidate's equipment is in the user's gym. */
   equipmentAvailable: boolean;
+  /** Estado tri-state cuando puede determinarse; prevalece sobre el booleano. */
+  equipmentAvailability?: EquipmentAvailability;
 }
 
 export interface SwapOptions {
@@ -71,7 +74,14 @@ export function findSwapCandidates(
       ? availableEquipment.has(ex.equipment)
       : isAvailableInMyGym(ex.equipment);
 
-    candidates.push({ exercise: ex, primaryMatch, secondaryMatch, equipmentAvailable });
+    // Tri-state derivado. La ausencia en un conjunto parcial no se interpreta
+    // como indisponibilidad confirmada (unknown). El conjunto estático del gym
+    // se trata como fuente parcial por defecto.
+    const equipmentAvailability: EquipmentAvailability = availableEquipment
+      ? (availableEquipment.has(ex.equipment) ? "available" : "unknown")
+      : (isAvailableInMyGym(ex.equipment) ? "available" : "unknown");
+
+    candidates.push({ exercise: ex, primaryMatch, secondaryMatch, equipmentAvailable, equipmentAvailability });
   }
 
   return rankCandidates(candidates, availableEquipment);
@@ -93,8 +103,15 @@ function rankCandidates(
       return a.primaryMatch ? -1 : 1;
     }
     // When equipment filtering is active, available gear ranks above not.
-    if (withEquipmentFilter && a.equipmentAvailable !== b.equipmentAvailable) {
-      return a.equipmentAvailable ? -1 : 1;
+    // El tri-state prevalece sobre el booleano legacy cuando está presente.
+    const aEff = a.equipmentAvailability !== undefined
+      ? a.equipmentAvailability === "available"
+      : a.equipmentAvailable;
+    const bEff = b.equipmentAvailability !== undefined
+      ? b.equipmentAvailability === "available"
+      : b.equipmentAvailable;
+    if (withEquipmentFilter && aEff !== bEff) {
+      return aEff ? -1 : 1;
     }
     // Alphabetical tiebreaker, on the Spanish label the list shows.
     return getExerciseDisplayName(a.exercise).localeCompare(

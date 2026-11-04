@@ -1,0 +1,137 @@
+field,raw_value,count
+category,waist,169
+category,upper legs,227
+category,back,203
+category,lower legs,59
+category,chest,163
+category,upper arms,292
+category,cardio,29
+category,shoulders,143
+category,lower arms,37
+category,neck,2
+body_part,waist,169
+body_part,upper legs,227
+body_part,back,203
+body_part,lower legs,59
+body_part,chest,163
+body_part,upper arms,292
+body_part,cardio,29
+body_part,shoulders,143
+body_part,lower arms,37
+body_part,neck,2
+muscle_group,hip flexors,66
+muscle_group,obliques,67
+muscle_group,hamstrings,127
+muscle_group,biceps,164
+muscle_group,ankle stabilizers,1
+muscle_group,triceps,161
+muscle_group,shoulders,191
+muscle_group,glutes,71
+muscle_group,quadriceps,110
+muscle_group,chest,53
+muscle_group,calves,11
+muscle_group,forearms,165
+muscle_group,lower back,6
+muscle_group,traps,32
+muscle_group,upper back,1
+muscle_group,ankles,11
+muscle_group,trapezius,36
+muscle_group,deltoids,24
+muscle_group,core,7
+muscle_group,rhomboids,2
+muscle_group,rotator cuff,4
+muscle_group,wrist flexors,2
+muscle_group,wrist extensors,1
+muscle_group,latissimus dorsi,2
+muscle_group,abdominals,2
+muscle_group,lats,1
+muscle_group,soleus,4
+muscle_group,wrists,1
+muscle_group,hands,1
+target,abs,169
+target,quads,44
+target,lats,81
+target,calves,59
+target,pectorals,158
+target,glutes,144
+target,hamstrings,28
+target,adductors,6
+target,triceps,141
+target,cardiovascular system,29
+target,spine,19
+target,upper back,88
+target,biceps,151
+target,delts,143
+target,forearms,37
+target,traps,15
+target,serratus anterior,5
+target,abductors,5
+target,levator scapulae,2
+equipment,body weight,325
+equipment,cable,157
+equipment,leverage machine,81
+equipment,assisted,15
+equipment,medicine ball,13
+equipment,stability ball,28
+equipment,band,54
+equipment,barbell,154
+equipment,rope,10
+equipment,dumbbell,294
+equipment,ez barbell,23
+equipment,sled machine,15
+equipment,upper body ergometer,1
+equipment,kettlebell,41
+equipment,olympic barbell,2
+equipment,weighted,36
+equipment,bosu ball,3
+equipment,resistance band,7
+equipment,roller,8
+equipment,skierg machine,1
+equipment,hammer,1
+equipment,smith machine,48
+equipment,wheel roller,2
+equipment,stationary bike,1
+equipment,tire,1
+equipment,trap bar,1
+equipment,elliptical machine,1
+equipment,stepmill machine,1
+secondary_muscles,hip flexors,77
+secondary_muscles,lower back,71
+secondary_muscles,obliques,72
+secondary_muscles,hamstrings,289
+secondary_muscles,glutes,136
+secondary_muscles,biceps,194
+secondary_muscles,rhomboids,54
+secondary_muscles,ankle stabilizers,4
+secondary_muscles,forearms,277
+secondary_muscles,triceps,268
+secondary_muscles,shoulders,400
+secondary_muscles,core,94
+secondary_muscles,back,11
+secondary_muscles,quadriceps,161
+secondary_muscles,calves,147
+secondary_muscles,chest,91
+secondary_muscles,rear deltoids,20
+secondary_muscles,traps,33
+secondary_muscles,upper back,37
+secondary_muscles,trapezius,47
+secondary_muscles,ankles,11
+secondary_muscles,feet,8
+secondary_muscles,deltoids,28
+secondary_muscles,brachialis,14
+secondary_muscles,groin,1
+secondary_muscles,wrists,3
+secondary_muscles,rotator cuff,6
+secondary_muscles,upper chest,3
+secondary_muscles,latissimus dorsi,5
+secondary_muscles,wrist flexors,2
+secondary_muscles,wrist extensors,2
+secondary_muscles,abdominals,2
+secondary_muscles,grip muscles,1
+secondary_muscles,lower abs,1
+secondary_muscles,lats,1
+secondary_muscles,inner thighs,1
+secondary_muscles,soleus,4
+secondary_muscles,sternocleidomastoid,2
+secondary_muscles,hands,2
+secondary_muscles,shins,1

@@ -1,0 +1,140 @@
+﻿=== 0001 | 3/4 sit-up ===
+equipment: body weight
+target: abs
+muscle_group: hip flexors
+secondary_muscles: hip flexors, lower back
+---instructions.es---
+TÃºmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo. Coloca las manos detrÃ¡s de la cabeza con los codos apuntando hacia afuera. Activando el abdomen, levanta lentamente la parte superior del cuerpo del suelo, curvÃ¡ndote hacia adelante hasta que tu torso forme un Ã¡ngulo de 45 grados. Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posiciÃ³n inicial. Repite el nÃºmero de repeticiones deseado.
+---instruction_steps.es---
+1. TÃºmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo.
+2. Coloca las manos detrÃ¡s de la cabeza con los codos apuntando hacia afuera.
+3. Activando el abdomen, levanta lentamente la parte superior del cuerpo del suelo, curvÃ¡ndote hacia adelante hasta que tu torso forme un Ã¡ngulo de 45 grados.
+4. Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posiciÃ³n inicial.
+5. Repite el nÃºmero de repeticiones deseado.
+
+=== 0002 | 45Â° side bend ===
+equipment: body weight
+target: abs
+muscle_group: obliques
+secondary_muscles: obliques
+---instructions.es---
+Ponte de pie con los pies separados a la altura de los hombros y los brazos extendidos hacia abajo a los lados. Manteniendo la espalda recta y el core activado, flexiona lentamente el torso hacia un lado, bajando la mano hacia la rodilla. Haz una pausa por un momento en la parte inferior, luego regresa lentamente a la posiciÃ³n inicial. Repite del otro lado. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+---instruction_steps.es---
+1. Ponte de pie con los pies separados a la altura de los hombros y los brazos extendidos hacia abajo a los lados.
+2. Manteniendo la espalda recta y el core activado, flexiona lentamente el torso hacia un lado, bajando la mano hacia la rodilla.
+3. Haz una pausa por un momento en la parte inferior, luego regresa lentamente a la posiciÃ³n inicial.
+4. Repite del otro lado.
+5. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+
+=== 0003 | air bike ===
+equipment: body weight
+target: abs
+muscle_group: hip flexors
+secondary_muscles: hip flexors
+---instructions.es---
+TÃºmbate sobre tu espalda con las manos colocadas detrÃ¡s de la cabeza. Levanta las piernas del suelo y flexiona las rodillas formando un Ã¡ngulo de 90 grados. Lleva el codo derecho hacia la rodilla izquierda mientras simultÃ¡neamente estiras la pierna derecha. Regresa a la posiciÃ³n inicial y repite el movimiento del lado opuesto, llevando el codo izquierdo hacia la rodilla derecha mientras estiras la pierna izquierda. ContinÃºa alternando lados con un movimiento de pedaleo durante el nÃºmero de repeticiones deseado.
+---instruction_steps.es---
+1. TÃºmbate sobre tu espalda con las manos colocadas detrÃ¡s de la cabeza.
+2. Levanta las piernas del suelo y flexiona las rodillas formando un Ã¡ngulo de 90 grados.
+3. Lleva el codo derecho hacia la rodilla izquierda mientras simultÃ¡neamente estiras la pierna derecha.
+4. Regresa a la posiciÃ³n inicial y repite el movimiento del lado opuesto, llevando el codo izquierdo hacia la rodilla derecha mientras estiras la pierna izquierda.
+5. ContinÃºa alternando lados con un movimiento de pedaleo durante el nÃºmero de repeticiones deseado.
+
+=== 1512 | all fours squad stretch ===
+equipment: body weight
+target: quads
+muscle_group: hamstrings
+secondary_muscles: hamstrings, glutes
+---instructions.es---
+Comienza apoyado sobre manos y rodillas, con las manos justo debajo de los hombros y las rodillas justo debajo de las caderas. Extiende una pierna hacia atrÃ¡s, manteniendo la rodilla flexionada y el pie en flexiÃ³n. Baja lentamente las caderas hacia el suelo, sintiendo un estiramiento en los cuÃ¡driceps. MantÃ©n esta posiciÃ³n durante 20-30 segundos. Cambia de pierna y repite el estiramiento del otro lado.
+---instruction_steps.es---
+1. Comienza apoyado sobre manos y rodillas, con las manos justo debajo de los hombros y las rodillas justo debajo de las caderas.
+2. Extiende una pierna hacia atrÃ¡s, manteniendo la rodilla flexionada y el pie en flexiÃ³n.
+3. Baja lentamente las caderas hacia el suelo, sintiendo un estiramiento en los cuÃ¡driceps.
+4. MantÃ©n esta posiciÃ³n durante 20-30 segundos.
+5. Cambia de pierna y repite el estiramiento del otro lado.
+
+=== 0006 | alternate heel touchers ===
+equipment: body weight
+target: abs
+muscle_group: obliques
+secondary_muscles: obliques
+---instructions.es---
+TÃºmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo. Extiende los brazos hacia los lados, paralelos al suelo. Activando el abdomen, levanta los hombros del suelo y lleva la mano derecha hacia el talÃ³n derecho. Regresa a la posiciÃ³n inicial y repite del lado izquierdo, llevando la mano izquierda hacia el talÃ³n izquierdo. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+---instruction_steps.es---
+1. TÃºmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo.
+2. Extiende los brazos hacia los lados, paralelos al suelo.
+3. Activando el abdomen, levanta los hombros del suelo y lleva la mano derecha hacia el talÃ³n derecho.
+4. Regresa a la posiciÃ³n inicial y repite del lado izquierdo, llevando la mano izquierda hacia el talÃ³n izquierdo.
+5. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+
+=== 0007 | alternate lateral pulldown ===
+equipment: cable
+target: lats
+muscle_group: biceps
+secondary_muscles: biceps, rhomboids
+---instructions.es---
+SiÃ©ntate en la mÃ¡quina de cable con la espalda recta y los pies apoyados en el suelo. Agarra las agarraderas con un agarre prono, un poco mÃ¡s separadas que el ancho de los hombros. InclÃ­nate ligeramente hacia atrÃ¡s y lleva las agarraderas hacia el pecho, juntando los omÃ³platos. Haz una pausa por un momento en el punto mÃ¡ximo del movimiento, luego suelta lentamente las agarraderas de vuelta a la posiciÃ³n inicial. Repite el nÃºmero de repeticiones deseado.
+---instruction_steps.es---
+1. SiÃ©ntate en la mÃ¡quina de cable con la espalda recta y los pies apoyados en el suelo.
+2. Agarra las agarraderas con un agarre prono, un poco mÃ¡s separadas que el ancho de los hombros.
+3. InclÃ­nate ligeramente hacia atrÃ¡s y lleva las agarraderas hacia el pecho, juntando los omÃ³platos.
+4. Haz una pausa por un momento en el punto mÃ¡ximo del movimiento, luego suelta lentamente las agarraderas de vuelta a la posiciÃ³n inicial.
+5. Repite el nÃºmero de repeticiones deseado.
+
+=== 1368 | ankle circles ===
+equipment: body weight
+target: calves
+muscle_group: ankle stabilizers
+secondary_muscles: ankle stabilizers
+---instructions.es---
+SiÃ©ntate en el suelo con las piernas extendidas frente a ti. Levanta una pierna del suelo y rota el tobillo con un movimiento circular. Realiza el nÃºmero de cÃ­rculos deseado en una direcciÃ³n, luego cambia a la direcciÃ³n contraria. Repite con la otra pierna.
+---instruction_steps.es---
+1. SiÃ©ntate en el suelo con las piernas extendidas frente a ti.
+2. Levanta una pierna del suelo y rota el tobillo con un movimiento circular.
+3. Realiza el nÃºmero de cÃ­rculos deseado en una direcciÃ³n, luego cambia a la direcciÃ³n contraria.
+4. Repite con la otra pierna.
+
+=== 3293 | archer pull up ===
+equipment: body weight
+target: lats
+muscle_group: biceps
+secondary_muscles: biceps, forearms
+---instructions.es---
+Comienza colgÃ¡ndote de una barra de dominadas con un agarre prono, un poco mÃ¡s separado que el ancho de los hombros. Activa el core y lleva los omÃ³platos hacia abajo y atrÃ¡s. Mientras te elevas, flexiona un brazo y lleva el codo hacia el costado, manteniendo el otro brazo recto. ContinÃºa subiendo hasta que la barbilla quede por encima de la barra y el brazo flexionado estÃ© completamente doblado. BÃ¡jate de nuevo con control, estirando el brazo flexionado y repitiendo el movimiento del otro lado. Alterna los lados en cada repeticiÃ³n.
+---instruction_steps.es---
+1. Comienza colgÃ¡ndote de una barra de dominadas con un agarre prono, un poco mÃ¡s separado que el ancho de los hombros.
+2. Activa el core y lleva los omÃ³platos hacia abajo y atrÃ¡s.
+3. Mientras te elevas, flexiona un brazo y lleva el codo hacia el costado, manteniendo el otro brazo recto.
+4. ContinÃºa subiendo hasta que la barbilla quede por encima de la barra y el brazo flexionado estÃ© completamente doblado.
+5. BÃ¡jate de nuevo con control, estirando el brazo flexionado y repitiendo el movimiento del otro lado.
+6. Alterna los lados en cada repeticiÃ³n.
+
+=== 3294 | archer push up ===
+equipment: body weight
+target: pectorals
+muscle_group: triceps
+secondary_muscles: triceps, shoulders, core
+---instructions.es---
+Comienza en posiciÃ³n de flexiÃ³n de brazos con las manos un poco mÃ¡s separadas que el ancho de los hombros. Extiende un brazo hacia el lado, paralelo al suelo. Baja el cuerpo flexionando los codos, manteniendo la espalda recta y el core activado. Empuja hacia arriba para volver a la posiciÃ³n inicial. Repite del otro lado, extendiendo el brazo opuesto hacia el lado. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+---instruction_steps.es---
+1. Comienza en posiciÃ³n de flexiÃ³n de brazos con las manos un poco mÃ¡s separadas que el ancho de los hombros.
+2. Extiende un brazo hacia el lado, paralelo al suelo.
+3. Baja el cuerpo flexionando los codos, manteniendo la espalda recta y el core activado.
+4. Empuja hacia arriba para volver a la posiciÃ³n inicial.
+5. Repite del otro lado, extendiendo el brazo opuesto hacia el lado.
+6. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+
+=== 2355 | arm slingers hanging bent knee legs ===
+equipment: body weight
+target: abs
+muscle_group: shoulders
+secondary_muscles: shoulders, back
+---instructions.es---
+CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las rodillas flexionadas formando un Ã¡ngulo de 90 grados. Activa el core y levanta las rodillas hacia el pecho, acercÃ¡ndolas lo mÃ¡s posible a los codos. Baja lentamente las piernas de vuelta a la posiciÃ³n inicial. Repite el nÃºmero de repeticiones deseado.
+---instruction_steps.es---
+1. CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las rodillas flexionadas formando un Ã¡ngulo de 90 grados.
+2. Activa el core y levanta las rodillas hacia el pecho, acercÃ¡ndolas lo mÃ¡s posible a los codos.
+3. Baja lentamente las piernas de vuelta a la posiciÃ³n inicial.
+4. Repite el nÃºmero de repeticiones deseado.
+

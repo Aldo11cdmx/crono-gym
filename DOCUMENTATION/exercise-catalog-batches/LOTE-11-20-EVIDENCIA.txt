@@ -1,0 +1,110 @@
+﻿=== POS11 2333 | arm slingers hanging straight legs ===
+equipment: body weight | target: abs | mg: shoulders | sec: shoulders, back
+---INSTR ES---
+CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las piernas estiradas hacia abajo. Activa el core y levanta las piernas hacia adelante hasta que queden paralelas al suelo. MantÃ©n un momento en la parte superior, luego baja lentamente las piernas de vuelta a la posiciÃ³n inicial. Repite el nÃºmero de repeticiones deseado.
+---STEPS ES---
+1. CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las piernas estiradas hacia abajo.
+2. Activa el core y levanta las piernas hacia adelante hasta que queden paralelas al suelo.
+3. MantÃ©n un momento en la parte superior, luego baja lentamente las piernas de vuelta a la posiciÃ³n inicial.
+4. Repite el nÃºmero de repeticiones deseado.
+
+=== POS12 3214 | arms apart circular toe touch (male) ===
+equipment: body weight | target: glutes | mg: hamstrings | sec: hamstrings, quadriceps, calves
+---INSTR ES---
+Ponte de pie con los pies separados a la altura de los hombros y los brazos extendidos hacia los lados. Manteniendo las piernas rectas, flexiona el torso hacia adelante desde la cintura y lleva la mano derecha hacia los dedos de los pies. Mientras bajas, levanta simultÃ¡neamente la pierna izquierda recta detrÃ¡s de ti, manteniendo el equilibrio. Regresa a la posiciÃ³n inicial y repite el movimiento llevando la mano izquierda hacia los dedos de los pies y levantando la pierna derecha detrÃ¡s de ti. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+---STEPS ES---
+1. Ponte de pie con los pies separados a la altura de los hombros y los brazos extendidos hacia los lados.
+2. Manteniendo las piernas rectas, flexiona el torso hacia adelante desde la cintura y lleva la mano derecha hacia los dedos de los pies.
+3. Mientras bajas, levanta simultÃ¡neamente la pierna izquierda recta detrÃ¡s de ti, manteniendo el equilibrio.
+4. Regresa a la posiciÃ³n inicial y repite el movimiento llevando la mano izquierda hacia los dedos de los pies y levantando la pierna derecha detrÃ¡s de ti.
+5. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+
+=== POS13 3204 | arms overhead full sit-up (male) ===
+equipment: body weight | target: abs | mg: hip flexors | sec: hip flexors, lower back
+---INSTR ES---
+TÃºmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo. Extiende los brazos por encima de la cabeza, manteniÃ©ndolos rectos. Activando el abdomen, levanta lentamente la parte superior del cuerpo del suelo, curvÃ¡ndote hacia adelante hasta que el torso quede erguido. Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posiciÃ³n inicial. Repite el nÃºmero de repeticiones deseado.
+---STEPS ES---
+1. TÃºmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo.
+2. Extiende los brazos por encima de la cabeza, manteniÃ©ndolos rectos.
+3. Activando el abdomen, levanta lentamente la parte superior del cuerpo del suelo, curvÃ¡ndote hacia adelante hasta que el torso quede erguido.
+4. Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posiciÃ³n inicial.
+5. Repite el nÃºmero de repeticiones deseado.
+
+=== POS14 0009 | assisted chest dip (kneeling) ===
+equipment: leverage machine | target: pectorals | mg: triceps | sec: triceps, shoulders
+---INSTR ES---
+Ajusta la mÃ¡quina a la altura deseada y asegura las rodillas sobre la almohadilla. Agarra las agarraderas con las palmas hacia abajo y los brazos completamente extendidos. Baja el cuerpo flexionando los codos hasta que los brazos queden paralelos al suelo. Haz una pausa por un momento, luego empuja tu cuerpo de vuelta a la posiciÃ³n inicial. Repite el nÃºmero de repeticiones deseado.
+---STEPS ES---
+1. Ajusta la mÃ¡quina a la altura deseada y asegura las rodillas sobre la almohadilla.
+2. Agarra las agarraderas con las palmas hacia abajo y los brazos completamente extendidos.
+3. Baja el cuerpo flexionando los codos hasta que los brazos queden paralelos al suelo.
+4. Haz una pausa por un momento, luego empuja tu cuerpo de vuelta a la posiciÃ³n inicial.
+5. Repite el nÃºmero de repeticiones deseado.
+
+=== POS15 0011 | assisted hanging knee raise ===
+equipment: assisted | target: abs | mg: hip flexors | sec: hip flexors
+---INSTR ES---
+CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las palmas mirando hacia afuera. Activa el core y levanta las rodillas hacia el pecho, flexionando las caderas y las rodillas. Haz una pausa por un momento en la parte superior del movimiento, apretando el abdomen. Baja lentamente las piernas de vuelta a la posiciÃ³n inicial. Repite el nÃºmero de repeticiones deseado.
+---STEPS ES---
+1. CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las palmas mirando hacia afuera.
+2. Activa el core y levanta las rodillas hacia el pecho, flexionando las caderas y las rodillas.
+3. Haz una pausa por un momento en la parte superior del movimiento, apretando el abdomen.
+4. Baja lentamente las piernas de vuelta a la posiciÃ³n inicial.
+5. Repite el nÃºmero de repeticiones deseado.
+
+=== POS16 0010 | assisted hanging knee raise with throw down ===
+equipment: assisted | target: abs | mg: hip flexors | sec: hip flexors, lower back
+---INSTR ES---
+CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las palmas mirando hacia afuera. Activa el core y levanta las rodillas hacia el pecho, manteniendo las piernas juntas. Una vez que las rodillas estÃ©n a la altura del pecho, lanza las piernas explosivamente hacia el suelo, extendiÃ©ndolas por completo. Deja que las piernas se balanceen de vuelta hacia arriba y repite el movimiento el nÃºmero de repeticiones deseado.
+---STEPS ES---
+1. CuÃ©lgate de una barra de dominadas con los brazos completamente extendidos y las palmas mirando hacia afuera.
+2. Activa el core y levanta las rodillas hacia el pecho, manteniendo las piernas juntas.
+3. Una vez que las rodillas estÃ©n a la altura del pecho, lanza las piernas explosivamente hacia el suelo, extendiÃ©ndolas por completo.
+4. Deja que las piernas se balanceen de vuelta hacia arriba y repite el movimiento el nÃºmero de repeticiones deseado.
+
+=== POS17 1708 | assisted lying calves stretch ===
+equipment: assisted | target: calves | mg: hamstrings | sec: hamstrings
+---INSTR ES---
+TÃºmbate sobre tu espalda con las piernas extendidas. Flexiona una rodilla y coloca el pie plano sobre el suelo. Con las manos o una toalla, jala suavemente los dedos del pie hacia tu cuerpo, sintiendo un estiramiento en la pantorrilla. MantÃ©n el estiramiento durante 20-30 segundos. Suelta el estiramiento y repite con la otra pierna.
+---STEPS ES---
+1. TÃºmbate sobre tu espalda con las piernas extendidas.
+2. Flexiona una rodilla y coloca el pie plano sobre el suelo.
+3. Con las manos o una toalla, jala suavemente los dedos del pie hacia tu cuerpo, sintiendo un estiramiento en la pantorrilla.
+4. MantÃ©n el estiramiento durante 20-30 segundos.
+5. Suelta el estiramiento y repite con la otra pierna.
+
+=== POS18 1709 | assisted lying glutes stretch ===
+equipment: assisted | target: glutes | mg: hamstrings | sec: hamstrings
+---INSTR ES---
+TÃºmbate sobre tu espalda con las piernas extendidas. Flexiona la rodilla derecha y coloca el tobillo derecho sobre el muslo izquierdo, justo encima de la rodilla. Agarra el muslo izquierdo con ambas manos y jÃ¡lalo suavemente hacia el pecho. MantÃ©n el estiramiento durante 20-30 segundos. Suelta y repite del otro lado.
+---STEPS ES---
+1. TÃºmbate sobre tu espalda con las piernas extendidas.
+2. Flexiona la rodilla derecha y coloca el tobillo derecho sobre el muslo izquierdo, justo encima de la rodilla.
+3. Agarra el muslo izquierdo con ambas manos y jÃ¡lalo suavemente hacia el pecho.
+4. MantÃ©n el estiramiento durante 20-30 segundos.
+5. Suelta y repite del otro lado.
+
+=== POS19 1710 | assisted lying gluteus and piriformis stretch ===
+equipment: assisted | target: glutes | mg: hamstrings | sec: hamstrings
+---INSTR ES---
+TÃºmbate sobre tu espalda con las piernas extendidas. Flexiona la rodilla derecha y coloca el tobillo derecho sobre el muslo izquierdo, justo encima de la rodilla. Agarra el muslo izquierdo con ambas manos y jÃ¡lalo suavemente hacia el pecho. MantÃ©n el estiramiento durante 20-30 segundos. Suelta el estiramiento y repite del otro lado.
+---STEPS ES---
+1. TÃºmbate sobre tu espalda con las piernas extendidas.
+2. Flexiona la rodilla derecha y coloca el tobillo derecho sobre el muslo izquierdo, justo encima de la rodilla.
+3. Agarra el muslo izquierdo con ambas manos y jÃ¡lalo suavemente hacia el pecho.
+4. MantÃ©n el estiramiento durante 20-30 segundos.
+5. Suelta el estiramiento y repite del otro lado.
+
+=== POS20 0012 | assisted lying leg raise with lateral throw down ===
+equipment: assisted | target: abs | mg: hip flexors | sec: hip flexors, obliques
+---INSTR ES---
+TÃºmbate sobre tu espalda con las piernas extendidas y los brazos a los lados. Coloca las manos debajo de los glÃºteos como apoyo. Activa el abdomen y levanta las piernas del suelo, manteniÃ©ndolas rectas. Manteniendo las piernas juntas, bÃ¡jalas hacia un lado hasta que queden a pocos centÃ­metros del suelo. Haz una pausa por un momento, luego levanta las piernas de vuelta a la posiciÃ³n inicial. Repite el movimiento hacia el otro lado. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+---STEPS ES---
+1. TÃºmbate sobre tu espalda con las piernas extendidas y los brazos a los lados.
+2. Coloca las manos debajo de los glÃºteos como apoyo.
+3. Activa el abdomen y levanta las piernas del suelo, manteniÃ©ndolas rectas.
+4. Manteniendo las piernas juntas, bÃ¡jalas hacia un lado hasta que queden a pocos centÃ­metros del suelo.
+5. Haz una pausa por un momento, luego levanta las piernas de vuelta a la posiciÃ³n inicial.
+6. Repite el movimiento hacia el otro lado.
+7. ContinÃºa alternando lados durante el nÃºmero de repeticiones deseado.
+

@@ -1,0 +1,140 @@
+﻿- **2333 | arm slingers hanging straight legs**
+  - Nombre descriptivo (ES): Elevación de piernas colgado (rectas)
+  - Equipo: body weight (identidad física: desconocida)
+  - Movimiento biomecánico: Flexión de cadera; estabilización abdominal
+  - Articulaciones involucradas: cadera (flexión)
+  - Segmentos corporales participantes: cadera, tronco
+  - Músculos principales: flexores de cadera (psoas-ilíaco, recto femoral), recto abdominal
+  - Músculos secundarios: oblicuos; estabilizadores escapulares (soporte isométrico)
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: nombre_ambiguo_sin_evidencia: 'arm slingers'; contradiccion_target_muscle_group: target=abs vs muscle_group=shoulders
+  - Información insuficiente/desconocida: Soporte isométrico de hombros distinto a trabajo principal; no hay evidencia para atribuir hombros como principales.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Pasos ES: colgado, piernas rectas hacia paralelo al suelo; flexión cadera + activación abdominal. Hombros principalmente soporte isométrico.
+
+- **3214 | arms apart circular toe touch (male)**
+  - Nombre descriptivo (ES): Toque de dedos con pierna trasera (balanceo alternado)
+  - Equipo: body weight (identidad física: desconocida)
+  - Movimiento biomecánico: Flexión de tronco desde cintura; extensión de cadera de pierna trasera (estabilización/balanceo)
+  - Articulaciones involucradas: columna vertebral (flexión), cadera (flexión/estabilización), tobillo
+  - Segmentos corporales participantes: tronco, cadera, pierna
+  - Músculos principales: isquiotibiales, glúteos
+  - Músculos secundarios: cuádriceps, gemelos, estabilizadores de tronco
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=glutes vs muscle_group=hamstrings (movimiento combinado)
+  - Información insuficiente/desconocida: Complejo combinado; no se atribuye un único principal sin evidencia clara.
+  - Nivel de confianza: baja
+  - Justificación basada en la fuente: Pasos ES indican flexión troncal hacia dedos con pierna trasera recta levantada; requiere mayor evidencia para asignar principal único.
+
+- **3204 | arms overhead full sit-up (male)**
+  - Nombre descriptivo (ES): Full sit-up con brazos por encima
+  - Equipo: body weight (identidad física: desconocida)
+  - Movimiento biomecánico: Flexión completa del tronco (curl) hasta posición erguida
+  - Articulaciones involucradas: columna vertebral (flexión toracolumbar)
+  - Segmentos corporales participantes: tronco
+  - Músculos principales: recto abdominal
+  - Músculos secundarios: desconocido
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=abs vs muscle_group=hip flexors
+  - Información insuficiente/desconocida: Flexión de cadera no demostrada como principal; no se inventa.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Pasos ES indican flexión del tronco hasta torso erguido con brazos extendidos sobre cabeza.
+
+- **0009 | assisted chest dip (kneeling)**
+  - Nombre descriptivo (ES): Fondos en máquina con apoyo de rodillas (asistido)
+  - Equipo: leverage machine (identidad física: desconocida)
+  - Movimiento biomecánico: Empuje vertical (extensión codo, flexión hombro horizontal)
+  - Articulaciones involucradas: hombro (flexión horizontal), codo (extensión)
+  - Segmentos corporales participantes: brazo, tronco
+  - Músculos principales: pectorales mayores
+  - Músculos secundarios: tríceps braquial, deltoides anterior
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=pectorals vs muscle_group=triceps
+  - Información insuficiente/desconocida: Asistencia (leverage machine) genérica; no identifica modelo concreto.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Pasos ES indican fondos asistidos con rodillas; patrón empuje compatible con pectorales mayores.
+
+- **0011 | assisted hanging knee raise**
+  - Nombre descriptivo (ES): Elevación de rodillas colgado asistido
+  - Equipo: assisted (identidad física: desconocida)
+  - Movimiento biomecánico: Flexión de cadera; estabilización abdominal
+  - Articulaciones involucradas: cadera (flexión)
+  - Segmentos corporales participantes: cadera, tronco
+  - Músculos principales: flexores de cadera, recto abdominal
+  - Músculos secundarios: oblicuos; estabilizadores escapulares (soporte isométrico)
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=abs vs muscle_group=hip flexors
+  - Información insuficiente/desconocida: Equipo 'assisted' genérico; hombros principalmente soporte isométrico.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Pasos ES indican flexión cadera/rodillas hacia pecho con activación abdominal.
+
+- **0010 | assisted hanging knee raise with throw down**
+  - Nombre descriptivo (ES): Elevación de rodillas colgado con 'throw down' asistido
+  - Equipo: assisted (identidad física: desconocida)
+  - Movimiento biomecánico: Flexión de cadera (concéntrico) + extensión controlada/explosiva de cadera/piernas
+  - Articulaciones involucradas: cadera (flexión/extensión), rodilla (extensión)
+  - Segmentos corporales participantes: cadera, pierna, tronco
+  - Músculos principales: flexores de cadera, recto abdominal
+  - Músculos secundarios: oblicuos; estabilizadores (isométricos)
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=abs vs muscle_group=hip flexors
+  - Información insuficiente/desconocida: Componente explosivo descrito; sin evidencia para atribuir principales distintos a los indicados.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Pasos ES describen levantar rodillas y lanzar piernas hacia abajo con extensión; flexión cadera predominante.
+
+- **1708 | assisted lying calves stretch**
+  - Nombre descriptivo (ES): Estiramiento de pantorrilla en decúbito supino (asistido)
+  - Equipo: assisted (identidad física: desconocida)
+  - Movimiento biomecánico: Estiramiento estático de tríceps sural
+  - Articulaciones involucradas: tobillo (dorsiflexión)
+  - Segmentos corporales participantes: pierna
+  - Músculos principales: tríceps sural (gastrocnemio/soleo) (estiramiento)
+  - Músculos secundarios: desconocido
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=calves vs muscle_group=hamstrings
+  - Información insuficiente/desconocida: Sin evidencia para isquiotibiales; se corrige hacia gemelos/pantorrilla.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Pasos ES indican tracción dedos hacia cuerpo con rodilla flexionada/posición supina para estirar pantorrilla.
+
+- **1709 | assisted lying glutes stretch**
+  - Nombre descriptivo (ES): Estiramiento de glúteos en decúbito supino (figura 4, asistido)
+  - Equipo: assisted (identidad física: desconocida)
+  - Movimiento biomecánico: Estiramiento estático de glúteos
+  - Articulaciones involucradas: cadera (flexión/rotación)
+  - Segmentos corporales participantes: cadera
+  - Músculos principales: glúteos mayores/medios (estiramiento)
+  - Músculos secundarios: desconocido
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=glutes vs muscle_group=hamstrings
+  - Información insuficiente/desconocida: Sin evidencia clara para isquiotibiales como principales.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Posición figura 4 con tracción muslo hacia pecho indica estiramiento glúteo.
+
+- **1710 | assisted lying gluteus and piriformis stretch**
+  - Nombre descriptivo (ES): Estiramiento de glúteos y piriforme en decúbito supino (asistido)
+  - Equipo: assisted (identidad física: desconocida)
+  - Movimiento biomecánico: Estiramiento estático de glúteos/piriforme
+  - Articulaciones involucradas: cadera (flexión/rotación externa)
+  - Segmentos corporales participantes: cadera
+  - Músculos principales: glúteos, piriforme (estiramiento)
+  - Músculos secundarios: desconocido
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=glutes vs muscle_group=hamstrings
+  - Información insuficiente/desconocida: Sin evidencia para isquiotibiales; piriforme incluido por nombre pero requiere evidencia - se documenta.
+  - Nivel de confianza: baja
+  - Justificación basada en la fuente: Nombre indica piriforme pero pasos ES idénticos a 1709; evidencia insuficiente para atribuir musculatura específica más allá de glúteos.
+
+- **0012 | assisted lying leg raise with lateral throw down**
+  - Nombre descriptivo (ES): Elevación de piernas colgado/lateral con descenso lateral asistido
+  - Equipo: assisted (identidad física: desconocida)
+  - Movimiento biomecánico: Flexión de cadera + descenso excéntrico lateral (estabilización troncal)
+  - Articulaciones involucradas: cadera (flexión), columna vertebral (estabilización)
+  - Segmentos corporales participantes: cadera, tronco
+  - Músculos principales: flexores de cadera, recto abdominal
+  - Músculos secundarios: oblicuos
+  - Instrucciones ES / Pasos ES: True / True
+  - Inconsistencias detectadas: contradiccion_target_muscle_group: target=abs vs muscle_group=hip flexors
+  - Información insuficiente/desconocida: Descenso lateral añade componente de estabilización oblicua; equipo 'assisted' genérico.
+  - Nivel de confianza: media
+  - Justificación basada en la fuente: Pasos ES indican elevar piernas rectas y bajarlas lateralmente; flexión cadera predominante con estabilización oblicua.
+

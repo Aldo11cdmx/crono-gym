@@ -1,0 +1,19 @@
+﻿# Validación final integridad documental (primeros 10)
+
+| ID | Posición original | Nombre original coincide | Datos originales intactos | Propuestas en columnas correctas | Estado En revisión | Sin aprobación/rechazo | Sin asignación CG-EQP | Contradicciones/desconocidos documentados | Sin duplicados/omitidos | Observaciones |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0001 | 1 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 0002 | 2 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 0003 | 3 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 1512 | 4 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 0006 | 5 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 0007 | 6 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 1368 | 7 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 3293 | 8 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 3294 | 9 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+| 2355 | 10 | True | True | True | True (sin columna estado en plantilla) | True | True | True | True | OK |
+
+Notas:
+- La plantilla CSV no tiene columna 'estado'; el estado 'En revisión' se gestiona en CONTROL-AVANCE-MAPEO.csv. No se ha modificado.
+- No se encontraron asignaciones CG-EQP en las columnas de la plantilla.
+- No se encontraron valores de aprobación/rechazo.

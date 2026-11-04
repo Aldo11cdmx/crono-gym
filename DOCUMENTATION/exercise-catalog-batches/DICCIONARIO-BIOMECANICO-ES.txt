@@ -1,0 +1,22 @@
+﻿# Diccionario biomecánico en español (criterios de clasificación)
+
+## Movimientos
+- Flexión / Extensión
+- Abducción / Aducción
+- Rotación interna / externa
+- Elevación / Depresión
+- Protracción / Retracción
+- Circunducción (solo cuando justificado por fuente)
+
+## Articulaciones vs segmentos corporales
+- Articulación: estructura articular (hombro, codo, muñeca, cadera, rodilla, tobillo, columna...).
+- Segmento corporal: parte del cuerpo (brazo, antebrazo, muslo, pierna, tronco, cabeza...).
+- No confundir ambos conceptos.
+
+## Reglas
+- No inferir articulaciones solo por nombre.
+- No asumir target/muscle_group como correctos si hay contradicción.
+- No identificar máquina concreta solo por 'cable' o 'máquina'.
+- Información insuficiente -> dejar vacío y marcar 'informacion_insuficiente_o_desconocida'.
+- Confianza: alta/media/baja/desconocida según evidencia directa de la fuente.
+- Solo documentar en español; nombres originales y valores literales se mantienen.

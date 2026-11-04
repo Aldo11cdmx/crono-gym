@@ -1,0 +1,9 @@
+﻿# Categorías de inconsistencias
+
+- contradiccion_target_muscle_group
+- equipo_ambiguo (cable/maquina/sin especificar)
+- nombre_ambiguo_sin_evidencia
+- instrucciones_contradicen_descripcion
+- datos_faltantes
+- posible_confusion_articulacion_segmento
+- otro (especificar)

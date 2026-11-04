@@ -1,0 +1,162 @@
+﻿{
+    "Resumen":  {
+                    "TotalArchivos":  15,
+                    "SumaRegistros":  1324,
+                    "TotalFuente":  1324,
+                    "DuplicadosPorId":  0,
+                    "PosicionesRepetidas":  false,
+                    "TodasPosicionesCubiertas":  true
+                },
+    "Bloques":  [
+                    {
+                        "Nombre de archivo":  "01-bloque-posiciones-1-90.json",
+                        "Rango de posiciones":  "posiciones 1-90",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0001",
+                        "Último identificador":  "1012",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "body weight: 18; cable: 1; leverage machine: 7; assisted: 14; medicine ball: 1; stability ball: 1; band: 48"
+                    },
+                    {
+                        "Nombre de archivo":  "02-bloque-posiciones-91-180.json",
+                        "Rango de posiciones":  "posiciones 91-180",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "1369",
+                        "Último identificador":  "0082",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "band: 6; barbell: 84"
+                    },
+                    {
+                        "Nombre de archivo":  "03-bloque-posiciones-181-270.json",
+                        "Rango de posiciones":  "posiciones 181-270",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0084",
+                        "Último identificador":  "0148",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "barbell: 57; body weight: 30; rope: 1; assisted: 1; cable: 1"
+                    },
+                    {
+                        "Nombre de archivo":  "04-bloque-posiciones-271-360.json",
+                        "Rango de posiciones":  "posiciones 271-360",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0149",
+                        "Último identificador":  "1321",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "cable: 90"
+                    },
+                    {
+                        "Nombre de archivo":  "05-bloque-posiciones-361-450.json",
+                        "Rango de posiciones":  "posiciones 361-450",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "1322",
+                        "Último identificador":  "0272",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "cable: 64; body weight: 21; rope: 1; barbell: 1; stability ball: 3"
+                    },
+                    {
+                        "Nombre de archivo":  "06-bloque-posiciones-451-540.json",
+                        "Rango de posiciones":  "posiciones 451-540",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0274",
+                        "Último identificador":  "0325",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "body weight: 10; leverage machine: 1; dumbbell: 79"
+                    },
+                    {
+                        "Nombre de archivo":  "07-bloque-posiciones-541-630.json",
+                        "Rango de posiciones":  "posiciones 541-630",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0326",
+                        "Último identificador":  "1673",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "dumbbell: 90"
+                    },
+                    {
+                        "Nombre de archivo":  "08-bloque-posiciones-631-720.json",
+                        "Rango de posiciones":  "posiciones 631-720",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "1293",
+                        "Último identificador":  "0425",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "dumbbell: 90"
+                    },
+                    {
+                        "Nombre de archivo":  "09-bloque-posiciones-721-810.json",
+                        "Rango de posiciones":  "posiciones 721-810",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0426",
+                        "Último identificador":  "0464",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "dumbbell: 31; body weight: 16; stability ball: 17; ez barbell: 23; barbell: 3"
+                    },
+                    {
+                        "Nombre de archivo":  "10-bloque-posiciones-811-900.json",
+                        "Rango de posiciones":  "posiciones 811-900",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "3315",
+                        "Último identificador":  "0544",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "body weight: 55; sled machine: 2; upper body ergometer: 1; dumbbell: 1; rope: 2; kettlebell: 29"
+                    },
+                    {
+                        "Nombre de archivo":  "11-bloque-posiciones-901-990.json",
+                        "Rango de posiciones":  "posiciones 901-990",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0545",
+                        "Último identificador":  "0603",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "kettlebell: 12; body weight: 13; barbell: 5; leverage machine: 60"
+                    },
+                    {
+                        "Nombre de archivo":  "12-bloque-posiciones-991-1080.json",
+                        "Rango de posiciones":  "posiciones 991-1080",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0869",
+                        "Último identificador":  "0668",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "leverage machine: 10; rope: 3; body weight: 54; medicine ball: 11; stability ball: 5; olympic barbell: 2; weighted: 1; barbell: 1; bosu ball: 2; dumbbell: 1"
+                    },
+                    {
+                        "Nombre de archivo":  "13-bloque-posiciones-1081-1170.json",
+                        "Rango de posiciones":  "posiciones 1081-1170",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0669",
+                        "Último identificador":  "1496",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "body weight: 55; rope: 2; resistance band: 7; leverage machine: 1; stability ball: 1; roller: 8; dumbbell: 1; skierg machine: 1; sled machine: 13; hammer: 1"
+                    },
+                    {
+                        "Nombre de archivo":  "14-bloque-posiciones-1171-1260.json",
+                        "Rango de posiciones":  "posiciones 1171-1260",
+                        "Cantidad de ejercicios":  90,
+                        "Primer identificador":  "0746",
+                        "Último identificador":  "0812",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "smith machine: 48; barbell: 3; dumbbell: 1; body weight: 30; bosu ball: 1; stability ball: 1; rope: 1; wheel roller: 1; stationary bike: 1; leverage machine: 1; tire: 1; trap bar: 1"
+                    },
+                    {
+                        "Nombre de archivo":  "15-bloque-posiciones-1261-1324.json",
+                        "Rango de posiciones":  "posiciones 1261-1324",
+                        "Cantidad de ejercicios":  64,
+                        "Primer identificador":  "0813",
+                        "Último identificador":  "0859",
+                        "Ejercicios con instructionsES":  0,
+                        "Ejercicios con stepsES":  0,
+                        "Tipos de equipo declarados":  "body weight: 23; cable: 1; elliptical machine: 1; leverage machine: 1; stepmill machine: 1; weighted: 35; medicine ball: 1; wheel roller: 1"
+                    }
+                ]
+}

@@ -1,0 +1,21 @@
+﻿
+Archivo                             Rango                Cantidad PrimeroId UltimoId TieneInstruccionesEs TienePasosEs
+-------                             -----                -------- --------- -------- -------------------- ------------
+01-bloque-posiciones-1-90.json      posiciones 1-90            90 0001      1012                        0            0
+02-bloque-posiciones-91-180.json    posiciones 91-180          90 1369      0082                        0            0
+03-bloque-posiciones-181-270.json   posiciones 181-270         90 0084      0148                        0            0
+04-bloque-posiciones-271-360.json   posiciones 271-360         90 0149      1321                        0            0
+05-bloque-posiciones-361-450.json   posiciones 361-450         90 1322      0272                        0            0
+06-bloque-posiciones-451-540.json   posiciones 451-540         90 0274      0325                        0            0
+07-bloque-posiciones-541-630.json   posiciones 541-630         90 0326      1673                        0            0
+08-bloque-posiciones-631-720.json   posiciones 631-720         90 1293      0425                        0            0
+09-bloque-posiciones-721-810.json   posiciones 721-810         90 0426      0464                        0            0
+10-bloque-posiciones-811-900.json   posiciones 811-900         90 3315      0544                        0            0
+11-bloque-posiciones-901-990.json   posiciones 901-990         90 0545      0603                        0            0
+12-bloque-posiciones-991-1080.json  posiciones 991-1080        90 0869      0668                        0            0
+13-bloque-posiciones-1081-1170.json posiciones 1081-1170       90 0669      1496                        0            0
+14-bloque-posiciones-1171-1260.json posiciones 1171-1260       90 0746      0812                        0            0
+15-bloque-posiciones-1261-1324.json posiciones 1261-1324       64 0813      0859                        0            0
+
+
+

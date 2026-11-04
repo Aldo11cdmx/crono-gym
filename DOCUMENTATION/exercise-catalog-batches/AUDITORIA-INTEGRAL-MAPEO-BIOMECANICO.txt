@@ -1,0 +1,44 @@
+﻿AUDITORÍA INTEGRAL - MAPEO BIOMECÁNICO
+====================================
+
+RESUMEN CUANTITATIVO
+- Total registros en plantillas: 1324
+- IDs únicos: 1324
+- Duplicados: 0
+- Con instrucciones en español: 1324
+- Con pasos en español: 1324
+
+EQUIPOS DECLARADOS (conteo)
+- assisted: 15
+- band: 54
+- barbell: 154
+- body weight: 325
+- bosu ball: 3
+- cable: 157
+- dumbbell: 294
+- elliptical machine: 1
+- ez barbell: 23
+- hammer: 1
+- kettlebell: 41
+- leverage machine: 81
+- medicine ball: 13
+- olympic barbell: 2
+- resistance band: 7
+- roller: 8
+- rope: 10
+- skierg machine: 1
+- sled machine: 15
+- smith machine: 48
+- stability ball: 28
+- stationary bike: 1
+- stepmill machine: 1
+- tire: 1
+- trap bar: 1
+- upper body ergometer: 1
+- weighted: 36
+- wheel roller: 2
+
+VALIDACIÓN
+- 15 plantillas creadas/representadas: True
+- Plantilla 1 preservada (no modificada): verificada
+- Sin IDs faltantes ni duplicados: True

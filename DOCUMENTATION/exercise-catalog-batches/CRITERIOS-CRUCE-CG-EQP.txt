@@ -1,0 +1,8 @@
+﻿# Criterios para cruzar con maquinaria CG-EQP (futuro)
+
+1. Solo considerar equipo cuando identidad_fisica_del_equipo = 'confirmada'.
+2. No asignar por palabra clave genérica (cable/maquina). Requiere evidencia física/documentada.
+3. Comparar patrón de movimiento y restricciones, no solo grupo muscular.
+4. Documentar correspondencia provisional sin modificar catálogo de producción.
+5. Cualquier asignación futura requiere justificación basada en fuente/evidencia.
+6. Mantener trazabilidad ID -> equipo declarado -> evidencia -> decisión.

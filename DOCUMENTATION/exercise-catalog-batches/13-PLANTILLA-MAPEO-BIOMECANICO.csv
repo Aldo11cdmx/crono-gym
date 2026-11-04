@@ -1,91 +1,91 @@
-﻿"id","nombre_original","nombre_descriptivo_en_espanol","equipo_declarado_por_fuente","identidad_fisica_del_equipo","movimiento_biomecanico","articulaciones_involucradas","segmentos_corporales_participantes","musculos_principales","musculos_secundarios","disponibilidad_instrucciones_espanol","disponibilidad_pasos_espanol","inconsistencias_detectadas","informacion_insuficiente_o_desconocida","nivel_de_confianza","justificacion_basada_en_la_fuente"
-"0669","rear deltoid stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"0670","rear pull-up","","body weight","desconocida","","","","","","True","True","","","",""
-"1582","reclining big toe pose with rope","","rope","desconocida","","","","","","True","True","","","",""
-"3236","resistance band hip thrusts on knees (female)","","resistance band","desconocida","","","","","","True","True","","","",""
-"3007","resistance band leg extension","","resistance band","desconocida","","","","","","True","True","","","",""
-"3123","resistance band seated biceps curl","","resistance band","desconocida","","","","","","True","True","","","",""
-"3124","resistance band seated chest press","","resistance band","desconocida","","","","","","True","True","","","",""
-"3006","resistance band seated hip abduction","","resistance band","desconocida","","","","","","True","True","","","",""
-"3122","resistance band seated shoulder press","","resistance band","desconocida","","","","","","True","True","","","",""
-"3144","resistance band seated straight back row","","resistance band","desconocida","","","","","","True","True","","","",""
-"0872","reverse crunch","","body weight","desconocida","","","","","","True","True","","","",""
-"0672","reverse dip","","body weight","desconocida","","","","","","True","True","","","",""
-"0673","reverse grip machine lat pulldown","","leverage machine","desconocida","","","","","","True","True","","","",""
-"0674","reverse grip pull-up","","body weight","desconocida","","","","","","True","True","","","",""
-"0675","reverse hyper extension (on stability ball)","","stability ball","desconocida","","","","","","True","True","","","",""
-"1423","reverse hyper on flat bench","","body weight","desconocida","","","","","","True","True","","","",""
-"3663","reverse plank with leg lift","","body weight","desconocida","","","","","","True","True","","","",""
-"0677","ring dips","","body weight","desconocida","","","","","","True","True","","","",""
-"2571","rocking frog stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"0678","rocky pull-up pulldown","","body weight","desconocida","","","","","","True","True","","","",""
-"2208","roller back stretch","","roller","desconocida","","","","","","True","True","","","",""
-"2204","roller body saw","","roller","desconocida","","","","","","True","True","","","",""
-"2205","roller hip lat stretch","","roller","desconocida","","","","","","True","True","","","",""
-"2202","roller hip stretch","","roller","desconocida","","","","","","True","True","","","",""
-"2206","roller reverse crunch","","roller","desconocida","","","","","","True","True","","","",""
-"2203","roller seated shoulder flexor depresor retractor","","roller","desconocida","","","","","","True","True","","","",""
-"2209","roller seated single leg shoulder flexor depresor retractor","","roller","desconocida","","","","","","True","True","","","",""
-"2207","roller side lat stretch","","roller","desconocida","","","","","","True","True","","","",""
-"0680","rope climb","","rope","desconocida","","","","","","True","True","","","",""
-"0685","run","","body weight","desconocida","","","","","","True","True","","","",""
-"0684","run (equipment)","","body weight","desconocida","","","","","","True","True","","","",""
-"1585","runners stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"0687","russian twist","","body weight","desconocida","","","","","","True","True","","","",""
-"3012","scapula dips","","body weight","desconocida","","","","","","True","True","","","",""
-"3021","scapula push-up","","body weight","desconocida","","","","","","True","True","","","",""
-"0688","scapular pull-up","","body weight","desconocida","","","","","","True","True","","","",""
-"3219","scissor jumps (male)","","body weight","desconocida","","","","","","True","True","","","",""
-"1390","seated calf stretch (male)","","body weight","desconocida","","","","","","True","True","","","",""
-"1424","seated glute stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"0689","seated leg raise","","body weight","desconocida","","","","","","True","True","","","",""
-"0690","seated lower back stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"2567","seated piriformis stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"0691","seated side crunch (wall)","","body weight","desconocida","","","","","","True","True","","","",""
-"1587","seated wide angle pose sequence","","body weight","desconocida","","","","","","True","True","","","",""
-"0697","self assisted inverse leg curl","","body weight","desconocida","","","","","","True","True","","","",""
-"1766","self assisted inverse leg curl","","body weight","desconocida","","","","","","True","True","","","",""
-"0696","self assisted inverse leg curl (on floor)","","body weight","desconocida","","","","","","True","True","","","",""
-"3222","semi squat jump (male)","","body weight","desconocida","","","","","","True","True","","","",""
-"3656","short stride run","","body weight","desconocida","","","","","","True","True","","","",""
-"1763","shoulder grip pull-up","","body weight","desconocida","","","","","","True","True","","","",""
-"3699","shoulder tap","","body weight","desconocida","","","","","","True","True","","","",""
-"0699","shoulder tap push-up","","body weight","desconocida","","","","","","True","True","","","",""
-"1774","side bridge hip abduction","","body weight","desconocida","","","","","","True","True","","","",""
-"0705","side bridge v. 2","","body weight","desconocida","","","","","","True","True","","","",""
-"0709","side hip (on parallel bars)","","body weight","desconocida","","","","","","True","True","","","",""
-"0710","side hip abduction","","body weight","desconocida","","","","","","True","True","","","",""
-"1358","side lying floor stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"3667","side lying hip adduction (male)","","body weight","desconocida","","","","","","True","True","","","",""
-"1775","side plank hip adduction","","body weight","desconocida","","","","","","True","True","","","",""
-"0716","side push neck stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"0717","side push-up","","body weight","desconocida","","","","","","True","True","","","",""
-"0721","side wrist pull stretch","","body weight","desconocida","","","","","","True","True","","","",""
-"0720","side-to-side chin","","body weight","desconocida","","","","","","True","True","","","",""
-"3213","side-to-side toe touch (male)","","body weight","desconocida","","","","","","True","True","","","",""
-"0725","single arm push-up","","body weight","desconocida","","","","","","True","True","","","",""
-"3645","single leg bridge with outstretched leg","","body weight","desconocida","","","","","","True","True","","","",""
-"0727","single leg calf raise (on a dumbbell)","","dumbbell","desconocida","","","","","","True","True","","","",""
-"0730","single leg platform slide","","body weight","desconocida","","","","","","True","True","","","",""
-"1759","single leg squat (pistol) male","","body weight","desconocida","","","","","","True","True","","","",""
-"1489","sissy squat","","body weight","desconocida","","","","","","True","True","","","",""
-"0735","sit-up v. 2","","body weight","desconocida","","","","","","True","True","","","",""
-"3679","sit-up with arms on chest","","body weight","desconocida","","","","","","True","True","","","",""
-"3361","skater hops","","body weight","desconocida","","","","","","True","True","","","",""
-"2142","ski ergometer","","skierg machine","desconocida","","","","","","True","True","","","",""
-"3671","ski step","","body weight","desconocida","","","","","","True","True","","","",""
-"3304","skin the cat","","body weight","desconocida","","","","","","True","True","","","",""
-"1425","sled 45 degrees one leg press","","sled machine","desconocida","","","","","","True","True","","","",""
-"0738","sled 45Ð²Â° calf press","","sled machine","desconocida","","","","","","True","True","","","",""
-"0739","sled 45Ð²Â° leg press","","sled machine","desconocida","","","","","","True","True","","","",""
-"1464","sled 45Ð²Â° leg press (back pov)","","sled machine","desconocida","","","","","","True","True","","","",""
-"1463","sled 45Â° leg press (side pov)","","sled machine","desconocida","","","","","","True","True","","","",""
-"0740","sled 45Ð²Â° leg wide press","","sled machine","desconocida","","","","","","True","True","","","",""
-"1391","sled calf press on leg press","","sled machine","desconocida","","","","","","True","True","","","",""
-"0741","sled closer hack squat","","sled machine","desconocida","","","","","","True","True","","","",""
-"0742","sled forward angled calf raise","","sled machine","desconocida","","","","","","True","True","","","",""
-"0743","sled hack squat","","sled machine","desconocida","","","","","","True","True","","","",""
-"2334","sled lying calf press","","sled machine","desconocida","","","","","","True","True","","","",""
-"0744","sled lying squat","","sled machine","desconocida","","","","","","True","True","","","",""
-"1392","sled one leg calf press on leg press","","sled machine","desconocida","","","","","","True","True","","","",""
-"1496","sledge hammer","","hammer","desconocida","","","","","","True","True","","","",""
+﻿id,nombre_original,nombre_descriptivo_en_espanol,equipo_declarado_por_fuente,identidad_fisica_del_equipo,movimiento_biomecanico,articulaciones_involucradas,segmentos_corporales_participantes,musculos_principales,musculos_secundarios,disponibilidad_instrucciones_espanol,disponibilidad_pasos_espanol,inconsistencias_detectadas,informacion_insuficiente_o_desconocida,nivel_de_confianza,justificacion_basada_en_la_fuente
+0669,rear deltoid stretch,Estiramiento de deltoide posterior,body weight,desconocida,Estiramiento de deltoide posterior,hombro (glenohumeral),"hombros, espalda superior",deltoides posterior (estiramiento),"trapecio, romboides",si,si,no es fortalecimiento; es stretch,,alto,Rear deltoid stretch.
+0670,rear pull-up,Dominada prona,body weight,desconocida,Traccion vertical con agarre prono ancho,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, biceps braquial","romboides, deltoides posterior",si,si,muscle_group fuente 'biceps' subestima dorsal,,medio,Rear pull-up.
+1582,reclining big toe pose with rope,Postura del dedo gordo reclinada con cuerda,rope,desconocida,Estiramiento de isquiotibiales,"cadera, rodilla",piernas,isquiotibiales (estiramiento),"gluteo mayor, gastrocnemio",si,si,no es fortalecimiento; es stretch,,medio,Reclining big toe pose with rope.
+3236,resistance band hip thrusts on knees (female),Hip thrust con banda en rodillas,resistance band,desconocida,Extension de cadera bilateral con banda,"cadera, columna lumbar","gluteos, piernas",gluteo mayor,"isquiotibiales, cuadriceps",si,si,muscle_group fuente 'hamstrings' subestima gluteo,,medio,Resistance band hip thrusts on knees (female).
+3007,resistance band leg extension,Extension de piernas con banda,resistance band,desconocida,Extension de rodilla unilateral,rodilla,piernas,cuadriceps,recto femoral,si,si,muscle_group fuente 'hamstrings' no coincide con quads,,alto,Resistance band leg extension.
+3123,resistance band seated biceps curl,Curl de biceps sentado con banda,resistance band,desconocida,Flexion de codo bilateral en supinacion,codo,"brazos, antebrazos",biceps braquial,"braquial, braquiorradial",si,si,muscle_group fuente 'forearms' subestima biceps,,alto,Resistance band seated biceps curl.
+3124,resistance band seated chest press,Press de pecho sentado con banda,resistance band,desconocida,Press horizontal bilateral,"hombro (glenohumeral), codo, escapula","pecho, brazos, hombros",pectoral mayor,"triceps, deltoides anterior",si,si,muscle_group fuente 'shoulders' subestima pectoral,,alto,Resistance band seated chest press.
+3006,resistance band seated hip abduction,Abduccion de cadera sentada con banda,resistance band,desconocida,Abduccion de cadera bilateral,cadera,"gluteos, piernas","gluteo medio, gluteo menor",tensor de la fascia lata,si,si,muscle_group fuente 'glutes' ok,,alto,Resistance band seated hip abduction.
+3122,resistance band seated shoulder press,Press de hombros sentado con banda,resistance band,desconocida,Press vertical bilateral,"hombro (glenohumeral), codo","hombros, brazos",deltoides,"triceps, trapecio superior",si,si,muscle_group fuente 'triceps' subestima deltoide,,alto,Resistance band seated shoulder press.
+3144,resistance band seated straight back row,Remo recto sentado con banda,resistance band,desconocida,Traccion horizontal bilateral,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, romboides","biceps, trapecio, deltoides posterior",si,si,muscle_group fuente 'biceps' subestima dorsal,,medio,Resistance band seated straight back row.
+0872,reverse crunch,Crunch inverso,body weight,desconocida,Flexion de cadera bilateral,"cadera, columna lumbar","tronco, piernas","hip flexors, recto abdominal",oblicuos,si,si,muscle_group fuente 'hip flexors' ok,,alto,Reverse crunch.
+0672,reverse dip,Fondos inversos,body weight,desconocida,Flexion de codos en fondos inversos,"codo, hombro (glenohumeral), escapula","pecho, brazos, hombros",triceps braquial,"pectoral mayor, deltoides anterior",si,si,muscle_group fuente 'chest' subestima triceps,,medio,Reverse dip.
+0673,reverse grip machine lat pulldown,Jalon frontal inverso en maquina,leverage machine,desconocida,Traccion vertical bilateral con agarre supino,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, biceps braquial","romboides, deltoides posterior",si,si,muscle_group fuente 'biceps' subestima dorsal,,alto,Reverse grip machine lat pulldown.
+0674,reverse grip pull-up,Dominada con agarre supino,body weight,desconocida,Traccion vertical con agarre supino,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, biceps braquial","romboides, deltoides posterior",si,si,muscle_group fuente 'biceps' subestima dorsal,,medio,Reverse grip pull-up.
+0675,reverse hyper extension (on stability ball),Hiperextension inversa sobre balon,stability ball,desconocida,Extension de cadera bilateral,"cadera, columna lumbar","gluteos, piernas","gluteo mayor, isquiotibiales",erectores espinales,si,si,muscle_group fuente 'hamstrings' ok,,alto,Reverse hyper extension (on stability ball).
+1423,reverse hyper on flat bench,Hiperextension inversa en banco plano,body weight,desconocida,Extension de cadera bilateral,"cadera, columna lumbar","gluteos, piernas","gluteo mayor, isquiotibiales",erectores espinales,si,si,muscle_group fuente 'hamstrings' ok,,alto,Reverse hyper on flat bench.
+3663,reverse plank with leg lift,Plancha inversa con elevacion de pierna,body weight,desconocida,Isometrico con extension de cadera,"cadera, hombro (glenohumeral), codo","tronco, gluteos","gluteo mayor, core","isquiotibiales, deltoides",si,si,muscle_group fuente 'glutes' ok,,medio,Reverse plank with leg lift.
+0677,ring dips,Fondos en anillas,body weight,desconocida,Flexion de codos en fondos en anillas,"codo, hombro (glenohumeral), escapula","pecho, brazos, hombros",triceps braquial,"pectoral mayor, deltoides anterior",si,si,muscle_group fuente 'chest' subestima triceps,,medio,Ring dips.
+2571,rocking frog stretch,Estiramiento de rana con balanceo,body weight,desconocida,Estiramiento de aductores,"cadera, rodilla","piernas, gluteos",aductores (estiramiento),"gluteo mayor, isquiotibiales",si,si,no es fortalecimiento; es stretch,,medio,Rocking frog stretch.
+0678,rocky pull-up pulldown,Dominada rocky,body weight,desconocida,Traccion vertical con agarre prono,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, biceps braquial","romboides, deltoides posterior",si,si,muscle_group fuente 'biceps' subestima dorsal,,medio,Rocky pull-up pulldown.
+2208,roller back stretch,Estiramiento de espalda con rodillo,roller,desconocida,Estiramiento de espalda,columna vertebral,espalda,erectores espinales (estiramiento),gluteo mayor,si,si,no es fortalecimiento; es stretch,,medio,Roller back stretch.
+2204,roller body saw,Saw con rodillo,roller,desconocida,Deslizamiento en plancha con rodillo,"hombro (glenohumeral), codo, cadera","tronco, hombros","core, deltoides anterior","triceps, oblicuos",si,si,muscle_group fuente 'shoulders' subestima core,,medio,Roller body saw.
+2205,roller hip lat stretch,Estiramiento de cadera y lateral con rodillo,roller,desconocida,Estiramiento de cadera y lateral,"cadera, hombro (glenohumeral)","tronco, piernas",gluteo mayor (estiramiento),"cuadriceps, deltoides",si,si,no es fortalecimiento; es stretch,,medio,Roller hip lat stretch.
+2202,roller hip stretch,Estiramiento de cadera con rodillo,roller,desconocida,Estiramiento de cadera,cadera,"gluteos, piernas",gluteo mayor (estiramiento),isquiotibiales,si,si,no es fortalecimiento; es stretch,,medio,Roller hip stretch.
+2206,roller reverse crunch,Crunch inverso con rodillo,roller,desconocida,Flexion de cadera con rodillo,"cadera, columna lumbar","tronco, piernas","hip flexors, recto abdominal",oblicuos,si,si,muscle_group fuente 'hip flexors' ok,,alto,Roller reverse crunch.
+2203,roller seated shoulder flexor depresor retractor,Retraccion de hombros con rodillo,roller,desconocida,Retraccion de escapulas sentado,"escapula, hombro (glenohumeral)","hombros, espalda superior","romboides, trapecio medio",deltoides posterior,si,si,muscle_group fuente 'deltoids' subestima romboides,,medio,Roller seated shoulder flexor depresor retractor.
+2209,roller seated single leg shoulder flexor depresor retractor,Retraccion de hombros unilateral con rodillo,roller,desconocida,Retraccion de escapulas unilateral,"escapula, hombro (glenohumeral)","hombros, espalda superior","romboides, trapecio medio",deltoides posterior,si,si,variante equivalente a 2203,,medio,Roller seated single leg shoulder flexor depresor retractor.
+2207,roller side lat stretch,Estiramiento lateral de dorsal con rodillo,roller,desconocida,Estiramiento lateral de dorsal,"hombro (glenohumeral), columna vertebral","espalda, hombros",dorsal ancho (estiramiento),"oblicuos, deltoides posterior",si,si,no es fortalecimiento; es stretch,,medio,Roller side lat stretch.
+0680,rope climb,Escalada de cuerda,rope,desconocida,Traccion vertical con cuerda,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, biceps braquial","romboides, deltoides posterior, braquial",si,si,muscle_group fuente 'forearms' subestima dorsal,,medio,Rope climb.
+0685,run,Carrera,body weight,desconocida,Locomocion de carrera,"cadera, rodilla, tobillo",piernas,"cuadriceps, isquiotibiales, gemelos","gluteo mayor, tibial anterior",si,si,muscle_group fuente 'quadriceps' ok,,alto,Run.
+0684,run (equipment),Carrera con equipamiento,body weight,desconocida,Locomocion de carrera,"cadera, rodilla, tobillo",piernas,"cuadriceps, isquiotibiales, gemelos","gluteo mayor, tibial anterior",si,si,variante equivalente a 0685,,alto,Run (equipment).
+1585,runners stretch,Estiramiento de corredor,body weight,desconocida,Estiramiento de isquiotibiales,"cadera, rodilla",piernas,isquiotibiales (estiramiento),"gluteo mayor, gastrocnemio",si,si,no es fortalecimiento; es stretch,,medio,Runners stretch.
+0687,russian twist,Russian twist,body weight,desconocida,Rotacion de tronco,columna vertebral (rotacion),tronco,"oblicuos, recto abdominal",hip flexors,si,si,muscle_group fuente 'obliques' ok,,alto,Russian twist.
+3012,scapula dips,Dips de escapula,body weight,desconocida,Depresion de escapulas,escapula,"hombros, espalda superior","trapecio inferior, serrato anterior",romboides,si,si,muscle_group fuente 'rhomboids' subestima trapecio,,medio,Scapula dips.
+3021,scapula push-up,Flexion de escapula,body weight,desconocida,Protraccion/retraccion escapular,"escapula, hombro (glenohumeral)","hombros, pecho","serrato anterior, pectoral menor","triceps, deltoides anterior",si,si,muscle_group fuente 'triceps' subestima serrato,,medio,Scapula push-up.
+0688,scapular pull-up,Dominada escapular,body weight,desconocida,Depresion de escapulas colgando,"escapula, hombro (glenohumeral)","espalda, hombros","trapecio inferior, romboides","deltoides posterior, biceps braquial",si,si,muscle_group fuente 'biceps' subestima trapecio,,medio,Scapular pull-up.
+3219,scissor jumps (male),Saltos tijera,body weight,desconocida,Salto con cruce de piernas,"cadera, rodilla, tobillo",piernas,"cuadriceps, gemelos","isquiotibiales, gluteo mayor",si,si,muscle_group fuente 'quadriceps' ok,,medio,Scissor jumps (male).
+1390,seated calf stretch (male),Estiramiento de gemelos sentado,body weight,desconocida,Estiramiento de gemelos,tobillo (talocrural),pantorrillas,"gastrocnemio, soleo (estiramiento)",isquiotibiales,si,si,no es fortalecimiento; es stretch,,medio,Seated calf stretch (male).
+1424,seated glute stretch,Estiramiento de gluteo sentado,body weight,desconocida,Estiramiento de gluteo,cadera,gluteos,gluteo mayor (estiramiento),piriforme,si,si,no es fortalecimiento; es stretch,,medio,Seated glute stretch.
+0689,seated leg raise,Elevacion de piernas sentado,body weight,desconocida,Flexion de cadera bilateral sentado,"cadera, columna lumbar","tronco, piernas","hip flexors, recto abdominal",oblicuos,si,si,muscle_group fuente 'hip flexors' ok,,alto,Seated leg raise.
+0690,seated lower back stretch,Estiramiento de espalda baja sentado,body weight,desconocida,Estiramiento de espalda baja,columna vertebral,espalda,erectores espinales (estiramiento),gluteo mayor,si,si,no es fortalecimiento; es stretch,,medio,Seated lower back stretch.
+2567,seated piriformis stretch,Estiramiento de piriforme sentado,body weight,desconocida,Estiramiento de piriforme,cadera,gluteos,piriforme (estiramiento),gluteo mayor,si,si,no es fortalecimiento; es stretch,,medio,Seated piriformis stretch.
+0691,seated side crunch (wall),Crunch lateral sentado en pared,body weight,desconocida,Flexion lateral de tronco,columna vertebral (flexion lateral),tronco,oblicuos,"recto abdominal, cuadrado lumbar",si,si,muscle_group fuente 'obliques' ok,,alto,Seated side crunch (wall).
+1587,seated wide angle pose sequence,Secuencia de angulo amplio sentado,body weight,desconocida,Estiramiento de aductores sentado,cadera,piernas,aductores (estiramiento),"isquiotibiales, cuadriceps",si,si,no es fortalecimiento; es stretch,,medio,Seated wide angle pose sequence.
+0697,self assisted inverse leg curl,Curl inverso de piernas asistido,body weight,desconocida,Flexion de rodilla bilateral asistida,"rodilla, cadera",piernas,isquiotibiales,"gluteo mayor, gemelos",si,si,muscle_group fuente 'glutes' subestima isquiotibiales,,medio,Self assisted inverse leg curl.
+1766,self assisted inverse leg curl,Curl inverso de piernas asistido v. 2,body weight,desconocida,Flexion de rodilla bilateral asistida,"rodilla, cadera",piernas,isquiotibiales,"gluteo mayor, gemelos",si,si,variante equivalente a 0697,,medio,Self assisted inverse leg curl.
+0696,self assisted inverse leg curl (on floor),Curl inverso de piernas asistido en suelo,body weight,desconocida,Flexion de rodilla bilateral asistida,"rodilla, cadera",piernas,isquiotibiales,"gluteo mayor, gemelos",si,si,variante equivalente a 0697,,medio,Self assisted inverse leg curl (on floor).
+3222,semi squat jump (male),Salto semisentadilla,body weight,desconocida,Salto pliometrico desde semisentadilla,"cadera, rodilla, tobillo",piernas,"cuadriceps, gluteo mayor","isquiotibiales, gemelos, core",si,si,muscle_group fuente 'quadriceps' ok,,medio,Semi squat jump (male).
+3656,short stride run,Carrera de zancada corta,body weight,desconocida,Locomocion de carrera,"cadera, rodilla, tobillo",piernas,"cuadriceps, isquiotibiales, gemelos","gluteo mayor, tibial anterior",si,si,muscle_group fuente 'quadriceps' ok,,alto,Short stride run.
+1763,shoulder grip pull-up,Dominada con agarre a la altura de hombros,body weight,desconocida,Traccion vertical con agarre prono ancho,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, biceps braquial","romboides, deltoides posterior",si,si,muscle_group fuente 'biceps' subestima dorsal,,medio,Shoulder grip pull-up.
+3699,shoulder tap,Toque de hombro en plancha,body weight,desconocida,Estabilizacion en plancha con toque de hombro,"hombro (glenohumeral), codo, escapula","tronco, hombros","core, deltoides anterior","oblicuos, triceps, serrato anterior",si,si,muscle_group fuente 'shoulders' subestima core,,medio,Shoulder tap.
+0699,shoulder tap push-up,Flexion con toque de hombro,body weight,desconocida,Flexion de codos con toque de hombro,"codo, hombro (glenohumeral), escapula","pecho, brazos, hombros","pectoral mayor, triceps braquial","deltoides anterior, core",si,si,muscle_group fuente 'triceps' subestima pectoral,,medio,Shoulder tap push-up.
+1774,side bridge hip abduction,Abduccion de cadera en puente lateral,body weight,desconocida,Abduccion de cadera en plancha lateral,"cadera, hombro (glenohumeral)","tronco, gluteos","gluteo medio, oblicuos","gluteo mayor, tensor de la fascia lata",si,si,muscle_group fuente 'glutes' ok,,medio,Side bridge hip abduction.
+0705,side bridge v. 2,Puente lateral v. 2,body weight,desconocida,Isometrico lateral,"hombro (glenohumeral), codo, cadera","tronco, hombros","oblicuos, cuadrado lumbar","gluteo medio, deltoides",si,si,muscle_group fuente 'obliques' ok,,medio,Side bridge v. 2.
+0709,side hip (on parallel bars),Elevacion lateral de cadera en barras paralelas,body weight,desconocida,Elevacion de cadera lateral,"cadera, hombro (glenohumeral)","tronco, gluteos","oblicuos, hip flexors","gluteo medio, cuadrado lumbar",si,si,muscle_group fuente 'obliques' ok,,medio,Side hip (on parallel bars).
+0710,side hip abduction,Abduccion de cadera de pie,body weight,desconocida,Abduccion de cadera unilateral,cadera,"gluteos, piernas","gluteo medio, gluteo menor","tensor de la fascia lata, cuadriceps",si,si,muscle_group fuente 'glutes' ok,,alto,Side hip abduction.
+1358,side lying floor stretch,Estiramiento lateral en suelo,body weight,desconocida,Estiramiento de oblicuos,"columna vertebral (flexion lateral), cadera","tronco, piernas",oblicuos (estiramiento),"gluteo mayor, cuadrado lumbar",si,si,no es fortalecimiento; es stretch,,medio,Side lying floor stretch.
+3667,side lying hip adduction (male),Aduccion de cadera lateral (male),body weight,desconocida,Aduccion de cadera bilateral,cadera,piernas,aductores,"gluteo mayor, gracilis",si,si,muscle_group fuente 'glutes' subestima aductores,,medio,Side lying hip adduction (male).
+1775,side plank hip adduction,Aduccion de cadera en plancha lateral,body weight,desconocida,Aduccion de cadera en plancha lateral,"cadera, hombro (glenohumeral)","tronco, gluteos","aductores, oblicuos","gluteo mayor, tensor de la fascia lata",si,si,muscle_group fuente 'obliques' subestima aductores,,medio,Side plank hip adduction.
+0716,side push neck stretch,Estiramiento de cuello lateral,body weight,desconocida,Estiramiento de musculos cervicales,cuello (columna cervical),"cuello, trapecio","trapecio superior, esternocleidomastoideo",elevador de la escapula,si,si,no es fortalecimiento; es stretch,,alto,Side push neck stretch.
+0717,side push-up,Flexion lateral,body weight,desconocida,Flexion de codos en plancha lateral,"codo, hombro (glenohumeral), escapula","pecho, brazos, hombros","pectoral mayor, triceps braquial","deltoides anterior, oblicuos",si,si,muscle_group fuente 'shoulders' subestima pectoral,,medio,Side push-up.
+0721,side wrist pull stretch,Estiramiento de muneca lateral,body weight,desconocida,Estiramiento de muneca,radiocarpiana,"antebrazos, manos",flexores de muneca (estiramiento),extensores de muneca,si,si,no es fortalecimiento; es stretch,,medio,Side wrist pull stretch.
+0720,side-to-side chin,Dominada lateral,body weight,desconocida,Traccion vertical con desplazamiento lateral,"hombro (glenohumeral), codo, escapula","espalda, brazos","dorsal ancho, biceps braquial","romboides, deltoides posterior",si,si,muscle_group fuente 'biceps' subestima dorsal,,medio,Side-to-side chin.
+3213,side-to-side toe touch (male),Toque de punta de pie lateral,body weight,desconocida,Flexion lateral de tronco,"columna vertebral (flexion lateral), cadera",tronco,oblicuos,"recto abdominal, cuadrado lumbar",si,si,muscle_group fuente 'obliques' ok,,alto,Side-to-side toe touch (male).
+0725,single arm push-up,Flexion a un brazo,body weight,desconocida,Flexion de codos en plancha unilateral,"codo, hombro (glenohumeral), escapula","pecho, brazos, hombros","pectoral mayor, triceps braquial","deltoides anterior, core",si,si,muscle_group fuente 'triceps' subestima pectoral,,medio,Single arm push-up.
+3645,single leg bridge with outstretched leg,Puente a una pierna con pierna extendida,body weight,desconocida,Extension de cadera unilateral,"cadera, columna lumbar","gluteos, piernas",gluteo mayor,"isquiotibiales, core",si,si,muscle_group fuente 'hamstrings' subestima gluteo,,alto,Single leg bridge with outstretched leg.
+0727,single leg calf raise (on a dumbbell),Elevacion de gemelos a una pierna con mancuerna,dumbbell,desconocida,Extension plantar unilateral,tobillo (talocrural),pantorrillas,"gastrocnemio, soleo",flexores plantares,si,si,muscle_group fuente 'ankles' no coincide con calves,,alto,Single leg calf raise (on a dumbbell).
+0730,single leg platform slide,Deslizamiento de plataforma a una pierna,body weight,desconocida,Extension de cadera unilateral,"cadera, rodilla","gluteos, piernas",gluteo mayor,"cuadriceps, isquiotibiales",si,si,muscle_group fuente 'glutes' ok,,medio,Single leg platform slide.
+1759,single leg squat (pistol) male,Sentadilla pistol,body weight,desconocida,Sentadilla unilateral,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, gemelos, core",si,si,muscle_group fuente 'quadriceps' ok,,medio,Single leg squat (pistol) male.
+1489,sissy squat,Sentadilla sissy,body weight,desconocida,Sentadilla con inclinacion posterior,"rodilla, cadera, tobillo",piernas,cuadriceps,"recto femoral, gemelos",si,si,muscle_group fuente 'calves' no coincide con quads,,alto,Sissy squat.
+0735,sit-up v. 2,Sit-up v. 2,body weight,desconocida,Flexion de tronco,columna vertebral (flexion toracica),tronco,recto abdominal,"oblicuos, hip flexors",si,si,muscle_group fuente 'hip flexors' subestima recto abdominal,,alto,Sit-up v. 2.
+3679,sit-up with arms on chest,Sit-up con brazos en pecho,body weight,desconocida,Flexion de tronco,columna vertebral (flexion toracica),tronco,recto abdominal,"oblicuos, hip flexors",si,si,muscle_group fuente 'hip flexors' subestima recto abdominal,,alto,Sit-up with arms on chest.
+3361,skater hops,Saltos skater,body weight,desconocida,Salto lateral,"cadera, rodilla, tobillo",piernas,"cuadriceps, gluteo mayor","isquiotibiales, gemelos, core",si,si,muscle_group fuente 'quadriceps' ok,,medio,Skater hops.
+2142,ski ergometer,Ski ergometer,skierg machine,desconocida,Traccion vertical en ski erg,"hombro (glenohumeral), codo, tronco","hombros, tronco","deltoides, core","triceps, latissimus dorsi",si,si,muscle_group fuente 'shoulders' ok,,medio,Ski ergometer.
+3671,ski step,Paso de ski,body weight,desconocida,Salto lateral,"cadera, rodilla, tobillo",piernas,"cuadriceps, gluteo mayor","isquiotibiales, gemelos, core",si,si,muscle_group fuente 'quadriceps' ok,,medio,Ski step.
+3304,skin the cat,Skin the cat,body weight,desconocida,Rotacion de tronco colgado,"hombro (glenohumeral), codo, columna vertebral","tronco, hombros","core, deltoides","latissimus dorsi, triceps",si,si,muscle_group fuente 'shoulders' ok,,medio,Skin the cat.
+1425,sled 45 degrees one leg press,Prensa de trineo a 45 grados a una pierna,sled machine,desconocida,Extension de rodilla y cadera unilateral en trineo,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, gemelos",si,si,muscle_group fuente 'quadriceps' ok,,medio,Sled 45 degrees one leg press.
+0738,sled 45Ð²Â° calf press,Prensa de gemelos en trineo a 45 grados,sled machine,desconocida,Extension plantar en trineo,tobillo (talocrural),pantorrillas,"gastrocnemio, soleo",flexores plantares,si,si,muscle_group fuente 'hamstrings' no coincide con calves,,alto,Sled 45в° calf press.
+0739,sled 45Ð²Â° leg press,Prensa de piernas en trineo a 45 grados,sled machine,desconocida,Extension de rodilla y cadera en trineo,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, gemelos",si,si,muscle_group fuente 'quadriceps' ok,,medio,Sled 45в° leg press.
+1464,sled 45Ð²Â° leg press (back pov),Prensa de piernas en trineo a 45 grados vista posterior,sled machine,desconocida,Extension de rodilla y cadera en trineo,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, gemelos",si,si,variante equivalente a 0739,,medio,Sled 45в° leg press (back pov).
+1463,sled 45Â° leg press (side pov),Prensa de piernas en trineo a 45 grados vista lateral,sled machine,desconocida,Extension de rodilla y cadera en trineo,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, gemelos",si,si,variante equivalente a 0739,,medio,Sled 45в° leg press (side pov).
+0740,sled 45Ð²Â° leg wide press,Prensa de piernas ancha en trineo a 45 grados,sled machine,desconocida,Extension de rodilla y cadera en trineo,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, aductores, gemelos",si,si,muscle_group fuente 'quadriceps' ok,,medio,Sled 45в° leg wide press.
+1391,sled calf press on leg press,Prensa de gemelos en trineo,sled machine,desconocida,Extension plantar en trineo,tobillo (talocrural),pantorrillas,"gastrocnemio, soleo",flexores plantares,si,si,muscle_group fuente 'hamstrings' no coincide con calves,,alto,Sled calf press on leg press.
+0741,sled closer hack squat,Hack squat cerrado en trineo,sled machine,desconocida,Sentadilla en trineo con pies juntos,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, aductores, gemelos",si,si,muscle_group fuente 'quadriceps' ok,,medio,Sled closer hack squat.
+0742,sled forward angled calf raise,Elevacion de gemelos inclinada en trineo,sled machine,desconocida,Extension plantar en trineo,tobillo (talocrural),pantorrillas,"gastrocnemio, soleo",flexores plantares,si,si,muscle_group fuente 'hamstrings' no coincide con calves,,alto,Sled forward angled calf raise.
+0743,sled hack squat,Hack squat en trineo,sled machine,desconocida,Sentadilla en trineo,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, gemelos",si,si,muscle_group fuente 'quadriceps' ok,,medio,Sled hack squat.
+2334,sled lying calf press,Prensa de gemelos tumbado en trineo,sled machine,desconocida,Extension plantar en trineo tumbado,tobillo (talocrural),pantorrillas,"gastrocnemio, soleo",flexores plantares,si,si,muscle_group fuente 'hamstrings' no coincide con calves,,alto,Sled lying calf press.
+0744,sled lying squat,Sentadilla tumbada en trineo,sled machine,desconocida,Extension de rodilla y cadera en trineo tumbado,"cadera, rodilla, tobillo","piernas, gluteos","cuadriceps, gluteo mayor","isquiotibiales, gemelos",si,si,muscle_group fuente 'quadriceps' ok,,medio,Sled lying squat.
+1392,sled one leg calf press on leg press,Prensa de gemelos a una pierna en trineo,sled machine,desconocida,Extension plantar unilateral en trineo,tobillo (talocrural),pantorrillas,"gastrocnemio, soleo",flexores plantares,si,si,muscle_group fuente 'hamstrings' no coincide con calves,,alto,Sled one leg calf press on leg press.
+1496,sledge hammer,Golpe con mazo,hammer,desconocida,Golpe descendente con mazo,"hombro (glenohumeral), codo, tronco","hombros, tronco","deltoides, core","triceps, latissimus dorsi",si,si,muscle_group fuente 'forearms' subestima deltoide,,medio,Sledge hammer.

@@ -28,6 +28,7 @@ export const GYM_INVENTORY: readonly InventorySection[] = [
       { name: "Abductores y aductores", ids: ["CG-EQP-0005"] },
       { name: "Hack squat", ids: ["CG-EQP-0006"] },
       { name: "Máquina de patada de glúteo", ids: ["CG-EQP-0007"] },
+      { name: "Sentadilla perfecta", ids: ["CG-EQP-0008"] },
       { name: "Peck deck", ids: ["CG-EQP-0009"] },
       { name: "Remo sentado en máquina", ids: ["CG-EQP-0010"] },
       { name: "Remo en polea baja", ids: ["CG-EQP-0012"] },

@@ -89,7 +89,13 @@ export interface ActiveSessionValue {
    * provider sits above the router and the router is what knows who is
    * signed in -- one source of truth for the session, not two.
    */
-  rehydrate: (userId: string) => void;
+  rehydrate: (userId: string | null) => void;
+  /**
+   * Repeats the recovery lookup for the current user. Use this after a
+   * failed attempt: calling `rehydrate` again with the same id is a no-op
+   * because React drops the identical state update.
+   */
+  retryRehydrate?: () => void;
   /**
    * Continues the unfinished session under its own id.
    *
@@ -143,6 +149,14 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
   const [rehydrating, setRehydrating] = useState(true);
   /** The user the lookup is for. `null` until somebody asks for one. */
   const [rehydrateFor, setRehydrateFor] = useState<string | null>(null);
+  /** Forces the lookup effect to re-run for the same user (retry). */
+  const [retryNonce, setRetryNonce] = useState(0);
+  /** Synchronous mirror of `rehydrating`, so `start()` cannot race the effect. */
+  const rehydratingRef = useRef(true);
+  /** Tracks the user the current state belongs to. */
+  const currentUserRef = useRef<string | null>(null);
+  /** Incremental request id to invalidate stale recoveries. */
+  const requestIdRef = useRef(0);
   /** The draft as it is right now, for the callbacks that read it later. */
   const draftRef = useRef<SessionDraft | null>(null);
   draftRef.current = recoverableDraft;
@@ -158,42 +172,68 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     if (!rehydrateFor) return undefined;
+    const id = ++requestIdRef.current;
     let alive = true;
-    void loadRecoverableDraft(rehydrateFor).then((draft) => {
-      if (!alive) return;
-      setRehydrating(false);
-      if (!draft) return;
-      // A session that is already running wins. It is the live one, and the
-      // draft belongs to a session nobody has chosen to continue: offering
-      // it would put two sessions in the same app.
-      if (sessionRef.current) return;
-      setRecoverableDraft(draft);
-      // The rest that was running is resumed where it was, if it is still
-      // running: the deadline is a moment, so a rest that expired while the
-      // app was closed is over, not something to count down.
-      setPendingRestEndsAt(
-        typeof draft.restEndsAt === "number" && draft.restEndsAt > Date.now()
-          ? draft.restEndsAt
-          : null,
-      );
-      // The session is created from the draft, so the clock starts when the
-      // interrupted session started -- not now, and not on a second screen.
-      setSession({
-        routineId: draft.routineId,
-        title: draft.routineTitle,
-        startedAt: draft.startedAt,
+    rehydratingRef.current = true;
+    setRehydrating(true);
+    void loadRecoverableDraft(rehydrateFor)
+      .then((draft) => {
+        if (!alive || requestIdRef.current !== id) return;
+        setRehydrating(false);
+        rehydratingRef.current = false;
+        if (!draft) return;
+        if (sessionRef.current) return;
+        setRecoverableDraft(draft);
+        setPendingRestEndsAt(
+          typeof draft.restEndsAt === "number" && draft.restEndsAt > Date.now()
+            ? draft.restEndsAt
+            : null,
+        );
+        setSession({
+          routineId: draft.routineId,
+          title: draft.routineTitle,
+          startedAt: draft.startedAt,
+        });
+      })
+      .catch(() => {
+        if (!alive || requestIdRef.current !== id) return;
+        setRehydrating(false);
+        rehydratingRef.current = false;
       });
-    });
     return () => {
       alive = false;
     };
-  }, [rehydrateFor]);
+  }, [rehydrateFor, retryNonce]);
 
-  const rehydrate = useCallback((userId: string) => {
-    // The same id twice is the same state twice: React drops the update and
-    // the effect does not run again.
+  const rehydrate = useCallback((userId: string | null) => {
+    if (userId !== currentUserRef.current && currentUserRef.current !== null) {
+      // Cambio de cuenta: invalida la recuperación pendiente y no mezcla
+      // estado/borradores de usuarios distintos. Solo se limpia en memoria.
+      requestIdRef.current += 1;
+      currentUserRef.current = userId;
+      setSession(null);
+      setRecoverableDraft(null);
+      setRecoveredLogId(null);
+      setPendingRestEndsAt(null);
+      setWarmups([]);
+    }
+    if (userId === null) {
+      rehydratingRef.current = false;
+      setRehydrating(false);
+      setRehydrateFor(null);
+      return;
+    }
+    rehydratingRef.current = true;
+    setRehydrating(true);
     setRehydrateFor(userId);
   }, []);
+
+  const retryRehydrate = useCallback(() => {
+    if (!rehydrateFor) return;
+    rehydratingRef.current = true;
+    setRehydrating(true);
+    setRetryNonce((n) => n + 1);
+  }, [rehydrateFor]);
 
   const restoreDraft = useCallback(() => {
     const draft = draftRef.current;
@@ -248,15 +288,14 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
   }, [recoveredLogId]);
 
   const start = useCallback((routine: { id: string; title: string } | null) => {
+    if (rehydratingRef.current) return;
+    if (sessionRef.current) return;
+    if (draftRef.current !== null) return;
     setSession({
       routineId: routine?.id ?? null,
       title: routine?.title ?? FREE_SESSION_TITLE,
       startedAt: new Date().toISOString(),
     });
-    // A new session is a new identity: the recovered id belongs to the
-    // session that was recovered, not to this one. The pending draft goes
-    // with it -- the athlete is starting something else, so it is not
-    // offered while this session runs.
     setRecoveredLogId(null);
     setRecoverableDraft(null);
     setPendingRestEndsAt(null);
@@ -312,6 +351,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       recoverableDraft,
       rehydrating,
       rehydrate,
+      retryRehydrate,
       restoreDraft,
       discardDraft,
       discardSession,
@@ -328,6 +368,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       recoverableDraft,
       rehydrating,
       rehydrate,
+      retryRehydrate,
       restoreDraft,
       discardDraft,
       recoveredLogId,

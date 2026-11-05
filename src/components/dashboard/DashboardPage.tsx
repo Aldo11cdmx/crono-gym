@@ -228,24 +228,30 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const hasRoutine = routine !== null;
 
   const ctaLabel = useMemo(() => {
+    if (data.rehydrating) return "Comprobando sesión...";
     if (sessionState === "completed") return "Ver historial";
     if (sessionState === "in-progress") return "Continuar entrenamiento";
     return "Comenzar entrenamiento";
-  }, [sessionState]);
+  }, [sessionState, data.rehydrating]);
 
   const weeklyCompleted = data.weeklyProgress.completed;
   const weeklyGoal = data.weeklyProgress.goal;
 
   const handlePrimary = useCallback(() => {
+    if (data.rehydrating) return;
     if (sessionState === "completed") {
       navigate(PROGRESS_PATH);
+      return;
+    }
+    if (sessionState === "in-progress") {
+      navigate(TRAIN_PATH);
       return;
     }
     if (suggested) {
       data.startSession({ id: suggested.id, title: suggested.title });
     }
     navigate(TRAIN_PATH);
-  }, [sessionState, suggested, data.startSession, navigate]);
+  }, [sessionState, suggested, data.startSession, navigate, data.rehydrating]);
 
   const nextTip = useCallback(() => {
     setTipIndex((i) => (i + 1) % TIP_CATALOG.length);
@@ -415,6 +421,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                 block
                 icon={<Play size={16} />}
                 onClick={handlePrimary}
+                disabled={data.rehydrating}
                 style={{ boxShadow: ACCENT.ring }}
               >
                 {ctaLabel}

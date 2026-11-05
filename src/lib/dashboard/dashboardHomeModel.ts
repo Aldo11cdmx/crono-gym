@@ -80,6 +80,8 @@ export interface DashboardHomeData {
   activeSession: ActiveSession | null;
   /** True when a workout is currently in progress. */
   isSessionActive: boolean;
+  /** True while checking for recoverable draft. */
+  rehydrating: boolean;
   /** Summary of today's most recent completed session, or null. */
   completedToday: CompletedSessionSummary | null;
   /** Start a new workout session with an optional routine. */
@@ -294,6 +296,7 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     muscleCounts,
     activeSession: activeSessionValue.session,
     isSessionActive: activeSessionValue.isActive,
+    rehydrating: activeSessionValue.rehydrating,
     completedToday,
     startSession: activeSessionValue.start,
     endSession: activeSessionValue.end,

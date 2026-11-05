@@ -33,6 +33,7 @@ interface SetRow {
   weight: number | null;
   reps: number | null;
   is_warmup: boolean;
+  set_number?: number | null;
 }
 
 /** Rows from the `completed_sets` table joined with `exercises`. */
@@ -44,6 +45,7 @@ interface JoinedSet {
   weight: number | null;
   reps: number | null;
   is_warmup: boolean;
+  set_number?: number | null;
 }
 
 /** One row of the routine-title read. */
@@ -60,6 +62,7 @@ export function useDashboardSessions(
   const [error, setError] = useState<string | null>(null);
 
   const mounted = useRef(true);
+  const requestIdRef = useRef(0);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -69,103 +72,123 @@ export function useDashboardSessions(
 
   const refresh = useCallback(async () => {
     if (!userId) {
-      setSessions([]);
+      requestIdRef.current += 1;
+      if (mounted.current) {
+        setSessions([]);
+        setLoading(false);
+        setError(null);
+      }
       return;
     }
 
+    const id = ++requestIdRef.current;
     setLoading(true);
     setError(null);
 
-    const { data: logData, error: logError } = await supabase
-      .from("workout_logs")
-      .select("id,started_at,completed_at,routine_id")
-      .eq("user_id", userId)
-      .not("completed_at", "is", null)
-      .order("started_at", { ascending: false })
-      .limit(SESSION_LIMIT);
+    try {
+      const { data: logData, error: logError } = await supabase
+        .from("workout_logs")
+        .select("id,started_at,completed_at,routine_id")
+        .eq("user_id", userId)
+        .not("completed_at", "is", null)
+        .order("started_at", { ascending: false })
+        .limit(SESSION_LIMIT);
 
-    if (logError) {
-      if (mounted.current) {
-        setError(logError.message);
+      if (!mounted.current || requestIdRef.current !== id) return;
+      if (logError) {
+        if (mounted.current && requestIdRef.current === id) {
+          setError(logError.message);
+          setSessions([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const logs = (logData ?? []) as Pick<
+        WorkoutLog,
+        "id" | "started_at" | "completed_at" | "routine_id"
+      >[];
+
+      const routineIds = [...new Set(logs.map((l) => l.routine_id).filter(Boolean))];
+      const routineTitles = new Map<string, string>();
+      if (routineIds.length > 0) {
+        const { data: titleData } = await supabase
+          .from("routines")
+          .select("id,title")
+          .in("id", routineIds as string[]);
+        if (!mounted.current || requestIdRef.current !== id) return;
+        for (const row of (titleData ?? []) as RoutineTitle[]) {
+          if (row.title) routineTitles.set(row.id, row.title);
+        }
+      }
+
+      if (logs.length === 0) {
+        if (mounted.current && requestIdRef.current === id) {
+          setSessions([]);
+          setLoading(false);
+          setError(null);
+        }
+        return;
+      }
+
+      const logIds = sanitizeIds(logs.map((l) => l.id));
+      const { data: setData, error: setErr } = await supabase
+        .from("completed_sets")
+        .select(
+          "id,log_id,exercise_id,weight,reps,is_warmup,set_number,exercises!inner(name,body_part)",
+        )
+        .in("log_id", logIds);
+
+      if (!mounted.current || requestIdRef.current !== id) return;
+      if (setErr) {
+        if (mounted.current && requestIdRef.current === id) {
+          setError(setErr.message);
+          setSessions([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const setsByLog = new Map<string, SetRow[]>();
+      for (const row of (setData ?? []) as JoinedSet[]) {
+        const name = row.exercises?.name ?? row.exercise_id;
+        const bodyPart = row.exercises?.body_part ?? null;
+        const setRow: SetRow = {
+          id: row.id,
+          exercise_id: row.exercise_id,
+          exercise_name: name,
+          body_part: bodyPart,
+          weight: row.weight,
+          reps: row.reps,
+          is_warmup: row.is_warmup,
+          set_number: (row as any).set_number,
+        };
+        const bucket = setsByLog.get(row.log_id) ?? [];
+        bucket.push(setRow);
+        setsByLog.set(row.log_id, bucket);
+      }
+
+      const mapped: DashboardSession[] = logs.map((log) => ({
+        id: log.id,
+        startedAt: log.started_at,
+        completedAt: log.completed_at,
+        routineId: log.routine_id ?? null,
+        routineTitle: log.routine_id ? routineTitles.get(log.routine_id) ?? null : null,
+        sets: sortBySetNumber(setsByLog.get(log.id) ?? []),
+      }));
+
+      if (mounted.current && requestIdRef.current === id) {
+        setSessions(mapped);
+        setLoading(false);
+        setError(null);
+      }
+    } catch (e: any) {
+      if (mounted.current && requestIdRef.current === id) {
+        setError(e?.message ?? "Error al cargar el historial");
         setSessions([]);
         setLoading(false);
       }
-      return;
     }
-
-    if (!mounted.current) return;
-
-    const logs = (logData ?? []) as Pick<
-      WorkoutLog,
-      "id" | "started_at" | "completed_at" | "routine_id"
-    >[];
-
-    // Fetch the routine titles needed to label sessions in one round trip.
-    const routineIds = [...new Set(logs.map((l) => l.routine_id).filter(Boolean))];
-    const routineTitles = new Map<string, string>();
-    if (routineIds.length > 0) {
-      const { data: titleData } = await supabase
-        .from("routines")
-        .select("id,title")
-        .in("id", routineIds as string[]);
-      if (!mounted.current) return;
-      for (const row of (titleData ?? []) as RoutineTitle[]) {
-        if (row.title) routineTitles.set(row.id, row.title);
-      }
-    }
-
-    // Fetch all sets for these sessions in a single query, joined to
-    // exercises for name and body_part so the dashboard has muscle data.
-    if (logs.length === 0) {
-      setSessions([]);
-      setLoading(false);
-      return;
-    }
-
-    const logIds = sanitizeIds(logs.map((l) => l.id));
-    const { data: setData, error: setErr } = await supabase
-      .from("completed_sets")
-      .select(
-        "id,log_id,exercise_id,weight,reps,is_warmup,exercises!inner(name,body_part)",
-      )
-      .in("log_id", logIds);
-
-    if (setErr || !mounted.current) {
-      if (setErr && mounted.current) setError(setErr.message);
-      return;
-    }
-
-    if (!mounted.current) return;
-
-    const setsByLog = new Map<string, SetRow[]>();
-    for (const row of (setData ?? []) as JoinedSet[]) {
-      const name = row.exercises?.name ?? row.exercise_id;
-      const bodyPart = row.exercises?.body_part ?? null;
-      const setRow: SetRow = {
-        id: row.id,
-        exercise_id: row.exercise_id,
-        exercise_name: name,
-        body_part: bodyPart,
-        weight: row.weight,
-        reps: row.reps,
-        is_warmup: row.is_warmup,
-      };
-      const bucket = setsByLog.get(row.log_id) ?? [];
-      bucket.push(setRow);
-      setsByLog.set(row.log_id, bucket);
-    }
-
-    const mapped: DashboardSession[] = logs.map((log) => ({
-      id: log.id,
-      startedAt: log.started_at,
-      completedAt: log.completed_at,
-      routineId: log.routine_id ?? null,
-      routineTitle: log.routine_id ? routineTitles.get(log.routine_id) ?? null : null,
-      sets: sortBySetNumber(setsByLog.get(log.id) ?? []),
-    }));
-
-    setSessions(mapped);
-    setLoading(false);
   }, [userId]);
 
   useEffect(() => {
@@ -177,7 +200,13 @@ export function useDashboardSessions(
 
 /** Order sets within a session by their set_number, which the select doesn't guarantee. */
 function sortBySetNumber(sets: SetRow[]): DashboardSession["sets"] {
-  return sets
+  return [...sets]
+    .sort((a, b) => {
+      const aNum = typeof a.set_number === "number" ? a.set_number : Number.POSITIVE_INFINITY;
+      const bNum = typeof b.set_number === "number" ? b.set_number : Number.POSITIVE_INFINITY;
+      if (aNum !== bNum) return aNum - bNum;
+      return 0;
+    })
     .map((s) => ({
       id: s.id,
       exerciseId: s.exercise_id,
@@ -186,6 +215,5 @@ function sortBySetNumber(sets: SetRow[]): DashboardSession["sets"] {
       reps: s.reps,
       isWarmup: s.is_warmup,
       bodyPart: s.body_part,
-    }))
-    .sort((_a, _b) => 0);
+    }));
 }

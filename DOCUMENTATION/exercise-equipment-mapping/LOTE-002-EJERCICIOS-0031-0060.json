@@ -1,0 +1,1183 @@
+[
+  {
+    "exercise_id": "1431",
+    "name_original": "assisted standing chin-up",
+    "name_es": null,
+    "instructions_es": "Ajusta la máquina al nivel de asistencia deseado. Sube a la plataforma para los pies y agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros. Mantén el pecho arriba y los hombros atrás, activa el core y flexiona ligeramente las rodillas. Levanta el cuerpo flexionando los codos y llevándolos hacia abajo, en dirección a los costados. Continúa subiendo hasta que la barbilla quede por encima de la barra. Haz una pausa por un momento en la parte superior, luego baja lentamente el cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ajusta la máquina al nivel de asistencia deseado.",
+      "Sube a la plataforma para los pies y agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
+      "Mantén el pecho arriba y los hombros atrás, activa el core y flexiona ligeramente las rodillas.",
+      "Levanta el cuerpo flexionando los codos y llevándolos hacia abajo, en dirección a los costados.",
+      "Continúa subiendo hasta que la barbilla quede por encima de la barra.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente el cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "leverage machine",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0032",
+    "equipment_name_original": "Máquina Dominadas y Fondos Asistidos",
+    "biomechanical_movement": "Ajusta la máquina al nivel de asistencia deseado.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "leverage machine",
+    "grip_or_position": "Ajusta la máquina al nivel de asistencia deseado.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0032",
+        "name": "Maquina Dominadas Y Fondos Asistidos",
+        "role": "equipo_principal",
+        "justification": "Máquina de dominadas asistidas confirmada por el propietario."
+      }
+    ],
+    "accessories_required": [],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Disponibilidad física confirmada; aprobación biomecánica pendiente."
+  },
+  {
+    "exercise_id": "1432",
+    "name_original": "assisted standing pull-up",
+    "name_es": null,
+    "instructions_es": "Ajusta la máquina a los valores de peso y altura deseados. Ponte de pie frente a la máquina con los pies separados a la altura de los hombros. Agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros. Activa los dorsales y los bíceps, y levántate hacia las agarraderas. Haz una pausa por un momento en la parte superior, apretando los músculos de la espalda. Bájate lentamente de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ajusta la máquina a los valores de peso y altura deseados.",
+      "Ponte de pie frente a la máquina con los pies separados a la altura de los hombros.",
+      "Agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
+      "Activa los dorsales y los bíceps, y levántate hacia las agarraderas.",
+      "Haz una pausa por un momento en la parte superior, apretando los músculos de la espalda.",
+      "Bájate lentamente de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "leverage machine",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0032",
+    "equipment_name_original": "Máquina Dominadas y Fondos Asistidos",
+    "biomechanical_movement": "Ajusta la máquina a los valores de peso y altura deseados.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "leverage machine",
+    "grip_or_position": "Ajusta la máquina a los valores de peso y altura deseados.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0032",
+        "name": "Maquina Dominadas Y Fondos Asistidos",
+        "role": "equipo_principal",
+        "justification": "Máquina de dominadas asistidas confirmada por el propietario."
+      }
+    ],
+    "accessories_required": [],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Disponibilidad física confirmada; aprobación biomecánica pendiente."
+  },
+  {
+    "exercise_id": "0018",
+    "name_original": "assisted standing triceps extension (with towel)",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y sostén una toalla con ambas manos detrás de la cabeza. Mantén los codos cerca de las orejas y la parte superior de los brazos quieta. Extiende lentamente los antebrazos hacia arriba, apretando los tríceps en la parte superior. Haz una pausa por un momento, luego baja lentamente la toalla de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén una toalla con ambas manos detrás de la cabeza.",
+      "Mantén los codos cerca de las orejas y la parte superior de los brazos quieta.",
+      "Extiende lentamente los antebrazos hacia arriba, apretando los tríceps en la parte superior.",
+      "Haz una pausa por un momento, luego baja lentamente la toalla de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "assisted",
+    "muscle_group": "shoulders",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "target": "triceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Área de Core, Tapetes y Movilidad",
+    "biomechanical_movement": "Ponte de pie con los pies separados a la altura de los hombros y sostén una toalla con ambas manos detrás de la cabeza.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "assisted",
+    "grip_or_position": "Ponte de pie con los pies separados a la altura de los hombros y sostén una toalla con ambas manos detrás de la cabeza.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "toalla"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_CORREGIDO",
+    "observations": "Ejercicio con toalla, sin máquina."
+  },
+  {
+    "exercise_id": "0019",
+    "name_original": "assisted triceps dip (kneeling)",
+    "name_es": null,
+    "instructions_es": "Ajusta la máquina al peso y la altura deseados. Arrodíllate sobre la almohadilla frente a la máquina, con las manos sujetando las agarraderas. Baja el cuerpo flexionando los codos, manteniendo la espalda recta y cerca de la máquina. Haz una pausa por un momento en la parte inferior, luego empuja tu cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ajusta la máquina al peso y la altura deseados.",
+      "Arrodíllate sobre la almohadilla frente a la máquina, con las manos sujetando las agarraderas.",
+      "Baja el cuerpo flexionando los codos, manteniendo la espalda recta y cerca de la máquina.",
+      "Haz una pausa por un momento en la parte inferior, luego empuja tu cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "leverage machine",
+    "muscle_group": "chest",
+    "secondary_muscles": [
+      "chest",
+      "shoulders"
+    ],
+    "target": "triceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0032",
+    "equipment_name_original": "Máquina Dominadas y Fondos Asistidos",
+    "biomechanical_movement": "Ajusta la máquina al peso y la altura deseados.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "leverage machine",
+    "grip_or_position": "Ajusta la máquina al peso y la altura deseados.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0032",
+        "name": "Maquina Dominadas Y Fondos Asistidos",
+        "role": "equipo_principal",
+        "justification": "Máquina de fondos asistidos confirmada por el propietario."
+      }
+    ],
+    "accessories_required": [],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "MEDIA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Disponibilidad física confirmada; aprobación biomecánica pendiente."
+  },
+  {
+    "exercise_id": "2364",
+    "name_original": "assisted wide-grip chest dip (kneeling)",
+    "name_es": null,
+    "instructions_es": "Ajusta la máquina a la altura deseada y asegura las rodillas sobre la almohadilla. Agarra las agarraderas con un agarre amplio y mantén los codos ligeramente flexionados. Baja el cuerpo flexionando los codos hasta que los brazos queden paralelos al suelo. Empuja tu cuerpo de vuelta a la posición inicial extendiendo los brazos. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ajusta la máquina a la altura deseada y asegura las rodillas sobre la almohadilla.",
+      "Agarra las agarraderas con un agarre amplio y mantén los codos ligeramente flexionados.",
+      "Baja el cuerpo flexionando los codos hasta que los brazos queden paralelos al suelo.",
+      "Empuja tu cuerpo de vuelta a la posición inicial extendiendo los brazos.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "leverage machine",
+    "muscle_group": "triceps",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "target": "pectorals",
+    "category": "chest",
+    "body_part": "chest",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Área de Core, Tapetes y Movilidad",
+    "biomechanical_movement": "Ajusta la máquina a la altura deseada y asegura las rodillas sobre la almohadilla.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "leverage machine",
+    "grip_or_position": "Ajusta la máquina a la altura deseada y asegura las rodillas sobre la almohadilla.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0032",
+        "name": "Maquina Dominadas Y Fondos Asistidos",
+        "role": "equipo_principal",
+        "justification": "Máquina de fondos asistidos confirmada por el propietario."
+      }
+    ],
+    "accessories_required": [],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "MEDIA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Disponibilidad física confirmada; aprobación biomecánica pendiente."
+  },
+  {
+    "exercise_id": "3220",
+    "name_original": "astride jumps (male)",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros. Flexiona las rodillas y baja el cuerpo hacia una posición de sentadilla. Salta explosivamente hacia arriba, extendiendo las piernas y los brazos. Mientras estás en el aire, separa las piernas y lleva los brazos hacia los lados. Aterriza suavemente con los pies separados a la altura de los hombros, flexionando las rodillas para absorber el impacto. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros.",
+      "Flexiona las rodillas y baja el cuerpo hacia una posición de sentadilla.",
+      "Salta explosivamente hacia arriba, extendiendo las piernas y los brazos.",
+      "Mientras estás en el aire, separa las piernas y lleva los brazos hacia los lados.",
+      "Aterriza suavemente con los pies separados a la altura de los hombros, flexionando las rodillas para absorber el impacto.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "body weight",
+    "muscle_group": "quadriceps",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "target": "cardiovascular system",
+    "category": "cardio",
+    "body_part": "cardio",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Área de Core, Tapetes y Movilidad",
+    "biomechanical_movement": "Ponte de pie con los pies separados a la altura de los hombros.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "body weight",
+    "grip_or_position": "Ponte de pie con los pies separados a la altura de los hombros.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Sin equipo, peso corporal."
+  },
+  {
+    "exercise_id": "3672",
+    "name_original": "back and forth step",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros. Da un paso adelante con el pie derecho, flexionando la rodilla y bajando el cuerpo hacia una posición de zancada. Empuja con el pie derecho y da un paso atrás para regresar a la posición inicial. Repite el movimiento con el pie izquierdo, alternando las piernas en cada paso. Continúa dando pasos hacia adelante y hacia atrás, manteniendo un ritmo constante. Repite durante la duración o el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros.",
+      "Da un paso adelante con el pie derecho, flexionando la rodilla y bajando el cuerpo hacia una posición de zancada.",
+      "Empuja con el pie derecho y da un paso atrás para regresar a la posición inicial.",
+      "Repite el movimiento con el pie izquierdo, alternando las piernas en cada paso.",
+      "Continúa dando pasos hacia adelante y hacia atrás, manteniendo un ritmo constante.",
+      "Repite durante la duración o el número de repeticiones deseado."
+    ],
+    "declared_equipment": "body weight",
+    "muscle_group": "quadriceps",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "target": "cardiovascular system",
+    "category": "cardio",
+    "body_part": "cardio",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Área de Core, Tapetes y Movilidad",
+    "biomechanical_movement": "Ponte de pie con los pies separados a la altura de los hombros.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "body weight",
+    "grip_or_position": "Ponte de pie con los pies separados a la altura de los hombros.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Sin equipo, peso corporal."
+  },
+  {
+    "exercise_id": "1314",
+    "name_original": "back extension on exercise ball",
+    "name_es": null,
+    "instructions_es": "Coloca el balón de estabilidad en el suelo y túmbate boca abajo sobre él, con las caderas apoyadas en el balón y los pies contra una pared u otra superficie estable. Coloca las manos detrás de la cabeza o cruzadas sobre el pecho. Activa el core y levanta lentamente la parte superior del cuerpo del balón, extendiendo la espalda hasta que tu cuerpo forme una línea recta desde la cabeza hasta los talones. Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Coloca el balón de estabilidad en el suelo y túmbate boca abajo sobre él, con las caderas apoyadas en el balón y los pies contra una pared u otra superficie estable.",
+      "Coloca las manos detrás de la cabeza o cruzadas sobre el pecho.",
+      "Activa el core y levanta lentamente la parte superior del cuerpo del balón, extendiendo la espalda hasta que tu cuerpo forme una línea recta desde la cabeza hasta los talones.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "stability ball",
+    "muscle_group": "glutes",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "target": "spine",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0030",
+    "equipment_name_original": "Banco de Hiperextensión / Silla Romana",
+    "biomechanical_movement": "Coloca el balón de estabilidad en el suelo y túmbate boca abajo sobre él, con las caderas apoyadas en el balón y los pies contra una pared u otra superficie estable.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "stability ball",
+    "grip_or_position": "Coloca el balón de estabilidad en el suelo y túmbate boca abajo sobre él, con las caderas apoyadas en el balón y los pies contra una pared u otra superficie estable.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0064",
+        "name": "Pelota Pilates",
+        "role": "superficie_de_apoyo",
+        "justification": "Pelota Pilates confirmada por el propietario; no confundir con pelota medicinal."
+      }
+    ],
+    "accessories_required": [],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_CORREGIDO",
+    "observations": "Corregido: CG-EQP-0064 (pelota Pilates)."
+  },
+  {
+    "exercise_id": "3297",
+    "name_original": "back lever",
+    "name_es": null,
+    "instructions_es": "Comienza colgándote de una barra de dominadas con un agarre prono, con las manos un poco más separadas que el ancho de los hombros. Activa el core y lleva los omóplatos hacia abajo y atrás. Flexiona las rodillas y llévalas hacia el pecho. Levanta lentamente las piernas, manteniéndolas rectas, hasta que el cuerpo quede paralelo al suelo. Mantén esta posición durante unos segundos, luego baja lentamente las piernas de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Comienza colgándote de una barra de dominadas con un agarre prono, con las manos un poco más separadas que el ancho de los hombros.",
+      "Activa el core y lleva los omóplatos hacia abajo y atrás.",
+      "Flexiona las rodillas y llévalas hacia el pecho.",
+      "Levanta lentamente las piernas, manteniéndolas rectas, hasta que el cuerpo quede paralelo al suelo.",
+      "Mantén esta posición durante unos segundos, luego baja lentamente las piernas de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "body weight",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "forearms",
+      "core"
+    ],
+    "target": "upper back",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0010",
+    "equipment_name_original": "Máquinas de Placas y Palanca Guiadas",
+    "biomechanical_movement": "Comienza colgándote de una barra de dominadas con un agarre prono, con las manos un poco más separadas que el ancho de los hombros.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "body weight",
+    "grip_or_position": "Comienza colgándote de una barra de dominadas con un agarre prono, con las manos un poco más separadas que el ancho de los hombros.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0051",
+        "name": "Barra Dominadas",
+        "role": "equipo_propuesto",
+        "justification": "Propuesta de barra de dominadas; pendiente de dictamen explícito del propietario."
+      }
+    ],
+    "accessories_required": [],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "PENDIENTE",
+    "observations": "Propuesta pendiente de aprobación."
+  },
+  {
+    "exercise_id": "1405",
+    "name_original": "back pec stretch",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con la espalda recta y los pies separados a la altura de los hombros. Extiende los brazos rectos frente a ti, paralelos al suelo. Cruza los brazos frente al cuerpo, con el brazo derecho sobre el brazo izquierdo. Entrelaza los dedos y gira las palmas alejándolas del cuerpo. Levanta lentamente los brazos hacia arriba y alejándolos del cuerpo, sintiendo un estiramiento en la espalda y el pecho. Mantén el estiramiento durante 15-30 segundos, luego suelta. Repite del lado opuesto.",
+    "instruction_steps_es": [
+      "Ponte de pie con la espalda recta y los pies separados a la altura de los hombros.",
+      "Extiende los brazos rectos frente a ti, paralelos al suelo.",
+      "Cruza los brazos frente al cuerpo, con el brazo derecho sobre el brazo izquierdo.",
+      "Entrelaza los dedos y gira las palmas alejándolas del cuerpo.",
+      "Levanta lentamente los brazos hacia arriba y alejándolos del cuerpo, sintiendo un estiramiento en la espalda y el pecho.",
+      "Mantén el estiramiento durante 15-30 segundos, luego suelta.",
+      "Repite del lado opuesto."
+    ],
+    "declared_equipment": "body weight",
+    "muscle_group": "shoulders",
+    "secondary_muscles": [
+      "shoulders",
+      "chest"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Área de Core, Tapetes y Movilidad",
+    "biomechanical_movement": "Ponte de pie con la espalda recta y los pies separados a la altura de los hombros.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "body weight",
+    "grip_or_position": "Ponte de pie con la espalda recta y los pies separados a la altura de los hombros.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0062",
+        "name": "Banco Multiposicion",
+        "role": "equipo_principal",
+        "justification": "Banco multiposición confirmado por el propietario."
+      }
+    ],
+    "accessories_required": [],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_CORREGIDO",
+    "observations": "Corregido: CG-EQP-0062."
+  },
+  {
+    "exercise_id": "1473",
+    "name_original": "backward jump",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros. Flexiona ligeramente las rodillas y salta hacia atrás, impulsándote con ambos pies. Aterriza suavemente sobre la punta de los pies, flexionando las rodillas para absorber el impacto. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros.",
+      "Flexiona ligeramente las rodillas y salta hacia atrás, impulsándote con ambos pies.",
+      "Aterriza suavemente sobre la punta de los pies, flexionando las rodillas para absorber el impacto.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "body weight",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "target": "quads",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Área de Core, Tapetes y Movilidad",
+    "biomechanical_movement": "Ponte de pie con los pies separados a la altura de los hombros.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "body weight",
+    "grip_or_position": "Ponte de pie con los pies separados a la altura de los hombros.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "MEDIA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Sin equipo, peso corporal."
+  },
+  {
+    "exercise_id": "0020",
+    "name_original": "balance board",
+    "name_es": null,
+    "instructions_es": "Coloca la tabla de equilibrio sobre una superficie plana. Sube a la tabla de equilibrio con un pie, asegurándote de que esté centrado. Desplaza lentamente tu peso hacia el pie que está sobre la tabla de equilibrio, manteniendo el core activado. Mantén el equilibrio y la estabilidad mientras sostienes la posición durante el tiempo deseado. Repite el ejercicio con el otro pie.",
+    "instruction_steps_es": [
+      "Coloca la tabla de equilibrio sobre una superficie plana.",
+      "Sube a la tabla de equilibrio con un pie, asegurándote de que esté centrado.",
+      "Desplaza lentamente tu peso hacia el pie que está sobre la tabla de equilibrio, manteniendo el core activado.",
+      "Mantén el equilibrio y la estabilidad mientras sostienes la posición durante el tiempo deseado.",
+      "Repite el ejercicio con el otro pie."
+    ],
+    "declared_equipment": "body weight",
+    "muscle_group": "calves",
+    "secondary_muscles": [
+      "calves",
+      "hamstrings",
+      "glutes"
+    ],
+    "target": "quads",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Área de Core, Tapetes y Movilidad",
+    "biomechanical_movement": "Coloca la tabla de equilibrio sobre una superficie plana.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "body weight",
+    "grip_or_position": "Coloca la tabla de equilibrio sobre una superficie plana.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [],
+    "compatibility_status": "NO_DISPONIBLE",
+    "confidence": "MEDIA",
+    "owner_verdict": "NO_DISPONIBLE",
+    "observations": "Tabla de equilibrio inexistente en el gimnasio."
+  },
+  {
+    "exercise_id": "0968",
+    "name_original": "band alternating biceps curl",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con un agarre supino, con las palmas hacia arriba. Mantén los codos cerca de los costados y flexiona lentamente un brazo hacia el hombro, apretando el bíceps en la parte superior. Baja el brazo de vuelta a la posición inicial y repite con el otro brazo. Continúa alternando los brazos durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con un agarre supino, con las palmas hacia arriba.",
+      "Mantén los codos cerca de los costados y flexiona lentamente un brazo hacia el hombro, apretando el bíceps en la parte superior.",
+      "Baja el brazo de vuelta a la posición inicial y repite con el otro brazo.",
+      "Continúa alternando los brazos durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "forearms",
+    "secondary_muscles": [
+      "forearms"
+    ],
+    "target": "biceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con un agarre supino, con las palmas hacia arriba.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con un agarre supino, con las palmas hacia arriba.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia (sin código CG-EQP)."
+  },
+  {
+    "exercise_id": "0969",
+    "name_original": "band alternating v-up",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda. Activa el abdomen y levanta las piernas y la parte superior del cuerpo del suelo al mismo tiempo, llevando las manos hacia los dedos de los pies. Mientras bajas las piernas y la parte superior del cuerpo de nuevo, cambia la posición de las piernas, cruzando una sobre la otra. Repite el movimiento, alternando la posición de las piernas en cada repetición. Continúa durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda.",
+      "Activa el abdomen y levanta las piernas y la parte superior del cuerpo del suelo al mismo tiempo, llevando las manos hacia los dedos de los pies.",
+      "Mientras bajas las piernas y la parte superior del cuerpo de nuevo, cambia la posición de las piernas, cruzando una sobre la otra.",
+      "Repite el movimiento, alternando la posición de las piernas en cada repetición.",
+      "Continúa durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hip flexors",
+    "secondary_muscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia (sin código CG-EQP)."
+  },
+  {
+    "exercise_id": "0970",
+    "name_original": "band assisted pull-up",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a una barra de dominadas o a un punto de anclaje resistente. Pisa la banda y agarra la barra con las palmas mirando hacia afuera, con las manos un poco más separadas que el ancho de los hombros. Cuélgate con los brazos completamente extendidos, manteniendo el core activado y los hombros abajo y atrás. Sube el cuerpo hacia la barra juntando los omóplatos y llevando los codos hacia abajo, en dirección a las caderas. Continúa subiendo hasta que la barbilla quede por encima de la barra, luego bájate lentamente de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a una barra de dominadas o a un punto de anclaje resistente.",
+      "Pisa la banda y agarra la barra con las palmas mirando hacia afuera, con las manos un poco más separadas que el ancho de los hombros.",
+      "Cuélgate con los brazos completamente extendidos, manteniendo el core activado y los hombros abajo y atrás.",
+      "Sube el cuerpo hacia la barra juntando los omóplatos y llevando los codos hacia abajo, en dirección a las caderas.",
+      "Continúa subiendo hasta que la barbilla quede por encima de la barra, luego bájate lentamente de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0032",
+    "equipment_name_original": "Máquina Dominadas y Fondos Asistidos",
+    "biomechanical_movement": "Sujeta la banda a una barra de dominadas o a un punto de anclaje resistente.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Sujeta la banda a una barra de dominadas o a un punto de anclaje resistente.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0051",
+        "name": "Barra Dominadas",
+        "role": "equipo_principal",
+        "justification": "Barra de dominadas + banda de resistencia confirmadas por el propietario."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Disponibilidad física confirmada."
+  },
+  {
+    "exercise_id": "0971",
+    "name_original": "band assisted wheel rollerout",
+    "name_es": null,
+    "instructions_es": "Arrodíllate en el suelo y sostén las agarraderas de la banda con ambas manos, con las palmas hacia abajo. Coloca la banda en el suelo frente a ti y posiciona las manos separadas a la altura de los hombros. Activa el core y rueda lentamente la rueda hacia adelante, extendiendo el cuerpo lo más que puedas mientras mantienes el control. Haz una pausa por un momento en el punto más lejano, luego rueda lentamente la rueda de vuelta hacia las rodillas para regresar a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Arrodíllate en el suelo y sostén las agarraderas de la banda con ambas manos, con las palmas hacia abajo.",
+      "Coloca la banda en el suelo frente a ti y posiciona las manos separadas a la altura de los hombros.",
+      "Activa el core y rueda lentamente la rueda hacia adelante, extendiendo el cuerpo lo más que puedas mientras mantienes el control.",
+      "Haz una pausa por un momento en el punto más lejano, luego rueda lentamente la rueda de vuelta hacia las rodillas para regresar a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "lower back",
+    "secondary_muscles": [
+      "lower back"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Rueda Abdominal y Tapete de Core",
+    "biomechanical_movement": "Arrodíllate en el suelo y sostén las agarraderas de la banda con ambas manos, con las palmas hacia abajo.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Arrodíllate en el suelo y sostén las agarraderas de la banda con ambas manos, con las palmas hacia abajo.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "rueda abdominal"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + rueda abdominal (sin código CG-EQP para la rueda)."
+  },
+  {
+    "exercise_id": "1254",
+    "name_original": "band bench press",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre un banco con los pies apoyados en el suelo y la espalda presionada contra el banco. Agarra las agarraderas de la banda con un agarre prono, un poco más separadas que el ancho de los hombros. Extiende los brazos por completo, empujando las bandas alejándolas del pecho. Baja lentamente las bandas de vuelta hacia el pecho, manteniendo los codos en un ángulo de 90 grados. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre un banco con los pies apoyados en el suelo y la espalda presionada contra el banco.",
+      "Agarra las agarraderas de la banda con un agarre prono, un poco más separadas que el ancho de los hombros.",
+      "Extiende los brazos por completo, empujando las bandas alejándolas del pecho.",
+      "Baja lentamente las bandas de vuelta hacia el pecho, manteniendo los codos en un ángulo de 90 grados.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "triceps",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "target": "pectorals",
+    "category": "chest",
+    "body_part": "chest",
+    "equipment_id_original": "CG-EQP-0001",
+    "equipment_name_original": "Banco Plano / Multiposición",
+    "biomechanical_movement": "Túmbate sobre un banco con los pies apoyados en el suelo y la espalda presionada contra el banco.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Túmbate sobre un banco con los pies apoyados en el suelo y la espalda presionada contra el banco.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0029",
+        "name": "Banco Plano Press Libre",
+        "role": "equipo_principal",
+        "justification": "Banco plano + banda de resistencia confirmados por el propietario."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_CORREGIDO",
+    "observations": "Corregido: CG-EQP-0029."
+  },
+  {
+    "exercise_id": "0980",
+    "name_original": "band bent-over hip extension",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente a la altura del tobillo. Ponte de pie de espaldas al punto de anclaje con los pies separados a la altura de los hombros. Da un paso atrás para generar tensión en la banda, manteniendo las rodillas ligeramente flexionadas. Flexiona las caderas e inclínate hacia adelante, manteniendo la columna en posición neutral. Extiende la pierna derecha recta hacia atrás, apretando los glúteos en la parte superior. Baja la pierna derecha de vuelta y repite con la pierna izquierda. Continúa alternando las piernas durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente a la altura del tobillo.",
+      "Ponte de pie de espaldas al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Da un paso atrás para generar tensión en la banda, manteniendo las rodillas ligeramente flexionadas.",
+      "Flexiona las caderas e inclínate hacia adelante, manteniendo la columna en posición neutral.",
+      "Extiende la pierna derecha recta hacia atrás, apretando los glúteos en la parte superior.",
+      "Baja la pierna derecha de vuelta y repite con la pierna izquierda.",
+      "Continúa alternando las piernas durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Sujeta la banda a un punto de anclaje resistente a la altura del tobillo.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Sujeta la banda a un punto de anclaje resistente a la altura del tobillo.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + punto de anclaje."
+  },
+  {
+    "exercise_id": "0972",
+    "name_original": "band bicycle crunch",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre tu espalda con las manos detrás de la cabeza y las rodillas flexionadas. Levanta los pies del suelo y lleva la rodilla derecha hacia el pecho mientras simultáneamente giras el torso para llevar el codo izquierdo hacia la rodilla derecha. Estira la pierna derecha mientras llevas la rodilla izquierda hacia el pecho y giras el torso para llevar el codo derecho hacia la rodilla izquierda. Continúa alternando el movimiento de giro, como si estuvieras pedaleando una bicicleta, manteniendo el core activado durante todo el movimiento. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre tu espalda con las manos detrás de la cabeza y las rodillas flexionadas.",
+      "Levanta los pies del suelo y lleva la rodilla derecha hacia el pecho mientras simultáneamente giras el torso para llevar el codo izquierdo hacia la rodilla derecha.",
+      "Estira la pierna derecha mientras llevas la rodilla izquierda hacia el pecho y giras el torso para llevar el codo derecho hacia la rodilla izquierda.",
+      "Continúa alternando el movimiento de giro, como si estuvieras pedaleando una bicicleta, manteniendo el core activado durante todo el movimiento.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hip flexors",
+    "secondary_muscles": [
+      "hip flexors",
+      "obliques"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Rueda Abdominal y Tapete de Core",
+    "biomechanical_movement": "Túmbate sobre tu espalda con las manos detrás de la cabeza y las rodillas flexionadas.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Túmbate sobre tu espalda con las manos detrás de la cabeza y las rodillas flexionadas.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_CORREGIDO",
+    "observations": "Peso corporal según las instrucciones."
+  },
+  {
+    "exercise_id": "0974",
+    "name_original": "band close-grip pulldown",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje alto, como una barra de dominadas o una viga resistente. Ponte de pie frente al punto de anclaje y agarra la banda con un agarre supino, con las manos separadas a la altura de los hombros. Da un paso atrás para generar tensión en la banda, manteniendo los pies separados a la altura de las caderas. Activa el core y mantén la espalda recta mientras tiras de la banda hacia el pecho, juntando los omóplatos. Haz una pausa por un momento en la parte inferior del movimiento, luego suelta lentamente la banda de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje alto, como una barra de dominadas o una viga resistente.",
+      "Ponte de pie frente al punto de anclaje y agarra la banda con un agarre supino, con las manos separadas a la altura de los hombros.",
+      "Da un paso atrás para generar tensión en la banda, manteniendo los pies separados a la altura de las caderas.",
+      "Activa el core y mantén la espalda recta mientras tiras de la banda hacia el pecho, juntando los omóplatos.",
+      "Haz una pausa por un momento en la parte inferior del movimiento, luego suelta lentamente la banda de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0015",
+    "equipment_name_original": "Jalón / Lat Pulldown",
+    "biomechanical_movement": "Sujeta la banda a un punto de anclaje alto, como una barra de dominadas o una viga resistente.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Sujeta la banda a un punto de anclaje alto, como una barra de dominadas o una viga resistente.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje elevado"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + punto de anclaje elevado."
+  },
+  {
+    "exercise_id": "0975",
+    "name_original": "band close-grip push-up",
+    "name_es": null,
+    "instructions_es": "Coloca una banda alrededor de la parte superior de los brazos, justo por encima de los codos. Adopta una posición de flexión de brazos con las manos justo debajo de los hombros y el cuerpo en línea recta desde la cabeza hasta los talones. Flexiona los codos y baja el pecho hacia el suelo, manteniendo los codos cerca de los costados. Empuja con las palmas para extender los brazos y regresar a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Coloca una banda alrededor de la parte superior de los brazos, justo por encima de los codos.",
+      "Adopta una posición de flexión de brazos con las manos justo debajo de los hombros y el cuerpo en línea recta desde la cabeza hasta los talones.",
+      "Flexiona los codos y baja el pecho hacia el suelo, manteniendo los codos cerca de los costados.",
+      "Empuja con las palmas para extender los brazos y regresar a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "chest",
+    "secondary_muscles": [
+      "chest",
+      "shoulders"
+    ],
+    "target": "triceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Coloca una banda alrededor de la parte superior de los brazos, justo por encima de los codos.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Coloca una banda alrededor de la parte superior de los brazos, justo por encima de los codos.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia."
+  },
+  {
+    "exercise_id": "0976",
+    "name_original": "band concentration curl",
+    "name_es": null,
+    "instructions_es": "Siéntate en un banco o silla con las piernas separadas y los pies apoyados en el suelo. Sostén un extremo de la banda en la mano y pisa el otro extremo con el pie del mismo lado. Inclínate ligeramente hacia adelante y apoya el codo en la parte interna del muslo, justo encima de la rodilla. Con la palma hacia arriba, flexiona lentamente la mano hacia el hombro, manteniendo quieta la parte superior del brazo. Haz una pausa por un momento en la parte superior, luego baja lentamente la mano de vuelta a la posición inicial. Repite el número de repeticiones deseado, luego cambia de lado.",
+    "instruction_steps_es": [
+      "Siéntate en un banco o silla con las piernas separadas y los pies apoyados en el suelo.",
+      "Sostén un extremo de la banda en la mano y pisa el otro extremo con el pie del mismo lado.",
+      "Inclínate ligeramente hacia adelante y apoya el codo en la parte interna del muslo, justo encima de la rodilla.",
+      "Con la palma hacia arriba, flexiona lentamente la mano hacia el hombro, manteniendo quieta la parte superior del brazo.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente la mano de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia de lado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "forearms",
+    "secondary_muscles": [
+      "forearms"
+    ],
+    "target": "biceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Siéntate en un banco o silla con las piernas separadas y los pies apoyados en el suelo.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Siéntate en un banco o silla con las piernas separadas y los pies apoyados en el suelo.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "banco o silla"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + banco o silla."
+  },
+  {
+    "exercise_id": "3117",
+    "name_original": "band fixed back close grip pulldown",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto fijo por encima de ti, como una barra de dominadas o una viga resistente. Siéntate en un banco o silla frente a la banda, con los pies apoyados en el suelo y las rodillas flexionadas. Agarra la banda con un agarre cerrado, con las palmas hacia ti. Mantén la espalda recta y activa el core. Tira de la banda hacia el pecho, juntando los omóplatos. Haz una pausa por un momento en la parte inferior del movimiento, sintiendo la contracción en los dorsales. Suelta lentamente la banda de vuelta a la posición inicial, manteniendo el control durante todo el movimiento. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto fijo por encima de ti, como una barra de dominadas o una viga resistente.",
+      "Siéntate en un banco o silla frente a la banda, con los pies apoyados en el suelo y las rodillas flexionadas.",
+      "Agarra la banda con un agarre cerrado, con las palmas hacia ti.",
+      "Mantén la espalda recta y activa el core.",
+      "Tira de la banda hacia el pecho, juntando los omóplatos.",
+      "Haz una pausa por un momento en la parte inferior del movimiento, sintiendo la contracción en los dorsales.",
+      "Suelta lentamente la banda de vuelta a la posición inicial, manteniendo el control durante todo el movimiento.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0015",
+    "equipment_name_original": "Jalón / Lat Pulldown",
+    "biomechanical_movement": "Sujeta la banda a un punto fijo por encima de ti, como una barra de dominadas o una viga resistente.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Sujeta la banda a un punto fijo por encima de ti, como una barra de dominadas o una viga resistente.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje elevado",
+      "banco o silla"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + anclaje elevado + banco/silla."
+  },
+  {
+    "exercise_id": "3116",
+    "name_original": "band fixed back underhand pulldown",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza. Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros. Agarra la banda con un agarre supino, con las manos un poco más separadas que el ancho de los hombros. Da un paso atrás para generar tensión en la banda, manteniendo los brazos completamente extendidos. Activa el core y junta los omóplatos. Tira de la banda hacia el pecho, guiando el movimiento con los codos. Haz una pausa por un momento en la parte inferior del movimiento, sintiendo la contracción en los dorsales. Suelta lentamente la tensión de la banda y regresa a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza.",
+      "Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Agarra la banda con un agarre supino, con las manos un poco más separadas que el ancho de los hombros.",
+      "Da un paso atrás para generar tensión en la banda, manteniendo los brazos completamente extendidos.",
+      "Activa el core y junta los omóplatos.",
+      "Tira de la banda hacia el pecho, guiando el movimiento con los codos.",
+      "Haz una pausa por un momento en la parte inferior del movimiento, sintiendo la contracción en los dorsales.",
+      "Suelta lentamente la tensión de la banda y regresa a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids",
+      "rear deltoids"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0015",
+    "equipment_name_original": "Jalón / Lat Pulldown",
+    "biomechanical_movement": "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje elevado"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + anclaje elevado."
+  },
+  {
+    "exercise_id": "0977",
+    "name_original": "band front lateral raise",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo. Mantén los brazos rectos y levanta la banda frente a ti hasta que los brazos queden paralelos al suelo. Haz una pausa por un momento en la parte superior, luego baja lentamente la banda de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo.",
+      "Mantén los brazos rectos y levanta la banda frente a ti hasta que los brazos queden paralelos al suelo.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente la banda de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "traps",
+    "secondary_muscles": [
+      "traps",
+      "upper back"
+    ],
+    "target": "delts",
+    "category": "shoulders",
+    "body_part": "shoulders",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "MEDIA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia."
+  },
+  {
+    "exercise_id": "0978",
+    "name_original": "band front raise",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo. Mantén los brazos rectos y levántalos lentamente hacia adelante hasta que queden paralelos al suelo. Haz una pausa por un momento en la parte superior, luego baja lentamente los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo.",
+      "Mantén los brazos rectos y levántalos lentamente hacia adelante hasta que queden paralelos al suelo.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente los brazos de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "triceps",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "target": "delts",
+    "category": "shoulders",
+    "body_part": "shoulders",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda frente a los muslos con las palmas hacia abajo.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "MEDIA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia."
+  },
+  {
+    "exercise_id": "1408",
+    "name_original": "band hip lift",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo. Coloca una banda elástica justo por encima de las rodillas. Activa los glúteos y los músculos del core. Presiona los talones contra el suelo y levanta las caderas del suelo, apretando los glúteos en la parte superior. Haz una pausa por un momento en la parte superior, luego baja lentamente las caderas de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo.",
+      "Coloca una banda elástica justo por encima de las rodillas.",
+      "Activa los glúteos y los músculos del core.",
+      "Presiona los talones contra el suelo y levanta las caderas del suelo, apretando los glúteos en la parte superior.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente las caderas de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Túmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Túmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia."
+  },
+  {
+    "exercise_id": "0979",
+    "name_original": "band horizontal pallof press",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura. Ponte de pie perpendicular al punto de anclaje con los pies separados a la altura de los hombros. Agarra la agarradera de la banda con ambas manos y aléjate del punto de anclaje para generar tensión en la banda. Lleva las manos hacia el pecho, manteniendo los codos flexionados y cerca del cuerpo. Activa el core y mantén una postura estable. Extiende los brazos rectos frente a ti, empujando la banda alejándola del cuerpo. Mantén la posición extendida durante unos segundos, enfocándote en mantener la tensión en el core. Lleva lentamente las manos de vuelta al pecho, resistiendo el tirón de la banda. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura.",
+      "Ponte de pie perpendicular al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Agarra la agarradera de la banda con ambas manos y aléjate del punto de anclaje para generar tensión en la banda.",
+      "Lleva las manos hacia el pecho, manteniendo los codos flexionados y cerca del cuerpo.",
+      "Activa el core y mantén una postura estable.",
+      "Extiende los brazos rectos frente a ti, empujando la banda alejándola del cuerpo.",
+      "Mantén la posición extendida durante unos segundos, enfocándote en mantener la tensión en el core.",
+      "Lleva lentamente las manos de vuelta al pecho, resistiendo el tirón de la banda.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "obliques",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje a altura de cintura"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + anclaje a altura de cintura."
+  },
+  {
+    "exercise_id": "0981",
+    "name_original": "band jack knife sit-up",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda. Activa el abdomen y levanta las piernas y la parte superior del cuerpo simultáneamente, llevando las manos hacia los pies. Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas y la parte superior del cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda.",
+      "Activa el abdomen y levanta las piernas y la parte superior del cuerpo simultáneamente, llevando las manos hacia los pies.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas y la parte superior del cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hip flexors",
+    "secondary_muscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Rueda Abdominal y Tapete de Core",
+    "biomechanical_movement": "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia."
+  },
+  {
+    "exercise_id": "0983",
+    "name_original": "band kneeling one arm pulldown",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza. Arrodíllate y sostén la banda con una mano, con la palma hacia abajo. Extiende el brazo por completo por encima de la cabeza, manteniendo el codo ligeramente flexionado. Activa los dorsales y tira de la banda hacia el costado, llevando el codo hacia las costillas. Haz una pausa por un momento en la parte inferior, luego suelta lentamente la tensión y regresa a la posición inicial. Repite el número de repeticiones deseado, luego cambia de lado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza.",
+      "Arrodíllate y sostén la banda con una mano, con la palma hacia abajo.",
+      "Extiende el brazo por completo por encima de la cabeza, manteniendo el codo ligeramente flexionado.",
+      "Activa los dorsales y tira de la banda hacia el costado, llevando el codo hacia las costillas.",
+      "Haz una pausa por un momento en la parte inferior, luego suelta lentamente la tensión y regresa a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia de lado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "rhomboids"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0015",
+    "equipment_name_original": "Jalón / Lat Pulldown",
+    "biomechanical_movement": "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza.",
+    "movement_plane": "No determinado con certeza; revisar instrucciones completas.",
+    "resistance_type": "band",
+    "grip_or_position": "Sujeta la banda a un punto de anclaje resistente por encima de tu cabeza.",
+    "biomechanical_justification": "Análisis pendiente de revisión detallada por el propietario; se conserva el texto original en español.",
+    "equipment_candidates": [],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje elevado"
+    ],
+    "compatibility_status": "SIN_EQUIPO_ESPECIFICO",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda + anclaje elevado."
+  }
+]

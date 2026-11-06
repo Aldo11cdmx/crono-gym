@@ -1,0 +1,1819 @@
+[
+  {
+    "exercise_id": "0985",
+    "name_original": "band kneeling twisting crunch",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura. Arrodíllate de espaldas al punto de anclaje y sostén la banda con ambas manos, manteniendo los codos flexionados y cerca de los costados. Activa el abdomen y gira lentamente el torso hacia un lado, llevando las manos hacia la cadera opuesta. Haz una pausa por un momento, luego regresa lentamente a la posición inicial. Repite del otro lado. Continúa alternando lados durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura.",
+      "Arrodíllate de espaldas al punto de anclaje y sostén la banda con ambas manos, manteniendo los codos flexionados y cerca de los costados.",
+      "Activa el abdomen y gira lentamente el torso hacia un lado, llevando las manos hacia la cadera opuesta.",
+      "Haz una pausa por un momento, luego regresa lentamente a la posición inicial.",
+      "Repite del otro lado.",
+      "Continúa alternando lados durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "obliques",
+    "secondary_muscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Rueda Abdominal y Tapete de Core",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a altura de cintura."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (altura de cintura)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a altura de cintura."
+  },
+  {
+    "exercise_id": "0984",
+    "name_original": "band lying hip internal rotation",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre tu espalda con las piernas rectas y una banda elástica enrollada alrededor de los pies. Flexiona las rodillas y llévalas hacia el pecho, manteniendo los pies juntos. Rota lentamente las rodillas hacia afuera, separándolas entre sí, mientras mantienes los pies juntos. Haz una pausa por un momento al final de la rotación, luego regresa lentamente a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre tu espalda con las piernas rectas y una banda elástica enrollada alrededor de los pies.",
+      "Flexiona las rodillas y llévalas hacia el pecho, manteniendo los pies juntos.",
+      "Rota lentamente las rodillas hacia afuera, separándolas entre sí, mientras mantienes los pies juntos.",
+      "Haz una pausa por un momento al final de la rotación, luego regresa lentamente a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1002",
+    "name_original": "band lying straight leg raise",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre tu espalda con las piernas rectas y los pies juntos. Coloca la banda alrededor de los arcos de los pies y sostén los extremos de la banda con las manos. Activando el abdomen, levanta ambas piernas del suelo hasta que queden perpendiculares al suelo. Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre tu espalda con las piernas rectas y los pies juntos.",
+      "Coloca la banda alrededor de los arcos de los pies y sostén los extremos de la banda con las manos.",
+      "Activando el abdomen, levanta ambas piernas del suelo hasta que queden perpendiculares al suelo.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hip flexors",
+    "secondary_muscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0986",
+    "name_original": "band one arm overhead biceps curl",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca un extremo de la banda bajo el pie. Sostén el otro extremo de la banda con el brazo completamente extendido por encima de la cabeza, con la palma hacia adelante. Manteniendo quieta la parte superior del brazo, flexiona el antebrazo hacia el hombro, apretando el bíceps. Haz una pausa por un momento en la parte superior, luego baja lentamente el antebrazo de vuelta a la posición inicial. Repite el número de repeticiones deseado, luego cambia de brazo.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca un extremo de la banda bajo el pie.",
+      "Sostén el otro extremo de la banda con el brazo completamente extendido por encima de la cabeza, con la palma hacia adelante.",
+      "Manteniendo quieta la parte superior del brazo, flexiona el antebrazo hacia el hombro, apretando el bíceps.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente el antebrazo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia de brazo."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "forearms",
+    "secondary_muscles": [
+      "forearms",
+      "shoulders"
+    ],
+    "target": "biceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0987",
+    "name_original": "band one arm single leg split squat",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de las caderas y coloca una banda elástica alrededor de los tobillos. Extiende una pierna hacia adelante y apoya la parte superior del pie sobre un banco o escalón detrás de ti. Sujétate de un apoyo con una mano para mantener el equilibrio. Flexiona la pierna de apoyo y baja el cuerpo hacia una posición de sentadilla, manteniendo la rodilla alineada con los dedos del pie. Empuja con el talón para regresar a la posición inicial. Repite el número de repeticiones deseado, luego cambia de pierna.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de las caderas y coloca una banda elástica alrededor de los tobillos.",
+      "Extiende una pierna hacia adelante y apoya la parte superior del pie sobre un banco o escalón detrás de ti.",
+      "Sujétate de un apoyo con una mano para mantener el equilibrio.",
+      "Flexiona la pierna de apoyo y baja el cuerpo hacia una posición de sentadilla, manteniendo la rodilla alineada con los dedos del pie.",
+      "Empuja con el talón para regresar a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia de pierna."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "glutes",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "target": "quads",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0988",
+    "name_original": "band one arm standing low row",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje estable a la altura de la cintura. Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros. Sostén la banda con una mano, con la palma hacia adentro, y da un paso atrás para generar tensión en la banda. Flexiona ligeramente las rodillas e inclínate hacia adelante desde las caderas, manteniendo la espalda recta. Tira de la banda hacia la cintura, juntando los omóplatos. Haz una pausa por un momento en la parte superior del movimiento, luego suelta lentamente la banda de vuelta a la posición inicial. Repite el número de repeticiones deseado, luego cambia de lado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje estable a la altura de la cintura.",
+      "Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Sostén la banda con una mano, con la palma hacia adentro, y da un paso atrás para generar tensión en la banda.",
+      "Flexiona ligeramente las rodillas e inclínate hacia adelante desde las caderas, manteniendo la espalda recta.",
+      "Tira de la banda hacia la cintura, juntando los omóplatos.",
+      "Haz una pausa por un momento en la parte superior del movimiento, luego suelta lentamente la banda de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia de lado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "target": "upper back",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0016",
+    "equipment_name_original": "Remo en Máquina / Low Row",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0989",
+    "name_original": "band one arm twisting chest press",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente a la altura del pecho. Ponte de pie con el costado hacia el punto de anclaje y agarra la banda con una mano. Aléjate del punto de anclaje para generar tensión en la banda. Coloca los pies separados a la altura de los hombros y flexiona ligeramente las rodillas. Lleva la mano que sostiene la banda a través del cuerpo, hacia el hombro opuesto. Manteniendo la tensión en la banda, empuja la mano hacia adelante y alejándola del cuerpo, extendiendo el brazo. Regresa lentamente a la posición inicial y repite el número de repeticiones deseado. Cambia de lado y repite el ejercicio con la otra mano.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente a la altura del pecho.",
+      "Ponte de pie con el costado hacia el punto de anclaje y agarra la banda con una mano.",
+      "Aléjate del punto de anclaje para generar tensión en la banda.",
+      "Coloca los pies separados a la altura de los hombros y flexiona ligeramente las rodillas.",
+      "Lleva la mano que sostiene la banda a través del cuerpo, hacia el hombro opuesto.",
+      "Manteniendo la tensión en la banda, empuja la mano hacia adelante y alejándola del cuerpo, extendiendo el brazo.",
+      "Regresa lentamente a la posición inicial y repite el número de repeticiones deseado.",
+      "Cambia de lado y repite el ejercicio con la otra mano."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "shoulders",
+    "secondary_muscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "target": "pectorals",
+    "category": "chest",
+    "body_part": "chest",
+    "equipment_id_original": "CG-EQP-0010",
+    "equipment_name_original": "Máquinas de Placas y Palanca Guiadas",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0990",
+    "name_original": "band one arm twisting seated row",
+    "name_es": null,
+    "instructions_es": "Siéntate en un banco o silla con los pies apoyados en el suelo y la espalda recta. Sostén la banda con una mano y extiende el brazo completamente frente a ti. Manteniendo la espalda recta, tira de la banda hacia el cuerpo flexionando el codo y juntando los omóplatos. Al mismo tiempo, gira el torso hacia el lado del brazo que tira. Haz una pausa por un momento en la parte superior, luego suelta lentamente la tensión de la banda y regresa a la posición inicial. Repite el número de repeticiones deseado, luego cambia al otro brazo.",
+    "instruction_steps_es": [
+      "Siéntate en un banco o silla con los pies apoyados en el suelo y la espalda recta.",
+      "Sostén la banda con una mano y extiende el brazo completamente frente a ti.",
+      "Manteniendo la espalda recta, tira de la banda hacia el cuerpo flexionando el codo y juntando los omóplatos.",
+      "Al mismo tiempo, gira el torso hacia el lado del brazo que tira.",
+      "Haz una pausa por un momento en la parte superior, luego suelta lentamente la tensión de la banda y regresa a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia al otro brazo."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "target": "upper back",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0016",
+    "equipment_name_original": "Remo en Máquina / Low Row",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0991",
+    "name_original": "band pull through",
+    "name_es": null,
+    "instructions_es": "Sujeta una banda elástica a un punto de anclaje resistente a nivel del suelo. Ponte de pie de espaldas al punto de anclaje con los pies separados a la altura de los hombros. Da un paso adelante para generar tensión en la banda, manteniendo las rodillas ligeramente flexionadas. Flexiona las caderas y lleva los glúteos hacia atrás, manteniendo una ligera flexión en las rodillas. Baja el torso hasta que quede paralelo al suelo, sintiendo un estiramiento en los isquiotibiales. Empuja las caderas hacia adelante y aprieta los glúteos para regresar a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta una banda elástica a un punto de anclaje resistente a nivel del suelo.",
+      "Ponte de pie de espaldas al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Da un paso adelante para generar tensión en la banda, manteniendo las rodillas ligeramente flexionadas.",
+      "Flexiona las caderas y lleva los glúteos hacia atrás, manteniendo una ligera flexión en las rodillas.",
+      "Baja el torso hasta que quede paralelo al suelo, sintiendo un estiramiento en los isquiotibiales.",
+      "Empuja las caderas hacia adelante y aprieta los glúteos para regresar a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a nivel del suelo."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (nivel del suelo)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a nivel del suelo."
+  },
+  {
+    "exercise_id": "0992",
+    "name_original": "band push sit-up",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda de forma segura a un punto de anclaje estable. Túmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo. Sostén la banda con ambas manos y extiende los brazos rectos hacia el techo. Activando el abdomen, levanta lentamente la parte superior del cuerpo del suelo, curvándote hacia adelante hasta que tu torso forme un ángulo de 45 grados. Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda de forma segura a un punto de anclaje estable.",
+      "Túmbate sobre tu espalda con las rodillas flexionadas y los pies apoyados en el suelo.",
+      "Sostén la banda con ambas manos y extiende los brazos rectos hacia el techo.",
+      "Activando el abdomen, levanta lentamente la parte superior del cuerpo del suelo, curvándote hacia adelante hasta que tu torso forme un ángulo de 45 grados.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente la parte superior del cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "shoulders",
+    "secondary_muscles": [
+      "shoulders",
+      "chest"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Rueda Abdominal y Tapete de Core",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a punto estable."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (punto estable)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a punto estable."
+  },
+  {
+    "exercise_id": "0993",
+    "name_original": "band reverse fly",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un objeto fijo a la altura del pecho. Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con ambas manos frente a ti. Mantén los brazos rectos y levántalos hacia los lados hasta que queden paralelos al suelo. Junta los omóplatos en la parte superior del movimiento. Baja lentamente los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un objeto fijo a la altura del pecho.",
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con ambas manos frente a ti.",
+      "Mantén los brazos rectos y levántalos hacia los lados hasta que queden paralelos al suelo.",
+      "Junta los omóplatos en la parte superior del movimiento.",
+      "Baja lentamente los brazos de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "upper back",
+    "secondary_muscles": [
+      "upper back",
+      "trapezius"
+    ],
+    "target": "delts",
+    "category": "shoulders",
+    "body_part": "shoulders",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a altura del pecho."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (altura del pecho)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a altura del pecho."
+  },
+  {
+    "exercise_id": "0994",
+    "name_original": "band reverse wrist curl",
+    "name_es": null,
+    "instructions_es": "Siéntate en un banco o silla con los pies apoyados en el suelo. Sostén la banda con un agarre prono, con las palmas hacia abajo, y envuélvela alrededor de los dedos. Apoya los antebrazos sobre los muslos, con las muñecas colgando del borde. Flexiona lentamente las muñecas hacia arriba, apretando los antebrazos. Haz una pausa por un momento en la parte superior, luego baja lentamente las muñecas de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Siéntate en un banco o silla con los pies apoyados en el suelo.",
+      "Sostén la banda con un agarre prono, con las palmas hacia abajo, y envuélvela alrededor de los dedos.",
+      "Apoya los antebrazos sobre los muslos, con las muñecas colgando del borde.",
+      "Flexiona lentamente las muñecas hacia arriba, apretando los antebrazos.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente las muñecas de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "forearms",
+    "secondary_muscles": [
+      "forearms"
+    ],
+    "target": "forearms",
+    "category": "lower arms",
+    "body_part": "lower arms",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0996",
+    "name_original": "band seated hip internal rotation",
+    "name_es": null,
+    "instructions_es": "Siéntate en una silla o banco con la espalda recta y los pies apoyados en el suelo. Coloca una banda elástica alrededor de los muslos, justo por encima de las rodillas. Mantén las rodillas flexionadas formando un ángulo de 90 grados y los pies separados a la altura de los hombros. Activa los glúteos y rota lentamente las rodillas hacia afuera, empujando contra la resistencia de la banda. Haz una pausa por un momento al final del movimiento, luego regresa lentamente a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Siéntate en una silla o banco con la espalda recta y los pies apoyados en el suelo.",
+      "Coloca una banda elástica alrededor de los muslos, justo por encima de las rodillas.",
+      "Mantén las rodillas flexionadas formando un ángulo de 90 grados y los pies separados a la altura de los hombros.",
+      "Activa los glúteos y rota lentamente las rodillas hacia afuera, empujando contra la resistencia de la banda.",
+      "Haz una pausa por un momento al final del movimiento, luego regresa lentamente a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Discrepancia: nombre indica rotación interna de cadera, instrucciones describen llevar rodillas hacia afuera (posible rotación externa/abducción). Documentado, no corregido."
+  },
+  {
+    "exercise_id": "1011",
+    "name_original": "band seated twist",
+    "name_es": null,
+    "instructions_es": "Siéntate en el suelo con las piernas extendidas frente a ti y la espalda recta. Envuelve la banda alrededor de la cintura y sostén los extremos con ambas manos. Activa el abdomen y gira lentamente el torso hacia un lado, manteniendo la espalda recta y los pies en el suelo. Haz una pausa por un momento al final de la rotación, luego regresa lentamente a la posición inicial. Repite el giro hacia el otro lado. Continúa alternando lados durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Siéntate en el suelo con las piernas extendidas frente a ti y la espalda recta.",
+      "Envuelve la banda alrededor de la cintura y sostén los extremos con ambas manos.",
+      "Activa el abdomen y gira lentamente el torso hacia un lado, manteniendo la espalda recta y los pies en el suelo.",
+      "Haz una pausa por un momento al final de la rotación, luego regresa lentamente a la posición inicial.",
+      "Repite el giro hacia el otro lado.",
+      "Continúa alternando lados durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "obliques",
+    "secondary_muscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0997",
+    "name_original": "band shoulder press",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies. Sostén la banda con las palmas hacia adelante y eleva las manos a la altura de los hombros, con los codos flexionados. Empuja la banda por encima de la cabeza, extendiendo completamente los brazos. Haz una pausa por un momento en la parte superior, luego baja lentamente la banda de vuelta a la altura de los hombros. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies.",
+      "Sostén la banda con las palmas hacia adelante y eleva las manos a la altura de los hombros, con los codos flexionados.",
+      "Empuja la banda por encima de la cabeza, extendiendo completamente los brazos.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente la banda de vuelta a la altura de los hombros.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "triceps",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "target": "delts",
+    "category": "shoulders",
+    "body_part": "shoulders",
+    "equipment_id_original": "CG-EQP-0010",
+    "equipment_name_original": "Máquinas de Placas y Palanca Guiadas",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1018",
+    "name_original": "band shrug",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies, sosteniendo los extremos con las manos. Mantén los brazos rectos y relajados, y deja que la banda cuelgue frente a los muslos. Activa los trapecios encogiendo los hombros hacia arriba, levantando la banda lo más alto posible. Mantén la contracción por un momento, luego baja lentamente los hombros de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies, sosteniendo los extremos con las manos.",
+      "Mantén los brazos rectos y relajados, y deja que la banda cuelgue frente a los muslos.",
+      "Activa los trapecios encogiendo los hombros hacia arriba, levantando la banda lo más alto posible.",
+      "Mantén la contracción por un momento, luego baja lentamente los hombros de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "shoulders",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "target": "traps",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0998",
+    "name_original": "band side triceps extension",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con ambas manos, con las palmas hacia abajo. Extiende los brazos hacia los lados, manteniéndolos paralelos al suelo. Flexiona lentamente los codos y lleva las manos hacia los hombros, manteniendo quieta la parte superior de los brazos. Haz una pausa por un momento, luego extiende lentamente los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén la banda con ambas manos, con las palmas hacia abajo.",
+      "Extiende los brazos hacia los lados, manteniéndolos paralelos al suelo.",
+      "Flexiona lentamente los codos y lleva las manos hacia los hombros, manteniendo quieta la parte superior de los brazos.",
+      "Haz una pausa por un momento, luego extiende lentamente los brazos de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "shoulders",
+    "secondary_muscles": [
+      "shoulders"
+    ],
+    "target": "triceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Revisar movimiento exacto de extensión de tríceps según instrucciones."
+  },
+  {
+    "exercise_id": "0999",
+    "name_original": "band single leg calf raise",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de las caderas y coloca la banda alrededor de la base de los dedos del pie izquierdo. Sujétate de un objeto estable para mantener el equilibrio si es necesario. Levanta lentamente el talón izquierdo del suelo, llevando el peso del cuerpo hacia la punta del pie. Haz una pausa por un momento en la parte superior, luego baja lentamente el talón izquierdo de vuelta a la posición inicial. Repite el número de repeticiones deseado, luego cambia a la pierna derecha.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de las caderas y coloca la banda alrededor de la base de los dedos del pie izquierdo.",
+      "Sujétate de un objeto estable para mantener el equilibrio si es necesario.",
+      "Levanta lentamente el talón izquierdo del suelo, llevando el peso del cuerpo hacia la punta del pie.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente el talón izquierdo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia a la pierna derecha."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "ankles",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "target": "calves",
+    "category": "lower legs",
+    "body_part": "lower legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Revisar colocación y sostén de la banda durante elevación unilateral de pantorrilla."
+  },
+  {
+    "exercise_id": "1000",
+    "name_original": "band single leg reverse calf raise",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de las caderas y coloca la banda alrededor de la base de los dedos del pie. Sujétate de un objeto estable para mantener el equilibrio. Levanta lentamente el talón del suelo, llevando el peso del cuerpo hacia la punta del pie. Haz una pausa por un momento en la parte superior, luego baja lentamente el talón de vuelta a la posición inicial. Repite el número de repeticiones deseado, luego cambia a la otra pierna.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de las caderas y coloca la banda alrededor de la base de los dedos del pie.",
+      "Sujétate de un objeto estable para mantener el equilibrio.",
+      "Levanta lentamente el talón del suelo, llevando el peso del cuerpo hacia la punta del pie.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente el talón de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado, luego cambia a la otra pierna."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "target": "calves",
+    "category": "lower legs",
+    "body_part": "lower legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Discrepancia: nombre \"reverse calf raise\", instrucciones describen elevar el talón (flexión plantar). Documentado."
+  },
+  {
+    "exercise_id": "1001",
+    "name_original": "band single leg split squat",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de las caderas y coloca una banda elástica alrededor de los tobillos. Da un paso grande hacia adelante con el pie derecho y un paso más pequeño hacia atrás con el pie izquierdo. Flexiona las rodillas y baja el cuerpo hasta que el muslo derecho quede paralelo al suelo, manteniendo la rodilla izquierda ligeramente por encima del suelo. Empuja con el talón derecho para regresar a la posición inicial. Repite del otro lado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de las caderas y coloca una banda elástica alrededor de los tobillos.",
+      "Da un paso grande hacia adelante con el pie derecho y un paso más pequeño hacia atrás con el pie izquierdo.",
+      "Flexiona las rodillas y baja el cuerpo hasta que el muslo derecho quede paralelo al suelo, manteniendo la rodilla izquierda ligeramente por encima del suelo.",
+      "Empuja con el talón derecho para regresar a la posición inicial.",
+      "Repite del otro lado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "glutes",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "target": "quads",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1004",
+    "name_original": "band squat",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros, con la banda colocada justo por encima de las rodillas. Manteniendo el pecho arriba y el core activado, lleva las caderas hacia atrás y flexiona las rodillas para bajar a una posición de sentadilla. Asegúrate de que las rodillas se alineen con los dedos de los pies y de que el peso recaiga en los talones. Haz una pausa por un momento en la parte inferior, luego empuja con los talones para regresar a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros, con la banda colocada justo por encima de las rodillas.",
+      "Manteniendo el pecho arriba y el core activado, lleva las caderas hacia atrás y flexiona las rodillas para bajar a una posición de sentadilla.",
+      "Asegúrate de que las rodillas se alineen con los dedos de los pies y de que el peso recaiga en los talones.",
+      "Haz una pausa por un momento en la parte inferior, luego empuja con los talones para regresar a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "quadriceps",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1003",
+    "name_original": "band squat row",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura. Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros. Sostén las agarraderas de la banda con las palmas mirándose entre sí y los brazos extendidos frente a ti. Flexiona las rodillas y baja a una posición de sentadilla, manteniendo la espalda recta y el pecho elevado. Desde la posición de sentadilla, tira de las agarraderas de la banda hacia el cuerpo, juntando los omóplatos. Haz una pausa por un momento en la parte superior, luego suelta lentamente la tensión y regresa a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura.",
+      "Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Sostén las agarraderas de la banda con las palmas mirándose entre sí y los brazos extendidos frente a ti.",
+      "Flexiona las rodillas y baja a una posición de sentadilla, manteniendo la espalda recta y el pecho elevado.",
+      "Desde la posición de sentadilla, tira de las agarraderas de la banda hacia el cuerpo, juntando los omóplatos.",
+      "Haz una pausa por un momento en la parte superior, luego suelta lentamente la tensión y regresa a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "quadriceps",
+      "back"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a altura de cintura (sentadilla con remo)."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (altura de cintura (sentadilla con remo))"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a altura de cintura (sentadilla con remo)."
+  },
+  {
+    "exercise_id": "1005",
+    "name_original": "band standing crunch",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura. Ponte de pie de espaldas al punto de anclaje con los pies separados a la altura de los hombros. Sostén la banda con ambas manos y llévala hacia el pecho, manteniendo los codos flexionados y cerca del cuerpo. Activa el abdomen y flexiona lentamente el torso hacia adelante, llevando el pecho hacia las rodillas. Haz una pausa por un momento en la parte más alta del movimiento, luego regresa lentamente a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura.",
+      "Ponte de pie de espaldas al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Sostén la banda con ambas manos y llévala hacia el pecho, manteniendo los codos flexionados y cerca del cuerpo.",
+      "Activa el abdomen y flexiona lentamente el torso hacia adelante, llevando el pecho hacia las rodillas.",
+      "Haz una pausa por un momento en la parte más alta del movimiento, luego regresa lentamente a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "obliques",
+    "secondary_muscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Rueda Abdominal y Tapete de Core",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a altura de cintura."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (altura de cintura)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a altura de cintura."
+  },
+  {
+    "exercise_id": "1022",
+    "name_original": "band standing rear delt row",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies. Sostén las agarraderas de la banda con las palmas mirándose entre sí y los brazos extendidos frente a ti. Flexiona ligeramente las rodillas e inclínate hacia adelante desde las caderas, manteniendo la espalda recta. Tira de la banda hacia el pecho, juntando los omóplatos. Haz una pausa por un momento en la parte superior, luego suelta lentamente la tensión y regresa a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies.",
+      "Sostén las agarraderas de la banda con las palmas mirándose entre sí y los brazos extendidos frente a ti.",
+      "Flexiona ligeramente las rodillas e inclínate hacia adelante desde las caderas, manteniendo la espalda recta.",
+      "Tira de la banda hacia el pecho, juntando los omóplatos.",
+      "Haz una pausa por un momento en la parte superior, luego suelta lentamente la tensión y regresa a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "trapezius",
+    "secondary_muscles": [
+      "trapezius",
+      "rhomboids",
+      "biceps"
+    ],
+    "target": "delts",
+    "category": "shoulders",
+    "body_part": "shoulders",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1007",
+    "name_original": "band standing twisting crunch",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de la parte superior de la espalda, cruzándola frente al pecho. Sujeta los extremos de la banda con las manos, manteniendo los codos flexionados y cerca de los costados. Activa el abdomen y gira el torso hacia un lado, llevando el codo hacia la rodilla opuesta. Haz una pausa breve y luego vuelve a la posición inicial. Repite del otro lado. Continúa alternando lados durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de la parte superior de la espalda, cruzándola frente al pecho.",
+      "Sujeta los extremos de la banda con las manos, manteniendo los codos flexionados y cerca de los costados.",
+      "Activa el abdomen y gira el torso hacia un lado, llevando el codo hacia la rodilla opuesta.",
+      "Haz una pausa breve y luego vuelve a la posición inicial.",
+      "Repite del otro lado.",
+      "Continúa alternando lados durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "obliques",
+    "secondary_muscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0040",
+    "equipment_name_original": "Rueda Abdominal y Tapete de Core",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1008",
+    "name_original": "band step-up",
+    "name_es": null,
+    "instructions_es": "Coloca una banda alrededor de los muslos, justo por encima de las rodillas. Ponte de pie frente a un escalón o plataforma con los pies separados a la altura de las caderas. Sube a la plataforma con el pie derecho, empujando con el talón. Extiende la pierna izquierda hacia atrás, manteniéndola recta. Baja el pie izquierdo de nuevo hasta el suelo. Repite subiendo a la plataforma con el pie izquierdo. Continúa alternando las piernas durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Coloca una banda alrededor de los muslos, justo por encima de las rodillas.",
+      "Ponte de pie frente a un escalón o plataforma con los pies separados a la altura de las caderas.",
+      "Sube a la plataforma con el pie derecho, empujando con el talón.",
+      "Extiende la pierna izquierda hacia atrás, manteniéndola recta.",
+      "Baja el pie izquierdo de nuevo hasta el suelo.",
+      "Repite subiendo a la plataforma con el pie izquierdo.",
+      "Continúa alternando las piernas durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "quadriceps",
+    "secondary_muscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia + plataforma estable",
+        "role": "equipo_principal",
+        "justification": "Banda y plataforma estable confirmadas por el propietario."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "plataforma estable"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Plataforma estable disponible."
+  },
+  {
+    "exercise_id": "1009",
+    "name_original": "band stiff leg deadlift",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de los tobillos. Sujeta la banda con ambas manos frente a los muslos, con las palmas mirando hacia el cuerpo. Manteniendo la espalda recta y el core activado, flexiona las caderas y baja lentamente la parte superior del cuerpo hacia el suelo. Mientras bajas, empuja las caderas hacia atrás y deja que las rodillas se flexionen ligeramente. Baja la banda hacia el suelo, sintiendo un estiramiento en los isquiotibiales. Haz una pausa breve en la posición baja, luego activa los glúteos y los isquiotibiales para levantar la parte superior del cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de los tobillos.",
+      "Sujeta la banda con ambas manos frente a los muslos, con las palmas mirando hacia el cuerpo.",
+      "Manteniendo la espalda recta y el core activado, flexiona las caderas y baja lentamente la parte superior del cuerpo hacia el suelo.",
+      "Mientras bajas, empuja las caderas hacia atrás y deja que las rodillas se flexionen ligeramente.",
+      "Baja la banda hacia el suelo, sintiendo un estiramiento en los isquiotibiales.",
+      "Haz una pausa breve en la posición baja, luego activa los glúteos y los isquiotibiales para levantar la parte superior del cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1023",
+    "name_original": "band straight back stiff leg deadlift",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de la parte superior de las piernas. Sujeta la banda con ambas manos frente a los muslos, con las palmas mirando hacia el cuerpo. Manteniendo la espalda recta y las rodillas ligeramente flexionadas, flexiona las caderas y baja la banda hacia el suelo. Siente el estiramiento en los isquiotibiales mientras bajas la banda. Activa los glúteos y los isquiotibiales para levantar el cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de la parte superior de las piernas.",
+      "Sujeta la banda con ambas manos frente a los muslos, con las palmas mirando hacia el cuerpo.",
+      "Manteniendo la espalda recta y las rodillas ligeramente flexionadas, flexiona las caderas y baja la banda hacia el suelo.",
+      "Siente el estiramiento en los isquiotibiales mientras bajas la banda.",
+      "Activa los glúteos y los isquiotibiales para levantar el cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "target": "glutes",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1010",
+    "name_original": "band straight leg deadlift",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de los pies. Sujeta la banda con ambas manos, con las palmas mirando hacia el cuerpo, y mantén los brazos rectos. Activa el core y mantén una ligera flexión en las rodillas. Inclínate lentamente hacia delante desde las caderas, manteniendo la espalda recta y el pecho elevado. Baja la banda hacia el suelo manteniendo las piernas rectas. Haz una pausa breve en la posición baja y luego contrae los glúteos y los isquiotibiales para volver a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda alrededor de los pies.",
+      "Sujeta la banda con ambas manos, con las palmas mirando hacia el cuerpo, y mantén los brazos rectos.",
+      "Activa el core y mantén una ligera flexión en las rodillas.",
+      "Inclínate lentamente hacia delante desde las caderas, manteniendo la espalda recta y el pecho elevado.",
+      "Baja la banda hacia el suelo manteniendo las piernas rectas.",
+      "Haz una pausa breve en la posición baja y luego contrae los glúteos y los isquiotibiales para volver a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "target": "spine",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1012",
+    "name_original": "band twisting overhead press",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies. Sujeta las asas de la banda a la altura de los hombros con las palmas mirando hacia delante. Activa el core y empuja la banda por encima de la cabeza, extendiendo completamente los brazos. Mientras empujas, gira el torso hacia un lado, manteniendo las caderas estables. Haz una pausa breve en la parte alta y luego vuelve a la posición inicial. Repite el empuje y el giro hacia el lado opuesto. Continúa alternando lados durante el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca la banda bajo los pies.",
+      "Sujeta las asas de la banda a la altura de los hombros con las palmas mirando hacia delante.",
+      "Activa el core y empuja la banda por encima de la cabeza, extendiendo completamente los brazos.",
+      "Mientras empujas, gira el torso hacia un lado, manteniendo las caderas estables.",
+      "Haz una pausa breve en la parte alta y luego vuelve a la posición inicial.",
+      "Repite el empuje y el giro hacia el lado opuesto.",
+      "Continúa alternando lados durante el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "triceps",
+    "secondary_muscles": [
+      "triceps",
+      "upper back"
+    ],
+    "target": "delts",
+    "category": "shoulders",
+    "body_part": "shoulders",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1369",
+    "name_original": "band two legs calf raise - (band under both legs) v. 2",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y coloca una banda elástica bajo ambos pies. Sujeta los extremos de la banda con las manos para mantener el equilibrio. Levanta los talones del suelo lo más alto posible, usando las pantorrillas. Haz una pausa breve en la parte alta y luego baja lentamente los talones de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y coloca una banda elástica bajo ambos pies.",
+      "Sujeta los extremos de la banda con las manos para mantener el equilibrio.",
+      "Levanta los talones del suelo lo más alto posible, usando las pantorrillas.",
+      "Haz una pausa breve en la parte alta y luego baja lentamente los talones de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "ankles",
+    "secondary_muscles": [
+      "ankles",
+      "feet"
+    ],
+    "target": "calves",
+    "category": "lower legs",
+    "body_part": "lower legs",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1013",
+    "name_original": "band underhand pulldown",
+    "name_es": null,
+    "instructions_es": "Sujeta la banda a un punto de anclaje alto, como una barra de dominadas o una viga resistente. Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros. Agarra la banda con un agarre supino, con las manos un poco más separadas que el ancho de los hombros. Extiende completamente los brazos por encima de la cabeza, manteniendo los codos ligeramente flexionados. Activa los dorsales y tira de la banda hacia abajo en dirección al pecho, juntando los omóplatos. Haz una pausa breve en la parte baja del movimiento, luego libera lentamente la tensión y vuelve a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Sujeta la banda a un punto de anclaje alto, como una barra de dominadas o una viga resistente.",
+      "Ponte de pie frente al punto de anclaje con los pies separados a la altura de los hombros.",
+      "Agarra la banda con un agarre supino, con las manos un poco más separadas que el ancho de los hombros.",
+      "Extiende completamente los brazos por encima de la cabeza, manteniendo los codos ligeramente flexionados.",
+      "Activa los dorsales y tira de la banda hacia abajo en dirección al pecho, juntando los omóplatos.",
+      "Haz una pausa breve en la parte baja del movimiento, luego libera lentamente la tensión y vuelve a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "target": "lats",
+    "category": "back",
+    "body_part": "back",
+    "equipment_id_original": "CG-EQP-0015",
+    "equipment_name_original": "Jalón / Lat Pulldown",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a anclaje elevado."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (anclaje elevado)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a anclaje elevado."
+  },
+  {
+    "exercise_id": "1014",
+    "name_original": "band v-up",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda. Activando el abdomen, levanta las piernas y la parte superior del cuerpo del suelo al mismo tiempo, llevando las manos hacia los dedos de los pies. Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas y la parte superior del cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre tu espalda con las piernas rectas y los brazos extendidos por encima de la cabeza, sosteniendo la banda.",
+      "Activando el abdomen, levanta las piernas y la parte superior del cuerpo del suelo al mismo tiempo, llevando las manos hacia los dedos de los pies.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas y la parte superior del cuerpo de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "hip flexors",
+    "secondary_muscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "1015",
+    "name_original": "band vertical pallof press",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y enrolla la banda alrededor de un objeto firme a la altura del pecho. Sujeta la banda con ambas manos y aléjate del punto de anclaje, creando tensión en la banda. Colócate perpendicular al punto de anclaje, con el costado mirando hacia la banda. Extiende los brazos rectos hacia delante, manteniendo las manos a la altura del pecho. Activa el core y empuja la banda alejándola del pecho, extendiendo completamente los brazos. Mantén la posición durante unos segundos y luego lleva lentamente la banda de vuelta hacia el pecho. Repite el número de repeticiones deseado, luego cambia de lado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y enrolla la banda alrededor de un objeto firme a la altura del pecho.",
+      "Sujeta la banda con ambas manos y aléjate del punto de anclaje, creando tensión en la banda.",
+      "Colócate perpendicular al punto de anclaje, con el costado mirando hacia la banda.",
+      "Extiende los brazos rectos hacia delante, manteniendo las manos a la altura del pecho.",
+      "Activa el core y empuja la banda alejándola del pecho, extendiendo completamente los brazos.",
+      "Mantén la posición durante unos segundos y luego lleva lentamente la banda de vuelta hacia el pecho.",
+      "Repite el número de repeticiones deseado, luego cambia de lado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "obliques",
+    "secondary_muscles": [
+      "obliques",
+      "glutes"
+    ],
+    "target": "abs",
+    "category": "waist",
+    "body_part": "waist",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. Requiere anclaje a altura del pecho."
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia",
+      "punto de anclaje (altura del pecho)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Anclaje a altura del pecho."
+  },
+  {
+    "exercise_id": "1016",
+    "name_original": "band wrist curl",
+    "name_es": null,
+    "instructions_es": "Siéntate en un banco o silla con los pies apoyados en el suelo. Sujeta la banda con ambas manos, con las palmas hacia arriba, y apoya los antebrazos sobre los muslos. Flexiona lentamente las muñecas hacia arriba, apretando los antebrazos. Haz una pausa por un momento en la parte superior, luego baja lentamente las muñecas de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Siéntate en un banco o silla con los pies apoyados en el suelo.",
+      "Sujeta la banda con ambas manos, con las palmas hacia arriba, y apoya los antebrazos sobre los muslos.",
+      "Flexiona lentamente las muñecas hacia arriba, apretando los antebrazos.",
+      "Haz una pausa por un momento en la parte superior, luego baja lentamente las muñecas de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "biceps",
+    "secondary_muscles": [
+      "biceps",
+      "triceps"
+    ],
+    "target": "forearms",
+    "category": "lower arms",
+    "body_part": "lower arms",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible. Instrucciones describen flexión de muñeca con palmas hacia arriba; no confundir con reverse wrist curl."
+  },
+  {
+    "exercise_id": "1017",
+    "name_original": "band y-raise",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y sujeta la banda frente a los muslos con las palmas mirando hacia adentro. Mantén los brazos rectos y levántalos hacia arriba y hacia los lados, formando una 'Y' con el cuerpo. Junta los omóplatos en la parte superior del movimiento. Baja lentamente los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sujeta la banda frente a los muslos con las palmas mirando hacia adentro.",
+      "Mantén los brazos rectos y levántalos hacia arriba y hacia los lados, formando una 'Y' con el cuerpo.",
+      "Junta los omóplatos en la parte superior del movimiento.",
+      "Baja lentamente los brazos de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "band",
+    "muscle_group": "traps",
+    "secondary_muscles": [
+      "traps",
+      "rhomboids"
+    ],
+    "target": "delts",
+    "category": "shoulders",
+    "body_part": "shoulders",
+    "equipment_id_original": "CG-EQP-0045",
+    "equipment_name_original": "Estación de Calistenia y Bandas de Resistencia",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": "banda de resistencia",
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Banda de resistencia",
+        "role": "equipo_principal",
+        "justification": "Banda de resistencia confirmada por el propietario; sin código CG-EQP. "
+      }
+    ],
+    "accessories_required": [
+      "banda de resistencia"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Banda de resistencia disponible."
+  },
+  {
+    "exercise_id": "0023",
+    "name_original": "barbell alternate biceps curl",
+    "name_es": null,
+    "instructions_es": "Ponte de pie con los pies separados a la altura de los hombros y sujeta una barra en cada mano, con las palmas mirando hacia delante. Mantén los brazos superiores fijos y exhala mientras levantas el peso contrayendo los bíceps. Continúa levantando las barras hasta que los bíceps estén completamente contraídos y las barras estén a la altura de los hombros. Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps. Inhala mientras comienzas a bajar lentamente las barras de vuelta a la posición inicial. Repite el número de repeticiones deseado, alternando los brazos.",
+    "instruction_steps_es": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sujeta una barra en cada mano, con las palmas mirando hacia delante.",
+      "Mantén los brazos superiores fijos y exhala mientras levantas el peso contrayendo los bíceps.",
+      "Continúa levantando las barras hasta que los bíceps estén completamente contraídos y las barras estén a la altura de los hombros.",
+      "Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps.",
+      "Inhala mientras comienzas a bajar lentamente las barras de vuelta a la posición inicial.",
+      "Repite el número de repeticiones deseado, alternando los brazos."
+    ],
+    "declared_equipment": "barbell",
+    "muscle_group": "forearms",
+    "secondary_muscles": [
+      "forearms"
+    ],
+    "target": "biceps",
+    "category": "upper arms",
+    "body_part": "upper arms",
+    "equipment_id_original": "CG-EQP-0002",
+    "equipment_name_original": "Máquina Smith y Rack de Sentadillas",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": null,
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Dos barras rectas individuales",
+        "role": "equipo_principal",
+        "justification": "Instrucciones describen sostener una barra en cada mano y alternar; existen barras rectas individuales (2-20 kg). No se asigna código CG-EQP inexistente."
+      }
+    ],
+    "accessories_required": [
+      "barra recta individual x2"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Movimiento alternado conservado con barras individuales. Movimiento alternado conservado con barras individuales."
+  },
+  {
+    "exercise_id": "0024",
+    "name_original": "barbell bench front squat",
+    "name_es": null,
+    "instructions_es": "Empieza de pie con los pies separados a la altura de los hombros y la barra apoyada en la parte superior del pecho, justo debajo de la clavícula. Sujeta la barra con un agarre pronado, manteniendo los codos elevados y los brazos superiores paralelos al suelo. Baja el cuerpo hacia una posición de sentadilla flexionando las rodillas y las caderas, manteniendo la espalda recta y el pecho elevado. Haz una pausa breve en la parte baja de la sentadilla y luego empuja con los talones para volver a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Empieza de pie con los pies separados a la altura de los hombros y la barra apoyada en la parte superior del pecho, justo debajo de la clavícula.",
+      "Sujeta la barra con un agarre pronado, manteniendo los codos elevados y los brazos superiores paralelos al suelo.",
+      "Baja el cuerpo hacia una posición de sentadilla flexionando las rodillas y las caderas, manteniendo la espalda recta y el pecho elevado.",
+      "Haz una pausa breve en la parte baja de la sentadilla y luego empuja con los talones para volver a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "barbell",
+    "muscle_group": "hamstrings",
+    "secondary_muscles": [
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "target": "quads",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0002",
+    "equipment_name_original": "Máquina Smith y Rack de Sentadillas",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": null,
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Barra recta convencional + soporte frontal",
+        "role": "equipo_principal",
+        "justification": "Barra recta convencional y soporte adecuado para ejecución frontal. CG-EQP-0002 no es apropiado (femoral/extensión)."
+      }
+    ],
+    "accessories_required": [
+      "barra recta convencional",
+      "soporte frontal (verificar código en inventario)"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "MEDIA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Soporte a verificar en inventario; CG-EQP-0002 excluido."
+  },
+  {
+    "exercise_id": "0025",
+    "name_original": "barbell bench press",
+    "name_es": null,
+    "instructions_es": "Túmbate sobre un banco con los pies apoyados en el suelo y la espalda presionada contra el banco. Agarra la barra con un agarre pronado un poco más ancho que la separación de los hombros. Levanta la barra del soporte y sostenla directamente sobre el pecho con los brazos completamente extendidos. Baja la barra lentamente hacia el pecho, manteniendo los codos pegados al cuerpo. Haz una pausa breve cuando la barra toque el pecho. Empuja la barra de vuelta a la posición inicial extendiendo los brazos. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Túmbate sobre un banco con los pies apoyados en el suelo y la espalda presionada contra el banco.",
+      "Agarra la barra con un agarre pronado un poco más ancho que la separación de los hombros.",
+      "Levanta la barra del soporte y sostenla directamente sobre el pecho con los brazos completamente extendidos.",
+      "Baja la barra lentamente hacia el pecho, manteniendo los codos pegados al cuerpo.",
+      "Haz una pausa breve cuando la barra toque el pecho.",
+      "Empuja la barra de vuelta a la posición inicial extendiendo los brazos.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "barbell",
+    "muscle_group": "triceps",
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "target": "pectorals",
+    "category": "chest",
+    "body_part": "chest",
+    "equipment_id_original": "CG-EQP-0001",
+    "equipment_name_original": "Banco Plano / Multiposición",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": null,
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": "CG-EQP-0029",
+        "name": "Banco Plano Press Libre",
+        "role": "equipo_principal",
+        "justification": "Banco plano CG-EQP-0029 confirmado. Barra recta convencional compatible."
+      },
+      {
+        "code": null,
+        "name": "Barra recta convencional",
+        "role": "equipo_secundario",
+        "justification": "Barra recta convencional disponible."
+      }
+    ],
+    "accessories_required": [
+      "barra recta convencional"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "CG-EQP-0001 no se utiliza como banco para este ejercicio."
+  },
+  {
+    "exercise_id": "0026",
+    "name_original": "barbell bench squat",
+    "name_es": null,
+    "instructions_es": "Coloca una barra en un soporte de sentadillas a la altura del pecho. Ponte de pie de espaldas al soporte, con los pies separados a la altura de los hombros. Flexiona las rodillas y baja el cuerpo hacia una posición de sentadilla, manteniendo la espalda recta y el pecho elevado. Agarra la barra con un agarre pronado un poco más ancho que la separación de los hombros. Levanta la barra del soporte y retrocede un paso, asegurándote de que los pies sigan separados a la altura de los hombros. Baja el cuerpo hacia una sentadilla, manteniendo las rodillas alineadas con los dedos de los pies. Haz una pausa por un momento en la parte inferior, luego empuja con los talones para regresar a la posición inicial. Repite el número de repeticiones deseado.",
+    "instruction_steps_es": [
+      "Coloca una barra en un soporte de sentadillas a la altura del pecho.",
+      "Ponte de pie de espaldas al soporte, con los pies separados a la altura de los hombros.",
+      "Flexiona las rodillas y baja el cuerpo hacia una posición de sentadilla, manteniendo la espalda recta y el pecho elevado.",
+      "Agarra la barra con un agarre pronado un poco más ancho que la separación de los hombros.",
+      "Levanta la barra del soporte y retrocede un paso, asegurándote de que los pies sigan separados a la altura de los hombros.",
+      "Baja el cuerpo hacia una sentadilla, manteniendo las rodillas alineadas con los dedos de los pies.",
+      "Haz una pausa por un momento en la parte inferior, luego empuja con los talones para regresar a la posición inicial.",
+      "Repite el número de repeticiones deseado."
+    ],
+    "declared_equipment": "barbell",
+    "muscle_group": "glutes",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "target": "quads",
+    "category": "upper legs",
+    "body_part": "upper legs",
+    "equipment_id_original": "CG-EQP-0002",
+    "equipment_name_original": "Máquina Smith y Rack de Sentadillas",
+    "biomechanical_movement": null,
+    "movement_plane": null,
+    "resistance_type": null,
+    "grip_or_position": null,
+    "biomechanical_justification": null,
+    "equipment_candidates": [
+      {
+        "code": null,
+        "name": "Barra recta convencional",
+        "role": "equipo_principal",
+        "justification": "Barra recta convencional disponible."
+      },
+      {
+        "code": "CG-EQP-0017",
+        "name": "Rack Sentadilla Libre",
+        "role": "equipo_secundario",
+        "justification": "Rack de sentadillas CG-EQP-0017 confirmado por el propietario. CG-EQP-0002 excluido."
+      }
+    ],
+    "accessories_required": [
+      "barra recta convencional",
+      "rack de sentadillas CG-EQP-0017"
+    ],
+    "compatibility_status": "CANDIDATO_POR_VALIDAR",
+    "confidence": "ALTA",
+    "owner_verdict": "REVISADO_DISPONIBLE",
+    "observations": "Rack CG-EQP-0017 confirmado; CG-EQP-0002 excluido."
+  }
+]

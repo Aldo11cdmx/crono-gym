@@ -1,0 +1,42 @@
+{
+  "total_exercises": 1324,
+  "batch_size": 30,
+  "batches": [
+    {
+      "batch": 1,
+      "range": "0001-0030",
+      "file": "LOTE-001-EJERCICIOS-0001-0030.json",
+      "count": 30,
+      "status": "CORREGIDO"
+    },
+    {
+      "batch": 2,
+      "range": "0031-0060",
+      "file": "LOTE-002-EJERCICIOS-0031-0060.json",
+      "count": 30,
+      "status": "REVISADO"
+    },
+    {
+      "batch": 3,
+      "range": "0061-0100",
+      "file": "LOTE-003-EJERCICIOS-0061-0100.json",
+      "count": 40,
+      "status": "PREPARADO"
+    },
+    {
+      "batch": 4,
+      "range": "0061-0100",
+      "file": "LOTE-003-EJERCICIOS-0061-0100.json",
+      "count": 40,
+      "status": "REVISADO"
+    },
+    {
+      "batch": 5,
+      "range": "101-200",
+      "file": "BLOQUE-101-200-EJERCICIOS.json",
+      "count": 100,
+      "status": "REVISADO"
+    }
+  ],
+  "completed_batches": 4
+}

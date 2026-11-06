@@ -73,7 +73,16 @@ export function AuthGate() {
    * a component that only mounts once the app has already decided.
    */
   useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log(
+        "[CRONOS-REHYDRATE] AuthGate: recovery start, userId present:",
+        Boolean(userId),
+      );
+    }
     if (!userId) return;
+    if (import.meta.env.DEV) {
+      console.log("[CRONOS-REHYDRATE] AuthGate: calling rehydrate");
+    }
     rehydrate(userId);
   }, [userId, rehydrate]);
 
@@ -116,20 +125,17 @@ export function AuthGate() {
       */}
       {!isActive && userId && (
         <header
-          className="sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md"
+          className="hidden sticky top-0 z-40 border-b border-white/10 bg-neutral-900/60 backdrop-blur-md"
           style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
         >
           <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <h1 className="flex items-center gap-2.5">
               {/*
-                Mobile only, because `SideRail` renders the mark from 768px up.
-
-                `hidden` before `max-md:flex` is load-bearing, not decoration:
-                Tailwind emits `display` utilities with `hidden` last, so `hidden`
-                wins over the component's own `flex` at desktop width regardless of
-                the order they appear in the class attribute. CSS decides which one
-                is on screen, not a media query hook -- a hook would re-render on
-                every rotation and flash the wrong brand on a cold load.
+                Ocultado en móvil: la navegación inferior (MobileNav) es la única
+                estructura fija que debe existir por debajo de 768px. El desktop
+                SideRail ya renderiza la marca desde 768px arriba, así que este
+                header no aporta nada en ningún breakpoint y se mantiene oculto
+                para que Today arranque desde el safe-area-inset-top.
               */}
               <BrandLockup className="hidden max-md:flex" size={30} />
             </h1>

@@ -388,9 +388,8 @@ describe("DashboardPage", () => {
 
     expect(screen.getByText("Rutina del día")).toBeTruthy();
     expect(screen.getByText("Crea tu primera rutina para empezar")).toBeTruthy();
-    expect(
-      screen.getByText(/Elige una rutina para ver los m/),
-    ).toBeTruthy();
+    // El mapa habla por sí mismo: sin frase descriptiva debajo en el estado idle.
+    expect(screen.queryByText(/Elige una rutina para ver los m/)).toBeNull();
     expect(screen.getByTestId("muscle-readonly-map")).toBeTruthy();
   });
 
@@ -407,9 +406,11 @@ describe("DashboardPage", () => {
       expect(screen.getByText(letter)).toBeTruthy(),
     );
     // Lunes es hoy con FIXED_NOW: estado "hoy, pendiente" diferenciado.
-    const lunes = screen.getAllByText("L")[0] as HTMLElement;
-    expect(lunes.getAttribute("aria-label")).toContain("hoy, pendiente");
-    expect(lunes.style.backgroundColor).toBe("rgba(255, 59, 48, 0.12)");
+    const pulse = screen.getByTestId("weekly-pulse-line");
+    const lunes = pulse.querySelector('[aria-label*="hoy, pendiente"]') as HTMLElement | null;
+    expect(lunes).toBeTruthy();
+    expect(lunes?.textContent).toContain("L");
+    expect(lunes?.style.backgroundColor).toBe("rgba(255, 59, 48, 0.12)");
   });
 
   it("keeps the weekly streak factual once a session exists this week", () => {

@@ -1,16 +1,14 @@
 /**
- * DashboardPage.tsx — Cronos Gym home dashboard (clean slate).
+ * DashboardPage.tsx — Cronos Gym home dashboard (Command Center / Today).
  *
- * Glassmorphic Pro layout, una sola jerarquía visual:
+ * Instrumento Editorial Cronos: negro profundo, un solo acento crimson,
+ * jerarquía clara, números tabulares y sin tarjetas anidadas innecesarias.
  *
- * 1. Hero: saludo, metadatos de la rutina sugerida y un ÚNICO botón primario
- *    prominente ("Comenzar entrenamiento"). Sin CTA duplicados, sin FAB flotante.
- * 2. Consistencia semanal: barra de dias (L M X J V S D) y racha
- *    ("2/3 completados") en una sola GlassCard horizontal compacta.
- * 3. Feed de inteligencia: anuncios activos de la tabla `announcements`.
- *
- * Todos los textos staticos estan escritos con entidades HTML o sin tilde,
- * asi el UTF-8 no puede leerse mal como mojibake (A©, A·, A3).
+ * Layout:
+ * - Escritorio: fila superior Hero (8 cols) + lateral PR y Cronos IA (4 cols);
+ *   fila inferior Semana (8 cols) + Historial (4 cols).
+ * - Móvil: una sola columna en orden de lectura: Header, Hero, Esta semana,
+ *   Récords, Historial, Cronos IA, Navegación inferior.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -18,6 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { RefreshCw, AlertTriangle } from "lucide-react";
 
 import { useDashboardHome } from "@/lib/dashboard/dashboardHomeModel";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { resolveTrainingIntent } from "@/lib/workout/trainingIntent";
 import { PROFILE_PATH, PROGRESS_PATH, TRAIN_PATH } from "@/components/shell/navItems";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -46,7 +45,7 @@ import {
  * Canvas contextual de Today (Command Center). No modifica SURFACE.base global.
  * Se apoya en negro profundo + glass existente para integrarse con AppShell/body.
  */
-const TODAY_CANVAS = "#050505";
+const TODAY_CANVAS = "#000000";
 
 interface Announcement {
   id: string;
@@ -167,6 +166,7 @@ function resolveRoutineTitle(
 export function DashboardPage({ userId }: DashboardPageProps) {
   const navigate = useNavigate();
   const data = useDashboardHome(userId);
+  const isMobile = useMediaQuery("(max-width: 639px)");
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
@@ -387,7 +387,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         aria-label="Encabezado de Today"
       >
         <div className="min-w-0">
-          <p style={{ ...TYPE.label, color: ACCENT.text, margin: 0, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          <p className="hidden sm:inline" style={{ ...TYPE.label, color: ACCENT.text, margin: 0, textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Cronos
           </p>
           <p style={{ ...TYPE.caption, color: TEXT.tertiary, margin: 0, textTransform: "capitalize" }}>
@@ -453,9 +453,13 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
       <div
         data-testid="today-command-center"
-        className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)] gap-5 md:gap-6 items-start"
+        className="grid grid-cols-1 gap-5 md:gap-6 xl:grid-cols-12 items-start"
       >
-        <div className="flex flex-col gap-5 md:gap-6 min-w-0">
+        {/* Columna principal superior: Hero + acciones condicionales del contexto.
+             En móvil va primero (order-1); en escritorio se coloca con xl:col-span-8 xl:row-start-1. */}
+        <div
+          className="flex flex-col gap-5 md:gap-6 min-w-0 xl:col-span-8 xl:row-start-1 order-1 sm:order-auto"
+        >
           <TrainingHeroSection
             greeting={data.greeting}
             hasRoutine={hasRoutine}
@@ -469,6 +473,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             focusLabel={hasRoutine ? data.dailyFocus.dayLabel : null}
             isCompleted={sessionState === "completed"}
             isRecoverable={!!data.recoverableDraft}
+            compact={isMobile}
           />
 
           {coachId && (
@@ -502,96 +507,96 @@ export function DashboardPage({ userId }: DashboardPageProps) {
               onDiscard={data.discardDraft}
             />
           )}
-
-          <WeeklyProgressSection
-            weeklyCompleted={weeklyCompleted}
-            weeklyGoal={weeklyGoal}
-            weeklyPlan={data.weeklyPlan}
-            streakStats={data.streakStats}
-          />
         </div>
 
-        <div className="flex flex-col gap-5 md:gap-6 min-w-0">
-          <PRSection recentPRs={data.recentPRs} />
-          <HistorySection sessions={data.recentSessions} />
+        {/* Progreso semanal: en móvil va segundo (order-2); en escritorio xl:col-span-8 xl:row-start-2. */}
+        <WeeklyProgressSection
+          weeklyCompleted={weeklyCompleted}
+          weeklyGoal={weeklyGoal}
+          weeklyPlan={data.weeklyPlan}
+          streakStats={data.streakStats}
+          className="xl:col-span-8 xl:row-start-2 order-2 sm:order-auto"
+        />
 
-          <section
-            aria-label="Cronos IA: tips y anuncios"
-            style={{
-              borderRadius: RADIUS.card,
-              border: `1px solid ${GLASS.border}`,
-              background: `linear-gradient(180deg, ${GLASS.fillRaised} 0%, rgba(255,255,255,0.03) 100%)`,
-              backdropFilter: "blur(20px) saturate(140%)",
-              WebkitBackdropFilter: "blur(20px) saturate(140%)",
-              padding: SPACE.card,
-            }}
-          >
-            <div className="flex flex-col gap-4">
-              <div className="flex items-end justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <p style={{ ...TYPE.label, color: ACCENT.text, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    Cronos IA
-                  </p>
-                  <p style={{ ...TYPE.title2, color: TEXT.primary, margin: `${SPACE.xs} 0 0`, letterSpacing: "-0.02em" }}>
-                    Tips y anuncios
-                  </p>
-                </div>
+        {/* Historial reciente: en móvil va tercero (order-3), máximo 3 filas;
+             en escritorio xl:col-span-4 xl:row-start-2. */}
+        <HistorySection
+          sessions={data.recentSessions}
+          maxVisible={isMobile ? 3 : 4}
+          className="xl:col-span-4 xl:row-start-2 order-3 sm:order-auto"
+        />
+
+        {/* Columna lateral superior: Cronos IA y Récords.
+             En móvil: Cronos IA primero (order-1 dentro), Récords después (order-2 dentro).
+             En escritorio: Récords primero, Cronos IA después; xl:col-span-4 xl:row-start-1. */}
+        <div className="flex flex-col gap-5 md:gap-6 min-w-0 xl:col-span-4 xl:row-start-1 order-4 sm:order-auto">
+          {/* Cronos IA: primera en móvil, segunda en escritorio. */}
+          <div className="flex flex-col gap-4 order-1 sm:order-2">
+            <div className="flex items-end justify-between gap-3 flex-wrap">
+              <div className="min-w-0">
+                <p style={{ ...TYPE.label, color: ACCENT.text, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Cronos IA
+                </p>
+                <p style={{ ...TYPE.title2, color: TEXT.primary, margin: `${SPACE.xs} 0 0`, letterSpacing: "-0.02em" }}>
+                  Tips y anuncios
+                </p>
               </div>
+            </div>
 
-              {announcements.map((announcement) => (
-                <div
-                  key={announcement.id}
+            {announcements.map((announcement) => (
+              <div
+                key={announcement.id}
+                style={{
+                  padding: `${SPACE.sm} 0`,
+                  borderTop: `1px solid ${GLASS.border}`,
+                }}
+              >
+                <span
                   style={{
-                    borderRadius: RADIUS.surface,
-                    border: `1px solid ${GLASS.border}`,
-                    background: "rgba(255,255,255,0.03)",
-                    padding: SPACE.md,
+                    ...TYPE.caption,
+                    color: ACCENT.text,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
                   }}
                 >
-                  <span
-                    style={{
-                      ...TYPE.caption,
-                      color: ACCENT.text,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                    }}
-                  >
-                    {KIND_LABELS[announcement.kind]}
-                  </span>
-                  <h3
-                    style={{
-                      ...TYPE.subhead,
-                      color: TEXT.primary,
-                      margin: `${SPACE.xs} 0 0`,
-                    }}
-                  >
-                    {announcement.title}
-                  </h3>
-                  <p
-                    style={{
-                      ...TYPE.body,
-                      color: TEXT.secondary,
-                      margin: `${SPACE.xs} 0 0`,
-                    }}
-                  >
-                    {announcement.message}
-                  </p>
-                </div>
-              ))}
+                  {KIND_LABELS[announcement.kind]}
+                </span>
+                <h3
+                  style={{
+                    ...TYPE.subhead,
+                    color: TEXT.primary,
+                    margin: `${SPACE.xs} 0 0`,
+                  }}
+                >
+                  {announcement.title}
+                </h3>
+                <p
+                  style={{
+                    ...TYPE.body,
+                    color: TEXT.secondary,
+                    margin: `${SPACE.xs} 0 0`,
+                  }}
+                >
+                  {announcement.message}
+                </p>
+              </div>
+            ))}
 
-              {announcements.length === 0 &&
-                !announcementsLoading &&
-                !announcementsError && (
-                  <TipSection tip={TIP_CATALOG[tipIndex]} onNext={nextTip} />
-                )}
-              {announcementsLoading ? (
-                <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0 }}>Cargando anuncios...</p>
-              ) : null}
-              {announcementsError ? (
-                <p style={{ ...TYPE.caption, color: STATUS.error.text, margin: 0 }}>{announcementsError}</p>
-              ) : null}
-            </div>
-          </section>
+            {announcements.length === 0 &&
+              !announcementsLoading &&
+              !announcementsError && (
+                <TipSection tip={TIP_CATALOG[tipIndex]} onNext={nextTip} embedded />
+              )}
+            {announcementsLoading ? (
+              <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0 }}>Cargando anuncios...</p>
+            ) : null}
+            {announcementsError ? (
+              <p style={{ ...TYPE.caption, color: STATUS.error.text, margin: 0 }}>{announcementsError}</p>
+            ) : null}
+          </div>
+
+          {/* Récords personales: segunda en móvil, primera en escritorio. */}
+          <PRSection recentPRs={data.recentPRs} compact={isMobile} className="order-2 sm:order-1" />
         </div>
       </div>
     </div>

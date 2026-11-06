@@ -182,12 +182,34 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     const id = ++requestIdRef.current;
     let alive = true;
     rehydratingRef.current = true;
+    if (import.meta.env.DEV) {
+      console.log(
+        "[CRONOS-REHYDRATE] effect: entry, requestId:",
+        id,
+        "rehydrateFor present:",
+        Boolean(rehydrateFor),
+        "rehydrating:",
+        rehydratingRef.current,
+      );
+    }
     setRehydrating(true);
     void loadRecoverableDraft(rehydrateFor)
       .then((draft) => {
         if (!alive || requestIdRef.current !== id) return;
         setRehydrating(false);
         rehydratingRef.current = false;
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] effect: resolved, requestId:",
+            id,
+            "draft present:",
+            Boolean(draft),
+            "session active:",
+            Boolean(sessionRef.current),
+            "rehydrating:",
+            rehydratingRef.current,
+          );
+        }
         if (!draft) return;
         if (sessionRef.current) return;
         setRecoverableDraft(draft);
@@ -206,6 +228,14 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
         if (!alive || requestIdRef.current !== id) return;
         setRehydrating(false);
         rehydratingRef.current = false;
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] effect: rejected, requestId:",
+            id,
+            "rehydrating:",
+            rehydratingRef.current,
+          );
+        }
       });
     return () => {
       alive = false;
@@ -213,6 +243,14 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
   }, [rehydrateFor, retryNonce]);
 
   const rehydrate = useCallback((userId: string | null) => {
+    if (import.meta.env.DEV) {
+      console.log(
+        "[CRONOS-REHYDRATE] rehydrate: start, userId present:",
+        Boolean(userId),
+        "rehydratingRef.current:",
+        rehydratingRef.current,
+      );
+    }
     if (userId !== currentUserRef.current && currentUserRef.current !== null) {
       // Cambio de cuenta: invalida la recuperación pendiente y no mezcla
       // estado/borradores de usuarios distintos. Solo se limpia en memoria.
@@ -226,11 +264,17 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     }
     if (userId === null) {
       rehydratingRef.current = false;
+      if (import.meta.env.DEV) {
+        console.log("[CRONOS-REHYDRATE] rehydrate: userId null -> rehydrating false");
+      }
       setRehydrating(false);
       setRehydrateFor(null);
       return;
     }
     rehydratingRef.current = true;
+    if (import.meta.env.DEV) {
+      console.log("[CRONOS-REHYDRATE] rehydrate: userId present -> rehydrating true");
+    }
     setRehydrating(true);
     setRehydrateFor(userId);
   }, []);

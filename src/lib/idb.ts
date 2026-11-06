@@ -128,14 +128,32 @@ let dbPromise: Promise<IDBDatabase | null> | null = null;
 export function openDb(): Promise<IDBDatabase | null> {
   if (dbPromise) return dbPromise;
 
+  const startedAt = performance.now();
+  if (import.meta.env.DEV) {
+    console.log("[CRONOS-REHYDRATE] idb.openDb: start, ms:", startedAt);
+  }
+
   dbPromise = new Promise((resolve) => {
     // Absent in SSR and in some hardened browsers.
     if (typeof indexedDB === "undefined") {
+      if (import.meta.env.DEV) {
+        console.log(
+          "[CRONOS-REHYDRATE] idb.openDb: no_indexeddb, ms:",
+          performance.now() - startedAt,
+        );
+      }
       resolve(null);
       return;
     }
     try {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      if (import.meta.env.DEV) {
+        console.log(
+          "[CRONOS-REHYDRATE] idb.openDb: indexeddb_open_request, ms:",
+          performance.now() - startedAt,
+        );
+      }
 
       request.onupgradeneeded = () => {
         const db = request.result;
@@ -146,11 +164,41 @@ export function openDb(): Promise<IDBDatabase | null> {
         }
       };
 
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.openDb: onsuccess, ms:",
+            performance.now() - startedAt,
+          );
+        }
+        resolve(request.result);
+      };
       // Private browsing and blocked storage land here; never throw at the user.
-      request.onerror = () => resolve(null);
-      request.onblocked = () => resolve(null);
+      request.onerror = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.openDb: onerror, ms:",
+            performance.now() - startedAt,
+          );
+        }
+        resolve(null);
+      };
+      request.onblocked = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.openDb: onblocked, ms:",
+            performance.now() - startedAt,
+          );
+        }
+        resolve(null);
+      };
     } catch {
+      if (import.meta.env.DEV) {
+        console.log(
+          "[CRONOS-REHYDRATE] idb.openDb: catch, ms:",
+          performance.now() - startedAt,
+        );
+      }
       resolve(null);
     }
   });
@@ -171,9 +219,30 @@ export function tx<T>(
   mode: IDBTransactionMode,
   run: (store: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T | null> {
+  const txStartedAt = performance.now();
+  if (import.meta.env.DEV) {
+    console.log(
+      "[CRONOS-REHYDRATE] idb.tx: start, store:",
+      store,
+      "mode:",
+      mode,
+      "ms:",
+      txStartedAt,
+    );
+  }
   return openDb().then(
-    (db) =>
-      new Promise<T | null>((resolve) => {
+    (db) => {
+      if (import.meta.env.DEV) {
+        console.log(
+          "[CRONOS-REHYDRATE] idb.tx: openDb resolved, store:",
+          store,
+          "ms:",
+          performance.now() - txStartedAt,
+          "db present:",
+          Boolean(db),
+        );
+      }
+      return new Promise<T | null>((resolve) => {
         if (!db) {
           resolve(null);
           return;
@@ -188,7 +257,25 @@ export function tx<T>(
           const transaction = db.transaction(store, mode);
           const objectStore = transaction.objectStore(store);
           const request = run(objectStore);
+          if (import.meta.env.DEV) {
+            console.log(
+              "[CRONOS-REHYDRATE] idb.tx: transaction_started, store:",
+              store,
+              "mode:",
+              mode,
+              "ms:",
+              performance.now() - txStartedAt,
+            );
+          }
       request.onsuccess = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.tx: request_onsuccess, store:",
+            store,
+            "ms:",
+            performance.now() - txStartedAt,
+          );
+        }
         try {
           safeResolve((request.result as T | undefined) ?? null);
         } catch {
@@ -196,21 +283,66 @@ export function tx<T>(
         }
       };
       request.onerror = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.tx: request_onerror, store:",
+            store,
+            "ms:",
+            performance.now() - txStartedAt,
+          );
+        }
         // Don't resolve here; let transaction handle it
       };
       transaction.oncomplete = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.tx: transaction_oncomplete, store:",
+            store,
+            "ms:",
+            performance.now() - txStartedAt,
+          );
+        }
         try {
           safeResolve((request.result as T | undefined) ?? null);
         } catch {
           safeResolve(null);
         }
       };
-      transaction.onerror = () => safeResolve(null);
-      transaction.onabort = () => safeResolve(null);
+      transaction.onerror = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.tx: transaction_onerror, store:",
+            store,
+            "ms:",
+            performance.now() - txStartedAt,
+          );
+        }
+        safeResolve(null);
+      };
+      transaction.onabort = () => {
+        if (import.meta.env.DEV) {
+          console.log(
+            "[CRONOS-REHYDRATE] idb.tx: transaction_onabort, store:",
+            store,
+            "ms:",
+            performance.now() - txStartedAt,
+          );
+        }
+        safeResolve(null);
+      };
         } catch {
+          if (import.meta.env.DEV) {
+            console.log(
+              "[CRONOS-REHYDRATE] idb.tx: catch, store:",
+              store,
+              "ms:",
+              performance.now() - txStartedAt,
+            );
+          }
           safeResolve(null);
         }
-      }),
+      });
+    },
   );
 }
 

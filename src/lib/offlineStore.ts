@@ -216,7 +216,19 @@ export async function loadDraft(logId: string): Promise<SessionDraft | null> {
  * reload, a crash or the tab being closed mid-workout.
  */
 export async function loadRecoverableDraft(userId: string): Promise<SessionDraft | null> {
+  if (import.meta.env.DEV) {
+    console.log("[CRONOS-REHYDRATE] loadRecoverableDraft: start");
+  }
+  const startedAt = performance.now();
   const db = await openDb();
+  if (import.meta.env.DEV) {
+    console.log(
+      "[CRONOS-REHYDRATE] loadRecoverableDraft: openDb resolved, ms:",
+      performance.now() - startedAt,
+      "db present:",
+      Boolean(db),
+    );
+  }
   if (!db) return null;
 
   return new Promise<SessionDraft | null>((resolve) => {

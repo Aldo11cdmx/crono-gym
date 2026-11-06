@@ -1,11 +1,8 @@
 import { History } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { SPACE, TEXT, TYPE, ACCENT } from "@/design/tokens";
+import { Link } from "react-router-dom";
+import { ACCENT, GLASS, SPACE, TEXT, TYPE } from "@/design/tokens";
+import { PROGRESS_PATH } from "@/components/shell/navItems";
 import type { DashboardSession } from "@/lib/dashboard/dashboardMetrics";
-
-export interface HistorySectionProps {
-  sessions: readonly DashboardSession[];
-}
 
 function formatSessionDate(iso: string): string {
   const d = new Date(iso);
@@ -24,62 +21,112 @@ function sessionDurationLabel(startedAt: string, completedAt: string | null): st
   return `${mins} min`;
 }
 
-export function HistorySection({ sessions }: HistorySectionProps) {
+const MAX_VISIBLE = 4;
+
+export function HistorySection({
+  sessions,
+  className,
+  maxVisible = MAX_VISIBLE,
+}: { sessions: readonly DashboardSession[]; className?: string; maxVisible?: number }) {
+  const visible = sessions.slice(0, maxVisible);
+  const hasMore = sessions.length > maxVisible;
+
   if (!sessions || sessions.length === 0) {
     return (
-      <GlassCard raised style={{ padding: SPACE.card, minHeight: 132 }}>
+        <section aria-label="Historial reciente" className={className} style={{ paddingBlock: SPACE.xs }}>
         <div className="flex items-center gap-2" style={{ marginBottom: SPACE.sm }}>
-          <History size={18} color={TEXT.tertiary} aria-hidden="true" />
+          <History size={16} color={TEXT.tertiary} aria-hidden="true" />
           <span style={{ ...TYPE.subhead, color: TEXT.secondary }}>Historial reciente</span>
         </div>
-        <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0 }}>
+        <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0, maxWidth: "36ch" }}>
           Cuando completes sesiones, verás aquí tu actividad más reciente.
         </p>
-      </GlassCard>
+      </section>
     );
   }
+  const seeAllLink = hasMore ? (
+    <Link
+      to={PROGRESS_PATH}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: SPACE.xs,
+        marginTop: SPACE.sm,
+        color: TEXT.secondary,
+        textDecoration: "none",
+        fontSize: TYPE.caption.size,
+      }}
+    >
+      Ver progreso completo
+      <span
+        aria-hidden="true"
+        style={{
+          display: "inline-block",
+          width: 0,
+          height: 0,
+          borderLeft: "4px solid transparent",
+          borderRight: "4px solid transparent",
+          borderBottom: "6px solid currentColor",
+          marginLeft: 2,
+        }}
+      />
+    </Link>
+  ) : null;
+
   return (
-    <GlassCard raised style={{ padding: SPACE.card }}>
-      <div className="flex items-center gap-2" style={{ marginBottom: SPACE.md }}>
-        <History size={18} color={ACCENT.base} aria-hidden="true" />
-        <span style={{ ...TYPE.subhead, color: TEXT.primary }}>Historial reciente</span>
-      </div>
-      <div className="flex flex-col" style={{ gap: SPACE.xs }}>
-        {sessions.map((s) => {
-          const duration = sessionDurationLabel(s.startedAt, s.completedAt);
-          const sets = s.sets.filter((set) => !set.isWarmup).length;
-          return (
-            <div
-              key={s.id}
-              className="flex items-start justify-between gap-3"
+    <section aria-label="Historial reciente" className={className} style={{ paddingBlock: SPACE.xs }}>
+    <div className="flex items-center gap-2" style={{ marginBottom: SPACE.md }}>
+      <History size={16} color={ACCENT.base} aria-hidden="true" />
+      <span style={{ ...TYPE.subhead, color: TEXT.primary }}>Historial reciente</span>
+    </div>
+    <div className="flex flex-col gap-1">
+      {visible.map((s) => {
+        const duration = sessionDurationLabel(s.startedAt, s.completedAt);
+        const workingSets = s.sets.filter((set) => !set.isWarmup).length;
+        return (
+          <div
+            key={s.id}
+            className="flex items-start justify-between gap-3"
+            style={{
+              padding: `${SPACE.xs} 0`,
+              borderTop: `1px solid ${GLASS.border}`,
+            }}
+          >
+            <div className="min-w-0">
+              <p style={{ ...TYPE.body, color: TEXT.primary, margin: 0, wordBreak: "break-word" }}>
+                {s.routineTitle?.trim() || "Sesión"}
+              </p>
+              <p style={{ ...TYPE.caption, color: TEXT.tertiary, margin: 0 }}>
+                {formatSessionDate(s.startedAt)}
+                {duration ? ` · ` : null}
+                {duration ? (
+                  <span
+                    style={{
+                      ...TYPE.mono,
+                      fontVariantNumeric: "tabular-nums",
+                      color: TEXT.secondary,
+                    }}
+                  >
+                    {duration}
+                  </span>
+                ) : null}
+                {workingSets > 0 ? ` · ${workingSets} series` : ""}
+              </p>
+            </div>
+            <span
               style={{
-                padding: `${SPACE.sm} 0`,
-                borderBottom: `1px solid ${ACCENT.muted}`,
+                ...TYPE.caption,
+                color: s.completedAt ? TEXT.secondary : TEXT.tertiary,
+                whiteSpace: "nowrap",
               }}
             >
-              <div className="min-w-0">
-                <p style={{ ...TYPE.body, color: TEXT.primary, margin: 0, wordBreak: "break-word" }}>
-                  {s.routineTitle?.trim() || "Sesión"}
-                </p>
-                <p style={{ ...TYPE.caption, color: TEXT.tertiary, margin: 0 }}>
-                  {formatSessionDate(s.startedAt)}
-                  {duration ? ` · ${duration}` : ""}
-                  {sets > 0 ? ` · ${sets} series` : ""}
-                </p>
-              </div>
-              <span
-                style={{
-                  ...TYPE.caption,
-                  color: s.completedAt ? TEXT.secondary : TEXT.tertiary,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {s.completedAt ? "Completada" : "Incompleta"}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </GlassCard>
+              {s.completedAt ? "Completada" : "Incompleta"}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+    {seeAllLink}
+  </section>
   );
 }

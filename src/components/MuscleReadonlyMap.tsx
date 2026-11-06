@@ -80,6 +80,22 @@ export interface MuscleReadonlyMapProps {
    * repeat it.
    */
   idleHint?: string;
+  /** Override del fondo del contenedor (por defecto DIAGRAM.inert). Pasa "transparent" para que flote sobre el fondo del Hero. */
+  backgroundColor?: string;
+  /** Override del fill de músculos sin series (por defecto DIAGRAM.inertFill). */
+  inertFill?: string;
+  /** Override del fill de músculos con series (por defecto DIAGRAM.selectedFill / ACCENT.base). */
+  litFill?: string;
+  /** Override del fill del músculo con más volumen (por defecto ACCENT.muted). */
+  mostLitFill?: string;
+  /**
+   * Texto opcional debajo de la figura. Pasa `null` para ocultar cualquier
+   * texto (descripción o idleHint) y dejar que el mapa hable por sí mismo.
+   * Cuando es `undefined` se conserva la lógica por defecto.
+   */
+  caption?: string | null;
+  /** Overflow del contenedor de la figura. Por defecto "hidden"; pasa "visible" para que el SVG completo quepa sin cortar cabeza ni hombros. */
+  overflow?: string;
 }
 
 export function MuscleReadonlyMap({
@@ -89,6 +105,12 @@ export function MuscleReadonlyMap({
   className = "",
   label,
   idleHint,
+  backgroundColor,
+  inertFill,
+  litFill,
+  mostLitFill,
+  caption,
+  overflow = "hidden",
 }: MuscleReadonlyMapProps) {
   const scopeId = useId().replace(/[^a-zA-Z0-9]/g, "");
 
@@ -113,10 +135,10 @@ export function MuscleReadonlyMap({
             fill: !muscle.enabled
               ? DIAGRAM.inert
               : count >= mostPresent && mostPresent > 0
-                ? MOST_LIT_FILL
+                ? mostLitFill ?? MOST_LIT_FILL
                 : lit
-                  ? LIT_FILL
-                  : UNLIT_FILL,
+                  ? litFill ?? LIT_FILL
+                  : inertFill ?? UNLIT_FILL,
             stroke: !muscle.enabled ? DIAGRAM.inert : lit ? LIT_STROKE : UNLIT_STROKE,
             strokeWidth: lit ? 2 : 1,
           },
@@ -175,8 +197,8 @@ export function MuscleReadonlyMap({
            */
           aspectRatio: String(aspectRatio),
           borderRadius: RADIUS.card,
-          backgroundColor: DIAGRAM.inert,
-          overflow: "hidden",
+          backgroundColor: backgroundColor ?? DIAGRAM.inert,
+          overflow,
         }}
       >
         {/*
@@ -222,8 +244,23 @@ export function MuscleReadonlyMap({
        * The caption: the distribution sentence when muscles have sets, the
        * invitation when none do. The two never share a render, because a
        * hint under a lit figure would talk over it.
+       *
+       * `caption === null` suppresses everything: the hero wants the lit map
+       * to speak for itself without a sentence underneath.
        */}
-      {description ? (
+      {caption === null ? null : caption !== undefined ? (
+        <p
+          style={{
+            margin: 0,
+            fontSize: "12px",
+            lineHeight: "16px",
+            color: "inherit",
+            textAlign: "center",
+          }}
+        >
+          {caption}
+        </p>
+      ) : description ? (
         <p
           style={{
             margin: 0,

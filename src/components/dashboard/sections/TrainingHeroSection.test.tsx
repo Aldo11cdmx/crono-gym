@@ -49,7 +49,7 @@ describe("TrainingHeroSection", () => {
     render(<TrainingHeroSection {...baseProps} rehydrating={true} ctaLabel="Comprobando sesión..." />);
     const btn = screen.getByRole("button");
     expect((btn as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByText("Comprobando sesión...")).toBeTruthy();
+    expect(screen.getByText("Preparando entrenamiento…")).toBeTruthy();
   });
 
   it("renderiza muscleCounts (mapa)", () => {

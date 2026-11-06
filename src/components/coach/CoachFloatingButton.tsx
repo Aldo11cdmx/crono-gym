@@ -14,6 +14,7 @@ import { useActiveSession } from "@/context/ActiveSessionContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ACCENT, TEXT } from "@/design/tokens";
 import { CRONOS_LABELS as T } from "@/lib/i18n";
+import { HOME_PATH } from "@/components/shell/navItems";
 import { CronosBottomSheet } from "./CronosBottomSheet";
 
 export const COACH_PORTAL_PATH = "/coach/portal";
@@ -52,6 +53,7 @@ export function CoachFloatingButton({ userId }: CoachFloatingButtonProps = {}) {
 
   if (answer === undefined || answer === null) return null;
   if (pathname === COACH_PORTAL_PATH) return null;
+  if (pathname === HOME_PATH) return null;
 
   return (
     <>

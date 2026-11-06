@@ -1,16 +1,6 @@
 import { Trophy } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import {
-  ACCENT,
-  SPACE,
-  TEXT,
-  TYPE,
-} from "@/design/tokens";
+import { ACCENT, GLASS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import type { RecentPR } from "@/lib/dashboard/dashboardMetrics";
-
-export interface PRSectionProps {
-  recentPRs: readonly RecentPR[];
-}
 
 function formatPRDate(iso: string): string {
   const d = new Date(iso);
@@ -18,34 +8,36 @@ function formatPRDate(iso: string): string {
   return d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
 }
 
-export function PRSection({ recentPRs }: PRSectionProps) {
-  if (!recentPRs || recentPRs.length === 0) {
+export function PRSection({ recentPRs, compact = false, className }: { recentPRs: readonly RecentPR[]; compact?: boolean; className?: string }) {
+  const hasPrs = Boolean(recentPRs && recentPRs.length > 0);
+
+  if (!hasPrs) {
     return (
-      <GlassCard raised style={{ padding: SPACE.card, minHeight: 132 }}>
+      <section aria-label="Récords recientes" className={className} style={{ paddingBlock: SPACE.xs }}>
         <div className="flex items-center gap-2" style={{ marginBottom: SPACE.sm }}>
-          <Trophy size={18} color={TEXT.tertiary} aria-hidden="true" />
+          <Trophy size={16} color={TEXT.tertiary} aria-hidden="true" />
           <span style={{ ...TYPE.subhead, color: TEXT.secondary }}>Récords recientes</span>
         </div>
-        <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0 }}>
-          Aún no hay récords en los últimos 7 días. Completa entrenamientos para ver tus mejores marcas aquí.
+        <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0, maxWidth: "36ch" }}>
+          Completa entrenamientos para ver tus mejores marcas aquí.
         </p>
-      </GlassCard>
+      </section>
     );
   }
   return (
-    <GlassCard raised style={{ padding: SPACE.card }}>
-      <div className="flex items-center gap-2" style={{ marginBottom: SPACE.md }}>
-        <Trophy size={18} color={ACCENT.base} aria-hidden="true" />
+    <section aria-label="Récords recientes" className={className} style={{ paddingBlock: SPACE.xs }}>
+      <div className="flex items-center gap-2" style={{ marginBottom: compact ? SPACE.xs : SPACE.md }}>
+        <Trophy size={compact ? 14 : 16} color={ACCENT.base} aria-hidden="true" />
         <span style={{ ...TYPE.subhead, color: TEXT.primary }}>Récords recientes</span>
       </div>
-      <div className="flex flex-col" style={{ gap: SPACE.sm }}>
+      <div className="flex flex-col gap-1">
         {recentPRs.map((pr) => (
           <div
             key={`${pr.exerciseName}-${pr.achievedAt}`}
             className="flex items-start justify-between gap-3"
             style={{
-              padding: `${SPACE.sm} 0`,
-              borderBottom: `1px solid ${ACCENT.muted}`,
+              padding: `${compact ? SPACE.xs : SPACE.xs} 0`,
+              borderTop: `1px solid ${GLASS.border}`,
             }}
           >
             <div className="min-w-0">
@@ -59,9 +51,11 @@ export function PRSection({ recentPRs }: PRSectionProps) {
             <span
               style={{
                 ...TYPE.mono,
+                fontVariantNumeric: "tabular-nums",
                 color: ACCENT.text,
                 whiteSpace: "nowrap",
-                fontSize: TYPE.subhead.size,
+                fontSize: compact ? TYPE.caption.size : TYPE.subhead.size,
+                fontWeight: 700,
               }}
               aria-label={`1RM estimado ${pr.estimated1RM} kilogramos`}
             >
@@ -70,6 +64,6 @@ export function PRSection({ recentPRs }: PRSectionProps) {
           </div>
         ))}
       </div>
-    </GlassCard>
+    </section>
   );
 }

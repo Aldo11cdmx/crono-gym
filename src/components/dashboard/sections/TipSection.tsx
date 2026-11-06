@@ -16,6 +16,8 @@ export interface TipSectionProps {
   tip: Tip | string;
   tips?: Tip[] | string[];
   onNext: () => void;
+  /** Cuando Cronos IA ya provee la superficie exterior, renderiza solo contenido. */
+  embedded?: boolean;
 }
 
 function tipText(value: Tip | string): string {
@@ -26,7 +28,7 @@ function tipIcon(value: Tip | string): "lightbulb" | "zap" {
   return typeof value === "string" ? "lightbulb" : value.icon;
 }
 
-export function TipSection({ tip, tips, onNext }: TipSectionProps) {
+export function TipSection({ tip, tips, onNext, embedded = false }: TipSectionProps) {
   const reduce = useReducedMotion();
   const items = useMemo(() => (tips && tips.length > 0 ? tips : [tip]), [tip, tips]);
   const [index, setIndex] = useState(0);
@@ -75,10 +77,10 @@ export function TipSection({ tip, tips, onNext }: TipSectionProps) {
       onKeyDown={handleKeyDown}
       className="outline-none focus-visible:ring-2"
       style={{
-        borderRadius: RADIUS.surface,
-        border: `1px solid ${GLASS.border}`,
-        background: "rgba(255,255,255,0.03)",
-        padding: SPACE.md,
+        borderRadius: embedded ? 0 : RADIUS.surface,
+        border: embedded ? "none" : `1px solid ${GLASS.border}`,
+        background: embedded ? "transparent" : "rgba(255,255,255,0.03)",
+        padding: embedded ? 0 : SPACE.md,
         transition: reduce ? undefined : "opacity 150ms ease",
       }}
     >

@@ -623,7 +623,39 @@ export function getNextSuggestedRoutine(
   return best;
 }
 
-/** Rough duration in minutes from exercise count and average rest. */
+/**
+ * Returns the routine explicitly scheduled for today (by `dayIndex`), if any.
+ *
+ * Unlike `getNextSuggestedRoutine` (which picks the least-recently-trained
+ * routine as a fallback), this reflects the user's weekly plan: a routine
+ * whose `routine_exercises` carry `dayIndex === weekdayIndex(now)` is
+ * considered programmed for today and takes priority in Today.
+ *
+ * Returns `null` when no routine is programmed for today, so callers can
+ * fall back to the suggested routine without inventing data.
+ */
+export function getScheduledRoutineForToday(
+  planRoutines: readonly { id: string; dayIndex: number | null | undefined; dayLabel: string | undefined }[],
+  plan: readonly RoutineSummary[],
+  now: number,
+): SuggestedRoutine | null {
+  const todayIdx = weekdayIndex(now);
+  const scheduledIds = new Set<string>();
+  for (const r of planRoutines) {
+    if (r.dayIndex === todayIdx) scheduledIds.add(r.id);
+  }
+  if (scheduledIds.size === 0) return null;
+  // Prefer the first programmed routine in plan order.
+  const routine = plan.find((p) => scheduledIds.has(p.id));
+  if (!routine) return null;
+  return {
+    id: routine.id,
+    title: routine.title,
+    exerciseCount: routine.exerciseCount,
+    estimatedDurationMin: estimateDurationMin(routine),
+    lastDoneAt: null,
+  };
+}
 function estimateDurationMin(routine: RoutineSummary): number {
   const workMin = routine.exerciseCount * 3;
   const restMin = Math.round((routine.restSecondsPerExercise * routine.exerciseCount) / 60);

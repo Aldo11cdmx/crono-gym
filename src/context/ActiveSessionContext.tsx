@@ -40,6 +40,13 @@ export interface ActiveSession {
   startedAt: string;
 }
 
+export type StartSessionResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: "rehydrating" | "active_session" | "recoverable_draft" | "invalid";
+    };
+
 export interface ActiveSessionValue {
   /** The session in progress, or null when the user is not training. */
   session: ActiveSession | null;
@@ -52,7 +59,7 @@ export interface ActiveSessionValue {
    * start time -- not a placeholder for "nothing running". The distinction
    * matters because the pill counts from `startedAt` either way.
    */
-  start: (routine: { id: string; title: string } | null) => void;
+  start: (routine: { id: string; title: string } | null) => StartSessionResult;
   /** Ends the session. Idempotent, so a double finish cannot resurrect state. */
   end: () => void;
   /**
@@ -287,19 +294,26 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     }
   }, [recoveredLogId]);
 
-  const start = useCallback((routine: { id: string; title: string } | null) => {
-    if (rehydratingRef.current) return;
-    if (sessionRef.current) return;
-    if (draftRef.current !== null) return;
-    setSession({
-      routineId: routine?.id ?? null,
-      title: routine?.title ?? FREE_SESSION_TITLE,
-      startedAt: new Date().toISOString(),
-    });
-    setRecoveredLogId(null);
-    setRecoverableDraft(null);
-    setPendingRestEndsAt(null);
-  }, []);
+  const start = useCallback(
+    (routine: { id: string; title: string } | null): StartSessionResult => {
+      if (rehydratingRef.current) return { ok: false, reason: "rehydrating" };
+      if (sessionRef.current) return { ok: false, reason: "active_session" };
+      if (draftRef.current !== null) return { ok: false, reason: "recoverable_draft" };
+      if (routine !== null && (!routine.id || !routine.title)) {
+        return { ok: false, reason: "invalid" };
+      }
+      setSession({
+        routineId: routine?.id ?? null,
+        title: routine?.title ?? FREE_SESSION_TITLE,
+        startedAt: new Date().toISOString(),
+      });
+      setRecoveredLogId(null);
+      setRecoverableDraft(null);
+      setPendingRestEndsAt(null);
+      return { ok: true };
+    },
+    [],
+  );
 
   const end = useCallback(() => {
     const draft = draftRef.current;

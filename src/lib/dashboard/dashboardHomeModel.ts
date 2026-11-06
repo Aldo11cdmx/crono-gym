@@ -16,6 +16,7 @@ import { useDashboardSessions } from "@/hooks/useDashboardSessions";
 import { useRoutines } from "@/hooks/useGymData";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import type { ActiveSession } from "@/context/ActiveSessionContext";
+import type { SessionDraft } from "@/lib/offlineStore";
 import { countMuscleSets } from "@/components/MuscleReadonlyMap";
 import type { Slug } from "react-muscle-highlighter";
 
@@ -26,12 +27,14 @@ import {
   getVolumeTrend,
   getRecentPRs,
   getNextSuggestedRoutine,
+  getScheduledRoutineForToday,
   getCompletedSessionSummary,
   type WeeklyPlanDay,
   type WeeklyProgress,
   type StreakStats,
   type VolumeTrendResult,
   type RecentPR,
+  type DashboardSession,
   type SuggestedRoutine,
   type CompletedSessionSummary,
   type RoutineSummary as MetricsRoutineSummary,
@@ -74,6 +77,8 @@ export interface DashboardHomeData {
   heroRoutineSummary: HeroRoutineSummary | null;
    /** Suggested routine (with id) for starting a session, or null. */
   suggestedRoutine: SuggestedRoutine | null;
+  /** Routine explicitly programmed for today (by weekly plan), if any. */
+  scheduledRoutine: SuggestedRoutine | null;
   /** Muscle distribution for the suggested routine (set counts per slug), or null. */
   muscleCounts: Map<Slug, number> | null;
   /** Active workout session from context, or null. */
@@ -82,10 +87,16 @@ export interface DashboardHomeData {
   isSessionActive: boolean;
   /** True while checking for recoverable draft. */
   rehydrating: boolean;
+  /** Recoverable draft (interrupted session), if any. */
+  recoverableDraft: SessionDraft | null;
+  /** Restore a recoverable draft into an active session. */
+  restoreDraft: () => void;
+  /** Discard a recoverable draft (requires confirmation in UI). */
+  discardDraft: () => void;
   /** Summary of today's most recent completed session, or null. */
   completedToday: CompletedSessionSummary | null;
-  /** Start a new workout session with an optional routine. */
-  startSession: (routine: { id: string; title: string } | null) => void;
+  /** Start a new workout session with an optional routine. Returns start result. */
+  startSession: (routine: { id: string; title: string } | null) => import("@/context/ActiveSessionContext").StartSessionResult;
   /** End the current workout session (idempotent). */
   endSession: () => void;
 
@@ -106,6 +117,8 @@ export interface DashboardHomeData {
   // ---- Recent PRs ----
   /** Top N recent personal records (default 3) within the look-back window. */
   recentPRs: RecentPR[];
+  /** Recent completed sessions (first 5) for history summary. */
+  recentSessions: DashboardSession[];
 }
 
 /** Default weekly session goal. */
@@ -227,6 +240,12 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     [planSummary, sessions, now],
   );
 
+  // ---- Routine programmed for today (by weekly plan) ----
+  const scheduledRoutine = useMemo(
+    () => getScheduledRoutineForToday(planRoutines, planSummary, now),
+    [planRoutines, planSummary, now],
+  );
+
   // ---- Today's completed session (hero "completed" state) ----
   const completedToday = useMemo(
     () => getCompletedSessionSummary(sessions, now),
@@ -235,23 +254,25 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
 
   // ---- Muscle counts for the suggested routine ----
   const muscleCounts = useMemo(() => {
-    if (!suggestedRoutine) return null;
-    const fullRoutine = routines.find((r) => r.id === suggestedRoutine.id);
+    const ref = scheduledRoutine ?? suggestedRoutine;
+    if (!ref) return null;
+    const fullRoutine = routines.find((r) => r.id === ref.id);
     if (!fullRoutine) return null;
     return countMuscleSets(fullRoutine.exercises);
-  }, [suggestedRoutine, routines]);
+  }, [scheduledRoutine, suggestedRoutine, routines]);
 
   // ---- Convert SuggestedRoutine → HeroRoutineSummary for hero chips ----
   const heroRoutineSummary = useMemo((): HeroRoutineSummary | null => {
-    if (!suggestedRoutine) return null;
+    const ref = scheduledRoutine ?? suggestedRoutine;
+    if (!ref) return null;
     return {
-      title: suggestedRoutine.title,
-      exerciseCount: suggestedRoutine.exerciseCount,
-      estimatedDurationMin: suggestedRoutine.estimatedDurationMin,
+      title: ref.title,
+      exerciseCount: ref.exerciseCount,
+      estimatedDurationMin: ref.estimatedDurationMin,
       dayLabel: dailyFocus.dayLabel ?? undefined,
       dayIndex: null,
     };
-  }, [suggestedRoutine, dailyFocus.dayLabel]);
+  }, [scheduledRoutine, suggestedRoutine, dailyFocus.dayLabel]);
 
   // ---- Greeting ----
   const greeting = useMemo(
@@ -293,17 +314,22 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     dailyFocus,
     heroRoutineSummary,
     suggestedRoutine,
+  scheduledRoutine,
     muscleCounts,
     activeSession: activeSessionValue.session,
     isSessionActive: activeSessionValue.isActive,
     rehydrating: activeSessionValue.rehydrating,
+    recoverableDraft: activeSessionValue.recoverableDraft,
     completedToday,
     startSession: activeSessionValue.start,
     endSession: activeSessionValue.end,
+    restoreDraft: activeSessionValue.restoreDraft,
+    discardDraft: activeSessionValue.discardDraft,
     weeklyPlan,
     weeklyProgress,
     streakStats,
     volumeTrend,
     recentPRs,
+  recentSessions: sessions.slice(0, 5),
   };
 }

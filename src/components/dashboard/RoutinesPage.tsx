@@ -24,7 +24,9 @@ import {
    Share2,
    Copy,
  } from "lucide-react";
+import { resolveTrainingIntent } from "@/lib/workout/trainingIntent";
 import { useActiveSession } from "@/context/ActiveSessionContext";
+
 import { useRole } from "@/hooks/useRole";
 import { useNavigate } from "react-router-dom";
 import { TRAIN_PATH } from "@/components/shell/navItems";
@@ -35,6 +37,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { RoutineCard } from "./RoutineCard";
 import { WeeklyVolumeCoverage } from "./WeeklyVolumeCoverage";
 import { WeeklyPlanner } from "@/components/dashboard/WeeklyPlanner";
+import type { DaySessionStatusMap } from "@/components/routines/WeeklyPlanner";
 import { ExerciseSwapModal, SwapButton } from "@/components/dashboard/ExerciseSwapModal";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { MY_GYM_EQUIPMENT_TAGS } from "@/data/myGymEquipment";
@@ -54,6 +57,7 @@ import {
   DANGER,
 } from "@/design/tokens";
 import { useRoutines, type RoutineWithExercises } from "@/hooks/useGymData";
+import { useDashboardSessions } from "@/hooks/useDashboardSessions";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { getWeekdayIndex } from "@/lib/dashboard/heroCardModel";
 import { saveRoutine, duplicateRoutine } from "@/lib/routines/routineSave";
@@ -246,10 +250,137 @@ async function restoreRoutine(
   }
 }
 
+/** Fecha local YYYY-MM-DD (equivalente a dashboardMetrics.localDateKey; no exportada allí). */
+function localDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/** Lunes (0) de la semana local que contiene `now`. */
+function localWeekStart(now: Date): Date {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function daySessionMapKey(dateKey: string, routineId: string): string {
+  return `${dateKey}|${routineId}`;
+}
+
+/**
+ * Compone asignaciones semanales desde rutinas reales (P1.2.1).
+ * Una asignación por combinación válida `routineId + dayIndex` (0–6), sin duplicados.
+ * No persiste ni modifica datos originales. Orden determinista: día ascendente, luego rutina.
+ */
+export function composeWeeklyAssignments(
+  routines: ReadonlyArray<Pick<RoutineWithExercises, "id" | "exercises">>,
+): WeeklyAssignment[] {
+  const seen = new Set<string>();
+  const out: WeeklyAssignment[] = [];
+  const sorted = [...routines].sort((a, b) => a.id.localeCompare(b.id));
+  for (const r of sorted) {
+    const days: number[] = [];
+    for (const ex of r.exercises ?? []) {
+      const d = ex.dayIndex;
+      if (typeof d === "number" && Number.isInteger(d) && d >= 0 && d <= 6) {
+        days.push(d);
+      }
+    }
+    const uniqueDays = [...new Set(days)].sort((a, b) => a - b);
+    for (const dayIndex of uniqueDays) {
+      const k = `${r.id}\0${dayIndex}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push({
+        id: `${r.id}-${dayIndex}`,
+        routineId: r.id,
+        dayIndex,
+        order: 0,
+      });
+    }
+  }
+  return out.sort((a, b) => a.dayIndex - b.dayIndex || a.routineId.localeCompare(b.routineId));
+}
+
+export interface DaySessionComposeInput {
+  routineId: string | null;
+  startedAt: string;
+}
+
+/**
+ * Mapa `dateKey|routineId` para asignaciones (P1.2 F2/F2.1/F3).
+ * - `confirmed`: sesión servidor, misma rutina + fecha local `startedAt`.
+ * - `activeInProgress`/`recoverableDraft`: solo si identidad temporal resuelta y
+ *   `startedAt` local + rutina coinciden exactamente con la clave.
+ * - `sessionStateResolving`: rehidratación sin evidencia fiable para identidad temporal;
+ *   no implica `pending`/`not_done`/`in_progress`. No borra `confirmed`.
+ * - `syncPending`: solo evidencia inequívoca por rutina/fecha (no pending global).
+ */
+export function composeDaySessionStatus(
+  weeklyAssignments: ReadonlyArray<Pick<WeeklyAssignment, "routineId" | "dayIndex">>,
+  sessions: ReadonlyArray<
+    Pick<import("@/lib/dashboard/dashboardMetrics").DashboardSession, "routineId" | "startedAt" | "completedAt">
+  >,
+  weekStart: Date = localWeekStart(new Date()),
+  opts?: {
+    activeSession?: DaySessionComposeInput | null;
+    recoverableDraft?: DaySessionComposeInput | null;
+    rehydrating?: boolean;
+  },
+): DaySessionStatusMap {
+  const map: DaySessionStatusMap = {};
+  const dateKeyByDayIndex = new Map<number, string>();
+  for (let i = 0; i < 7; i += 1) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    dateKeyByDayIndex.set(i, localDateKey(d));
+  }
+  const rehydrating = Boolean(opts?.rehydrating);
+  for (const a of weeklyAssignments) {
+    if (!a.routineId) continue;
+    const dateKey = dateKeyByDayIndex.get(a.dayIndex);
+    if (!dateKey) continue;
+    const key = daySessionMapKey(dateKey, a.routineId);
+    if (map[key]) continue;
+    const confirmed = sessions.some(
+      (s) =>
+        s.completedAt != null &&
+        s.routineId === a.routineId &&
+        localDateKey(new Date(s.startedAt)) === dateKey,
+    );
+    // Sesión alternativa (otra routineId) no completa la programada.
+    const activeMatches =
+      !rehydrating &&
+      opts?.activeSession?.routineId === a.routineId &&
+      Boolean(opts?.activeSession?.startedAt) &&
+      localDateKey(new Date(opts.activeSession.startedAt)) === dateKey;
+    const draftMatches =
+      !rehydrating &&
+      opts?.recoverableDraft?.routineId === a.routineId &&
+      Boolean(opts?.recoverableDraft?.startedAt) &&
+      localDateKey(new Date(opts.recoverableDraft.startedAt)) === dateKey;
+    map[key] = {
+      key: { dateKey, routineId: a.routineId },
+      confirmed,
+      syncPending: false,
+      activeInProgress: activeMatches,
+      recoverableDraft: draftMatches,
+      sessionStateResolving: rehydrating,
+    };
+  }
+  return map;
+}
+
 export function RoutinesPage({ userId }: RoutinesPageProps) {
   const { routines, loading, error, refresh, toggleFavorite, pendingIds } =
     useRoutines(userId);
-  const { start, session } = useActiveSession();
+  const { sessions } = useDashboardSessions(userId);
+  const { start, session, recoverableDraft, rehydrating } = useActiveSession();
   const { role } = useRole();
   const navigate = useNavigate();
   const { exercises: catalogExercises } = useExerciseCatalog();
@@ -257,13 +388,7 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   const todayIdx = useMemo(() => getWeekdayIndex(Date.now()), []);
 
   const weeklyAssignments = useMemo<WeeklyAssignment[]>(
-    () =>
-      routines.map((r) => ({
-        id: `${r.id}-${r.exercises[0]?.dayIndex ?? 0}`,
-        routineId: r.id,
-        dayIndex: r.exercises[0]?.dayIndex ?? 0,
-        order: 0,
-      })),
+    () => composeWeeklyAssignments(routines),
     [routines],
   );
 
@@ -272,6 +397,37 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
       void refresh();
     },
     [refresh],
+  );
+
+  /**
+   * @deprecated compatibilidad; el estado visual usa `daySessionStatus` por clave.
+   * No se usa para pintar días. Durante rehidratación no afirma ausencia.
+   */
+  const activeSessionRoutineId =
+    rehydrating ? undefined : session?.routineId ?? null;
+  const recoverableDraftRoutineId =
+    rehydrating ? undefined : recoverableDraft?.routineId ?? null;
+
+  const todayDateKey = useMemo(() => localDateKey(new Date()), []);
+
+  /**
+   * Estado por `dateKey|routineId` (fecha local). Fuente de verdad visual.
+   * `syncPending` solo con evidencia inequívoca por rutina/fecha (no pending global).
+   */
+  const daySessionStatus = useMemo<DaySessionStatusMap>(
+    () =>
+      composeDaySessionStatus(weeklyAssignments, sessions, localWeekStart(new Date()), {
+        activeSession:
+          session?.routineId && session.startedAt
+            ? { routineId: session.routineId, startedAt: session.startedAt }
+            : null,
+        recoverableDraft:
+          recoverableDraft?.routineId && recoverableDraft.startedAt
+            ? { routineId: recoverableDraft.routineId, startedAt: recoverableDraft.startedAt }
+            : null,
+        rehydrating,
+      }),
+    [sessions, weeklyAssignments, session, recoverableDraft, rehydrating],
   );
 
    type SheetMode = "closed" | "new" | "edit" | "browse" | "new-choice";
@@ -285,6 +441,7 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   const [swapItemIndex, setSwapItemIndex] = useState<number | null>(null);
   const [swappedExercise, setSwappedExercise] = useState<Exercise | null>(null);
   const [shareToast, setShareToast] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [deloadActive, setDeloadActive] = useState(false);
   /** The day the exercise picker is filling, or null when it is closed. */
   const [pickerDay, setPickerDay] = useState<number | null>(null);
@@ -338,21 +495,58 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
   }, []);
 
   const handleStart = useCallback(
-    (routine: RoutineWithExercises) => {
-      start({ id: routine.id, title: routine.title });
-      navigate(TRAIN_PATH);
+    (routine: { id: string; title: string }) => {
+      const intent = resolveTrainingIntent({
+        rehydrating,
+        session: session ? { routineId: session.routineId, title: session.title } : null,
+        recoverableDraft: recoverableDraft
+          ? { routineId: recoverableDraft.routineId, routineTitle: recoverableDraft.routineTitle }
+          : null,
+        targetRoutineId: routine.id,
+        targetRoutineTitle: routine.title,
+      });
+      if (intent.action === "wait") return;
+      if (intent.action === "restore") {
+        setNotice(
+          `Hay un entrenamiento sin finalizar: ${intent.routineTitle ?? "Entrenamiento"}. Recupéralo antes de iniciar otra rutina.`,
+        );
+        return;
+      }
+      if (intent.action === "continue") {
+        if (intent.reason === "same_routine") {
+          navigate(TRAIN_PATH);
+          return;
+        }
+        setNotice(
+          `Ya hay un entrenamiento activo: ${intent.routineTitle ?? "Entrenamiento"}. Continúa esa sesión antes de iniciar otra rutina.`,
+        );
+        return;
+      }
+      if (intent.action !== "start") {
+        setNotice("No se pudo iniciar el entrenamiento. Revisa el estado actual de tu sesión.");
+        return;
+      }
+      const result = start({ id: routine.id, title: routine.title });
+      if (result.ok) navigate(TRAIN_PATH);
+      else setNotice("No se pudo iniciar el entrenamiento. Revisa si hay una sesión activa o un borrador pendiente.");
     },
-    [start, navigate],
+    [start, navigate, session, recoverableDraft, rehydrating],
   );
 
   /** Starts the routine planned for a day of the week. */
   const handleStartDay = useCallback(
-    (dayIndex: number) => {
-      const assignment = weeklyAssignments.find((a) => a.dayIndex === dayIndex);
-      const routine = assignment
-        ? routines.find((r) => r.id === assignment.routineId)
-        : undefined;
-      if (routine) handleStart(routine);
+    (dayIndex: number, routineId?: string) => {
+      const dayAssignments = weeklyAssignments.filter((a) => a.dayIndex === dayIndex);
+      if (routineId) {
+        const routine = routines.find((r) => r.id === routineId);
+        if (routine) handleStart(routine);
+        return;
+      }
+      if (dayAssignments.length === 1) {
+        const routine = routines.find((r) => r.id === dayAssignments[0].routineId);
+        if (routine) handleStart(routine);
+      }
+      // >1: WeeklyPlanner muestra selector y vuelve a llamar con routineId.
     },
     [weeklyAssignments, routines, handleStart],
   );
@@ -563,7 +757,13 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
       return () => clearTimeout(t);
     }, [shareToast]);
 
-   const visibleRoutines = useMemo(
+   useEffect(() => {
+    if (notice === null) return;
+    const t = window.setTimeout(() => setNotice(null), 5000);
+    return () => window.clearTimeout(t);
+  }, [notice]);
+
+  const visibleRoutines = useMemo(
      () =>
        recentlyDeletedId === null
          ? routines
@@ -576,32 +776,36 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
      [visibleRoutines, weeklyAssignments, deloadActive],
    );
 
-   /**
-    * The week, read one day at a time.
-    *
-    * The same planner is rendered whether the athlete has routines or not: the
-    * empty state used to draw its own strip of days, and the page then showed
-    * two views of the same week depending on how many routines there were.
-    */
-   const weeklyPlanner = (
-     <WeeklyPlanner
-       routines={routines.map((r) => ({
-         routineId: r.id,
-         title: r.title,
-         exerciseCount: r.exercises.length,
-         durationMin: estimateMinutes(
-           r.exercises.length,
-           r.exercises.reduce((sum, e) => sum + (e.rest_seconds ?? 0), 0),
-         ),
-       }))}
-       initialAssignments={weeklyAssignments}
-       onChange={handleWeeklyChange}
-       todayIndex={todayIdx}
-       deloadActive={deloadActive}
-       activeRoutineId={session?.routineId ?? null}
-       onStartDay={handleStartDay}
-     />
-   );
+  /**
+   * The week, read one day at a time.
+   *
+   * The same planner is rendered whether the athlete has routines or not: the
+   * empty state used to draw its own strip of days, and the page then showed
+   * two views of the same week depending on how many routines there were.
+   */
+  const weeklyPlanner = (
+    <WeeklyPlanner
+      routines={routines.map((r) => ({
+        routineId: r.id,
+        title: r.title,
+        exerciseCount: r.exercises.length,
+        durationMin: estimateMinutes(
+          r.exercises.length,
+          r.exercises.reduce((sum, e) => sum + (e.rest_seconds ?? 0), 0),
+        ),
+      }))}
+      initialAssignments={weeklyAssignments}
+      onChange={handleWeeklyChange}
+      todayIndex={todayIdx}
+      deloadActive={deloadActive}
+      activeRoutineId={session?.routineId ?? null}
+      onStartDay={handleStartDay}
+      daySessionStatus={daySessionStatus}
+      activeSessionRoutineId={activeSessionRoutineId}
+      recoverableDraftRoutineId={recoverableDraftRoutineId}
+      todayDateKey={todayDateKey}
+    />
+  );
 
   return (
     <>
@@ -974,6 +1178,49 @@ export function RoutinesPage({ userId }: RoutinesPageProps) {
           onUndo={() => {}}
           onDismiss={() => setShareToast(null)}
         />
+      )}
+
+      {notice !== null && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: "fixed",
+            right: SPACE.gutter,
+            bottom: `calc(${SPACE.xl}px + 72px)`,
+            ...SURFACE_RAISED,
+            borderRadius: RADIUS.control,
+            padding: `${SPACE.sm} ${SPACE.md}`,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: SPACE.sm,
+            zIndex: Z_INDEX.pill + 1,
+            maxWidth: "min(92vw, 420px)",
+          }}
+        >
+          <AlertCircle style={{ width: 14, height: 14, color: ACCENT.text, flexShrink: 0 }} strokeWidth={1.5} />
+          <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, flex: 1 }}>{notice}</span>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label={LABELS.closeAria}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 24,
+              height: 24,
+              borderRadius: RADIUS.chip,
+              border: "none",
+              background: "transparent",
+              color: TEXT.tertiary,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <X style={{ width: 12, height: 12 }} strokeWidth={1.5} />
+          </button>
+        </div>
       )}
     </>
   );

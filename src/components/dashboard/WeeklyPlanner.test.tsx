@@ -8,6 +8,10 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { WeeklyPlanner } from "./WeeklyPlanner";
 import type { WeeklyAssignment } from "@/lib/routines/routinesViewModel";
+import type {
+  DaySessionStatusMap,
+  WeeklyPlannerProps,
+} from "@/components/routines/WeeklyPlanner";
 
 const ROUTINES = [
   { routineId: "r-0", title: "Full Body A" },
@@ -99,5 +103,46 @@ describe("WeeklyPlanner", () => {
     const dragItem = screen.getByText("Full Body A");
     await fireEvent.dragStart(dragItem);
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("accepts optional P1.2 session props without changing behavior", () => {
+    const daySessionStatus: DaySessionStatusMap = {
+      "2026-11-05|r-0": {
+        key: { dateKey: "2026-11-05", routineId: "r-0" },
+        confirmed: false,
+        syncPending: true,
+      },
+    };
+    const props: WeeklyPlannerProps = {
+      routines: ROUTINES,
+      initialAssignments: INITIAL_ASSIGNMENTS,
+      onChange: vi.fn(),
+      todayIndex: 0,
+      daySessionStatus,
+      activeSessionRoutineId: null,
+      recoverableDraftRoutineId: "r-1",
+    };
+    render(<WeeklyPlanner {...props} />);
+    expect(screen.getByRole("tablist", { name: "Días de la semana" })).toBeTruthy();
+    expect(screen.getByText("Full Body A")).toBeTruthy();
+  });
+
+  it("P1.4: completed+pending => partial; no_routine sin asignaciones", () => {
+    render(
+      <WeeklyPlanner
+        routines={[{ routineId: "r1", title: "R1" }, { routineId: "r2", title: "R2" }]}
+        initialAssignments={[
+          { id: "r1-0", routineId: "r1", dayIndex: 0, order: 0 },
+          { id: "r2-0", routineId: "r2", dayIndex: 0, order: 1 },
+        ]}
+        onChange={vi.fn()}
+        todayIndex={0}
+        todayDateKey="2026-11-02"
+        daySessionStatus={{
+          "2026-11-02|r1": { key: { dateKey: "2026-11-02", routineId: "r1" }, confirmed: true, syncPending: false },
+        }}
+      />,
+    );
+    expect(screen.getByText("Parcial")).toBeTruthy();
   });
 });

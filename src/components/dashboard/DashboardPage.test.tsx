@@ -141,8 +141,12 @@ vi.mock("@/context/ActiveSessionContext", () => ({
   useActiveSession: () => ({
     session: mockState.session,
     isActive: mockState.isActive,
+    rehydrating: false,
+    recoverableDraft: null,
     start: mockStart,
     end: mockEnd,
+    restoreDraft: vi.fn(),
+    discardDraft: vi.fn(),
   }),
 }));
 
@@ -306,6 +310,7 @@ describe("DashboardPage", () => {
   });
 
   it("starts a session and navigates to training when the primary CTA is clicked", () => {
+    mockStart.mockReturnValue({ ok: true });
     render(
       <MemoryRouter>
         <DashboardPage userId="user-1" />
@@ -334,7 +339,7 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Continuar entrenamiento")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Continuar/i })).toBeTruthy();
     expect(screen.queryByText("Comenzar entrenamiento")).toBeFalsy();
   });
 
@@ -401,9 +406,10 @@ describe("DashboardPage", () => {
     ["L", "M", "X", "J", "V", "S", "D"].forEach((letter) =>
       expect(screen.getByText(letter)).toBeTruthy(),
     );
-    // Lunes es hoy con FIXED_NOW: pastilla de acento.
-    const lunes = screen.getAllByText("L")[0];
-    expect((lunes as HTMLElement).style.backgroundColor).toBe("rgb(255, 59, 48)");
+    // Lunes es hoy con FIXED_NOW: estado "hoy, pendiente" diferenciado.
+    const lunes = screen.getAllByText("L")[0] as HTMLElement;
+    expect(lunes.getAttribute("aria-label")).toContain("hoy, pendiente");
+    expect(lunes.style.backgroundColor).toBe("rgba(255, 59, 48, 0.12)");
   });
 
   it("keeps the weekly streak factual once a session exists this week", () => {
@@ -522,7 +528,7 @@ describe("DashboardPage", () => {
     );
 
     // El dayLabel "Pecho" gana sobre el fallback cuando el titulo es "xd".
-    expect(screen.getByText("Pecho")).toBeTruthy();
+    expect(screen.getAllByText("Pecho").length).toBeGreaterThan(0);
     expect(screen.queryByText("xd")).toBeFalsy();
   });
 

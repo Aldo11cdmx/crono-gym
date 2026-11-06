@@ -35,11 +35,13 @@ import {
   MoreHorizontal,
   Pencil,
   Play,
+  RefreshCw,
   SkipForward,
   Undo2,
   Redo2,
   Zap,
 } from "lucide-react";
+import { deriveDayPlanStatus, type DayPlanStatus } from "@/lib/dashboard/dayPlanStatus";
 import {
   useCallback,
   useEffect,
@@ -209,6 +211,39 @@ export interface DayAssignment {
   durationMin?: number;
 }
 
+/**
+ * Contrato mínimo para estado de sesión por día/rutina (P1.2).
+ * Clave serializada `dateKey|routineId` (fecha local YYYY-MM-DD + rutina).
+ * Identidad temporal de activa/borrador vive aquí (por clave), no en IDs globales.
+ */
+export interface DaySessionStatusKey {
+  /** Fecha local YYYY-MM-DD. */
+  dateKey: string;
+  routineId: string | null;
+}
+
+export interface DaySessionStatus {
+  key: DaySessionStatusKey;
+  /** Sesión confirmada en servidor para esa rutina/fecha. */
+  confirmed: boolean;
+  /** Finalizada localmente, pendiente de sincronización (solo evidencia inequívoca). */
+  syncPending: boolean;
+  /** Sesión activa con `startedAt` local en `dateKey` y misma rutina. */
+  activeInProgress?: boolean;
+  /** Borrador recuperable con `startedAt` local en `dateKey` y misma rutina. */
+  recoverableDraft?: boolean;
+  /**
+   * true mientras la identidad temporal (activa/borrador) no está resuelta.
+   * No implica `pending`/`not_done`/`in_progress`; UI debe mostrar estado neutral.
+   */
+  sessionStateResolving?: boolean;
+}
+
+export type DaySessionStatusMap = Record<string, DaySessionStatus>;
+
+/** Estado visual por día en WeeklyPlanner (incluye agregado parcial). */
+export type DayVisualStatus = DayPlanStatus | "partial" | "resolving";
+
 export interface WeeklyPlannerProps {
   routines: DayAssignment[];
   initialAssignments: WeeklyAssignment[];
@@ -217,15 +252,47 @@ export interface WeeklyPlannerProps {
   /** Days already trained, by their full Spanish name. */
   trainedDays?: Set<string>;
   deloadActive?: boolean;
-  /** The routine of the session running right now, if any. */
+  /** The routine of the session running right now, if any. @deprecated legacy; estado visual usa daySessionStatus. */
   activeRoutineId?: string | null;
-  /** Starts the session of the given day. */
-  onStartDay?: (dayIndex: number) => void;
+  /** Starts the session of the given day. If multiple routines, routineId identifies which one. */
+  onStartDay?: (dayIndex: number, routineId?: string) => void;
   /** Starts today's session; shown when today has nothing scheduled. */
   onStartToday?: (dayIndex: number) => void;
+  /** Estado de sesión por clave `dateKey|routineId` (fuente de verdad visual P1.2). */
+  daySessionStatus?: DaySessionStatusMap;
+  /** @deprecated No usar para estado visual; identidad temporal va en daySessionStatus. */
+  activeSessionRoutineId?: string | null;
+  /** @deprecated No usar para estado visual; identidad temporal va en daySessionStatus. */
+  recoverableDraftRoutineId?: string | null;
+  /** Fecha local de hoy (YYYY-MM-DD) para resolver dateKeys de la semana mostrada. */
+  todayDateKey?: string;
 }
 
-type DayStatus = "in-progress" | "planned" | "rest" | "done";
+function localDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function dateKeyForWeekDay(todayDateKey: string, todayIndex: number, dayIndex: number): string {
+  const [y, m, d] = todayDateKey.split("-").map(Number);
+  const base = new Date(y, (m ?? 1) - 1, d ?? 1);
+  base.setHours(0, 0, 0, 0);
+  base.setDate(base.getDate() + (dayIndex - todayIndex));
+  return localDateKey(base);
+}
+
+const DAY_VISUAL_LABELS: Record<DayVisualStatus, string> = {
+  pending: "Pendiente",
+  completed: "Completado",
+  not_done: "No realizado",
+  in_progress: "En curso",
+  sync_pending: "Sincronización pendiente",
+  no_routine: "Sin rutina",
+  partial: "Parcial",
+  resolving: "Comprobando sesión",
+};
 
 export function WeeklyPlanner({
   routines,
@@ -237,6 +304,10 @@ export function WeeklyPlanner({
   activeRoutineId = null,
   onStartDay,
   onStartToday,
+  daySessionStatus,
+  activeSessionRoutineId: _activeSessionRoutineId,
+  recoverableDraftRoutineId: _recoverableDraftRoutineId,
+  todayDateKey,
 }: WeeklyPlannerProps) {
   const [assignments, setAssignments] = useState<WeeklyAssignment[]>(
     () => initialAssignments.map((a) => ({ ...a })),
@@ -248,6 +319,9 @@ export function WeeklyPlanner({
 
   const [selectedDay, setSelectedDay] = useState(todayIndex);
   const [editing, setEditing] = useState(false);
+
+  const [startChoiceOpen, setStartChoiceOpen] = useState(false);
+  const [startChoiceAnchor, setStartChoiceAnchor] = useState<DOMRect | null>(null);
 
   const [contextDay, setContextDay] = useState<number | null>(null);
   const [contextAnchor, setContextAnchor] = useState<DOMRect | null>(null);
@@ -277,12 +351,78 @@ export function WeeklyPlanner({
     [onChange, syncHistory],
   );
 
+  const effectiveTodayDateKey = useMemo(
+    () => todayDateKey ?? localDateKey(new Date()),
+    [todayDateKey],
+  );
+
+  const dateKeyForDay = useCallback(
+    (dayIndex: number) => dateKeyForWeekDay(effectiveTodayDateKey, todayIndex, dayIndex),
+    [effectiveTodayDateKey, todayIndex],
+  );
+
   const dayAssignments = useCallback(
     (dayIndex: number): WeeklyAssignment[] =>
       assignments
         .filter((a) => a.dayIndex === dayIndex)
         .sort((a, b) => a.order - b.order),
     [assignments],
+  );
+
+  const deriveVisualStatus = useCallback(
+    (dayIndex: number): DayVisualStatus => {
+      const items = dayAssignments(dayIndex).filter((a) => Boolean(a.routineId));
+      if (items.length === 0) return "no_routine";
+
+      // Sin fuente de verdad P1.2: fallback legacy compatible (no inventar estados nuevos).
+      if (!daySessionStatus) {
+        if (activeRoutineId && items.some((a) => a.routineId === activeRoutineId)) return "in_progress";
+        if (trainedDays.has(WEEKDAY_NAMES[dayIndex])) return "completed";
+        return "pending";
+      }
+
+      const dateKey = dateKeyForDay(dayIndex);
+      const statuses: DayPlanStatus[] = [];
+      for (const item of items) {
+        const key = `${dateKey}|${item.routineId}`;
+        const entry = daySessionStatus[key];
+        if (entry?.sessionStateResolving) return "resolving";
+        const dayEnded = dateKey < effectiveTodayDateKey;
+        statuses.push(
+          deriveDayPlanStatus({
+            dayIndex,
+            routineId: item.routineId,
+            todayIndex,
+            dayEnded,
+            hasActiveSession: Boolean(entry?.activeInProgress),
+            hasRecoverableDraft: Boolean(entry?.recoverableDraft),
+            hasSyncPending: Boolean(entry?.syncPending),
+            hasConfirmedSession: Boolean(entry?.confirmed),
+          }),
+        );
+      }
+
+      // Agregación autorizada (orden explícito). `deriveDayPlanStatus` intacto.
+      if (statuses.some((s) => s === "in_progress")) return "in_progress";
+      if (statuses.some((s) => s === "sync_pending") && !statuses.some((s) => s === "in_progress"))
+        return "sync_pending";
+      if (statuses.every((s) => s === "completed")) return "completed";
+      const dayEndedAgg = dateKey < effectiveTodayDateKey;
+      if (dayEndedAgg && statuses.every((s) => s === "not_done")) return "not_done";
+      const hasCompleted = statuses.some((s) => s === "completed");
+      const hasIncomplete = statuses.some((s) => s === "pending" || s === "not_done");
+      if (hasCompleted && hasIncomplete) return "partial";
+      return "pending";
+    },
+    [
+      dayAssignments,
+      daySessionStatus,
+      activeRoutineId,
+      trainedDays,
+      dateKeyForDay,
+      effectiveTodayDateKey,
+      todayIndex,
+    ],
   );
 
   const routineMap = useMemo(
@@ -293,6 +433,11 @@ export function WeeklyPlanner({
   const selectedItems = useMemo(
     () => dayAssignments(selectedDay),
     [dayAssignments, selectedDay],
+  );
+
+  const selectedVisualStatus = useMemo(
+    () => deriveVisualStatus(selectedDay),
+    [deriveVisualStatus, selectedDay],
   );
 
   /**
@@ -320,15 +465,6 @@ export function WeeklyPlanner({
     return LABELS.noSession;
   }, [sessionName, selectedItems.length, selectedDay]);
 
-  const status = useMemo((): DayStatus => {
-    if (activeRoutineId && selectedItems.some((a) => a.routineId === activeRoutineId)) {
-      return "in-progress";
-    }
-    if (selectedItems.length > 0) return "planned";
-    if (trainedDays.has(WEEKDAY_NAMES[selectedDay])) return "done";
-    return "rest";
-  }, [activeRoutineId, selectedItems, selectedDay, trainedDays]);
-
   const summary = useMemo(() => {
     if (selectedItems.length === 0) return LABELS.noSession;
     let exercises = 0;
@@ -348,25 +484,27 @@ export function WeeklyPlanner({
     return `${exercises} ejercicios · ${minutes} min`;
   }, [selectedItems, routineMap]);
 
-  /**
-   * The state of the selected day, as an icon and a word.
-   *
-   * The label is the *state* and never the session's name: the name is printed
-   * by the card's title, and printing it twice would put the same text on the
-   * screen twice.
-   */
   const statusBadge = useMemo(() => {
-    switch (status) {
-      case "in-progress":
-        return { Icon: Circle, filled: true, label: LABELS.inProgress, color: ACCENT.text };
-      case "planned":
-        return { Icon: Zap, filled: false, label: LABELS.planned, color: STATUS.progression.text };
-      case "done":
-        return { Icon: Check, filled: false, label: LABELS.done, color: STATUS.success.text };
-      default:
+    const label = DAY_VISUAL_LABELS[selectedVisualStatus];
+    switch (selectedVisualStatus) {
+      case "in_progress":
+        return { Icon: Circle, filled: true, label, color: ACCENT.text };
+      case "completed":
+        return { Icon: Check, filled: false, label, color: STATUS.success.text };
+      case "sync_pending":
+        return { Icon: RefreshCw, filled: false, label, color: STATUS.warning.text };
+      case "not_done":
+        return { Icon: Circle, filled: false, label, color: TEXT.tertiary };
+      case "partial":
+        return { Icon: Zap, filled: false, label, color: STATUS.progression.text };
+      case "resolving":
+        return { Icon: Circle, filled: false, label, color: TEXT.tertiary };
+      case "no_routine":
         return { Icon: Moon, filled: false, label: LABELS.restBadge, color: TEXT.tertiary };
+      default:
+        return { Icon: Zap, filled: false, label, color: STATUS.progression.text };
     }
-  }, [status]);
+  }, [selectedVisualStatus]);
 
   const handleDrop = useCallback(
     (draggedId: string, targetId: string) => {
@@ -493,43 +631,53 @@ export function WeeklyPlanner({
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const dayStatus = useCallback(
-    (dayIndex: number): DayStatus => {
-      const items = dayAssignments(dayIndex);
-      if (activeRoutineId && items.some((a) => a.routineId === activeRoutineId)) {
-        return "in-progress";
-      }
-      if (items.length > 0) return "planned";
-      if (trainedDays.has(WEEKDAY_NAMES[dayIndex])) return "done";
-      return "rest";
-    },
-    [activeRoutineId, dayAssignments, trainedDays],
+  const dayVisual = useCallback(
+    (dayIndex: number): DayVisualStatus => deriveVisualStatus(dayIndex),
+    [deriveVisualStatus],
   );
 
-  const statusDotColor = useCallback((dayStatusValue: DayStatus): string => {
+  const statusDotColor = useCallback((dayStatusValue: DayVisualStatus): string => {
     switch (dayStatusValue) {
-      case "in-progress":
+      case "in_progress":
         return ACCENT.base;
-      case "planned":
-        return STATUS.progression.base;
-      case "done":
+      case "completed":
         return STATUS.success.base;
-      default:
+      case "sync_pending":
+        return STATUS.warning.base;
+      case "not_done":
+        return TEXT.tertiary;
+      case "partial":
+        return STATUS.progression.base;
+      case "resolving":
+        return TEXT.disabled;
+      case "no_routine":
         return GLASS.borderStrong;
+      default:
+        return STATUS.progression.base;
     }
   }, []);
 
   const isTodayEmpty = selectedDay === todayIndex && selectedItems.length === 0;
 
-  const handlePrimaryAction = useCallback(() => {
-    if (isTodayEmpty) {
-      if (onStartToday) onStartToday(todayIndex);
-      else if (onStartDay) onStartDay(todayIndex);
-      return;
-    }
-    if (onStartDay) onStartDay(selectedDay);
-    else if (onStartToday && selectedDay === todayIndex) onStartToday(todayIndex);
-  }, [isTodayEmpty, onStartDay, onStartToday, selectedDay, todayIndex]);
+  const handlePrimaryAction = useCallback(
+    (anchorRect?: DOMRect | null) => {
+      if (isTodayEmpty) {
+        if (onStartToday) onStartToday(todayIndex);
+        else if (onStartDay) onStartDay(todayIndex);
+        return;
+      }
+      if (selectedItems.length > 1) {
+        if (anchorRect) setStartChoiceAnchor(anchorRect);
+        setStartChoiceOpen(true);
+        return;
+      }
+      const routineId = selectedItems[0]?.routineId;
+      if (routineId && onStartDay) onStartDay(selectedDay, routineId);
+      else if (onStartDay) onStartDay(selectedDay);
+      else if (onStartToday && selectedDay === todayIndex) onStartToday(todayIndex);
+    },
+    [isTodayEmpty, onStartDay, onStartToday, selectedDay, todayIndex, selectedItems],
+  );
 
   /**
    * Whether the primary action can do anything.
@@ -628,7 +776,7 @@ export function WeeklyPlanner({
           }}
         >
           {WEEKDAY_NAMES.map((dayName, dayIndex) => {
-            const dayState = dayStatus(dayIndex);
+            const dayState = dayVisual(dayIndex);
             const isToday = dayIndex === todayIndex;
             const isSelected = dayIndex === selectedDay;
 
@@ -724,32 +872,33 @@ export function WeeklyPlanner({
             >
               {WEEKDAY_NAMES[selectedDay]}
             </span>
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: SPACE.xs,
-                fontSize: TYPE.caption.size,
-                fontWeight: TYPE.caption.weight,
-                color: statusBadge.color,
-                background: GLASS.fill,
-                border: `1px solid ${GLASS.border}`,
-                borderRadius: RADIUS.chip,
-                padding: "2px 8px",
-                maxWidth: "60%",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <statusBadge.Icon
-                size={12}
-                strokeWidth={1.5}
-                fill={statusBadge.filled ? "currentColor" : "none"}
-                aria-hidden="true"
-              />
-              {statusBadge.label}
-            </span>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: SPACE.xs,
+                  fontSize: TYPE.caption.size,
+                  fontWeight: TYPE.caption.weight,
+                  color: statusBadge.color,
+                  background: GLASS.fill,
+                  border: `1px solid ${GLASS.border}`,
+                  borderRadius: RADIUS.chip,
+                  padding: "2px 8px",
+                  maxWidth: "60%",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                data-day-status={selectedVisualStatus}
+              >
+                <statusBadge.Icon
+                  size={12}
+                  strokeWidth={1.5}
+                  fill={statusBadge.filled ? "currentColor" : "none"}
+                  aria-hidden="true"
+                />
+                <span>{statusBadge.label}</span>
+              </span>
           </div>
 
           {editing ? (
@@ -828,7 +977,10 @@ export function WeeklyPlanner({
               >
                 <button
                   type="button"
-                  onClick={hasNoRoutine && !(isTodayEmpty && onStartToday) ? () => setEditing(true) : handlePrimaryAction}
+                  onClick={(e) => {
+                    if (hasNoRoutine && !(isTodayEmpty && onStartToday)) setEditing(true);
+                    else handlePrimaryAction(e.currentTarget.getBoundingClientRect());
+                  }}
                   disabled={!canStart && !hasNoRoutine}
                   style={{
                     display: "inline-flex",
@@ -854,7 +1006,9 @@ export function WeeklyPlanner({
                   )}
                   {hasNoRoutine
                     ? (isTodayEmpty && onStartToday ? LABELS.startToday : "Asignar rutina")
-                    : LABELS.start}
+                    : selectedItems.length > 1
+                      ? "Elegir rutina"
+                      : LABELS.start}
                 </button>
 
                 <button
@@ -931,6 +1085,23 @@ export function WeeklyPlanner({
           onClose={() => {
             setMoveTargetId(null);
             setMoveAnchor(null);
+          }}
+        />
+      )}
+
+      {startChoiceOpen && startChoiceAnchor && selectedItems.length > 1 && (
+        <MoveMenu
+          anchorRect={startChoiceAnchor}
+          days={selectedItems.map((a) => routineMap.get(a.routineId)?.title ?? a.routineId)}
+          onSelect={(idx) => {
+            const picked = selectedItems[idx];
+            if (picked?.routineId && onStartDay) onStartDay(selectedDay, picked.routineId);
+            setStartChoiceOpen(false);
+            setStartChoiceAnchor(null);
+          }}
+          onClose={() => {
+            setStartChoiceOpen(false);
+            setStartChoiceAnchor(null);
           }}
         />
       )}

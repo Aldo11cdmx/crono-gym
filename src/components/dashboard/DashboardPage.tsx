@@ -14,29 +14,39 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Play, RefreshCw, AlertTriangle, Lightbulb, Zap, RotateCcw } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { RefreshCw, AlertTriangle } from "lucide-react";
 
 import { useDashboardHome } from "@/lib/dashboard/dashboardHomeModel";
-import { WEEKDAY_SHORT_ES } from "@/lib/dashboard/heroCardModel";
-import { formatSessionMeta } from "@/lib/dashboard/heroCardModel";
-import { PROGRESS_PATH, TRAIN_PATH } from "@/components/shell/navItems";
-import { MuscleReadonlyMap } from "@/components/MuscleReadonlyMap";
+import { resolveTrainingIntent } from "@/lib/workout/trainingIntent";
+import { PROFILE_PATH, PROGRESS_PATH, TRAIN_PATH } from "@/components/shell/navItems";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { supabase } from "@/lib/supabase";
 import { CoachBanner } from "@/components/coach/portal/CoachBanner";
+import { WeeklyProgressSection } from "@/components/dashboard/sections/WeeklyProgressSection";
+import { TipSection } from "@/components/dashboard/sections/TipSection";
+import { TrainingHeroSection } from "@/components/dashboard/sections/TrainingHeroSection";
+import { PRSection } from "@/components/dashboard/sections/PRSection";
+import { HistorySection } from "@/components/dashboard/sections/HistorySection";
+import { RecoverableDraftSection } from "@/components/dashboard/sections/RecoverableDraftSection";
 import { RequestRoutineModal } from "@/components/coach/portal/RequestRoutineModal";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import {
   ACCENT,
   GLASS,
   RADIUS,
   SPACE,
   STATUS,
-  SURFACE_ROLE,
   TEXT,
   TYPE,
 } from "@/design/tokens";
+
+/**
+ * Canvas contextual de Today (Command Center). No modifica SURFACE.base global.
+ * Se apoya en negro profundo + glass existente para integrarse con AppShell/body.
+ */
+const TODAY_CANVAS = "#050505";
 
 interface Announcement {
   id: string;
@@ -224,34 +234,72 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   }, [data.isSessionActive, data.completedToday, data.dailyFocus.isRestDay]);
 
   const routine = data.heroRoutineSummary;
-  const suggested = data.suggestedRoutine;
+  const suggested = data.scheduledRoutine ?? data.suggestedRoutine;
   const hasRoutine = routine !== null;
 
   const ctaLabel = useMemo(() => {
     if (data.rehydrating) return "Comprobando sesión...";
+    if (data.recoverableDraft) {
+      return `Recuperar entrenamiento: ${data.recoverableDraft.routineTitle ?? "Entrenamiento"}`;
+    }
     if (sessionState === "completed") return "Ver historial";
-    if (sessionState === "in-progress") return "Continuar entrenamiento";
+    if (sessionState === "in-progress") {
+      const activeTitle = data.activeSession?.title?.trim();
+      return activeTitle ? `Continuar: ${activeTitle}` : "Continuar entrenamiento";
+    }
     return "Comenzar entrenamiento";
-  }, [sessionState, data.rehydrating]);
+  }, [
+    sessionState,
+    data.rehydrating,
+    data.recoverableDraft,
+    data.activeSession?.title,
+  ]);
 
   const weeklyCompleted = data.weeklyProgress.completed;
   const weeklyGoal = data.weeklyProgress.goal;
 
   const handlePrimary = useCallback(() => {
-    if (data.rehydrating) return;
+    const target = suggested ? { id: suggested.id, title: suggested.title } : null;
+    const intent = resolveTrainingIntent({
+      rehydrating: data.rehydrating,
+      session: data.activeSession
+        ? { routineId: data.activeSession.routineId, title: data.activeSession.title }
+        : null,
+      recoverableDraft: data.recoverableDraft
+        ? { routineId: data.recoverableDraft.routineId, routineTitle: data.recoverableDraft.routineTitle }
+        : null,
+      targetRoutineId: target?.id ?? null,
+      targetRoutineTitle: target?.title ?? null,
+      allowFreeStart: false,
+    });
+
+    if (intent.action === "wait") return;
     if (sessionState === "completed") {
       navigate(PROGRESS_PATH);
       return;
     }
-    if (sessionState === "in-progress") {
+    if (intent.action === "restore") {
+      data.restoreDraft();
       navigate(TRAIN_PATH);
       return;
     }
-    if (suggested) {
-      data.startSession({ id: suggested.id, title: suggested.title });
+    if (intent.action === "continue") {
+      navigate(TRAIN_PATH);
+      return;
     }
-    navigate(TRAIN_PATH);
-  }, [sessionState, suggested, data.startSession, navigate, data.rehydrating]);
+    if (intent.action !== "start" || !target) return;
+    const result = data.startSession(target);
+    if (result?.ok) navigate(TRAIN_PATH);
+  }, [
+    sessionState,
+    suggested,
+    data.startSession,
+    navigate,
+    data.rehydrating,
+    data.recoverableDraft,
+    data.restoreDraft,
+    data.activeSession,
+  ]);
 
   const nextTip = useCallback(() => {
     setTipIndex((i) => (i + 1) % TIP_CATALOG.length);
@@ -263,6 +311,22 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
     return null;
   }, [data.errors]);
+
+  const todayLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat("es-MX", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }).format(new Date()),
+    [],
+  );
+
+  const showConflictNotice =
+    !!data.activeSession &&
+    !!suggested &&
+    data.activeSession.routineId !== suggested.id &&
+    !data.recoverableDraft;
 
   // Cualquier origen cargando: esqueletos, sin CTA ni datos a medio renderizar.
   if (data.loading) {
@@ -308,12 +372,50 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
   return (
     <div
-      className="w-full flex flex-col gap-4 md:gap-6 p-4 md:p-6"
+      data-testid="today-command-center-root"
+      className="w-full min-w-0 flex flex-col gap-5 md:gap-6"
       style={{
-        background: `radial-gradient(circle at top, ${ACCENT.muted} 0%, transparent 60%), ${SURFACE_ROLE.canvas}`,
+        backgroundColor: TODAY_CANVAS,
+        backgroundImage: `radial-gradient(120% 70% at 50% -10%, ${ACCENT.subtle} 0%, transparent 58%)`,
+        paddingInline: 20,
+        paddingTop: SPACE.md,
+        paddingBottom: SPACE.lg,
       }}
     >
-      {/* Error recuperable */}
+      <header
+        className="flex items-center justify-between gap-3"
+        aria-label="Encabezado de Today"
+      >
+        <div className="min-w-0">
+          <p style={{ ...TYPE.label, color: ACCENT.text, margin: 0, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            Cronos
+          </p>
+          <p style={{ ...TYPE.caption, color: TEXT.tertiary, margin: 0, textTransform: "capitalize" }}>
+            {todayLabel}
+          </p>
+        </div>
+        <Link
+          to={PROFILE_PATH}
+          aria-label="Abrir perfil"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: SPACE.sm,
+            textDecoration: "none",
+            color: TEXT.primary,
+            padding: `${SPACE.xs} ${SPACE.sm}`,
+            borderRadius: RADIUS.pill,
+            border: `1px solid ${GLASS.border}`,
+            background: GLASS.fill,
+          }}
+        >
+          <span className="hidden sm:inline" style={{ ...TYPE.caption, color: TEXT.secondary, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {data.displayName ?? "Perfil"}
+          </span>
+          <UserAvatar name={data.displayName ?? userId} size={32} />
+        </Link>
+      </header>
+
       {firstError !== null && (
         <GlassCard raised style={{ border: `1px solid ${STATUS.error.border}` }}>
           <div
@@ -349,259 +451,149 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         </GlassCard>
       )}
 
-      {/* Hero — saludo, rutina objetivo, unico CTA primario, monito a la derecha */}
-      <GlassCard
-        raised
-        style={{
-          padding: SPACE.card,
-          border: `1px solid ${data.isSessionActive ? ACCENT.border : GLASS.border}`,
-          boxShadow: data.isSessionActive
-            ? `${GLASS.shadow}`
-            : GLASS.shadow,
-        }}
+      <div
+        data-testid="today-command-center"
+        className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)] gap-5 md:gap-6 items-start"
       >
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0">
-            <p
-              style={{
-                ...TYPE.callout,
-                color: TEXT.secondary,
-                margin: 0,
-              }}
-            >
-              {data.greeting}
-            </p>
-            {hasRoutine ? (
-              <>
-                <h1
-                  style={{
-                    ...TYPE.hero,
-                    color: TEXT.primary,
-                    margin: 0,
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {resolveRoutineTitle(routine, data.dailyFocus.dayLabel)}
-                </h1>
-                <p
-                  style={{
-                    ...TYPE.subhead,
-                    color: TEXT.secondary,
-                    margin: 0,
-                  }}
-                >
-                  {formatSessionMeta(routine.exerciseCount, routine.estimatedDurationMin)}
-                </p>
-              </>
-            ) : (
-              <>
-                <h1
-                  style={{
-                    ...TYPE.hero,
-                    color: TEXT.primary,
-                    margin: 0,
-                  }}
-                >
-                  Rutina del d&iacute;a
-                </h1>
-                <p
-                  style={{
-                    ...TYPE.subhead,
-                    color: TEXT.secondary,
-                    margin: 0,
-                  }}
-                >
-                  Crea tu primera rutina para empezar
-                </p>
-              </>
-            )}
-            <div style={{ marginTop: SPACE.lg }}>
-              <GlassButton
-                variant="primary"
-                block
-                icon={<Play size={16} />}
-                onClick={handlePrimary}
-                disabled={data.rehydrating}
-                style={{ boxShadow: ACCENT.ring }}
-              >
-                {ctaLabel}
-              </GlassButton>
-            </div>
-          </div>
-          <div
-            className="overflow-hidden rounded-2xl bg-white/5 border border-white/10"
-            style={{ width: 120, height: 192 }}
-          >
-            <MuscleReadonlyMap
-              counts={hasRoutine && data.muscleCounts ? data.muscleCounts : new Map()}
-              idleHint={
-                "Elige una rutina para ver los m&uacute;sculos que trabajar&aacute;"
-              }
-              label="Torso anat&oacute;mico"
-              aspectRatio={120 / 192}
-            />
-          </div>
-        </div>
-      </GlassCard>
-
-      {/* Coach asignado y solicitud de rutina */}
-      {coachId && (
-        <>
-          <CoachBanner coachId={coachId} onRequestRoutine={() => setRequestOpen(true)} />
-          <RequestRoutineModal
-            coachId={coachId}
-            open={requestOpen}
-            onClose={() => setRequestOpen(false)}
-            onSuccess={() => setRequestOpen(false)}
+        <div className="flex flex-col gap-5 md:gap-6 min-w-0">
+          <TrainingHeroSection
+            greeting={data.greeting}
+            hasRoutine={hasRoutine}
+            routineTitle={resolveRoutineTitle(routine, data.dailyFocus.dayLabel)}
+            exerciseCount={hasRoutine ? routine!.exerciseCount : 0}
+            estimatedDurationMin={hasRoutine ? routine!.estimatedDurationMin : 0}
+            muscleCounts={data.muscleCounts}
+            ctaLabel={ctaLabel}
+            rehydrating={data.rehydrating}
+            onPrimary={handlePrimary}
+            focusLabel={hasRoutine ? data.dailyFocus.dayLabel : null}
+            isCompleted={sessionState === "completed"}
+            isRecoverable={!!data.recoverableDraft}
           />
-        </>
-      )}
 
-      {/* Consistencia semanal — barra de dias y racha en una sola tarjeta horizontal */}
-      <GlassCard raised style={{ padding: SPACE.card }}>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span
-              style={{
-                ...TYPE.subhead,
-                color: TEXT.secondary,
-              }}
-            >
-              Esta semana
-            </span>
-            <span
-              style={{
-                ...TYPE.mono,
-                color: TEXT.primary,
-              }}
-            >
-              {weeklyCompleted}/{weeklyGoal} completados
-            </span>
-          </div>
-          <div className="flex gap-1">
-            {WEEKDAY_SHORT_ES.map((short, index) => {
-              const day = data.weeklyPlan[index];
-              const isToday = day?.isToday ?? false;
-              const trained = day?.trained ?? false;
-              return (
-                <span
-                  key={short}
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: RADIUS.round,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: TYPE.caption.size,
-                    fontWeight: isToday ? 600 : TYPE.caption.weight,
-                    color: isToday
-                      ? TEXT.onAccent
-                      : trained
-                        ? TEXT.primary
-                        : TEXT.tertiary,
-                    background: isToday
-                      ? ACCENT.base
-                      : trained
-                        ? GLASS.fillRaised
-                        : GLASS.fill,
-                    border: `1px solid ${isToday ? ACCENT.border : GLASS.border}`,
-                  }}
-                >
-                  {short}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      </GlassCard>
+          {coachId && (
+            <>
+              <CoachBanner coachId={coachId} onRequestRoutine={() => setRequestOpen(true)} />
+              <RequestRoutineModal
+                coachId={coachId}
+                open={requestOpen}
+                onClose={() => setRequestOpen(false)}
+                onSuccess={() => setRequestOpen(false)}
+              />
+            </>
+          )}
 
-      {/* Feed de inteligencia y anuncios */}
-      <GlassCard raised style={{ padding: SPACE.card }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: SPACE.md,
-          }}
-        >
-          {announcements.map((announcement) => (
-            <GlassCard key={announcement.id} raised flush>
-              <span
-                style={{
-                  ...TYPE.caption,
-                  color: ACCENT.text,
-                  textTransform: "uppercase",
-                }}
-              >
-                {KIND_LABELS[announcement.kind]}
-              </span>
-              <h3
-                style={{
-                  ...TYPE.subhead,
-                  color: TEXT.primary,
-                  margin: `0 0 ${SPACE.xs} 0`,
-                }}
-              >
-                {announcement.title}
-              </h3>
-              <p
-                style={{
-                  ...TYPE.body,
-                  color: TEXT.secondary,
-                  margin: 0,
-                }}
-              >
-                {announcement.message}
+          {showConflictNotice && data.activeSession && (
+            <GlassCard raised style={{ padding: SPACE.card, border: `1px solid ${GLASS.borderStrong}` }}>
+              <p style={{ ...TYPE.body, color: TEXT.secondary, margin: 0 }}>
+                Entrenamiento activo: <strong style={{ color: TEXT.primary }}>{data.activeSession.title}</strong>.
+                La rutina programada no se ha iniciado para proteger la sesión actual.
               </p>
             </GlassCard>
-          ))}
-          {announcements.length === 0 &&
-            !announcementsLoading &&
-            !announcementsError && (
-              <GlassCard raised style={{ padding: SPACE.card }}>
+          )}
+
+          {data.recoverableDraft && (
+            <RecoverableDraftSection
+              routineTitle={data.recoverableDraft.routineTitle}
+              onContinue={() => {
+                data.restoreDraft();
+                navigate(TRAIN_PATH);
+              }}
+              onDiscard={data.discardDraft}
+            />
+          )}
+
+          <WeeklyProgressSection
+            weeklyCompleted={weeklyCompleted}
+            weeklyGoal={weeklyGoal}
+            weeklyPlan={data.weeklyPlan}
+            streakStats={data.streakStats}
+          />
+        </div>
+
+        <div className="flex flex-col gap-5 md:gap-6 min-w-0">
+          <PRSection recentPRs={data.recentPRs} />
+          <HistorySection sessions={data.recentSessions} />
+
+          <section
+            aria-label="Cronos IA: tips y anuncios"
+            style={{
+              borderRadius: RADIUS.card,
+              border: `1px solid ${GLASS.border}`,
+              background: `linear-gradient(180deg, ${GLASS.fillRaised} 0%, rgba(255,255,255,0.03) 100%)`,
+              backdropFilter: "blur(20px) saturate(140%)",
+              WebkitBackdropFilter: "blur(20px) saturate(140%)",
+              padding: SPACE.card,
+            }}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex items-end justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p style={{ ...TYPE.label, color: ACCENT.text, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    Cronos IA
+                  </p>
+                  <p style={{ ...TYPE.title2, color: TEXT.primary, margin: `${SPACE.xs} 0 0`, letterSpacing: "-0.02em" }}>
+                    Tips y anuncios
+                  </p>
+                </div>
+              </div>
+
+              {announcements.map((announcement) => (
                 <div
+                  key={announcement.id}
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: SPACE.md,
+                    borderRadius: RADIUS.surface,
+                    border: `1px solid ${GLASS.border}`,
+                    background: "rgba(255,255,255,0.03)",
+                    padding: SPACE.md,
                   }}
                 >
-                  <div
+                  <span
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: SPACE.sm,
+                      ...TYPE.caption,
+                      color: ACCENT.text,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
                     }}
                   >
-                    {TIP_CATALOG[tipIndex].icon === "lightbulb" ? (
-                      <Lightbulb size={20} style={{ color: ACCENT.text }} />
-                    ) : (
-                      <Zap size={20} style={{ color: ACCENT.text }} />
-                    )}
-                    <span
-                      style={{
-                        ...TYPE.body,
-                        color: TEXT.primary,
-                      }}
-                    >
-                      {TIP_CATALOG[tipIndex].text}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <GlassButton
-                      variant="secondary"
-                      icon={<RotateCcw size={16} />}
-                      onClick={nextTip}
-                    >
-                      Siguiente tip
-                    </GlassButton>
-                  </div>
+                    {KIND_LABELS[announcement.kind]}
+                  </span>
+                  <h3
+                    style={{
+                      ...TYPE.subhead,
+                      color: TEXT.primary,
+                      margin: `${SPACE.xs} 0 0`,
+                    }}
+                  >
+                    {announcement.title}
+                  </h3>
+                  <p
+                    style={{
+                      ...TYPE.body,
+                      color: TEXT.secondary,
+                      margin: `${SPACE.xs} 0 0`,
+                    }}
+                  >
+                    {announcement.message}
+                  </p>
                 </div>
-              </GlassCard>
-            )}
+              ))}
+
+              {announcements.length === 0 &&
+                !announcementsLoading &&
+                !announcementsError && (
+                  <TipSection tip={TIP_CATALOG[tipIndex]} onNext={nextTip} />
+                )}
+              {announcementsLoading ? (
+                <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0 }}>Cargando anuncios...</p>
+              ) : null}
+              {announcementsError ? (
+                <p style={{ ...TYPE.caption, color: STATUS.error.text, margin: 0 }}>{announcementsError}</p>
+              ) : null}
+            </div>
+          </section>
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 }

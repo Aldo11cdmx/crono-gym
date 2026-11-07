@@ -54,7 +54,7 @@ function plan(target: string, target_sets: number, body_part = "cardio"): Planne
     is_active: true,
     is_hidden: false,
   };
-  return { exercise, target_sets, rest_seconds: 120, dayIndex: null, dayLabel: "" };
+  return { exercise, target_sets, rest_seconds: 120, rowId: "row-1", dayIndex: null, dayLabel: "" };
 }
 
 function renderView(over: Partial<Parameters<typeof WorkoutPreStartView>[0]> = {}) {

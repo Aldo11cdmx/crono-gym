@@ -143,7 +143,7 @@ function recoverableDraft(overrides: Partial<SessionDraft> = {}): SessionDraft {
 }
 
 function planned(items: PlannedExercise[] | null = null, targetSets = 3): PlannedExercise[] {
-  return items ?? [{ exercise: SQUAT, target_sets: targetSets, rest_seconds: 90, dayIndex: null, dayLabel: "" }];
+  return items ?? [{ exercise: SQUAT, target_sets: targetSets, rest_seconds: 90, rowId: "row-1", dayIndex: null, dayLabel: "" }];
 }
 
 /**
@@ -920,6 +920,7 @@ describe("ActiveWorkout supersets", () => {
         exercise: SQUAT,
         target_sets: targetSets,
         rest_seconds: 90,
+        rowId: "row-sq",
         dayIndex: null,
         dayLabel: "",
         groupId: "superset-1",
@@ -928,6 +929,7 @@ describe("ActiveWorkout supersets", () => {
         exercise: BENCH,
         target_sets: partnerSets,
         rest_seconds: 90,
+        rowId: "row-bench",
         dayIndex: null,
         dayLabel: "",
         groupId: "superset-1",
@@ -972,8 +974,8 @@ describe("ActiveWorkout supersets", () => {
 
   it("stays put when the exercise is not in a group", () => {
     renderWorkout([
-      { exercise: SQUAT, target_sets: 2, rest_seconds: 90, dayIndex: null, dayLabel: "" },
-      { exercise: BENCH, target_sets: 2, rest_seconds: 90, dayIndex: null, dayLabel: "" },
+      { exercise: SQUAT, target_sets: 2, rest_seconds: 90, rowId: "row-sq", dayIndex: null, dayLabel: "" },
+      { exercise: BENCH, target_sets: 2, rest_seconds: 90, rowId: "row-bench", dayIndex: null, dayLabel: "" },
     ]);
 
     fireEvent.click(completeButton(1));

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Exercise } from "@/types/supabase";
 import {
+  draftFromRoutine,
   displayDayLabel,
   newDraftKey,
   swapDayContents,
@@ -8,6 +9,7 @@ import {
   type RoutineDraftV2,
   validateDraft,
 } from "./routineDayModel";
+import type { PlannedExercise, RoutineWithExercises } from "@/hooks/useGymData";
 
 const EXERCISE: Exercise = {
   id: "0001",
@@ -77,6 +79,11 @@ describe("displayDayLabel", () => {
 
   it("returns Sin sesión programada for an empty day", () => {
     const day = makeDay({ kind: "empty", label: "" });
+    expect(displayDayLabel(day, "weekly")).toBe("Sin sesión programada");
+  });
+
+  it("returns Sin sesión programada for an empty day even with a label", () => {
+    const day = makeDay({ kind: "empty", label: "Descanso activo" });
     expect(displayDayLabel(day, "weekly")).toBe("Sin sesión programada");
   });
 
@@ -169,6 +176,21 @@ describe("validateDraft", () => {
     expect(validateDraft(makeDraft({ days: [day] }))).toContain("duplicateRowId");
   });
 
+  it("V9: rejects the same rowId in two different days", () => {
+    const rowId = crypto.randomUUID();
+    const day1 = makeDay({
+      id: crypto.randomUUID(),
+      order: 0,
+      exercises: [{ exercise: EXERCISE, target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null, rowId }],
+    });
+    const day2 = makeDay({
+      id: crypto.randomUUID(),
+      order: 1,
+      exercises: [{ exercise: EXERCISE, target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null, rowId }],
+    });
+    expect(validateDraft(makeDraft({ days: [day1, day2] }))).toContain("duplicateRowId");
+  });
+
   it("rejects a weekly draft with duplicate weekdays", () => {
     const days = [makeDay({ weekday: 0 }), makeDay({ weekday: 0 })];
     expect(validateDraft(makeDraft({ mode: "weekly", days }))).toContain("weekdayConflict");
@@ -185,7 +207,7 @@ describe("validateDraft", () => {
   });
 
   it("rejects a saved draft with no snapshot", () => {
-    expect(validateDraft(makeDraft({ id: "routine-1", snapshot: null }))).toContain("rowIdNotOwned");
+    expect(validateDraft(makeDraft({ id: "routine-1", snapshot: null }))).toContain("missingSnapshot");
   });
 });
 
@@ -197,5 +219,173 @@ describe("newDraftKey", () => {
 
   it("returns unique values on each call", () => {
     expect(newDraftKey()).not.toBe(newDraftKey());
+  });
+});
+
+describe("draftFromRoutine", () => {
+  function makePlannedExercise(overrides: {
+    exerciseId?: string;
+    dayIndex?: number;
+    dayLabel?: string;
+    rowId?: string;
+    target_sets?: number;
+    rest_seconds?: number;
+  } = {}): PlannedExercise {
+    return {
+      exercise: { ...EXERCISE, id: overrides.exerciseId ?? "0001" },
+      target_sets: overrides.target_sets ?? 3,
+      rest_seconds: overrides.rest_seconds ?? 90,
+      rowId: overrides.rowId ?? crypto.randomUUID(),
+      dayIndex: overrides.dayIndex ?? 0,
+      dayLabel: overrides.dayLabel ?? "",
+    };
+  }
+
+  function makeRoutine(overrides: {
+    id?: string;
+    title?: string;
+    description?: string | null;
+    exercises?: PlannedExercise[];
+  } = {}): RoutineWithExercises {
+    return {
+      id: overrides.id ?? "routine-1",
+      user_id: "user-1",
+      title: overrides.title ?? "Rutina",
+      description: overrides.description ?? null,
+      created_at: "2026-01-01T00:00:00Z",
+      is_favorite: false,
+      source: "user",
+      authored_by_coach: null,
+      is_template: false,
+      exercises: overrides.exercises ?? [],
+    };
+  }
+
+  // U6: sobre válido → los días recuperan sus id
+  it("U6: sobre válido reconstruye días con los ids del sobre", () => {
+    const dayIdA = crypto.randomUUID();
+    const dayIdB = crypto.randomUUID();
+    const meta = {
+      v: 1,
+      text: "desc",
+      mode: "single",
+      days: [
+        { id: dayIdA, order: 0, weekday: null, label: "Día A", kind: "training" },
+        { id: dayIdB, order: 1, weekday: null, label: "Día B", kind: "training" },
+      ],
+    };
+    const routine = makeRoutine({
+      description: JSON.stringify(meta),
+      exercises: [
+        makePlannedExercise({ dayIndex: 0, rowId: "row-1" }),
+        makePlannedExercise({ dayIndex: 1, rowId: "row-2" }),
+      ],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.days).toHaveLength(2);
+    expect(draft.days[0].id).toBe(dayIdA);
+    expect(draft.days[1].id).toBe(dayIdB);
+    expect(draft.days[0].exercises).toHaveLength(1);
+    expect(draft.days[0].exercises[0].rowId).toBe("row-1");
+    expect(draft.days[1].exercises[0].rowId).toBe("row-2");
+    expect(draft.snapshot!.rows).toHaveLength(2);
+    expect(draft.snapshot!.title).toBe("Rutina");
+    expect(draft.snapshot!.description).toBe(JSON.stringify(meta));
+  });
+
+  // U7: sobre incoherente → fallback legado + sucio
+  it("U7: sobre incoherente cae a legado con needsModeConfirmation", () => {
+    const dayId = crypto.randomUUID();
+    const meta = {
+      v: 1,
+      text: "desc",
+      mode: "weekly",
+      days: [
+        { id: dayId, order: 0, weekday: 0, label: "Lunes", kind: "training" },
+      ],
+    };
+    const routine = makeRoutine({
+      description: JSON.stringify(meta),
+      exercises: [makePlannedExercise({ dayIndex: 5, rowId: "row-1" })],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.mode).toBe("single");
+    expect(draft.needsModeConfirmation).toBe(true);
+    expect(draft.days).toHaveLength(1);
+    expect(draft.days[0].id).not.toBe(dayId);
+    expect(draft.days[0].weekday).toBeNull();
+  });
+
+  // U8: legado → cualquier número de day_index → single + confirmación
+  it("U8: legado con day_index dispersos → single, needsModeConfirmation, ids regenerados", () => {
+    const routine = makeRoutine({
+      description: "just text",
+      exercises: [
+        makePlannedExercise({ dayIndex: 0, rowId: "row-1" }),
+        makePlannedExercise({ dayIndex: 2, rowId: "row-2" }),
+        makePlannedExercise({ dayIndex: 5, rowId: "row-3" }),
+      ],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.mode).toBe("single");
+    expect(draft.needsModeConfirmation).toBe(true);
+    expect(draft.days).toHaveLength(3);
+    expect(draft.days[0].order).toBe(0);
+    expect(draft.days[1].order).toBe(1);
+    expect(draft.days[2].order).toBe(2);
+    expect(draft.days[0].weekday).toBeNull();
+    expect(draft.days[0].kind).toBe("training");
+    expect(draft.days[0].id).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  // U20: legado rotativo A/B/C → single + confirmación pendiente
+  it("U20: legado con 3 días → single con needsModeConfirmation", () => {
+    const routine = makeRoutine({
+      description: null,
+      exercises: [
+        makePlannedExercise({ dayIndex: 0, rowId: "row-1" }),
+        makePlannedExercise({ dayIndex: 1, rowId: "row-2" }),
+        makePlannedExercise({ dayIndex: 2, rowId: "row-3" }),
+      ],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.mode).toBe("single");
+    expect(draft.needsModeConfirmation).toBe(true);
+    expect(draft.days).toHaveLength(3);
+  });
+
+  // U21: legado con day_label "Lunes" → texto no afecta estructura
+  it("U21: legado con day_label 'Lunes' → weekday sigue null, kind training", () => {
+    const routine = makeRoutine({
+      description: "not json",
+      exercises: [makePlannedExercise({ dayIndex: 0, dayLabel: "Lunes", rowId: "row-1" })],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.mode).toBe("single");
+    expect(draft.needsModeConfirmation).toBe(true);
+    expect(draft.days[0].weekday).toBeNull();
+    expect(draft.days[0].kind).toBe("training");
+  });
+
+  // U17: 0 filas + sobre con días training → incomplete
+  it("U17: 0 filas + sobre con días training → draft incompleto (validateDraft falla)", () => {
+    const dayId = crypto.randomUUID();
+    const meta = {
+      v: 1,
+      text: "desc",
+      mode: "single",
+      days: [
+        { id: dayId, order: 0, weekday: null, label: "Día A", kind: "training" },
+      ],
+    };
+    const routine = makeRoutine({
+      description: JSON.stringify(meta),
+      exercises: [],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.days).toHaveLength(1);
+    expect(draft.days[0].exercises).toHaveLength(0);
+    const problems = validateDraft(draft);
+    expect(problems).toContain("dayWithoutExercises");
   });
 });

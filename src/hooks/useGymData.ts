@@ -8,6 +8,11 @@ export interface PlannedExercise {
   target_sets: number;
   rest_seconds: number;
   /**
+   * Id de fila de `routine_exercises`. Se propaga para construir el snapshot
+   * del cargador de rutinas (draftFromRoutine).
+   */
+  rowId: string;
+  /**
    * Which day of the routine this belongs to. Zero-based.
    *
    * Read from `routine_exercises.day_index`. Nullable for rows written before
@@ -176,6 +181,7 @@ export function useRoutines(userId: string | null) {
         exercise,
         target_sets: link.target_sets,
         rest_seconds: link.rest_seconds,
+        rowId: link.id,
         dayIndex: link.day_index ?? null,
         dayLabel: link.day_label ?? "",
         groupId: link.group_id ?? null,

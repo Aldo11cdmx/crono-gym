@@ -13,6 +13,8 @@ export interface RoutineMeta {
   days: RoutineDayMeta[];
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function validateRoutineMeta(value: unknown): value is RoutineMeta {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
@@ -26,7 +28,7 @@ export function validateRoutineMeta(value: unknown): value is RoutineMeta {
   for (const d of v.days) {
     if (!d || typeof d !== "object") return false;
     const day = d as Record<string, unknown>;
-    if (typeof day.id !== "string") return false;
+    if (typeof day.id !== "string" || !UUID_RE.test(day.id)) return false;
     if (typeof day.order !== "number" || !Number.isInteger(day.order) || day.order < 0) return false;
     if (day.weekday !== null && (typeof day.weekday !== "number" || !Number.isInteger(day.weekday) || day.weekday < 0 || day.weekday > 6)) return false;
     if (typeof day.label !== "string") return false;
@@ -54,10 +56,18 @@ export function parseRoutineMeta(raw: string): { text: string; meta: RoutineMeta
   }
 }
 
-export function buildRoutineDescription(text: string, meta: RoutineMeta | null): string {
-  if (!meta) return text;
-  const payload: RoutineMeta = { ...meta, text };
-  const json = JSON.stringify(payload);
+export function buildRoutineDescription(
+  text: string,
+  draft: { mode: RoutineMeta["mode"]; days: RoutineDayMeta[] },
+): string {
+  const meta: RoutineMeta = {
+    v: 1,
+    text,
+    mode: draft.mode,
+    days: draft.days.map((d) => ({ id: d.id, order: d.order, weekday: d.weekday, label: d.label, kind: d.kind })),
+  };
+  if (!validateRoutineMeta(meta)) throw new Error("routine_meta_invalid");
+  const json = JSON.stringify(meta);
   if (json.length > 4096) throw new Error("routine_meta_too_large");
   return json;
 }

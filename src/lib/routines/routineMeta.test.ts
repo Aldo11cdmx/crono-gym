@@ -7,7 +7,7 @@ function makeMeta(overrides: Partial<RoutineMeta> = {}): RoutineMeta {
     text: "Routine description",
     mode: "single",
     days: [
-      { id: "day-1", order: 0, weekday: null, label: "Día A", kind: "training" },
+      { id: "550e8400-e29b-41d4-a716-446655440000", order: 0, weekday: null, label: "Día A", kind: "training" },
     ],
     ...overrides,
   };
@@ -42,6 +42,14 @@ describe("validateRoutineMeta", () => {
 
   it("rejects a day without a string id", () => {
     expect(validateRoutineMeta(makeMeta({ days: [{ order: 0, weekday: null, label: "", kind: "training" }] as never }))).toBe(false);
+  });
+
+  it("rejects a day id that is not a UUID", () => {
+    expect(validateRoutineMeta(makeMeta({ days: [{ id: "not-a-uuid", order: 0, weekday: null, label: "", kind: "training" }] as never }))).toBe(false);
+  });
+
+  it("accepts a day id that is a valid UUID", () => {
+    expect(validateRoutineMeta(makeMeta({ days: [{ id: "550e8400-e29b-41d4-a716-446655440000", order: 0, weekday: null, label: "", kind: "training" }] }))).toBe(true);
   });
 
   it("rejects a day with a negative order", () => {
@@ -103,13 +111,18 @@ describe("parseRoutineMeta", () => {
 });
 
 describe("buildRoutineDescription", () => {
-  it("returns the plain text when there is no meta", () => {
-    expect(buildRoutineDescription("just text", null)).toBe("just text");
+  it("builds a bridge from a draft", () => {
+    const result = buildRoutineDescription("just text", { mode: "single", days: [] });
+    const parsed = JSON.parse(result);
+    expect(parsed.v).toBe(1);
+    expect(parsed.text).toBe("just text");
+    expect(parsed.mode).toBe("single");
+    expect(parsed.days).toHaveLength(0);
   });
 
-  it("wraps text and meta into a versioned bridge JSON", () => {
-    const meta = makeMeta();
-    const result = buildRoutineDescription("Bridge text", meta);
+  it("wraps text and draft days into a versioned bridge JSON", () => {
+    const base = makeMeta();
+    const result = buildRoutineDescription("Bridge text", { mode: base.mode, days: base.days });
     const parsed = JSON.parse(result);
     expect(parsed.v).toBe(1);
     expect(parsed.text).toBe("Bridge text");
@@ -117,8 +130,18 @@ describe("buildRoutineDescription", () => {
     expect(parsed.days).toHaveLength(1);
   });
 
+  it("throws when the draft has duplicate day ids", () => {
+    expect(() => buildRoutineDescription("t", {
+      mode: "single",
+      days: [
+        { id: "same", order: 0, weekday: null, label: "a", kind: "training" },
+        { id: "same", order: 1, weekday: null, label: "b", kind: "training" },
+      ],
+    })).toThrow("routine_meta_invalid");
+  });
+
   it("throws when the payload exceeds 4096 characters", () => {
-    const meta = makeMeta();
-    expect(() => buildRoutineDescription("x".repeat(5000), meta)).toThrow("routine_meta_too_large");
+    const base = makeMeta();
+    expect(() => buildRoutineDescription("x".repeat(5000), { mode: base.mode, days: base.days })).toThrow("routine_meta_too_large");
   });
 });

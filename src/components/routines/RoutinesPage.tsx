@@ -26,18 +26,6 @@ export function RoutinesPage() {
   const { isActive, start } = useActiveSession();
   const navigate = useNavigate();
 
-  if (loading) {
-    return <p className="text-neutral-500">Cargando rutinas…</p>;
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-        {error}
-      </div>
-    );
-  }
-
   const openNew = useCallback(() => setEditing({ mode: "new" }), []);
   const openEdit = useCallback(
     (routine: RoutineWithExercises) => setEditing({ mode: "edit", routine }),
@@ -92,6 +80,18 @@ export function RoutinesPage() {
   );
 
   const closeDayPicker = useCallback(() => setDayPickerRoutine(null), []);
+
+  if (loading) {
+    return <p className="text-neutral-500">Cargando rutinas…</p>;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        {error}
+      </div>
+    );
+  }
 
   if (editing) {
     return (

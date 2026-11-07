@@ -138,6 +138,60 @@ describe("RoutinesPage", () => {
     expect(screen.getByText("Rutina antigua")).toBeTruthy();
   });
 
+  it("no truena al alternar loading entre renders (hooks antes de early returns)", () => {
+    const single = makeRoutine({ title: "Rutina individual", routineMode: "single", exercises: [makePlannedExercise()] });
+    const mockUseRoutines = vi.mocked(useRoutines);
+
+    const Page = () => (
+      <ActiveSessionProvider>
+        <MemoryRouter initialEntries={["/rutinas"]}>
+          <Routes>
+            <Route
+              path="/rutinas"
+              element={<Outlet context={OUTLET_CONTEXT} />}
+            >
+              <Route index element={<RoutinesPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </ActiveSessionProvider>
+    );
+
+    mockUseRoutines.mockReturnValue({
+      routines: [single],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+
+    const { rerender } = render(<Page />);
+    expect(screen.getByText("Rutina individual")).toBeTruthy();
+
+    mockUseRoutines.mockReturnValue({
+      routines: [single],
+      loading: true,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+    rerender(<Page />);
+    expect(screen.getByText("Cargando rutinas…")).toBeTruthy();
+
+    mockUseRoutines.mockReturnValue({
+      routines: [single],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+    rerender(<Page />);
+    expect(screen.getByText("Rutina individual")).toBeTruthy();
+  });
+
   it("muestra rutina individual sin badge de legado", () => {
     const single = makeRoutine({ title: "Rutina individual", routineMode: "single", exercises: [makePlannedExercise()] });
     vi.mocked(useRoutines).mockReturnValue({

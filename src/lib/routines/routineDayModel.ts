@@ -50,6 +50,7 @@ export interface RoutineDraftV2 {
   days: RoutineDay[];
   snapshot: LoadedRoutineSnapshot | null;
   needsModeConfirmation?: boolean;
+  incomplete?: boolean;
 }
 
 export function displayDayLabel(day: RoutineDay, mode: RoutineMode): string {
@@ -149,20 +150,20 @@ export function newDraftKey(): string {
  * Captura siempre un snapshot con todas las filas tal como llegaron.
  */
 export function draftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 {
-  const { meta } = parseRoutineMeta(routine.description ?? "");
+  const { text, meta } = parseRoutineMeta(routine.description ?? "");
 
   const snapshot: LoadedRoutineSnapshot = {
     title: routine.title,
     description: routine.description ?? "",
-    rows: routine.exercises.map((ex, i) => ({
+    rows: routine.exercises.map((ex) => ({
       rowId: ex.rowId,
       exerciseId: ex.exercise.id,
       dayIndex: ex.dayIndex ?? 0,
-      orderIndex: i,
+      orderIndex: ex.order_index,
       targetSets: ex.target_sets,
       restSeconds: ex.rest_seconds,
-      targetRepsMin: null,
-      targetRepsMax: null,
+      targetRepsMin: ex.target_reps_min,
+      targetRepsMax: ex.target_reps_max,
     })),
   };
 
@@ -205,8 +206,8 @@ export function draftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 
           target_sets: ex.target_sets,
           rest_seconds: ex.rest_seconds,
           order_index: idx,
-          target_reps_min: null,
-          target_reps_max: null,
+          target_reps_min: ex.target_reps_min,
+          target_reps_max: ex.target_reps_max,
           rowId: ex.rowId,
         })),
       });
@@ -243,8 +244,8 @@ export function draftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 
           target_sets: ex.target_sets,
           rest_seconds: ex.rest_seconds,
           order_index: idx,
-          target_reps_min: null,
-          target_reps_max: null,
+          target_reps_min: ex.target_reps_min,
+          target_reps_max: ex.target_reps_max,
           rowId: ex.rowId,
         })),
       });
@@ -252,13 +253,17 @@ export function draftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 
     }
   }
 
+  const incomplete =
+    metaToUse !== null && routine.exercises.length === 0;
+
   return {
     id: routine.id,
     title: routine.title,
-    description: routine.description ?? "",
+    description: text,
     mode,
     days,
     snapshot,
     needsModeConfirmation,
+    incomplete,
   };
 }

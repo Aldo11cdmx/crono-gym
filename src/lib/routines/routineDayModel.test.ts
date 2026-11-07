@@ -230,12 +230,18 @@ describe("draftFromRoutine", () => {
     rowId?: string;
     target_sets?: number;
     rest_seconds?: number;
+    order_index?: number;
+    target_reps_min?: number | null;
+    target_reps_max?: number | null;
   } = {}): PlannedExercise {
     return {
       exercise: { ...EXERCISE, id: overrides.exerciseId ?? "0001" },
       target_sets: overrides.target_sets ?? 3,
       rest_seconds: overrides.rest_seconds ?? 90,
       rowId: overrides.rowId ?? crypto.randomUUID(),
+      order_index: overrides.order_index ?? 0,
+      target_reps_min: overrides.target_reps_min ?? null,
+      target_reps_max: overrides.target_reps_max ?? null,
       dayIndex: overrides.dayIndex ?? 0,
       dayLabel: overrides.dayLabel ?? "",
     };
@@ -288,9 +294,64 @@ describe("draftFromRoutine", () => {
     expect(draft.days[0].exercises).toHaveLength(1);
     expect(draft.days[0].exercises[0].rowId).toBe("row-1");
     expect(draft.days[1].exercises[0].rowId).toBe("row-2");
+    expect(draft.description).toBe("desc");
     expect(draft.snapshot!.rows).toHaveLength(2);
     expect(draft.snapshot!.title).toBe("Rutina");
     expect(draft.snapshot!.description).toBe(JSON.stringify(meta));
+  });
+
+  // U6b: snapshot.orderIndex usa el order_index de la fila, no la posición global
+  it("U6b: snapshot orderIndex es el de la fila, no la posición en el array", () => {
+    const dayId = crypto.randomUUID();
+    const meta = {
+      v: 1,
+      text: "desc",
+      mode: "single",
+      days: [
+        { id: dayId, order: 0, weekday: null, label: "Día A", kind: "training" },
+      ],
+    };
+    // día_index 0 con order_index 5, día_index 0 con order_index 2
+    const routine = makeRoutine({
+      description: JSON.stringify(meta),
+      exercises: [
+        makePlannedExercise({ dayIndex: 0, rowId: "row-1", order_index: 5 }),
+        makePlannedExercise({ dayIndex: 0, rowId: "row-2", order_index: 2 }),
+      ],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.snapshot!.rows[0].orderIndex).toBe(5);
+    expect(draft.snapshot!.rows[1].orderIndex).toBe(2);
+  });
+
+  // U6c: target_reps_min/max sobreviven en el draft y en el snapshot
+  it("U6c: rangos de repeticiones sobreviven en el draft y el snapshot", () => {
+    const dayId = crypto.randomUUID();
+    const meta = {
+      v: 1,
+      text: "desc",
+      mode: "single",
+      days: [
+        { id: dayId, order: 0, weekday: null, label: "Día A", kind: "training" },
+      ],
+    };
+    const routine = makeRoutine({
+      description: JSON.stringify(meta),
+      exercises: [
+        makePlannedExercise({
+          dayIndex: 0,
+          rowId: "row-1",
+          order_index: 0,
+          target_reps_min: 8,
+          target_reps_max: 12,
+        }),
+      ],
+    });
+    const draft = draftFromRoutine(routine);
+    expect(draft.days[0].exercises[0].target_reps_min).toBe(8);
+    expect(draft.days[0].exercises[0].target_reps_max).toBe(12);
+    expect(draft.snapshot!.rows[0].targetRepsMin).toBe(8);
+    expect(draft.snapshot!.rows[0].targetRepsMax).toBe(12);
   });
 
   // U7: sobre incoherente → fallback legado + sucio
@@ -367,8 +428,8 @@ describe("draftFromRoutine", () => {
     expect(draft.days[0].kind).toBe("training");
   });
 
-  // U17: 0 filas + sobre con días training → incomplete
-  it("U17: 0 filas + sobre con días training → draft incompleto (validateDraft falla)", () => {
+  // U17: 0 filas + sobre con días training → incomplete señalado explícitamente
+  it("U17: 0 filas + sobre con días training → draft incompleto señalado", () => {
     const dayId = crypto.randomUUID();
     const meta = {
       v: 1,
@@ -383,6 +444,7 @@ describe("draftFromRoutine", () => {
       exercises: [],
     });
     const draft = draftFromRoutine(routine);
+    expect(draft.incomplete).toBe(true);
     expect(draft.days).toHaveLength(1);
     expect(draft.days[0].exercises).toHaveLength(0);
     const problems = validateDraft(draft);

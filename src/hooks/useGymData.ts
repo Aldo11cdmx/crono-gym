@@ -13,6 +13,18 @@ export interface PlannedExercise {
    */
   rowId: string;
   /**
+   * Posición del ejercicio dentro del día.
+   */
+  order_index: number;
+  /**
+   * Rango de repeticiones objetivo, o null si no está especificado.
+   */
+  target_reps_min: number | null;
+  /**
+   * Rango de repeticiones objetivo, o null si no está especificado.
+   */
+  target_reps_max: number | null;
+  /**
    * Which day of the routine this belongs to. Zero-based.
    *
    * Read from `routine_exercises.day_index`. Nullable for rows written before
@@ -182,6 +194,9 @@ export function useRoutines(userId: string | null) {
         target_sets: link.target_sets,
         rest_seconds: link.rest_seconds,
         rowId: link.id,
+        order_index: link.order_index,
+        target_reps_min: link.target_reps_min ?? null,
+        target_reps_max: link.target_reps_max ?? null,
         dayIndex: link.day_index ?? null,
         dayLabel: link.day_label ?? "",
         groupId: link.group_id ?? null,

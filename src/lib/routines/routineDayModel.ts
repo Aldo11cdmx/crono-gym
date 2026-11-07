@@ -254,7 +254,9 @@ export function draftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 
   }
 
   const incomplete =
-    metaToUse !== null && routine.exercises.length === 0;
+    metaToUse !== null &&
+    routine.exercises.length === 0 &&
+    metaToUse.days.some((d) => d.kind === "training");
 
   return {
     id: routine.id,

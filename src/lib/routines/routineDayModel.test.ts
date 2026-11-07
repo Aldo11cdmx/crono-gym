@@ -31,13 +31,14 @@ function makeDay(overrides: Partial<RoutineDay> = {}): RoutineDay {
     weekday: null,
     label: "",
     kind: "training",
-    exercises: [{ exercise: EXERCISE, target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null }],
+    exercises: [{ exercise: EXERCISE, rowId: crypto.randomUUID(), target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null }],
     ...overrides,
   };
 }
 
 function makeDraft(overrides: Partial<RoutineDraftV2> = {}): RoutineDraftV2 {
   const draft: RoutineDraftV2 = {
+    draftKey: crypto.randomUUID(),
     id: null,
     title: "Push Day",
     description: "",

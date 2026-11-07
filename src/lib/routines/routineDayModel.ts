@@ -43,6 +43,7 @@ export interface LoadedRoutineSnapshot {
 }
 
 export interface RoutineDraftV2 {
+  draftKey: string;
   id: string | null;
   title: string;
   description: string;
@@ -103,6 +104,7 @@ export function validateDraft(draft: RoutineDraftV2): string[] {
     if (day.kind === "training" && day.exercises.length === 0) problems.push("dayWithoutExercises");
     if (day.kind !== "training" && day.exercises.length > 0) problems.push("dayWithoutExercises");
     for (const ex of day.exercises) {
+      if (!ex.rowId) problems.push("missingRowId");
       if (ex.rowId) {
         if (rowIds.has(ex.rowId)) problems.push("duplicateRowId");
         rowIds.add(ex.rowId);
@@ -259,6 +261,7 @@ export function draftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 
     metaToUse.days.some((d) => d.kind === "training");
 
   return {
+    draftKey: newDraftKey(),
     id: routine.id,
     title: routine.title,
     description: text,

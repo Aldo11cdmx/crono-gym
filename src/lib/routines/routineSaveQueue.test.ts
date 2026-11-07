@@ -4,6 +4,7 @@ import type { RoutineDraftV2 } from "./routineDayModel";
 
 function makeDraft(overrides: Partial<RoutineDraftV2> = {}): RoutineDraftV2 {
   return {
+    draftKey: crypto.randomUUID(),
     id: null,
     title: "Test",
     description: "",
@@ -287,6 +288,20 @@ describe("routineSaveQueue · estados", () => {
     await Promise.resolve();
     expect(queue.state(execKey(job))).toBe("idle");
     vi.useRealTimers();
+  });
+
+  // I19: un job con generación menor al pendiente no reemplaza ni se procesa
+  it("I19: job con generación menor no reemplaza al pendiente", () => {
+    vi.useFakeTimers();
+    const job1 = makeJob({ generation: 5 });
+    const job2 = makeJob({ generation: 3 });
+    queue.enqueue(job1);
+    queue.enqueue(job2);
+    vi.advanceTimersByTime(900);
+    vi.useRealTimers();
+    // Solo job1 (generación 5) debe procesarse
+    expect(process).toHaveBeenCalledTimes(1);
+    expect(process).toHaveBeenCalledWith(job1);
   });
 
   // I20: flush después de encolar con timer pendiente

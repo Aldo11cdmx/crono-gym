@@ -68,6 +68,9 @@ const RUNNING = {
   routineId: "r-1",
   title: "Full Body",
   startedAt: "2026-10-05T10:00:00",
+  routineDayId: null,
+  dayLabel: null,
+  planned: [],
 };
 
 describe("countSetProgress", () => {

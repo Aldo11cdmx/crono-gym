@@ -88,14 +88,26 @@ describe("RoutineCard — C3 descripción en texto plano", () => {
   });
 });
 
-describe("RoutineCard — Entrenar deshabilitado hasta E5", () => {
+describe("RoutineCard — Entrenar habilitado desde E5", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
   });
 
-  it("el botón Entrenar está deshabilitado", () => {
-    const routine = makeRoutine("Rutina", "desc");
+  it("el botón Entrenar está habilitado para una rutina completa", () => {
+    const routine = makeRoutine("Rutina", "desc", "single");
+    // Añadir un ejercicio para que la rutina no esté incompleta
+    (routine as any).exercises = [{ id: "ex-1", name: "Sentadilla" }];
+    renderCard(routine);
+
+    const trainButton = screen.getByRole("button", { name: /Entrenar/ });
+    expect(trainButton.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("el botón Entrenar está deshabilitado para una rutina incompleta", () => {
+    const routine = makeRoutine("Rutina incompleta", "desc", "single");
+    // Sin ejercicios → incompleta (bridge sin ejercicios)
+    (routine as any).description = "{v:1, mode: single, days: []}";
     renderCard(routine);
 
     const trainButton = screen.getByRole("button", { name: /Entrenar/ });

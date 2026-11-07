@@ -35,7 +35,7 @@ const NO_SESSION = {
 };
 
 const SESSION = {
-  session: { routineId: "r1", title: "Push Pull Legs", startedAt: "2026-01-01T11:59:45Z" },
+  session: { routineId: "r1", title: "Push Pull Legs", startedAt: "2026-01-01T11:59:45Z", routineDayId: null, dayLabel: null, planned: [] },
   isActive: true,
   start: vi.fn(),
   end: vi.fn(),

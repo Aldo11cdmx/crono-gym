@@ -105,7 +105,7 @@ function renderAt(path: string, options: { session?: boolean; reducedMotion?: bo
     useEffect(() => {
       if (!options.session || started.current) return;
       started.current = true;
-      start({ id: "routine-1", title: "Fuerza" });
+      start({ routine: { id: "routine-1", title: "Fuerza" } });
     }, []);
 
     return null;

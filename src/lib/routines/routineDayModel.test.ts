@@ -3,6 +3,7 @@ import type { Exercise } from "@/types/supabase";
 import {
   draftFromRoutine,
   displayDayLabel,
+  exercisesForDay,
   newDraftKey,
   swapDayContents,
   type RoutineDay,
@@ -453,4 +454,57 @@ describe("draftFromRoutine", () => {
     const problems = validateDraft(draft);
     expect(problems).toContain("dayWithoutExercises");
   });
+
+describe("exercisesForDay (A4)", () => {
+  it("devuelve los ejercicios de un día específico del draft semanal", () => {
+    const ex1 = { ...EXERCISE, id: "ex-1" };
+    const ex2 = { ...EXERCISE, id: "ex-2" };
+
+    const draft: RoutineDraftV2 = {
+      draftKey: "dk-1",
+      id: "routine-1",
+      title: "Semanal",
+      description: "",
+      mode: "weekly",
+      days: [
+        { id: "d0", order: 0, weekday: 0, label: "Lunes", kind: "training", exercises: [{ exercise: ex1, target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null, rowId: "r1" }] },
+        { id: "d1", order: 1, weekday: 1, label: "Martes", kind: "training", exercises: [{ exercise: ex2, target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null, rowId: "r2" }] },
+        { id: "d2", order: 2, weekday: 2, label: "Miércoles", kind: "rest", exercises: [] },
+      ],
+      snapshot: null,
+    };
+
+    const lunes = exercisesForDay(draft, 0);
+    expect(lunes).toHaveLength(1);
+    expect(lunes[0].exercise.id).toBe("ex-1");
+
+    const martes = exercisesForDay(draft, 1);
+    expect(martes).toHaveLength(1);
+    expect(martes[0].exercise.id).toBe("ex-2");
+
+    const miercoles = exercisesForDay(draft, 2);
+    expect(miercoles).toHaveLength(0);
+
+    const domingo = exercisesForDay(draft, 6);
+    expect(domingo).toHaveLength(0);
+  });
+
+  it("no muta el draft original", () => {
+    const ex1 = { ...EXERCISE, id: "ex-1" };
+    const draft: RoutineDraftV2 = {
+      draftKey: "dk-1",
+      id: "routine-1",
+      title: "Semanal",
+      description: "",
+      mode: "weekly",
+      days: [
+        { id: "d0", order: 0, weekday: 0, label: "Lunes", kind: "training", exercises: [{ exercise: ex1, target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null, rowId: "r1" }] },
+      ],
+      snapshot: null,
+    };
+    const before = draft.days[0].exercises.length;
+    exercisesForDay(draft, 0);
+    expect(draft.days[0].exercises.length).toBe(before);
+  });
+});
 });

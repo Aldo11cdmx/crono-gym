@@ -410,7 +410,7 @@ export function HomeView() {
 export function TrainView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const { session, end, rehydrating } = useActiveSession();
-  const { routines, loading } = useRoutines(userId);
+  const { loading } = useRoutines(userId);
   /**
    * True once the routine library has finished a load. `loading` starts
    * false -- the first read happens in an effect, after the first paint --
@@ -457,13 +457,12 @@ const [libraryLoaded, setLibraryLoaded] = useState(false);
     return <p className="text-neutral-500">Cargando…</p>;
   }
 
-  const source = routines.find((r) => r.id === session.routineId);
   return (
     <ActiveWorkoutView
       userId={userId}
       routineId={session.routineId}
       routineTitle={session.title}
-      planned={source?.exercises ?? []}
+      planned={session.planned ?? []}
       onFinished={end}
     />
   );

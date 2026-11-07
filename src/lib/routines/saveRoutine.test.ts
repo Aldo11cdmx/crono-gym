@@ -740,6 +740,83 @@ describe("duplicateRoutine", () => {
     });
     expect(copy.draftKey).not.toBe(original.draftKey);
   });
+
+  it("A7: duplicar una rutina 3×8-10 conserva series y reps con ids nuevos", () => {
+    const original: RoutineDraftV2 = {
+      draftKey: "dk-1",
+      id: "routine-1",
+      title: "Fuerza",
+      description: "",
+      mode: "single",
+      days: [
+        {
+          id: "d-1",
+          order: 0,
+          weekday: null,
+          label: "Día A",
+          kind: "training",
+          exercises: [
+            {
+              exercise: ex("ex-1"),
+              rowId: "row-1",
+              target_sets: 3,
+              rest_seconds: 90,
+              order_index: 0,
+              target_reps_min: 8,
+              target_reps_max: 10,
+            },
+          ],
+        },
+      ],
+      snapshot: null,
+    };
+
+    const copy = duplicateRoutine(original, "Copia");
+
+    expect(copy.days).toHaveLength(1);
+    expect(copy.days[0].exercises).toHaveLength(1);
+    const exCopy = copy.days[0].exercises[0];
+    expect(exCopy.target_sets).toBe(3);
+    expect(exCopy.target_reps_min).toBe(8);
+    expect(exCopy.target_reps_max).toBe(10);
+    expect(exCopy.rowId).toBeDefined();
+    expect(exCopy.rowId).not.toBe("row-1");
+    expect(copy.draftKey).not.toBe(original.draftKey);
+    expect(copy.id).toBeNull();
+  });
+
+  it("A20: duplicar una rutina semanal conserva descansos (Sábado/Domingo) con ids de día nuevos", () => {
+    const days: RoutineDraftV2["days"] = [];
+    for (let wd = 0; wd < 7; wd += 1) {
+      days.push({
+        id: `day-${wd}`,
+        order: wd,
+        weekday: wd,
+        label: "",
+        kind: wd < 5 ? "training" : wd === 5 ? "mobility" : "rest",
+        exercises: [],
+      });
+    }
+    const original = makeDraft({
+      mode: "weekly",
+      days,
+    });
+
+    const copy = duplicateRoutine(original, "Copia semanal");
+
+    expect(copy.mode).toBe("weekly");
+    expect(copy.days).toHaveLength(7);
+    // Sábado (wd=5) = movilidad, Domingo (wd=6) = descanso
+    expect(copy.days[5].kind).toBe("mobility");
+    expect(copy.days[6].kind).toBe("rest");
+    // Todos los ids de día son nuevos
+    copy.days.forEach((day, i) => {
+      expect(day.id).not.toBe(`day-${i}`);
+      expect(day.order).toBe(i);
+      expect(day.weekday).toBe(i);
+    });
+    expect(copy.draftKey).not.toBe(original.draftKey);
+  });
 });
 
 // ------------------------------------------------------------------- restoreRoutine

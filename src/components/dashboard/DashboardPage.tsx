@@ -288,7 +288,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       return;
     }
     if (intent.action !== "start" || !target) return;
-    const result = data.startSession(target);
+    const result = data.startSession({ routine: target });
     if (result?.ok) navigate(TRAIN_PATH);
   }, [
     sessionState,

@@ -105,6 +105,9 @@ const mockState = vi.hoisted(() => {
       routineId: string | null;
       title: string;
       startedAt: string;
+      routineDayId: string | null;
+      dayLabel: string | null;
+      planned: any[];
     },
   };
 });
@@ -327,8 +330,7 @@ describe("DashboardPage", () => {
 
     fireEvent.click(screen.getByText("Comenzar entrenamiento"));
     expect(mockStart).toHaveBeenCalledWith({
-      id: "r-1",
-      title: "Full Body",
+      routine: { id: "r-1", title: "Full Body" },
     });
     expect(mockNavigate).toHaveBeenCalledWith("/entrenar");
   });
@@ -339,6 +341,9 @@ describe("DashboardPage", () => {
       routineId: "r-1",
       title: "Full Body",
       startedAt: "2026-10-05T10:00:00",
+      routineDayId: null,
+      dayLabel: null,
+      planned: [],
     };
 
     render(

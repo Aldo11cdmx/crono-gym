@@ -96,7 +96,7 @@ export interface DashboardHomeData {
   /** Summary of today's most recent completed session, or null. */
   completedToday: CompletedSessionSummary | null;
   /** Start a new workout session with an optional routine. Returns start result. */
-  startSession: (routine: { id: string; title: string } | null) => import("@/context/ActiveSessionContext").StartSessionResult;
+  startSession: (input: { routine: { id: string; title: string } | null; routineDayId?: string; dayLabel?: string; planned?: any[] }) => import("@/context/ActiveSessionContext").StartSessionResult;
   /** End the current workout session (idempotent). */
   endSession: () => void;
 

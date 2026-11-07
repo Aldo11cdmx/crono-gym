@@ -163,7 +163,7 @@ describe("ActiveSessionProvider rehydration", () => {
     function StartsASession() {
       const { start } = useActiveSession();
       useEffect(() => {
-        start({ id: "routine-live", title: "Sesión en curso" });
+        start({ routine: { id: "routine-live", title: "Sesión en curso" } });
       }, [start]);
       return null;
     }
@@ -256,7 +256,7 @@ describe("ActiveSessionProvider rest deadline", () => {
       latest?.discardDraft();
     });
     act(() => {
-      latest?.start({ id: "routine-2", title: " otra " });
+      latest?.start({ routine: { id: "routine-2", title: " otra " } });
     });
 
     // The deadline belonged to the interrupted session. A new one starts with
@@ -373,7 +373,7 @@ describe("ActiveSessionProvider recovery", () => {
     });
 
     act(() => {
-      latest?.start({ id: "routine-2", title: " otra " });
+      latest?.start({ routine: { id: "routine-2", title: " otra " } });
     });
 
     // The recovered id belonged to the session that was recovered.
@@ -388,7 +388,7 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     await settle();
     let result;
     act(() => {
-      result = latest?.start({ id: "r1", title: "Rutina" });
+      result = latest?.start({ routine: { id: "r1", title: "Rutina" } });
     });
     expect(result).toEqual({ ok: true });
     expect(latest?.session?.routineId).toBe("r1");
@@ -400,7 +400,7 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     await settle();
     let result;
     act(() => {
-      result = latest?.start(null);
+      result = latest?.start({ routine: null });
     });
     expect(result).toEqual({ ok: true });
     expect(latest?.session?.routineId).toBeNull();
@@ -412,7 +412,7 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     renderProvider("user-1");
     let result;
     act(() => {
-      result = latest?.start({ id: "r2", title: "Segunda" });
+      result = latest?.start({ routine: { id: "r2", title: "Segunda" } });
     });
     expect(result).toEqual({ ok: false, reason: "rehydrating" });
     expect(latest?.session).toBeNull();
@@ -423,11 +423,11 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     renderProvider("user-1");
     await settle();
     act(() => {
-      latest?.start({ id: "r1", title: "Primera" });
+      latest?.start({ routine: { id: "r1", title: "Primera" } });
     });
     let result;
     act(() => {
-      result = latest?.start({ id: "r2", title: "Segunda" });
+      result = latest?.start({ routine: { id: "r2", title: "Segunda" } });
     });
     expect(result).toEqual({ ok: false, reason: "active_session" });
     expect(latest?.session?.routineId).toBe("r1");
@@ -438,7 +438,7 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     renderProvider("user-1");
     await settle();
     act(() => {
-      latest?.start({ id: "r1", title: "Primera" });
+      latest?.start({ routine: { id: "r1", title: "Primera" } });
     });
     // discard para dejar solo estado de borrador simulado: no posible sin acceso interno;
     // verificamos vía estado combinado post-rehidratación y orden de refs en start.
@@ -452,10 +452,10 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     let r1;
     let r2;
     act(() => {
-      r1 = latest?.start({ id: "r1", title: "Primera" });
+      r1 = latest?.start({ routine: { id: "r1", title: "Primera" } });
     });
     act(() => {
-      r2 = latest?.start({ id: "r2", title: "Segunda" });
+      r2 = latest?.start({ routine: { id: "r2", title: "Segunda" } });
     });
     expect(r1).toEqual({ ok: true });
     expect(r2).toEqual({ ok: false, reason: "active_session" });
@@ -469,7 +469,7 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     const beforeDraft = latest?.recoverableDraft?.logId;
     const beforeSession = latest?.session?.routineId;
     act(() => {
-      latest?.start({ id: "r2", title: "Otra" });
+      latest?.start({ routine: { id: "r2", title: "Otra" } });
     });
     expect(latest?.recoverableDraft?.logId).toBe(beforeDraft);
     // session fue rehidratada desde draft; start bloqueado por draftRef
@@ -484,7 +484,7 @@ describe("ActiveSessionProvider P1.3 start contract", () => {
     expect(latest?.recoverableDraft).not.toBeNull();
     let result: ReturnType<NonNullable<typeof latest>["start"]> | undefined;
     act(() => {
-      result = latest?.start({ id: "r2", title: "Otra" });
+      result = latest?.start({ routine: { id: "r2", title: "Otra" } });
     });
     expect(result?.ok).toBe(false);
     if (result && !result.ok) {
@@ -498,9 +498,9 @@ describe("ActiveSessionProvider contract (P0)", () => {
     vi.mocked(loadRecoverableDraft).mockResolvedValue(null);
     renderProvider("user-1");
     await settle();
-    act(() => { latest?.start({ id: "r1", title: "Primera" }); });
+    act(() => { latest?.start({ routine: { id: "r1", title: "Primera" } }); });
     const before = latest?.session?.startedAt;
-    act(() => { latest?.start({ id: "r2", title: "Segunda" }); });
+    act(() => { latest?.start({ routine: { id: "r2", title: "Segunda" } }); });
     expect(latest?.session?.routineId).toBe("r1");
     expect(latest?.session?.startedAt).toBe(before);
   });
@@ -509,7 +509,7 @@ describe("ActiveSessionProvider contract (P0)", () => {
     vi.mocked(loadRecoverableDraft).mockResolvedValue(draft());
     renderProvider("user-1");
     // sin settle: rehydrating true
-    act(() => { latest?.start({ id: "r2", title: "Segunda" }); });
+    act(() => { latest?.start({ routine: { id: "r2", title: "Segunda" } }); });
     expect(latest?.session).toBeNull();
   });
 
@@ -517,7 +517,7 @@ describe("ActiveSessionProvider contract (P0)", () => {
     vi.mocked(loadRecoverableDraft).mockResolvedValue(null);
     renderProvider("user-1");
     await settle();
-    act(() => { latest?.start({ id: "r2", title: "Segunda" }); });
+    act(() => { latest?.start({ routine: { id: "r2", title: "Segunda" } }); });
     expect(latest?.session?.routineId).toBe("r2");
   });
 
@@ -557,7 +557,7 @@ describe("ActiveSessionProvider contract (P0)", () => {
     vi.mocked(loadRecoverableDraft).mockResolvedValue(null);
     renderProvider("user-1");
     await settle();
-    act(() => { latest?.start({ id: "live", title: "Live" }); });
+    act(() => { latest?.start({ routine: { id: "live", title: "Live" } }); });
     vi.mocked(loadRecoverableDraft).mockResolvedValue(draft());
     act(() => { latest?.rehydrate("user-1"); });
     // rehydrate mismo usuario es no-op para el efecto; forzar via retry no aplica.

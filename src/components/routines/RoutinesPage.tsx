@@ -1,15 +1,19 @@
 import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useRoutines } from "@/hooks/useGymData";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
 import { TYPE } from "@/design/tokens";
+import { useActiveSession } from "@/context/ActiveSessionContext";
+import { TRAIN_PATH } from "@/components/shell/navItems";
 import { RoutineCard } from "./RoutineCard";
 import { RoutineEditor } from "./RoutineEditor";
 import { WeeklyPlanner } from "./WeeklyPlanner";
+import { draftFromRoutine } from "@/lib/routines/routineDayModel";
 
 export function RoutinesPage() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
@@ -18,6 +22,9 @@ export function RoutinesPage() {
     mode: "new";
   } | { mode: "edit"; routine: RoutineWithExercises } | null>(null);
   const [planning, setPlanning] = useState<RoutineWithExercises | null>(null);
+  const [dayPickerRoutine, setDayPickerRoutine] = useState<RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" } | null>(null);
+  const { isActive, start } = useActiveSession();
+  const navigate = useNavigate();
 
   if (loading) {
     return <p className="text-neutral-500">Cargando rutinas…</p>;
@@ -39,6 +46,52 @@ export function RoutinesPage() {
   const openPlan = useCallback((routine: RoutineWithExercises) => setPlanning(routine), []);
   const close = useCallback(() => setEditing(null), []);
   const closePlan = useCallback(() => setPlanning(null), []);
+
+  const handleTrain = useCallback(
+    (routine: RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" }) => {
+      if (isActive) {
+        // Guardia S2/S3: no se puede iniciar mientras hay una sesión activa.
+        return;
+      }
+      const draft = draftFromRoutine(routine);
+      if (draft.incomplete) {
+        // Guardia: rutina incompleta. La tarjeta ya muestra el estado; no hacemos nada aquí.
+        return;
+      }
+      const trainingDays = draft.days.filter((d) => d.kind === "training");
+      if (trainingDays.length === 0) return;
+      if (routine.routineMode === "weekly" && trainingDays.length > 1) {
+        setDayPickerRoutine(routine);
+        return;
+      }
+      // Un solo día de entrenamiento (rutina individual o semanal con un solo día): iniciar directamente.
+      const day = trainingDays[0];
+      const planned = day.exercises.map((ex) => ({
+        exercise: ex.exercise,
+        target_sets: ex.target_sets,
+        rest_seconds: ex.rest_seconds,
+        rowId: ex.rowId ?? "",
+        order_index: ex.order_index,
+        target_reps_min: ex.target_reps_min,
+        target_reps_max: ex.target_reps_max,
+        dayIndex: day.weekday ?? day.order,
+        dayLabel: day.label,
+        groupId: ex.groupId,
+      }));
+      const result = start({
+        routine: { id: routine.id, title: routine.title },
+        routineDayId: day.id,
+        dayLabel: day.label || undefined,
+        planned,
+      });
+      if (result.ok) {
+        navigate(TRAIN_PATH);
+      }
+    },
+    [isActive, start, navigate],
+  );
+
+  const closeDayPicker = useCallback(() => setDayPickerRoutine(null), []);
 
   if (editing) {
     return (
@@ -136,14 +189,72 @@ export function RoutinesPage() {
             {routines.map((routine) => (
               <RoutineCard
                 key={routine.id}
-                routine={routine}
-                onTrain={() => {
-                  // Navigate to train with this routine
-                }}
+                routine={routine as RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" }}
+                onTrain={handleTrain}
                 onEdit={() => openEdit(routine)}
                 onPlan={() => openPlan(routine)}
               />
             ))}
+          </div>
+        </div>
+      )}
+      {dayPickerRoutine && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={closeDayPicker}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <GlassCard raised className="w-full max-w-md p-6">
+              <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
+                Elegir día de entrenamiento
+              </h3>
+              <p className="text-neutral-400 text-sm mb-6" style={{ fontSize: TYPE.caption.size }}>
+                Selecciona el día que quieres entrenar de "{dayPickerRoutine.title}".
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {draftFromRoutine(dayPickerRoutine)
+                  .days.filter((d) => d.kind === "training")
+                  .map((day) => (
+                    <GlassButton
+                      key={day.id}
+                      variant="primary"
+                      block
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const dayObj = draftFromRoutine(dayPickerRoutine).days.find((d) => d.id === day.id);
+                        if (!dayObj) return;
+                        const planned = dayObj.exercises.map((ex) => ({
+                          exercise: ex.exercise,
+                          target_sets: ex.target_sets,
+                          rest_seconds: ex.rest_seconds,
+                          rowId: ex.rowId ?? "",
+                          order_index: ex.order_index,
+                          target_reps_min: ex.target_reps_min,
+                          target_reps_max: ex.target_reps_max,
+                          dayIndex: dayObj.weekday ?? dayObj.order,
+                          dayLabel: dayObj.label,
+                          groupId: ex.groupId,
+                        }));
+                        const result = start({
+                          routine: { id: dayPickerRoutine.id, title: dayPickerRoutine.title },
+                          routineDayId: dayObj.id,
+                          dayLabel: dayObj.label || undefined,
+                          planned,
+                        });
+                        if (result.ok) {
+                          closeDayPicker();
+                          navigate(TRAIN_PATH);
+                        }
+                      }}
+                      aria-label={`Entrenar ${day.label || `Día ${day.order + 1}`}`}
+                    >
+                      {day.label || `Día ${day.order + 1}`}
+                    </GlassButton>
+                  ))}
+              </div>
+              <div className="flex justify-end mt-4">
+                <GlassButton variant="ghost" onClick={closeDayPicker} block>
+                  Cancelar
+                </GlassButton>
+              </div>
+            </GlassCard>
           </div>
         </div>
       )}

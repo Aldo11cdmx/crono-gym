@@ -30,6 +30,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { PlannedExercise } from "../hooks/useGymData";
 import { deleteDraft, loadRecoverableDraft, type SessionDraft } from "../lib/offlineStore";
 
 export interface ActiveSession {
@@ -38,6 +39,12 @@ export interface ActiveSession {
   title: string;
   /** ISO timestamp captured once when the session starts. */
   startedAt: string;
+  /** Id del día de rutina que se está entrenando (null = sesión libre o día no aplicable). */
+  routineDayId: string | null;
+  /** Etiqueta legible del día (ej. "Lunes", "Día A"). */
+  dayLabel: string | null;
+  /** Ejercicios planificados para este día (filtrados por día). */
+  planned: PlannedExercise[];
 }
 
 export type StartSessionResult =
@@ -55,11 +62,21 @@ export interface ActiveSessionValue {
   /**
    * Starts a session.
    *
-   * `routineId` null means a free session, which is a real session with a real
+   * `routine` null means a free session, which is a real session with a real
    * start time -- not a placeholder for "nothing running". The distinction
    * matters because the pill counts from `startedAt` either way.
+   *
+   * `routineDayId`, `dayLabel` and `planned` describe the specific routine day
+   * being trained. When provided, only those exercises are loaded into the
+   * session and `routineDayId` is stored so the workout can resume the right
+   * day after a reload.
    */
-  start: (routine: { id: string; title: string } | null) => StartSessionResult;
+  start: (input: {
+    routine: { id: string; title: string } | null;
+    routineDayId?: string;
+    dayLabel?: string;
+    planned?: PlannedExercise[];
+  }) => StartSessionResult;
   /** Ends the session. Idempotent, so a double finish cannot resurrect state. */
   end: () => void;
   /**
@@ -222,6 +239,9 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
           routineId: draft.routineId,
           title: draft.routineTitle,
           startedAt: draft.startedAt,
+          routineDayId: null,
+          dayLabel: null,
+          planned: [],
         });
       })
       .catch(() => {
@@ -339,7 +359,13 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
   }, [recoveredLogId]);
 
   const start = useCallback(
-    (routine: { id: string; title: string } | null): StartSessionResult => {
+    (input: {
+      routine: { id: string; title: string } | null;
+      routineDayId?: string;
+      dayLabel?: string;
+      planned?: PlannedExercise[];
+    }): StartSessionResult => {
+      const { routine, routineDayId = null, dayLabel = null, planned = [] } = input;
       if (rehydratingRef.current) return { ok: false, reason: "rehydrating" };
       if (sessionRef.current) return { ok: false, reason: "active_session" };
       if (draftRef.current !== null) return { ok: false, reason: "recoverable_draft" };
@@ -350,6 +376,9 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
         routineId: routine?.id ?? null,
         title: routine?.title ?? FREE_SESSION_TITLE,
         startedAt: new Date().toISOString(),
+        routineDayId,
+        dayLabel,
+        planned,
       });
       setRecoveredLogId(null);
       setRecoverableDraft(null);

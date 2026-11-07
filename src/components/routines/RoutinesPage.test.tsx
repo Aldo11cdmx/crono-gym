@@ -2,13 +2,14 @@
  * @vitest-environment jsdom
  */
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { MemoryRouter, Outlet, Routes, Route } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { RoutinesPage } from "./RoutinesPage";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
 import { useRoutines } from "@/hooks/useGymData";
+import { ActiveSessionProvider } from "@/context/ActiveSessionContext";
 import type { Exercise } from "@/types/supabase";
 
 vi.mock("@/hooks/useGymData", () => ({
@@ -62,38 +63,43 @@ function makeRoutine(overrides: Partial<RoutineWithExercises & { routineMode: "s
   } as unknown as RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" };
 }
 
-function renderPage(routines: (RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" })[]) {
-  vi.mocked(useRoutines).mockReturnValue({
-    routines,
-    loading: false,
-    error: null,
-    refresh: vi.fn(),
-    toggleFavorite: vi.fn(),
-    pendingIds: new Set(),
-  } as never);
-
-  return render(
-    <MemoryRouter initialEntries={["/rutinas"]}>
-      <Routes>
-        <Route
-          path="/rutinas"
-          element={<Outlet context={OUTLET_CONTEXT} />}
-        >
-          <Route index element={<RoutinesPage />} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
-  );
-}
-
 describe("RoutinesPage", () => {
   beforeEach(() => {
     cleanup();
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
+  function renderPageWithSession() {
+    return render(
+      <ActiveSessionProvider>
+        <MemoryRouter initialEntries={["/rutinas"]}>
+          <Routes>
+            <Route
+              path="/rutinas"
+              element={<Outlet context={OUTLET_CONTEXT} />}
+            >
+              <Route index element={<RoutinesPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </ActiveSessionProvider>,
+    );
+  }
+
   it("A16: rutina legacy (sin sobre) muestra 'Sin clasificar' y ofrece convertir a semanal", () => {
     const legacy = makeRoutine({ title: "Rutina antigua", routineMode: "legacy" });
-    renderPage([legacy]);
+    vi.mocked(useRoutines).mockReturnValue({
+      routines: [legacy],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+    renderPageWithSession();
 
     expect(screen.getByText("Sin clasificar")).toBeTruthy();
     expect(screen.getByText("Rutina antigua")).toBeTruthy();
@@ -101,7 +107,15 @@ describe("RoutinesPage", () => {
 
   it("muestra rutina semanal con badge 'Semanal'", () => {
     const weekly = makeRoutine({ title: "Rutina semanal", routineMode: "weekly", exercises: [makePlannedExercise()] });
-    renderPage([weekly]);
+    vi.mocked(useRoutines).mockReturnValue({
+      routines: [weekly],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+    renderPageWithSession();
 
     const titles = screen.getAllByText("Rutina semanal");
     expect(titles.length).toBeGreaterThan(0);
@@ -110,7 +124,15 @@ describe("RoutinesPage", () => {
 
   it("A16: rutina legacy (sin sobre) muestra 'Sin clasificar' en la lista", () => {
     const legacy = makeRoutine({ title: "Rutina antigua", routineMode: "legacy" });
-    renderPage([legacy]);
+    vi.mocked(useRoutines).mockReturnValue({
+      routines: [legacy],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+    renderPageWithSession();
 
     expect(screen.getByText("Sin clasificar")).toBeTruthy();
     expect(screen.getByText("Rutina antigua")).toBeTruthy();
@@ -118,7 +140,15 @@ describe("RoutinesPage", () => {
 
   it("muestra rutina individual sin badge de legado", () => {
     const single = makeRoutine({ title: "Rutina individual", routineMode: "single", exercises: [makePlannedExercise()] });
-    renderPage([single]);
+    vi.mocked(useRoutines).mockReturnValue({
+      routines: [single],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+    renderPageWithSession();
 
     expect(screen.getByText("Rutina individual")).toBeTruthy();
     expect(screen.queryByText("Sin clasificar")).toBeNull();

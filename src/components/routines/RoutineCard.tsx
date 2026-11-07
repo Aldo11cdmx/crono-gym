@@ -6,7 +6,7 @@ import { TYPE } from "@/design/tokens";
 
 interface RoutineCardProps {
   routine: RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" };
-  onTrain: () => void;
+  onTrain: (routine: RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" }) => void;
   onEdit: () => void;
   onPlan?: () => void;
 }
@@ -34,8 +34,8 @@ export function RoutineCard({
   const isLegacy = routine.routineMode === "legacy";
   const incomplete = routineIsIncomplete(routine);
 
-  // E5: Iniciar entrenamiento aún no implementado; el botón primario se muestra deshabilitado.
-  const trainingDisabled = true;
+  // E5: Iniciar entrenamiento. Deshabilitado si la rutina está incompleta.
+  const trainingDisabled = incomplete;
 
   const statusLabel = incomplete ? "Guardado incompleto" : null;
   const statusHint = incomplete
@@ -102,11 +102,11 @@ export function RoutineCard({
               icon={<Play />}
               onClick={(e) => {
                 e.stopPropagation();
-                onTrain();
+                onTrain(routine);
               }}
               disabled={trainingDisabled}
               block
-              aria-label="Entrenar (próximamente)"
+              aria-label={`Entrenar ${routine.title}`}
             >
               Entrenar
             </GlassButton>

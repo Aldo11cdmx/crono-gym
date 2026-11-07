@@ -44,7 +44,7 @@ function StartSession({ title = "Pecho" }: { title?: string }) {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    start({ id: "r-1", title });
+    start({ routine: { id: "r-1", title } });
   }, [start, title]);
   return null;
 }

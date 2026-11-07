@@ -30,7 +30,7 @@ function StartSession({ title = "Pecho y hombro", id = "r-1" }: { title?: string
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    start({ id, title });
+    start({ routine: { id, title } });
   }, [start, id, title]);
   return null;
 }

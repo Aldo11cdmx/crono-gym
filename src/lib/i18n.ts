@@ -1878,6 +1878,22 @@ export const CRONOS_LABELS = {
   saveError: "No se pudo guardar la rutina.",
   saved: "Rutina guardada.",
   regenerate: "Regenerar",
+
+  /** Mensajes de validación del editor de rutinas (traducidos de los códigos de validateDraft). */
+  routineValidation: {
+    titleTooShort: "El nombre debe tener al menos 3 caracteres.",
+    noTitle: "Ponle un nombre a la rutina antes de guardarla.",
+    noExercises: "Añade al menos un día con ejercicios.",
+    noTrainingDay: "El plan necesita al menos un día de entrenamiento.",
+    dayWithoutExercises: "Cada día de entrenamiento necesita al menos 1 ejercicio.",
+    invalidDayId: "Identificador de día duplicado.",
+    missingRowId: "Falta el identificador de una serie de ejercicio.",
+    duplicateRowId: "Identificador de serie repetido.",
+    duplicateExerciseInDay: "No repitas el mismo ejercicio en un mismo día.",
+    missingSnapshot: "La rutina no tiene snapshot; ábrela y guárdala de nuevo.",
+    weekdayConflict: "Cada día de la semana solo puede usarse una vez.",
+    tooManyDays: "Máximo 14 días en una rutina individual.",
+  },
 } as const;
 
 /**

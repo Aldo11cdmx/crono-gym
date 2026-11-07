@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@lib/supabase";
 import { sanitizeIds } from "@lib/supabaseUtils";
 import type { Exercise, Routine, RoutineExercise, WorkoutLog } from "@/types/supabase";
+import { parseRoutineMeta } from "@/lib/routines/routineMeta";
 
 export interface PlannedExercise {
   exercise: Exercise;
@@ -206,7 +207,10 @@ export function useRoutines(userId: string | null) {
 
     applyRoutines(
       rows
-        .map((r) => ({ ...r, exercises: byRoutine.get(r.id) ?? [] }))
+        .map((r) => {
+          const { text } = parseRoutineMeta(r.description ?? "");
+          return { ...r, description: text, exercises: byRoutine.get(r.id) ?? [] };
+        })
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
     );
     setLoading(false);

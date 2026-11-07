@@ -16,6 +16,9 @@ export function RoutineCard({ routine, onTrain, onEdit }: RoutineCardProps) {
     routine.exercises.map((e) => e.dayIndex ?? 0),
   ).size;
 
+  // E5: Iniciar entrenamiento aún no implementado; el botón primario se muestra deshabilitado.
+  const trainingDisabled = true;
+
   return (
     <div onClick={onEdit} className="cursor-pointer">
       <GlassCard raised className="hover:border-white/20 transition-colors">
@@ -31,7 +34,8 @@ export function RoutineCard({ routine, onTrain, onEdit }: RoutineCardProps) {
             <GlassButton
               variant="ghost"
               icon={<Star />}
-              aria-label={routine.is_favorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+              disabled
+              aria-label="Favoritos (no disponible en esta versión)"
             />
           </div>
           {routine.description && (
@@ -55,7 +59,9 @@ export function RoutineCard({ routine, onTrain, onEdit }: RoutineCardProps) {
                 e.stopPropagation();
                 onTrain();
               }}
+              disabled={trainingDisabled}
               block
+              aria-label="Entrenar (próximamente)"
             >
               Entrenar
             </GlassButton>

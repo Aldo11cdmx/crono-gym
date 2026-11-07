@@ -75,6 +75,12 @@ interface UnifiedExerciseSelectorSheetBase {
   excludeIds?: readonly string[];
   initialMuscle?: Slug;
   title?: string;
+  /** Contexto del día que abre el selector (A9): qué día lo abre y qué ejercicios ya tiene. */
+  dayContext?: {
+    dayIndex: number;
+    dayLabel: string;
+    dayExercises: Exercise[];
+  };
 }
 
 export type UnifiedExerciseSelectorSheetProps =
@@ -122,6 +128,7 @@ export function UnifiedExerciseSelectorSheet({
   onSelectSingle,
   onSelectMultiple,
   title = "Seleccionar ejercicio",
+  dayContext,
 }: UnifiedExerciseSelectorSheetProps) {
   const excluded = useMemo(
     () => new Set(excludeIds),
@@ -154,6 +161,49 @@ export function UnifiedExerciseSelectorSheet({
   const searchIndexRef = useRef<Map<string, Set<string>> | null>(null);
   const ioRef = useRef<IntersectionObserver | null>(null);
   const mountedRef = useRef(false);
+
+  /** Ejercicios ya presentes en el día que abre el selector (A9: "ya en este día"). */
+  const alreadyInDay = useMemo(
+    () => new Set(dayContext?.dayExercises.map((ex) => ex.id)),
+    [dayContext?.dayExercises],
+  );
+
+  /** Músculos que el día ya cubre, para la barra de balance muscular (A9). */
+  const dayMuscleSlugs = useMemo(() => {
+    const set = new Set<Slug>();
+    for (const ex of dayContext?.dayExercises ?? []) {
+      if (ex.body_part) set.add(ex.body_part as Slug);
+    }
+    return set;
+  }, [dayContext?.dayExercises]);
+
+  /** Smart default: pre-seleccionar músculo acorde a la etiqueta del día (A9). */
+  useEffect(() => {
+    if (!dayContext?.dayLabel) return;
+    const label = dayContext.dayLabel.toLowerCase();
+    const muscleByLabel: Record<string, Slug> = {
+      pecho: "pecho" as Slug,
+      espalda: "espalda" as Slug,
+      pierna: "piernas" as Slug,
+      piernas: "piernas" as Slug,
+      hombro: "hombros" as Slug,
+      hombros: "hombros" as Slug,
+      brazo: "brazos" as Slug,
+      brazos: "brazos" as Slug,
+      triceps: "triceps" as Slug,
+      biceps: "biceps" as Slug,
+      abdomen: "abdomen" as Slug,
+      core: "core" as Slug,
+      gluteo: "gluteos" as Slug,
+      gluteos: "gluteos" as Slug,
+      gemelo: "gemelos" as Slug,
+      gemelos: "gemelos" as Slug,
+    };
+    const slug = muscleByLabel[label];
+    if (slug && selectedMuscles.length === 0) {
+      setSelectedMuscles([slug]);
+    }
+  }, [dayContext?.dayLabel, selectedMuscles.length]);
 
   // Buscador instantáneo al abrir (puntero fino; nada en táctil para no abrir el teclado).
   useEffect(() => {
@@ -326,6 +376,11 @@ export function UnifiedExerciseSelectorSheet({
   const handleSelect = useCallback(
     (ex: Exercise) => {
       if (mode === "single") {
+        // A9: no permitir añadir un ejercicio que ya está en este día.
+        if (alreadyInDay.has(ex.id)) {
+          opError && setOpError(null);
+          return;
+        }
         hapticLight();
         void addBatch([ex.id]);
         onSelectSingle(ex);
@@ -340,7 +395,7 @@ export function UnifiedExerciseSelectorSheet({
         return next;
       });
     },
-    [mode, onClose, onSelectSingle, addBatch],
+    [mode, onClose, onSelectSingle, addBatch, alreadyInDay],
   );
 
   const handleTogglePreview = useCallback((id: string) => {
@@ -505,6 +560,39 @@ export function UnifiedExerciseSelectorSheet({
             >
               {filtered.length} ejercicio{filtered.length !== 1 ? "s" : ""}
             </p>
+            {dayContext && dayMuscleSlugs.size > 0 && (
+              <div
+                style={{
+                  marginTop: SPACE.xs,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: SPACE.xs,
+                  fontSize: TYPE.caption.size,
+                  color: TEXT.secondary,
+                }}
+              >
+                <span style={{ fontWeight: 600 }}>Balance:</span>
+                {[...dayMuscleSlugs].map((slug) => (
+                  <span
+                    key={slug}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: SPACE.xs,
+                      padding: `0 ${SPACE.xs}`,
+                      borderRadius: RADIUS.round,
+                      border: `1px solid ${ACCENT.border}`,
+                      background: ACCENT.subtle,
+                      color: TEXT.primary,
+                      fontSize: TYPE.caption.size,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {slug}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
             <button
@@ -806,12 +894,13 @@ export function UnifiedExerciseSelectorSheet({
               {displayed.map((ex) => {
                 const selected = isSelected(ex.id);
                 const order = mode === "multiple" ? orderOf(ex.id) : null;
+                const inDay = alreadyInDay.has(ex.id);
                 return (
                   <ExerciseRow
                     key={ex.id}
                     exercise={ex}
                     order={order}
-                    selected={selected}
+                    selected={selected && !inDay}
                     multiSelect={mode === "multiple"}
                     expanded={expandedId === ex.id}
                     onSelect={handleSelect}
@@ -819,6 +908,7 @@ export function UnifiedExerciseSelectorSheet({
                     onRename={handleRenameExercise}
                     onHide={handleHideExercise}
                     hidden={!ex.is_active || ex.is_hidden}
+                    alreadyInDay={inDay}
                   />
                 );
               })}

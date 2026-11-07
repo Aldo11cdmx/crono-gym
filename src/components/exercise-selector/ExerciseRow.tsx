@@ -34,6 +34,8 @@ interface ExerciseRowProps {
   onHide?: (id: string) => void;
   /** Ya está ocultado del catálogo. */
   hidden?: boolean;
+  /** Ya pertenece al día que abre el selector: se marca y no se puede seleccionar (A9). */
+  alreadyInDay?: boolean;
 }
 
 const THUMB_SIZE = 72;
@@ -49,6 +51,7 @@ function ExerciseRow({
   onRename,
   onHide,
   hidden,
+  alreadyInDay = false,
 }: ExerciseRowProps) {
   const media = useMemo(
     () => resolveMedia("exercise-gif", exercise.id, exercise.gif_url),
@@ -72,9 +75,10 @@ function ExerciseRow({
   }, [menuOpen, exercise.name]);
 
   const handleRowSelect = useCallback(() => {
+    if (alreadyInDay) return;
     hapticLight();
     onSelect(exercise);
-  }, [exercise, onSelect]);
+  }, [exercise, onSelect, alreadyInDay]);
 
   const handleThumb = useCallback(() => {
     hapticLight();
@@ -330,6 +334,27 @@ function ExerciseRow({
           >
             <MoreHorizontal size={16} aria-hidden="true" />
           </button>
+        )}
+        {alreadyInDay && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: MOTION.minTouchTarget,
+              minHeight: MOTION.minTouchTarget,
+              borderRadius: RADIUS.round,
+              border: `1px solid ${TEXT.tertiary}`,
+              background: "rgba(255,255,255,0.03)",
+              color: TEXT.tertiary,
+              fontSize: TYPE.caption.size,
+              fontWeight: 600,
+              padding: `0 ${SPACE.xs}`,
+            }}
+            aria-label="Ya en este día"
+          >
+            Ya en día
+          </span>
         )}
       </div>
       {menuOpen && (

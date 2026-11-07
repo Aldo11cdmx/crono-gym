@@ -18,6 +18,9 @@ import { RefreshCw, AlertTriangle } from "lucide-react";
 import { useDashboardHome } from "@/lib/dashboard/dashboardHomeModel";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { resolveTrainingIntent } from "@/lib/workout/trainingIntent";
+import { getWeekdayIndex } from "@/lib/dashboard/heroCardModel";
+import { draftFromRoutine } from "@/lib/routines/routineDayModel";
+import type { RoutineDay } from "@/lib/routines/routineDayModel";
 import { PROFILE_PATH, PROGRESS_PATH, TRAIN_PATH } from "@/components/shell/navItems";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -237,6 +240,26 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const suggested = data.scheduledRoutine ?? data.suggestedRoutine;
   const hasRoutine = routine !== null;
 
+  // Resuelve los ejercicios del día de hoy para la rutina sugerida/programada.
+  // Devuelve null cuando no hay rutina, no hay días de entrenamiento, o hoy es descanso.
+  const todayPlan = useMemo(() => {
+    if (!suggested) return null;
+    const fullRoutine = data.routines.find((r) => r.id === suggested.id);
+    if (!fullRoutine) return null;
+    const weekday = getWeekdayIndex(Date.now());
+    const draft = draftFromRoutine(fullRoutine);
+    const trainingDays = draft.days.filter((d) => d.kind === "training");
+    if (trainingDays.length === 0) return null;
+    let todayDay: RoutineDay | undefined;
+    if (fullRoutine.routineMode === "weekly") {
+      todayDay = trainingDays.find((d) => d.weekday === weekday);
+    } else {
+      todayDay = trainingDays[weekday % trainingDays.length];
+    }
+    if (!todayDay || todayDay.exercises.length === 0) return null;
+    return { day: todayDay, exercises: todayDay.exercises };
+  }, [suggested, data.routines]);
+
   const ctaLabel = useMemo(() => {
     if (data.rehydrating) return "Comprobando sesión...";
     if (data.recoverableDraft) {
@@ -247,12 +270,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       const activeTitle = data.activeSession?.title?.trim();
       return activeTitle ? `Continuar: ${activeTitle}` : "Continuar entrenamiento";
     }
+    if (!todayPlan) return "Sin sesión programada";
     return "Comenzar entrenamiento";
   }, [
     sessionState,
     data.rehydrating,
     data.recoverableDraft,
     data.activeSession?.title,
+    todayPlan,
   ]);
 
   const weeklyCompleted = data.weeklyProgress.completed;
@@ -288,7 +313,27 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       return;
     }
     if (intent.action !== "start" || !target) return;
-    const result = data.startSession({ routine: target });
+    if (!todayPlan) return; // Día de descanso: no se inicia sesión
+
+    const { day, exercises } = todayPlan;
+    const planned = exercises.map((ex) => ({
+      exercise: ex.exercise,
+      target_sets: ex.target_sets,
+      rest_seconds: ex.rest_seconds,
+      rowId: ex.rowId ?? "",
+      order_index: ex.order_index,
+      target_reps_min: ex.target_reps_min,
+      target_reps_max: ex.target_reps_max,
+      dayIndex: day.weekday ?? day.order,
+      dayLabel: day.label,
+      groupId: ex.groupId,
+    }));
+    const result = data.startSession({
+      routine: { id: target.id, title: target.title },
+      routineDayId: day.id,
+      dayLabel: day.label || undefined,
+      planned,
+    });
     if (result?.ok) navigate(TRAIN_PATH);
   }, [
     sessionState,
@@ -299,6 +344,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     data.recoverableDraft,
     data.restoreDraft,
     data.activeSession,
+    todayPlan,
   ]);
 
   const nextTip = useCallback(() => {

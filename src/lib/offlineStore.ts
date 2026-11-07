@@ -88,6 +88,14 @@ export interface SessionDraft {
   finalized: boolean;
   updatedAt: number;
   /**
+   * Id del día de rutina que se estaba entrenando, para reanudar el día correcto tras una recarga.
+   */
+  routineDayId?: string | null;
+  /**
+   * Etiqueta legible del día (ej. "Lunes", "Día A"), para mostrar al rehidratar.
+   */
+  dayLabel?: string | null;
+  /**
    * When the rest that was running ends, in epoch milliseconds.
    *
    * A deadline rather than a remaining count, because a count is only true
@@ -198,6 +206,8 @@ function normalizeDraft(draft: SessionDraft): SessionDraft {
         ? draft.restEndsAt
         : undefined,
     selectedKey: typeof draft.selectedKey === "string" ? draft.selectedKey : null,
+    routineDayId: typeof draft.routineDayId === "string" ? draft.routineDayId : null,
+    dayLabel: typeof draft.dayLabel === "string" ? draft.dayLabel : null,
     items: (draft.items ?? []).map((item) => ({
       ...item,
       sets: (item.sets ?? []).map((set, index) => normalizeSetEntry(set, index)),

@@ -1416,9 +1416,11 @@ export function ActiveWorkout({
         // writes the draft restarts with it and never fires.
         restEndsAt: restRef.current?.endsAt,
         selectedKey: selectedKeyRef.current,
+        routineDayId: session?.routineDayId ?? null,
+        dayLabel: session?.dayLabel ?? null,
       });
     },
-    [activeLogId, userId, routineId, routineTitle, startedAt],
+    [activeLogId, userId, routineId, routineTitle, startedAt, session],
   );
 
   const itemsRef = useRef(items);

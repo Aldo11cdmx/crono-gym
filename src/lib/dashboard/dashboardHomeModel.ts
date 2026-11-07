@@ -14,6 +14,7 @@ import { useMemo } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useDashboardSessions } from "@/hooks/useDashboardSessions";
 import { useRoutines } from "@/hooks/useGymData";
+import type { RoutineWithExercises } from "@/hooks/useGymData";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import type { ActiveSession } from "@/context/ActiveSessionContext";
 import type { SessionDraft } from "@/lib/offlineStore";
@@ -79,6 +80,8 @@ export interface DashboardHomeData {
   suggestedRoutine: SuggestedRoutine | null;
   /** Routine explicitly programmed for today (by weekly plan), if any. */
   scheduledRoutine: SuggestedRoutine | null;
+  /** All routines with exercises, used to resolve today's day exercises when starting. */
+  routines: (RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" })[];
   /** Muscle distribution for the suggested routine (set counts per slug), or null. */
   muscleCounts: Map<Slug, number> | null;
   /** Active workout session from context, or null. */
@@ -331,5 +334,6 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     volumeTrend,
     recentPRs,
   recentSessions: sessions.slice(0, 5),
+    routines,
   };
 }

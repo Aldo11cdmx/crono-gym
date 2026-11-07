@@ -239,8 +239,8 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
           routineId: draft.routineId,
           title: draft.routineTitle,
           startedAt: draft.startedAt,
-          routineDayId: null,
-          dayLabel: null,
+          routineDayId: draft.routineDayId ?? null,
+          dayLabel: draft.dayLabel ?? null,
           planned: [],
         });
       })

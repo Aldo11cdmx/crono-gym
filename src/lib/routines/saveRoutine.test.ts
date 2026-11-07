@@ -542,6 +542,53 @@ describe("saveRoutine · rutina existente", () => {
     expect(routineUpsertValues()).toBeUndefined();
     expect(writes.find((w) => w.table === "routine_exercises" && w.op === "upsert")).toBeUndefined();
   });
+
+  it("A16: guardar rutina legacy convertida a semanal conserva ejercicios con rowId y day_index nuevo", async () => {
+    const dayId = uid();
+    const envelope = '{"v":1,"text":"Rutina convertida","mode":"weekly","days":[{"id":"'+dayId+'","order":0,"weekday":0,"label":"Lunes","kind":"training"}]}';
+    const result = await runSave(
+      "user-1",
+      makeDraft({
+        id: "routine-1",
+        title: "Rutina convertida",
+        description: envelope,
+        snapshot: { title: "Rutina convertida", description: envelope, rows: [] },
+        days: [
+          {
+            id: dayId,
+            order: 0,
+            weekday: 0,
+            label: "Lunes",
+            kind: "training",
+            exercises: [
+              {
+                exercise: ex("ex-1"),
+                rowId: `${dayId}-r1`,
+                target_sets: 3,
+                rest_seconds: 90,
+                order_index: 0,
+                target_reps_min: 8,
+                target_reps_max: 12,
+              },
+            ],
+          },
+        ],
+      }),
+      { existingDescription: envelope, verifyTitle: "Rutina convertida" },
+    );
+
+    expect(result).toEqual({ ok: true, routineId: expect.any(String) });
+    const upd = routineUpdateValues();
+    expect(upd).toMatchObject({ title: "Rutina convertida", description: expect.any(String) });
+    const rows = exerciseRows();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      day_index: 0,
+      order_index: 0,
+      day_label: "Lunes",
+      exercise_id: "ex-1",
+    });
+  });
 });
 
 describe("saveRoutine · fallos", () => {
@@ -623,6 +670,70 @@ describe("saveRoutine · fallos", () => {
     expect(r2.ok).toBe(true);
     const upserts = writes.filter((w) => w.table === "routines" && w.op === "upsert");
     expect(upserts).toHaveLength(1);
+  });
+
+  it("A17: borrar un ejercicio, fallar el primer guardado y reintentar sin duplicados ni fantasmas", async () => {
+    fixture.userId = "user-1";
+    const dayId = uid();
+    const draft = makeDraft({
+      id: null,
+      title: "Fuerza",
+      description: "desc",
+      days: [
+        {
+          id: dayId,
+          order: 0,
+          weekday: 1,
+          label: "Lunes",
+          kind: "training",
+          exercises: [
+            {
+              exercise: ex("ex-1"),
+              rowId: `${dayId}-r1`,
+              target_sets: 3,
+              rest_seconds: 90,
+              order_index: 0,
+              target_reps_min: 8,
+              target_reps_max: 12,
+            },
+            {
+              exercise: ex("ex-2"),
+              rowId: `${dayId}-r2`,
+              target_sets: 3,
+              rest_seconds: 90,
+              order_index: 1,
+              target_reps_min: 8,
+              target_reps_max: 12,
+            },
+          ],
+        },
+      ],
+    });
+
+    // Borrar el segundo ejercicio antes de guardar
+    draft.days[0].exercises.pop();
+
+    // Primer intento: fallo de red en el upsert de rutina
+    Object.assign(fixture, { failOp: "upsert", existingDescription: "desc" });
+    const r1 = await saveRoutine("user-1", draft);
+    expect(r1).toEqual({ ok: false, error: "save_failed" });
+
+    // El primer intento asignó draft.id aunque falló; resetear para reintentar como creación
+    draft.id = null;
+
+    // Segundo intento: todo OK, solo el ejercicio que queda
+    Object.assign(fixture, { failOp: null, existingDescription: "desc" });
+    const r2 = await saveRoutine("user-1", draft);
+    expect(r2.ok).toBe(true);
+
+    const rows = exerciseRows();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ exercise_id: "ex-1" });
+    // No hay rastro del ejercicio borrado
+    expect(rows.find((r) => r.exercise_id === "ex-2")).toBeUndefined();
+    // No hay filas duplicadas
+    const ex1Rows = rows.filter((r) => r.exercise_id === "ex-1");
+    expect(ex1Rows).toHaveLength(1);
   });
 
   it("reintento de rutina ya guardada no crea duplicado: usa update, no upsert nuevo", async () => {

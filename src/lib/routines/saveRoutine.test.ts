@@ -9,6 +9,7 @@ import {
 } from "./saveRoutine";
 import type { Exercise } from "@/types/supabase";
 import type { RoutineDraftV2 } from "./routineDayModel";
+import { validateDraft } from "./routineDayModel";
 
 function ex(id: string): Exercise {
   return {
@@ -85,6 +86,7 @@ let fixture: {
   existingDescription?: string | null;
   routineData?: { id: string } | null;
   verifyTitle?: string | null;
+  ownershipRoutineId?: string | null;
 } = {};
 let writes: Write[] = [];
 
@@ -179,10 +181,11 @@ vi.mock("@lib/supabase", () => ({
 
         // routine_exercises select for ownership check (N4)
         if (table === "routine_exercises" && op === "select" && filters.some((f) => f[0] === "in")) {
-          // Devolver rowIds como propiedad de routine-1 (la rutina que se edita)
+          // rowIds como propiedad de routine-1 por defecto, o de otra rutina si se indica
           const rowIds = filters.find((f) => f[0] === "in")?.[2] as string[] ?? [];
+          const ownerId = fixture.ownershipRoutineId ?? "routine-1";
           return resolve({
-            data: rowIds.map((id) => ({ id, routine_id: "routine-1" })),
+            data: rowIds.map((id) => ({ id, routine_id: ownerId })),
             error: null,
           });
         }
@@ -245,6 +248,7 @@ async function runSave(
     existingDescription?: string | null;
     routineData?: { id: string } | null;
     verifyTitle?: string | null;
+    ownershipRoutineId?: string | null;
   } = {},
 ): Promise<ReturnType<typeof saveRoutine>> {
   Object.assign(fixture, { userId, ...fix });
@@ -369,6 +373,63 @@ describe("saveRoutine · camino feliz", () => {
 
     expect(result).toEqual({ ok: false, error: "validation" });
   });
+
+  it("verifySave pasa aunque los días del draft no vengan ordenados por day_index (compara por rowId)", async () => {
+    const result = await runSave(
+      "user-1",
+      makeDraft({
+        id: null,
+        title: "Fuerza",
+        description: "desc",
+        days: [
+          {
+            id: uid(),
+            order: 3,
+            weekday: 3,
+            label: "Miércoles",
+            kind: "training",
+            exercises: [
+              {
+                exercise: ex("ex-2"),
+                rowId: "d3-r1",
+                target_sets: 3,
+                rest_seconds: 120,
+                order_index: 0,
+                target_reps_min: 6,
+                target_reps_max: 10,
+              },
+            ],
+          },
+          {
+            id: uid(),
+            order: 0,
+            weekday: 1,
+            label: "Lunes",
+            kind: "training",
+            exercises: [
+              {
+                exercise: ex("ex-1"),
+                rowId: "d1-r1",
+                target_sets: 3,
+                rest_seconds: 90,
+                order_index: 0,
+                target_reps_min: 8,
+                target_reps_max: 12,
+              },
+            ],
+          },
+        ],
+      }),
+      { existingDescription: "desc" },
+    );
+
+    expect(result).toEqual({ ok: true, routineId: expect.any(String) });
+    const rows = exerciseRows();
+    expect(rows).toHaveLength(2);
+    // day_index = day.order, no la posición en el array
+    expect(rows.find((r) => r.id === "d1-r1")?.day_index).toBe(0);
+    expect(rows.find((r) => r.id === "d3-r1")?.day_index).toBe(3);
+  });
 });
 
 describe("saveRoutine · rutina existente", () => {
@@ -422,6 +483,64 @@ describe("saveRoutine · rutina existente", () => {
     );
 
     expect(result).toEqual({ ok: false, error: "validation" });
+  });
+
+  it("edita una rutina existente con sobre JSON: snapshot igual al sobre de BD → ok", async () => {
+    const envelope = '{"v":1,"text":"desc-v1","mode":"single","days":[{"id":"day-1","order":0,"weekday":null,"label":"Lunes","kind":"training"}]}';
+    const result = await runSave(
+      "user-1",
+      makeDraft({
+        id: "routine-1",
+        title: "Fuerza",
+        description: "desc-v1",
+        snapshot: { title: "Fuerza", description: envelope, rows: [] },
+        days: [trainingDay("Lunes", 0, 1)],
+      }),
+      { existingDescription: envelope },
+    );
+
+    expect(result).toEqual({ ok: true, routineId: expect.any(String) });
+    const upd = routineUpdateValues();
+    expect(upd).toMatchObject({ title: "Fuerza", description: expect.any(String) });
+    expect(routineUpsertValues()).toBeUndefined();
+  });
+
+  it("rowId que pertenece a otra rutina → rowIdNotOwned y ninguna escritura", async () => {
+    const result = await runSave(
+      "user-1",
+      makeDraft({
+        id: "routine-1",
+        title: "Fuerza",
+        description: "desc-v1",
+        snapshot: { title: "Fuerza", description: "desc-v1", rows: [] },
+        days: [
+          {
+            id: uid(),
+            order: 0,
+            weekday: 1,
+            label: "Lunes",
+            kind: "training",
+            exercises: [
+              {
+                exercise: ex("ex-1"),
+                rowId: "foreign-row-1",
+                target_sets: 3,
+                rest_seconds: 90,
+                order_index: 0,
+                target_reps_min: 8,
+                target_reps_max: 12,
+              },
+            ],
+          },
+        ],
+      }),
+      { existingDescription: "desc-v1", ownershipRoutineId: "otra-rutina" },
+    );
+
+    expect(result).toEqual({ ok: false, error: "rowIdNotOwned" });
+    expect(routineUpdateValues()).toBeUndefined();
+    expect(routineUpsertValues()).toBeUndefined();
+    expect(writes.find((w) => w.table === "routine_exercises" && w.op === "upsert")).toBeUndefined();
   });
 });
 
@@ -485,7 +604,8 @@ describe("saveRoutine · fallos", () => {
     ).resolves.toEqual({ ok: false, error: "save_failed" });
   });
 
-  it("dos guardados rápidos de un draft nuevo crean una sola rutina", async () => {
+  it("dos guardados rápidos de un draft nuevo crean una sola rutina y ambas promesas se resuelven", async () => {
+    fixture.userId = "user-1";
     const draft = makeDraft({
       id: null,
       title: "Fuerza",
@@ -493,29 +613,16 @@ describe("saveRoutine · fallos", () => {
       days: [trainingDay("Lunes", 0, 1)],
     });
 
-    fixture.userId = "user-1";
-    saveRoutine("user-1", draft);
-    const r2 = await saveRoutine("user-1", draft);
+    const p1 = saveRoutine("user-1", draft);
+    const p2 = await saveRoutine("user-1", draft);
 
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
+    const [r1, r2] = await Promise.all([p1, p2]);
+    expect(r1).toBeDefined();
     expect(r2.ok).toBe(true);
     const upserts = writes.filter((w) => w.table === "routines" && w.op === "upsert");
     expect(upserts).toHaveLength(1);
-  });
-
-  it("generación monótona: dos trabajos tienen generación distinta", async () => {
-    const draft1 = makeDraft({ id: null, title: "A", description: "", days: [] });
-    const draft2 = makeDraft({ id: null, title: "B", description: "", days: [] });
-
-    saveRoutine("user-1", draft1);
-    saveRoutine("user-1", draft2);
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    await Promise.all([draft1, draft2].map(() => Promise.resolve()));
-
-    // Las generaciones deben ser 1 y 2 (monótonas)
-    expect(true).toBe(true); // Si llega aquí sin error, la generación es monótona
   });
 });
 
@@ -541,7 +648,7 @@ describe("duplicateRoutine", () => {
     expect(copy.needsModeConfirmation).toBe(false);
   });
 
-  it("copia días y ejercicios sin rowId (se generarán al insertar)", () => {
+  it("copia días y ejercicios con rowId nuevos, distintos del original", () => {
     const original = makeDraft({
       days: [trainingDay("Lunes", 0, 1)],
     });
@@ -553,9 +660,21 @@ describe("duplicateRoutine", () => {
     expect(copy.days[0].order).toBe(0);
     expect(copy.days[0].label).toBe("Lunes");
     expect(copy.days[0].exercises).toHaveLength(1);
-    expect(copy.days[0].exercises[0].rowId).toBeUndefined();
+    expect(copy.days[0].exercises[0].rowId).toBeDefined();
+    expect(copy.days[0].exercises[0].rowId).not.toBe(original.days[0].exercises[0].rowId);
     expect(copy.days[0].exercises[0].exercise.id).toBe("ex-1");
     expect(copy.days[0].exercises[0].target_sets).toBe(3);
+  });
+
+  it("el draft duplicado pasa validateDraft (sin missingRowId)", () => {
+    const original = makeDraft({
+      days: [trainingDay("Lunes", 0, 1)],
+    });
+
+    const copy = duplicateRoutine(original, "Copia");
+
+    const problems = validateDraft(copy);
+    expect(problems).not.toContain("missingRowId");
   });
 });
 
@@ -605,5 +724,60 @@ describe("queue delegation", () => {
   it("flushSave devuelve promesa", async () => {
     const result = await flushSave("clave-inexistente");
     expect(result).toBe(true);
+  });
+
+  // --- Issue 2: wrappers resuelven draftKey → draft:${draftKey} para rutinas nuevas ---
+
+  it("flushSave(draftKey) fuerza el guardado de una rutina nueva", async () => {
+    vi.useFakeTimers();
+    fixture.userId = "user-1";
+    const draft = makeDraft({
+      id: null,
+      title: "Fuerza",
+      description: "desc",
+      days: [trainingDay("Lunes", 0, 1)],
+    });
+    const savePromise = saveRoutine("user-1", draft);
+    vi.advanceTimersByTime(50);
+    const flushed = await flushSave(draft.draftKey);
+    expect(flushed).toBe(true);
+    const result = await savePromise;
+    expect(result.ok).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it("saveState(draftKey) refleja saving durante el guardado de una rutina nueva", async () => {
+    vi.useFakeTimers();
+    fixture.userId = "user-1";
+    const draft = makeDraft({
+      id: null,
+      title: "Fuerza",
+      description: "desc",
+      days: [trainingDay("Lunes", 0, 1)],
+    });
+    const savePromise = saveRoutine("user-1", draft);
+    vi.advanceTimersByTime(800);
+    expect(saveState(draft.draftKey)).toBe("saving");
+    await savePromise;
+    await Promise.resolve();
+    expect(saveState(draft.draftKey)).toBe("idle");
+    vi.useRealTimers();
+  });
+
+  it("subscribeSave(draftKey) recibe cambios de estado de una rutina nueva", () => {
+    vi.useFakeTimers();
+    const listener = vi.fn();
+    const unsub = subscribeSave("nuevo-draft-key", listener);
+    const draft = makeDraft({
+      id: null,
+      title: "Fuerza",
+      description: "desc",
+      days: [trainingDay("Lunes", 0, 1)],
+    });
+    (draft as any).draftKey = "nuevo-draft-key";
+    saveRoutine("user-1", draft);
+    expect(listener).toHaveBeenCalledWith("dirty");
+    unsub();
+    vi.useRealTimers();
   });
 });

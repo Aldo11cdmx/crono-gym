@@ -16,6 +16,7 @@ import {
   validateDraft,
   newDraftKey,
   displayDayLabel,
+  type LoadedRoutineSnapshot,
   type RoutineDraftV2,
   type RoutineDay,
   type DraftExercise,
@@ -56,7 +57,7 @@ function draftExercise(exercise: Exercise, orderIndex: number): DraftExercise {
   };
 }
 
-function emptyWeekDraftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 {
+function emptyWeekDraftFromRoutine(routine: RoutineWithExercises, snapshot: LoadedRoutineSnapshot | null = null): RoutineDraftV2 {
   const days: RoutineDay[] = [];
   const byDay = new Map<number, typeof routine.exercises[number][]>();
   for (const ex of routine.exercises) {
@@ -92,7 +93,7 @@ function emptyWeekDraftFromRoutine(routine: RoutineWithExercises): RoutineDraftV
     description: routine.description ?? "",
     mode: "weekly",
     days,
-    snapshot: null,
+    snapshot,
   };
 }
 
@@ -142,6 +143,11 @@ export function RoutineEditor({
   const [saveResult, setSaveResult] = useState<SaveResult | null>(null);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
   const [draftMode, setDraftMode] = useState<"single" | "weekly">("single");
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+  const [removeConfirmDayIndex, setRemoveConfirmDayIndex] = useState<number | null>(null);
+  const [removeConfirmExerciseCount, setRemoveConfirmExerciseCount] = useState(0);
+  const [switchModeConfirmOpen, setSwitchModeConfirmOpen] = useState(false);
+  const [pendingDraftMode, setPendingDraftMode] = useState<"single" | "weekly">("single");
 
   const initialDraftRef = useRef<RoutineDraftV2 | null>(null);
 
@@ -149,7 +155,7 @@ export function RoutineEditor({
     if (mode === "edit" && routine) {
       const loaded = draftFromRoutine(routine);
       if (loaded.needsModeConfirmation && draftMode === "weekly") {
-        return emptyWeekDraftFromRoutine(routine);
+        return emptyWeekDraftFromRoutine(routine, loaded.snapshot);
       }
       return loaded;
     }
@@ -250,10 +256,25 @@ export function RoutineEditor({
   const setDayKind = useCallback((dayIndex: number, kind: RoutineDay["kind"]) => {
     setDraft((d) => {
       const next = [...d.days].map((day) => ({ ...day }));
-      next[dayIndex] = { ...next[dayIndex], kind };
-      if (kind !== "training") {
-        next[dayIndex].exercises = [];
+      const day = next[dayIndex];
+      if (day.kind !== "training" && (kind === "rest" || kind === "mobility" || kind === "empty")) {
+        // Ya es no-training: solo cambia el kind.
+        next[dayIndex] = { ...next[dayIndex], kind };
+        return { ...d, days: next };
       }
+      if (kind === "training") {
+        // Volver a training: solo cambia el kind.
+        next[dayIndex] = { ...next[dayIndex], kind: "training" };
+        return { ...d, days: next };
+      }
+      // Cambiar de training a no-training con ejercicios: requiere confirmación.
+      if (day.exercises.length > 0) {
+        setRemoveConfirmDayIndex(dayIndex);
+        setRemoveConfirmExerciseCount(day.exercises.length);
+        setRemoveConfirmOpen(true);
+        return d;
+      }
+      next[dayIndex] = { ...next[dayIndex], kind, exercises: [] };
       return { ...d, days: next };
     });
   }, []);
@@ -366,6 +387,24 @@ export function RoutineEditor({
     });
   }, []);
 
+  const confirmRemoveExercises = useCallback(() => {
+    setDraft((d) => {
+      if (removeConfirmDayIndex === null) return d;
+      const next = [...d.days].map((day) => ({ ...day }));
+      next[removeConfirmDayIndex] = { ...next[removeConfirmDayIndex], kind: "rest", exercises: [] };
+      return { ...d, days: next };
+    });
+    setRemoveConfirmOpen(false);
+    setRemoveConfirmDayIndex(null);
+    setRemoveConfirmExerciseCount(0);
+  }, [removeConfirmDayIndex]);
+
+  const cancelRemoveExercises = useCallback(() => {
+    setRemoveConfirmOpen(false);
+    setRemoveConfirmDayIndex(null);
+    setRemoveConfirmExerciseCount(0);
+  }, []);
+
   const handleSave = useCallback(async () => {
     setSaving(true);
     setSaveResult(null);
@@ -393,6 +432,18 @@ export function RoutineEditor({
   const hasValidationErrors = problems.length > 0;
   const canSave = draft.title.trim().length >= 3 && !hasValidationErrors;
   const validationMessages = problems.map(translationFor);
+
+  const hasExercises = draft.days.some((d) => d.exercises.length > 0);
+
+  const requestSwitchMode = useCallback((nextMode: "single" | "weekly") => {
+    if (nextMode === draftMode) return;
+    if (hasExercises) {
+      setPendingDraftMode(nextMode);
+      setSwitchModeConfirmOpen(true);
+      return;
+    }
+    setDraftMode(nextMode);
+  }, [draftMode, hasExercises]);
 
   const openPickerForDay = useCallback((dayIndex: number) => {
     setTargetDayIndex(dayIndex);
@@ -468,14 +519,14 @@ export function RoutineEditor({
                   <div className="flex gap-2">
                     <GlassButton
                       variant={draftMode === "single" ? "primary" : "ghost"}
-                      onClick={() => setDraftMode("single")}
+                      onClick={() => requestSwitchMode("single")}
                       aria-label="Plan individual"
                     >
                       Individual
                     </GlassButton>
                     <GlassButton
                       variant={draftMode === "weekly" ? "primary" : "ghost"}
-                      onClick={() => setDraftMode("weekly")}
+                      onClick={() => requestSwitchMode("weekly")}
                       aria-label="Plan semanal"
                     >
                       Semanal
@@ -643,6 +694,52 @@ export function RoutineEditor({
               </GlassButton>
             </div>
           </GlassCard>
+        </div>
+      )}
+
+      {removeConfirmOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={cancelRemoveExercises}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <GlassCard raised className="w-full max-w-md p-6">
+            <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
+              {CRONOS_LABELS.planner.removeExercisesTitle}
+            </h3>
+            <p className="text-neutral-400 text-sm mb-6">
+              {CRONOS_LABELS.planner.removeExercisesBody.replace("{count}", String(removeConfirmExerciseCount))}
+            </p>
+            <div className="flex gap-3">
+              <GlassButton variant="destructive" onClick={confirmRemoveExercises}>
+                {CRONOS_LABELS.planner.removeExercisesConfirm}
+              </GlassButton>
+              <GlassButton variant="ghost" onClick={cancelRemoveExercises}>
+                {CRONOS_LABELS.planner.removeExercisesCancel}
+              </GlassButton>
+            </div>
+          </GlassCard>
+          </div>
+        </div>
+      )}
+
+      {switchModeConfirmOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setSwitchModeConfirmOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <GlassCard raised className="w-full max-w-md p-6">
+            <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
+              {CRONOS_LABELS.planner.switchModeDiscardTitle}
+            </h3>
+            <p className="text-neutral-400 text-sm mb-6">
+              {CRONOS_LABELS.planner.switchModeDiscardBody}
+            </p>
+            <div className="flex gap-3">
+              <GlassButton variant="destructive" onClick={() => { setSwitchModeConfirmOpen(false); setDraftMode(pendingDraftMode); }}>
+                {CRONOS_LABELS.planner.switchModeDiscardConfirm}
+              </GlassButton>
+              <GlassButton variant="ghost" onClick={() => setSwitchModeConfirmOpen(false)}>
+                {CRONOS_LABELS.planner.switchModeDiscardCancel}
+              </GlassButton>
+            </div>
+          </GlassCard>
+          </div>
         </div>
       )}
     </div>

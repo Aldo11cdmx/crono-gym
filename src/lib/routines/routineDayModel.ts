@@ -89,6 +89,15 @@ export function swapDayContents(
   return next;
 }
 
+/**
+ * Devuelve los ejercicios planificados para un día de la semana (weekday 0-6)
+ * de un borrador semanal. Función pura; no muta el draft.
+ */
+export function exercisesForDay(draft: RoutineDraftV2, weekday: number): DraftExercise[] {
+  const day = draft.days.find((d) => d.weekday === weekday);
+  return day ? [...day.exercises] : [];
+}
+
 export function validateDraft(draft: RoutineDraftV2): string[] {
   const problems: string[] = [];
   if (draft.title.trim().length < 3) {

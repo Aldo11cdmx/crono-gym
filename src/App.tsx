@@ -21,7 +21,7 @@ import {
 import { useProfile } from "./hooks/useProfile";
 import { useOfflineSync } from "./hooks/useOfflineSync";
 import { AuthModalProvider } from "./context/AuthModalContext";
-import { SPACE, TEXT, TYPE } from "@/design/tokens";
+import { TEXT, TYPE } from "@/design/tokens";
 import { PROGRESS_LABELS } from "@/lib/i18n";
 
 /**
@@ -466,37 +466,6 @@ const [libraryLoaded, setLibraryLoaded] = useState(false);
       planned={source?.exercises ?? []}
       onFinished={end}
     />
-  );
-}
-
-export function RoutinesView() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "40vh",
-        textAlign: "center",
-        padding: `${SPACE.lg} ${SPACE.md}`,
-      }}
-    >
-      <h2
-        style={{
-          fontSize: TYPE.title2.size,
-          fontWeight: TYPE.title2.weight,
-          color: TEXT.primary,
-          margin: "0 0 " + SPACE.sm + " 0",
-        }}
-      >
-        Rutinas en reconstrucción
-      </h2>
-      <p style={{ fontSize: TYPE.body.size, color: TEXT.secondary, margin: 0 }}>
-        La pantalla de rutinas se está reconstruyendo desde cero. Esta ruta se
-        conserva como placeholder mientras se desarrolla el nuevo módulo.
-      </p>
-    </div>
   );
 }
 

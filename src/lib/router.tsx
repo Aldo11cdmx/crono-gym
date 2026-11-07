@@ -21,13 +21,13 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AppShell } from "@/components/shell/AppShell";
+import { RoutinesPage } from "@/components/routines/RoutinesPage";
 import {
   AuthGate,
   CoachView,
   HomeView,
   ProgressView,
   RangosView,
-  RoutinesView,
   TrainView,
 } from "@/App";
 import { ProfilePage } from "@/components/profile/ProfilePage";
@@ -136,7 +136,7 @@ export const router = createBrowserRouter([
         children: [
           { path: HOME_PATH, element: <HomeView /> },
           legacyHomeRoute,
-          { path: ROUTINES_PATH, element: <RoutinesView /> },
+          { path: ROUTINES_PATH, element: <RoutinesPage /> },
           legacyRoutinesRoute,
           { path: PROGRESS_PATH, element: <ProgressView /> },
           /*

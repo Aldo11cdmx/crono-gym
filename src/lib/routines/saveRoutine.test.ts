@@ -624,6 +624,41 @@ describe("saveRoutine · fallos", () => {
     const upserts = writes.filter((w) => w.table === "routines" && w.op === "upsert");
     expect(upserts).toHaveLength(1);
   });
+
+  it("reintento de rutina ya guardada no crea duplicado: usa update, no upsert nuevo", async () => {
+    fixture.userId = "user-1";
+    const draft = makeDraft({
+      id: null,
+      title: "Fuerza",
+      description: "desc",
+      snapshot: { title: "Fuerza", description: "desc", rows: [] },
+      days: [trainingDay("Lunes", 0, 1)],
+    });
+
+    // Primer intento: guardado exitoso (1 upsert)
+    Object.assign(fixture, { failOp: null, existingDescription: "desc" });
+    const p1 = saveRoutine("user-1", draft);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const r1 = await p1;
+    expect(r1.ok).toBe(true);
+    const routineId = (r1 as { ok: true; routineId: string }).routineId;
+
+    // Segundo intento (retry): mismo draft con id ya asignado → update, no upsert nuevo
+    Object.assign(fixture, {
+      failOp: null,
+      existingDescription: "desc",
+      ownershipRoutineId: routineId,
+    });
+    const p2 = saveRoutine("user-1", draft);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const r2 = await p2;
+    expect(r2.ok).toBe(true);
+
+    const upserts = writes.filter((w) => w.table === "routines" && w.op === "upsert");
+    expect(upserts).toHaveLength(1);
+    const updates = writes.filter((w) => w.table === "routines" && w.op === "update");
+    expect(updates).toHaveLength(1);
+  });
 });
 
 // ------------------------------------------------------------------- duplicateRoutine
@@ -675,6 +710,35 @@ describe("duplicateRoutine", () => {
 
     const problems = validateDraft(copy);
     expect(problems).not.toContain("missingRowId");
+  });
+
+  it("duplicar una rutina semanal conserva 7 días y genera ids de día nuevos", () => {
+    const days: RoutineDraftV2["days"] = [];
+    for (let wd = 0; wd < 7; wd += 1) {
+      days.push({
+        id: `day-${wd}`,
+        order: wd,
+        weekday: wd,
+        label: "",
+        kind: wd < 5 ? "training" : "rest",
+        exercises: [],
+      });
+    }
+    const original = makeDraft({
+      mode: "weekly",
+      days,
+    });
+
+    const copy = duplicateRoutine(original, "Copia semanal");
+
+    expect(copy.mode).toBe("weekly");
+    expect(copy.days).toHaveLength(7);
+    copy.days.forEach((day, i) => {
+      expect(day.id).not.toBe(`day-${i}`);
+      expect(day.order).toBe(i);
+      expect(day.weekday).toBe(i);
+    });
+    expect(copy.draftKey).not.toBe(original.draftKey);
   });
 });
 

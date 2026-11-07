@@ -18,7 +18,7 @@ const OUTLET_CONTEXT: WorkspaceOutletContext = {
   email: "user@example.com",
 };
 
-function makeRoutine(title: string, description: string): RoutineWithExercises {
+function makeRoutine(title: string, description: string, routineMode: "single" | "weekly" | "legacy" = "single"): RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" } {
   return {
     id: "routine-1",
     user_id: "user-1",
@@ -27,10 +27,11 @@ function makeRoutine(title: string, description: string): RoutineWithExercises {
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",
     exercises: [],
-  } as unknown as RoutineWithExercises;
+    routineMode,
+  } as unknown as RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" };
 }
 
-function renderCard(routine: RoutineWithExercises) {
+function renderCard(routine: RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" }) {
   return render(
     <MemoryRouter initialEntries={["/rutinas"]}>
       <Routes>

@@ -91,7 +91,7 @@ const EMPTY_STATS: ProgressStats = {
 
 /** Loads the routine catalogue for a user, flattened with their planned exercises. */
 export function useRoutines(userId: string | null) {
-  const [routines, setRoutines] = useState<RoutineWithExercises[]>([]);
+  const [routines, setRoutines] = useState<(RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" })[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /**
@@ -122,10 +122,10 @@ export function useRoutines(userId: string | null) {
    * value being flipped. A ref mirror is updated eagerly, which is what makes the
    * flip correct, and it keeps two rapid taps agreeing with each other.
    */
-  const routinesRef = useRef<RoutineWithExercises[]>([]);
+  const routinesRef = useRef<(RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" })[]>([]);
 
   /** Applies an update to both the mirror and the rendered state. */
-  const applyRoutines = useCallback((next: RoutineWithExercises[]) => {
+    const applyRoutines = useCallback((next: (RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" })[]) => {
     routinesRef.current = next;
     setRoutines(next);
   }, []);
@@ -208,8 +208,14 @@ export function useRoutines(userId: string | null) {
     applyRoutines(
       rows
         .map((r) => {
-          const { text } = parseRoutineMeta(r.description ?? "");
-          return { ...r, description: text, exercises: byRoutine.get(r.id) ?? [] };
+          const { text, meta } = parseRoutineMeta(r.description ?? "");
+          const routineMode = meta ? meta.mode : "legacy";
+          return {
+            ...r,
+            description: text,
+            exercises: byRoutine.get(r.id) ?? [],
+            routineMode,
+          } as RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" };
         })
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
     );

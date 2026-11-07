@@ -99,6 +99,8 @@ describe("swapDayContents", () => {
     const a = makeDay({ order: 0, weekday: 0, kind: "training", label: "Lunes", exercises: [{ exercise: EXERCISE, target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null }] });
     const b = makeDay({ order: 1, weekday: 1, kind: "rest", label: "Martes", exercises: [] });
     const result = swapDayContents([a, b], 0, 1);
+    expect(result[0].id).toBe(a.id);
+    expect(result[1].id).toBe(b.id);
     expect(result[0].kind).toBe("rest");
     expect(result[0].label).toBe("Martes");
     expect(result[0].exercises).toHaveLength(0);

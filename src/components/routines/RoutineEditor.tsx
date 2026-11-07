@@ -56,6 +56,46 @@ function draftExercise(exercise: Exercise, orderIndex: number): DraftExercise {
   };
 }
 
+function emptyWeekDraftFromRoutine(routine: RoutineWithExercises): RoutineDraftV2 {
+  const days: RoutineDay[] = [];
+  const byDay = new Map<number, typeof routine.exercises[number][]>();
+  for (const ex of routine.exercises) {
+    const di = ex.dayIndex ?? 0;
+    const list = byDay.get(di) ?? [];
+    list.push(ex);
+    byDay.set(di, list);
+  }
+  const sorted = [...byDay.keys()].sort((a, b) => a - b);
+  for (let i = 0; i < 7; i += 1) {
+    const dayExs = sorted[i] !== undefined ? byDay.get(sorted[i]) ?? [] : [];
+    days.push({
+      id: crypto.randomUUID(),
+      order: i,
+      weekday: i,
+      label: "",
+      kind: dayExs.length > 0 ? "training" : "rest",
+      exercises: dayExs.map((ex, idx) => ({
+        exercise: ex.exercise,
+        target_sets: ex.target_sets,
+        rest_seconds: ex.rest_seconds,
+        order_index: idx,
+        target_reps_min: ex.target_reps_min,
+        target_reps_max: ex.target_reps_max,
+        rowId: ex.rowId,
+      })),
+    });
+  }
+  return {
+    draftKey: crypto.randomUUID(),
+    id: routine.id,
+    title: routine.title,
+    description: routine.description ?? "",
+    mode: "weekly",
+    days,
+    snapshot: null,
+  };
+}
+
 function translationFor(code: string): string {
   const map: Record<string, string> = {
     titleTooShort: CRONOS_LABELS.routineValidation.titleTooShort,
@@ -101,24 +141,37 @@ export function RoutineEditor({
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<SaveResult | null>(null);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+  const [draftMode, setDraftMode] = useState<"single" | "weekly">("single");
 
   const initialDraftRef = useRef<RoutineDraftV2 | null>(null);
 
   const initialDraft = useMemo((): RoutineDraftV2 => {
     if (mode === "edit" && routine) {
-      return draftFromRoutine(routine);
+      const loaded = draftFromRoutine(routine);
+      if (loaded.needsModeConfirmation && draftMode === "weekly") {
+        return emptyWeekDraftFromRoutine(routine);
+      }
+      return loaded;
     }
+    const days: RoutineDay[] = draftMode === "weekly" ? [...Array(7).keys()].map((wd) => ({
+      id: crypto.randomUUID(),
+      order: wd,
+      weekday: wd,
+      label: "",
+      kind: wd < 5 ? "training" : "rest",
+      exercises: [],
+    })) : [];
     return {
       draftKey: newDraftKey(),
       id: null,
       title: "",
       description: "",
-      mode: "single",
-      days: [],
+      mode: draftMode,
+      days,
       snapshot: null,
       needsModeConfirmation: false,
     };
-  }, [mode, routine]);
+  }, [mode, routine, draftMode]);
 
   const [draft, setDraft] = useState<RoutineDraftV2>(initialDraft);
 
@@ -407,6 +460,46 @@ export function RoutineEditor({
                 </label>
                 <textarea value={draft.description} onChange={setDescription} rows={3} className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-neutral-100 focus:border-accent/50 focus:outline-none transition-colors" placeholder="Anota qu\u00e9 trabaja esta rutina\u2026" />
               </div>
+              {mode === "new" && (
+                <div>
+                  <label className="block text-xs text-neutral-500 mb-1 uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                    Tipo de plan
+                  </label>
+                  <div className="flex gap-2">
+                    <GlassButton
+                      variant={draftMode === "single" ? "primary" : "ghost"}
+                      onClick={() => setDraftMode("single")}
+                      aria-label="Plan individual"
+                    >
+                      Individual
+                    </GlassButton>
+                    <GlassButton
+                      variant={draftMode === "weekly" ? "primary" : "ghost"}
+                      onClick={() => setDraftMode("weekly")}
+                      aria-label="Plan semanal"
+                    >
+                      Semanal
+                    </GlassButton>
+                  </div>
+                  <p className="text-neutral-500 text-xs mt-1" style={{ fontSize: TYPE.caption.size }}>
+                    {draftMode === "weekly" ? "7 d\u00edas fijos (Lunes\u2013Domingo)" : "D\u00edas libres (individual)"}
+                  </p>
+                </div>
+              )}
+              {mode === "edit" && draft.needsModeConfirmation && (
+                <div className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-3">
+                  <p className="text-neutral-300 text-sm mb-3" style={{ fontSize: TYPE.caption.size }}>
+                    Esta rutina no tiene plan semanal asignado.
+                  </p>
+                  <GlassButton
+                    variant="primary"
+                    onClick={() => setDraftMode("weekly")}
+                    aria-label="Convertir a plan semanal"
+                  >
+                    {CRONOS_LABELS.planner.convertToWeekly}
+                  </GlassButton>
+                </div>
+              )}
             </div>
           </GlassCard>
 
@@ -486,7 +579,7 @@ export function RoutineEditor({
                 </div>
               </GlassCard>
             ))}
-            <GlassButton variant="secondary" icon={<Plus />} onClick={addDay} block aria-label="A\u00f1adir d\u00eda de entrenamiento">
+            <GlassButton variant="secondary" icon={<Plus />} onClick={addDay} block disabled={draft.mode === "weekly"} aria-label="A\u00f1adir d\u00eda de entrenamiento">
               A\u00f1adir d\u00eda
             </GlassButton>
           </div>

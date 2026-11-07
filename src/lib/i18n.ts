@@ -1894,6 +1894,28 @@ export const CRONOS_LABELS = {
     weekdayConflict: "Cada día de la semana solo puede usarse una vez.",
     tooManyDays: "Máximo 14 días en una rutina individual.",
   },
+
+  /** Planificador semanal y pantalla de rutinas. */
+  planner: {
+    title: "Planificador semanal",
+    weekdays: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+    modeIndividual: "Individual",
+    modeWeekly: "Semanal",
+    unclassified: "Sin clasificar",
+    unclassifiedHint: "Rutina sin plan. Ábrela para clasificarla.",
+    incomplete: "Guardado incompleto",
+    incompleteHint: "Tiene días de entrenamiento pero sin ejercicios. Ábrela para reconstruirla.",
+    convertToWeekly: "Convertir a plan semanal",
+    noSession: "Sin sesión programada",
+    moveToDay: "Mover a {day}",
+    markRest: "Marcar como descanso",
+    markMobility: "Marcar como movilidad",
+    postpone: "Posponer día",
+    saveWeekly: "Guardar plan semanal",
+    savingWeekly: "Guardando plan…",
+    weeklySaved: "Plan semanal guardado.",
+    weeklySaveError: "No se pudo guardar el plan semanal.",
+  },
 } as const;
 
 /**

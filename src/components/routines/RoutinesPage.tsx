@@ -8,7 +8,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useRoutines } from "@/hooks/useGymData";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
-import { ACCENT, GLASS, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, SCRIM, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { TRAIN_PATH } from "@/components/shell/navItems";
 import { RoutineCard } from "./RoutineCard";
@@ -397,7 +397,7 @@ export function RoutinesPage() {
       {dayPickerRoutine && (
         <div
           className="fixed inset-0 z-[var(--cronos-z-modal)] flex items-end justify-center p-3 sm:items-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)" }}
+          style={{ backgroundColor: SCRIM.modal, backdropFilter: "blur(6px)" }}
           onClick={closeDayPicker}
         >
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg">

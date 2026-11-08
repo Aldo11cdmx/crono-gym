@@ -24,7 +24,7 @@ import {
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { CRONOS_LABELS } from "@/lib/i18n";
-import { GLASS, SCRIM, STATUS, SURFACE, TEXT, TYPE } from "@/design/tokens";
+import { GLASS, SCRIM, SOLID, STATUS, SURFACE, TEXT, TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
@@ -548,8 +548,8 @@ export function RoutineEditor({
   }, [draft, targetDayIndex]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: "rgba(0,0,0,0.97)", backdropFilter: reducedMotion ? "none" : "blur(20px)" }}>
-      <div className="border-b px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: `linear-gradient(180deg, ${GLASS.fillRaised} 0%, rgba(0,0,0,0.94) 100%)` }}>
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: SCRIM.modal, backdropFilter: reducedMotion ? "none" : "blur(20px)" }}>
+      <div className="border-b px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: `linear-gradient(180deg, ${GLASS.fillRaised} 0%, ${SOLID.popover} 100%)` }}>
         <div className="mx-auto flex w-full max-w-5xl items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <p className="uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>{isEditMode ? "Edición" : "Nueva"}</p>
@@ -640,7 +640,7 @@ export function RoutineEditor({
         </div>
       </div>
 
-            <div className="border-t px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: "rgba(0,0,0,0.88)", backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
+            <div className="border-t px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: SOLID.popover, backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <GlassButton variant="ghost" icon={<Copy />} onClick={handleDuplicate} disabled={!isEditMode} aria-label="Duplicar rutina">Duplicar</GlassButton>

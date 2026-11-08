@@ -3,7 +3,7 @@ import { ArrowUp, ArrowDown, Moon, Save } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
-import { GLASS, SCRIM, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, SCRIM, STATUS, TEXT, TYPE } from "@/design/tokens";
 import {
   saveRoutine,
   flushSave,
@@ -226,7 +226,7 @@ export function WeeklyPlanner({ routine, onSave }: WeeklyPlannerProps) {
   };
 
   const kindTone = (kind: RoutineDay["kind"]) => {
-    if (kind === "training") return { color: "var(--cronos-accent-text, #f87171)", background: "rgba(239,68,68,0.10)", border: "rgba(239,68,68,0.28)" };
+    if (kind === "training") return { color: ACCENT.text, background: ACCENT.subtle, border: ACCENT.border };
     if (kind === "mobility") return { color: STATUS.success.text, background: STATUS.success.muted, border: STATUS.success.border };
     if (kind === "rest") return { color: TEXT.secondary, background: GLASS.fillSubtle, border: GLASS.border };
     return { color: TEXT.tertiary, background: "transparent", border: GLASS.border };
@@ -304,7 +304,7 @@ export function WeeklyPlanner({ routine, onSave }: WeeklyPlannerProps) {
                       {wd > 0 && <GlassButton variant="ghost" icon={<ArrowUp size={12} />} onClick={() => swapDays(wd, wd - 1)} aria-label="Mover día arriba" />}
                       {wd < 6 && <GlassButton variant="ghost" icon={<ArrowDown size={12} />} onClick={() => swapDays(wd, wd + 1)} aria-label="Mover día abajo" />}
                     </div>
-                    {isMovingFrom && <p className="text-xs" style={{ color: "var(--cronos-accent-text, #f87171)" }}>Mover sesión a…</p>}
+                    {isMovingFrom && <p className="text-xs" style={{ color: ACCENT.text }}>Mover sesión a…</p>}
                     {isDefaultTarget && moveDialogOpen && <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.success.border, background: STATUS.success.muted, color: STATUS.success.text }}>Destino sugerido</p>}
                   </div>
                 </GlassCard>

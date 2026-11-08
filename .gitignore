@@ -12,6 +12,10 @@
 /.env.*.local
 /.env.e2e
 
+# Playwright results
+/playwright-report/
+/test-results/
+
 # Editor / OS
 .DS_Store
 Thumbs.db

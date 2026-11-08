@@ -40,8 +40,8 @@ async function ensureLoggedIn(page) {
   await page.goto("/rutinas");
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1000);
-  // Esperar a que el contenido de /rutinas esté listo (no "Cargando…").
-  await page.getByText(/cargando…/i).waitFor({ state: "hidden", timeout: 15_000 });
+  // Esperar a que el botón "Nueva rutina" sea visible (la sesión debe estar lista).
+  await page.getByRole("button", { name: /nueva rutina/i }).waitFor({ state: "visible", timeout: 30_000 });
 }
 
 async function goToRutinas(page) {

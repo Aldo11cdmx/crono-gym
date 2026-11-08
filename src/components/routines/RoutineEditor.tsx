@@ -152,6 +152,7 @@ export function RoutineEditor({
   const [pendingDraftMode, setPendingDraftMode] = useState<"single" | "weekly">("single");
   const [templateOpen, setTemplateOpen] = useState(false);
   const [templateLoading, setTemplateLoading] = useState(false);
+  const [templateError, setTemplateError] = useState<string | null>(null);
 
   const initialDraftRef = useRef<RoutineDraftV2 | null>(null);
 
@@ -394,10 +395,17 @@ export function RoutineEditor({
 
   const applyTemplateToDraft = useCallback(
     (template: (typeof ROUTINE_TEMPLATES)[number]) => {
-      if (catalog.loading || catalog.error) return;
+      if (catalog.loading) return;
+      if (catalog.error) {
+        setTemplateError(catalog.error);
+        return;
+      }
       setTemplateLoading(true);
       try {
+        const isWeekly = template.days.length === 7;
         const days: RoutineDay[] = template.days.map((td, i) => {
+          const isMobility = td.label.toLowerCase().includes("movilidad");
+          const kind = isMobility ? "mobility" : td.exercises.length > 0 ? "training" : "rest";
           const exercises = td.exercises.map((ex, ei) => {
             const resolved = catalog.find(ex.name);
             const exercise: Exercise = resolved
@@ -416,9 +424,9 @@ export function RoutineEditor({
           return {
             id: crypto.randomUUID(),
             order: i,
-            weekday: null,
+            weekday: isWeekly ? i : null,
             label: td.label,
-            kind: exercises.length > 0 ? "training" : "rest",
+            kind,
             exercises,
           };
         });
@@ -427,11 +435,11 @@ export function RoutineEditor({
           ...d,
           title: template.title,
           description: `Plantilla: ${template.title}`,
-          mode: template.days.length === 7 ? "weekly" : "single",
+          mode: isWeekly ? "weekly" : "single",
           days,
         }));
 
-        setDraftMode(template.days.length === 7 ? "weekly" : "single");
+        setDraftMode(isWeekly ? "weekly" : "single");
       } finally {
         setTemplateLoading(false);
       }
@@ -586,7 +594,7 @@ export function RoutineEditor({
                     </GlassButton>
                     <GlassButton
                       variant="ghost"
-                      onClick={() => setTemplateOpen(true)}
+                      onClick={() => { setTemplateError(null); setTemplateOpen(true); }}
                       aria-label="Desde plantilla"
                     >
                       Desde plantilla
@@ -804,7 +812,7 @@ export function RoutineEditor({
       )}
 
       {templateOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setTemplateOpen(false)}>
+        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => { setTemplateError(null); setTemplateOpen(false); }}>
           <div onClick={(e) => e.stopPropagation()}>
             <GlassCard raised className="w-full max-w-md p-6">
             <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
@@ -814,6 +822,11 @@ export function RoutineEditor({
               Clona una plantilla base y adapta los días y ejercicios a tu gusto.
             </p>
             <div className="space-y-3">
+              {templateError && (
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                  {templateError}
+                </div>
+              )}
               {ROUTINE_TEMPLATES.map((template) => (
                 <GlassButton
                   key={template.id}
@@ -838,7 +851,7 @@ export function RoutineEditor({
               ))}
             </div>
             <div className="flex justify-end mt-6">
-              <GlassButton variant="ghost" onClick={() => setTemplateOpen(false)} disabled={templateLoading}>
+              <GlassButton variant="ghost" onClick={() => { setTemplateError(null); setTemplateOpen(false); }} disabled={templateLoading}>
                 Cancelar
               </GlassButton>
             </div>

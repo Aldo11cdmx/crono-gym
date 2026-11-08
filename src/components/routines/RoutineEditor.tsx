@@ -26,6 +26,8 @@ import type { WorkspaceOutletContext } from "@/App";
 import { CRONOS_LABELS } from "@/lib/i18n";
 import { TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
+import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
 
 interface RoutineEditorProps {
   mode: "new" | "edit";
@@ -148,6 +150,8 @@ export function RoutineEditor({
   const [removeConfirmExerciseCount, setRemoveConfirmExerciseCount] = useState(0);
   const [switchModeConfirmOpen, setSwitchModeConfirmOpen] = useState(false);
   const [pendingDraftMode, setPendingDraftMode] = useState<"single" | "weekly">("single");
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [templateLoading, setTemplateLoading] = useState(false);
 
   const initialDraftRef = useRef<RoutineDraftV2 | null>(null);
 
@@ -187,6 +191,7 @@ export function RoutineEditor({
   }, [initialDraft]);
 
   const reducedMotion = useReducedMotion();
+  const catalog = useExerciseCatalog();
 
   const dirty = useMemo(() => {
     const init = initialDraftRef.current;
@@ -387,6 +392,54 @@ export function RoutineEditor({
     });
   }, []);
 
+  const applyTemplateToDraft = useCallback(
+    (template: (typeof ROUTINE_TEMPLATES)[number]) => {
+      if (catalog.loading || catalog.error) return;
+      setTemplateLoading(true);
+      try {
+        const days: RoutineDay[] = template.days.map((td, i) => {
+          const exercises = td.exercises.map((ex, ei) => {
+            const resolved = catalog.find(ex.name);
+            const exercise: Exercise = resolved
+              ? resolved
+              : ({ id: "", name: ex.name, name_es: null } as Exercise);
+            return {
+              rowId: crypto.randomUUID(),
+              exercise,
+              target_sets: ex.sets,
+              rest_seconds: ex.restSeconds,
+              order_index: ei,
+              target_reps_min: ex.repsMin,
+              target_reps_max: ex.repsMax,
+            };
+          });
+          return {
+            id: crypto.randomUUID(),
+            order: i,
+            weekday: null,
+            label: td.label,
+            kind: exercises.length > 0 ? "training" : "rest",
+            exercises,
+          };
+        });
+
+        setDraft((d) => ({
+          ...d,
+          title: template.title,
+          description: `Plantilla: ${template.title}`,
+          mode: template.days.length === 7 ? "weekly" : "single",
+          days,
+        }));
+
+        setDraftMode(template.days.length === 7 ? "weekly" : "single");
+      } finally {
+        setTemplateLoading(false);
+      }
+      setTemplateOpen(false);
+    },
+    [catalog]
+  );
+
   const confirmRemoveExercises = useCallback(() => {
     setDraft((d) => {
       if (removeConfirmDayIndex === null) return d;
@@ -530,6 +583,13 @@ export function RoutineEditor({
                       aria-label="Plan semanal"
                     >
                       Semanal
+                    </GlassButton>
+                    <GlassButton
+                      variant="ghost"
+                      onClick={() => setTemplateOpen(true)}
+                      aria-label="Desde plantilla"
+                    >
+                      Desde plantilla
                     </GlassButton>
                   </div>
                   <p className="text-neutral-500 text-xs mt-1" style={{ fontSize: TYPE.caption.size }}>
@@ -739,6 +799,50 @@ export function RoutineEditor({
               </GlassButton>
             </div>
           </GlassCard>
+          </div>
+        </div>
+      )}
+
+      {templateOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setTemplateOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <GlassCard raised className="w-full max-w-md p-6">
+            <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
+              Elegir plantilla
+            </h3>
+            <p className="text-neutral-400 text-sm mb-6" style={{ fontSize: TYPE.caption.size }}>
+              Clona una plantilla base y adapta los días y ejercicios a tu gusto.
+            </p>
+            <div className="space-y-3">
+              {ROUTINE_TEMPLATES.map((template) => (
+                <GlassButton
+                  key={template.id}
+                  variant="ghost"
+                  block
+                  onClick={() => applyTemplateToDraft(template)}
+                  disabled={templateLoading}
+                  aria-label={`Plantilla ${template.title}`}
+                >
+                  <div className="flex justify-between">
+                    <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>
+                      {template.title}
+                    </span>
+                    <span className="text-xs text-neutral-500">
+                      {template.days.length} día{template.days.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <p className="text-neutral-500 text-sm mt-1" style={{ fontSize: TYPE.caption.size }}>
+                    {template.days.filter((d) => d.exercises.length > 0).length} día{template.days.filter((d) => d.exercises.length > 0).length !== 1 ? "s con ejercicios" : " con ejercicio"}
+                  </p>
+                </GlassButton>
+              ))}
+            </div>
+            <div className="flex justify-end mt-6">
+              <GlassButton variant="ghost" onClick={() => setTemplateOpen(false)} disabled={templateLoading}>
+                Cancelar
+              </GlassButton>
+            </div>
+            </GlassCard>
           </div>
         </div>
       )}

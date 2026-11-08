@@ -24,7 +24,7 @@ import {
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { CRONOS_LABELS } from "@/lib/i18n";
-import { GLASS, SCRIM, STATUS, TEXT, TYPE } from "@/design/tokens";
+import { GLASS, SCRIM, STATUS, SURFACE, TEXT, TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
@@ -640,15 +640,39 @@ export function RoutineEditor({
         </div>
       </div>
 
-      <div className="border-t px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: "rgba(0,0,0,0.88)", backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
+            <div className="border-t px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: "rgba(0,0,0,0.88)", backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <GlassButton variant="ghost" icon={<Copy />} onClick={handleDuplicate} disabled={!isEditMode} aria-label="Duplicar rutina">Duplicar</GlassButton>
             <GlassButton variant="primary" icon={<Save />} onClick={handleSave} disabled={saving || !canSave} aria-label="Guardar rutina">{saving ? CRONOS_LABELS.saving : CRONOS_LABELS.save}</GlassButton>
           </div>
-          {!canSave && !saving && <p className="text-xs" style={{ color: STATUS.error.text }}>{validationMessages.length > 0 ? validationMessages.join(", ") : CRONOS_LABELS.routineValidation.noTitle}</p>}
-          {saveResult && !saveResult.ok && <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.saveError}</p>}
-          {saveResult && saveResult.ok && <p className="text-xs" style={{ color: STATUS.success.text }}>{CRONOS_LABELS.saved}</p>}
+          {saving && (
+            <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: GLASS.border, background: SURFACE.sunken, color: TEXT.secondary }}>
+              Guardando cambios de la rutina…
+            </p>
+          )}
+          {!canSave && !saving && hasValidationErrors && (
+            <div className="rounded-2xl border px-3 py-2.5" aria-live="polite" style={{ borderColor: STATUS.warning.border, background: STATUS.warning.muted }}>
+              <p className="text-xs font-medium" style={{ color: STATUS.warning.text }}>Revisa estos puntos antes de guardar</p>
+              <ul className="mt-1.5 space-y-1 text-xs" style={{ color: STATUS.warning.text }}>
+                {validationMessages.slice(0, 4).map((m) => <li key={m}>• {m}</li>)}
+              </ul>
+            </div>
+          )}
+          {!canSave && !saving && !hasValidationErrors && (
+            <p className="text-xs" style={{ color: STATUS.warning.text }}>{CRONOS_LABELS.routineValidation.noTitle}</p>
+          )}
+          {saveResult && !saveResult.ok && (
+            <div className="rounded-2xl border px-3 py-2.5" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted }}>
+              <p className="text-xs font-medium" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.saveError}</p>
+              <p className="mt-1 text-xs" style={{ color: STATUS.error.text }}>{translationFor(saveResult.error)}</p>
+            </div>
+          )}
+          {saveResult && saveResult.ok && (
+            <p className="rounded-2xl border px-3 py-2.5 text-xs" aria-live="polite" style={{ borderColor: STATUS.success.border, background: STATUS.success.muted, color: STATUS.success.text }}>
+              {CRONOS_LABELS.saved}
+            </p>
+          )}
         </div>
       </div>
 

@@ -242,7 +242,7 @@ export function WeeklyPlanner({ routine, onSave }: WeeklyPlannerProps) {
             </h3>
             <p className="text-neutral-400" style={{ fontSize: TYPE.caption.size }}>{CRONOS_LABELS.planner.moveSessionBody}</p>
             {allTraining ? (
-              <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.planner.moveAllTraining}</p>
+              <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted, color: STATUS.error.text }}>{CRONOS_LABELS.planner.moveAllTraining}</p>
             ) : (
               <div className="space-y-2">
                 {nonTrainingTargets.map((targetDay) => (
@@ -273,7 +273,7 @@ export function WeeklyPlanner({ routine, onSave }: WeeklyPlannerProps) {
         </GlassButton>
       </div>
 
-      {!canSave && <p className="text-xs" style={{ color: STATUS.error.text }}>{validationMessage}</p>}
+      {!canSave && <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted, color: STATUS.error.text }}>{validationMessage}</p>}
 
       <div className="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:overflow-visible sm:px-0">
         <div className="grid min-w-[760px] gap-3 sm:min-w-0 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
@@ -305,7 +305,7 @@ export function WeeklyPlanner({ routine, onSave }: WeeklyPlannerProps) {
                       {wd < 6 && <GlassButton variant="ghost" icon={<ArrowDown size={12} />} onClick={() => swapDays(wd, wd + 1)} aria-label="Mover día abajo" />}
                     </div>
                     {isMovingFrom && <p className="text-xs" style={{ color: "var(--cronos-accent-text, #f87171)" }}>Mover sesión a…</p>}
-                    {isDefaultTarget && moveDialogOpen && <p className="text-xs" style={{ color: STATUS.success.text }}>Destino sugerido</p>}
+                    {isDefaultTarget && moveDialogOpen && <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.success.border, background: STATUS.success.muted, color: STATUS.success.text }}>Destino sugerido</p>}
                   </div>
                 </GlassCard>
               </div>
@@ -314,10 +314,10 @@ export function WeeklyPlanner({ routine, onSave }: WeeklyPlannerProps) {
         </div>
       </div>
 
-      {allTraining && <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.planner.moveAllTraining}</p>}
+      {allTraining && <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted, color: STATUS.error.text }}>{CRONOS_LABELS.planner.moveAllTraining}</p>}
       {moveDialogOpen && moveDialogContent}
-      {saveResult && !saveResult.ok && <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.planner.weeklySaveError}</p>}
-      {saveResult && saveResult.ok && <p className="text-xs" style={{ color: STATUS.success.text }}>{CRONOS_LABELS.planner.weeklySaved}</p>}
+      {saveResult && !saveResult.ok && <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted, color: STATUS.error.text }}>{CRONOS_LABELS.planner.weeklySaveError}</p>}
+      {saveResult && saveResult.ok && <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.success.border, background: STATUS.success.muted, color: STATUS.success.text }}>{CRONOS_LABELS.planner.weeklySaved}</p>}
     </div>
   );
 }

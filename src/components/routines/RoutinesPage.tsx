@@ -8,7 +8,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useRoutines } from "@/hooks/useGymData";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
-import { ACCENT, GLASS, TEXT, TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { TRAIN_PATH } from "@/components/shell/navItems";
 import { RoutineCard } from "./RoutineCard";
@@ -150,12 +150,12 @@ export function RoutinesPage() {
     return (
       <GlassCard raised>
         <div className="space-y-3">
-          <p className="text-red-300" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>
+          <p style={{ fontSize: TYPE.subhead.size, fontWeight: 600, color: STATUS.error.text }}>
             No se pudieron cargar las rutinas
           </p>
-          <p className="text-neutral-400" style={{ fontSize: TYPE.caption.size }}>
-            {error}
-          </p>
+          <p className="rounded-2xl border px-3 py-2.5" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted, color: STATUS.error.text, fontSize: TYPE.caption.size }}>
+              {error}
+            </p>
           <GlassButton variant="secondary" onClick={() => void refresh()}>
             Reintentar
           </GlassButton>

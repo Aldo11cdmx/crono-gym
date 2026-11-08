@@ -3,7 +3,7 @@ import { ArrowUp, ArrowDown, Moon, Save } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
-import { TYPE } from "@/design/tokens";
+import { GLASS, SCRIM, STATUS, TEXT, TYPE } from "@/design/tokens";
 import {
   saveRoutine,
   flushSave,
@@ -225,152 +225,99 @@ export function WeeklyPlanner({ routine, onSave }: WeeklyPlannerProps) {
     return "Vacío";
   };
 
-  const kindClass = (kind: RoutineDay["kind"]): string => {
-    if (kind === "training") return "text-accent bg-accent/10";
-    if (kind === "rest") return "text-neutral-400 bg-neutral-800/50";
-    if (kind === "mobility") return "text-cyan-400 bg-cyan-950/20";
-    return "text-neutral-500 bg-neutral-900/30";
+  const kindTone = (kind: RoutineDay["kind"]) => {
+    if (kind === "training") return { color: "var(--cronos-accent-text, #f87171)", background: "rgba(239,68,68,0.10)", border: "rgba(239,68,68,0.28)" };
+    if (kind === "mobility") return { color: STATUS.success.text, background: STATUS.success.muted, border: STATUS.success.border };
+    if (kind === "rest") return { color: TEXT.secondary, background: GLASS.fillSubtle, border: GLASS.border };
+    return { color: TEXT.tertiary, background: "transparent", border: GLASS.border };
   };
 
   const moveDialogContent = (
-    <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={closeMoveDialog}>
-      <div onClick={(e) => e.stopPropagation()}>
-        <GlassCard raised className="w-full max-w-md p-6">
-        <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
-          {moveFromWeekday !== null ? CRONOS_LABELS.planner.moveSessionTitle.replace("{day}", WEEKDAYS_ES[moveFromWeekday]) : CRONOS_LABELS.planner.moveSessionTitle}
-        </h3>
-        <p className="text-neutral-400 text-sm mb-6">
-          {CRONOS_LABELS.planner.moveSessionBody}
-        </p>
-        {allTraining ? (
-          <p className="text-xs text-red-400 mb-6">{CRONOS_LABELS.planner.moveAllTraining}</p>
-        ) : (
-          <div className="space-y-3">
-            {nonTrainingTargets.map((targetDay) => (
-              <GlassButton
-                key={targetDay.weekday}
-                variant={defaultTarget === targetDay.weekday ? "primary" : "ghost"}
-                onClick={() => executeMove(targetDay.weekday as number)}
-                disabled={defaultTarget === null}
-                aria-label={CRONOS_LABELS.planner.moveToDay.replace("{day}", WEEKDAYS_ES[targetDay.weekday ?? 0])}
-                block
-              >
-                {WEEKDAYS_ES[targetDay.weekday ?? 0]} ({kindLabel(targetDay.kind)})
-              </GlassButton>
-            ))}
-            {nonTrainingTargets.length === 0 && (
-              <p className="text-xs text-neutral-400">{CRONOS_LABELS.planner.moveAllTraining}</p>
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={closeMoveDialog}>
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md">
+        <GlassCard raised>
+          <div className="space-y-4">
+            <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>
+              {moveFromWeekday !== null ? CRONOS_LABELS.planner.moveSessionTitle.replace("{day}", WEEKDAYS_ES[moveFromWeekday]) : CRONOS_LABELS.planner.moveSessionTitle}
+            </h3>
+            <p className="text-neutral-400" style={{ fontSize: TYPE.caption.size }}>{CRONOS_LABELS.planner.moveSessionBody}</p>
+            {allTraining ? (
+              <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.planner.moveAllTraining}</p>
+            ) : (
+              <div className="space-y-2">
+                {nonTrainingTargets.map((targetDay) => (
+                  <GlassButton key={targetDay.weekday} variant={defaultTarget === targetDay.weekday ? "primary" : "ghost"} onClick={() => executeMove(targetDay.weekday as number)} disabled={defaultTarget === null} aria-label={CRONOS_LABELS.planner.moveToDay.replace("{day}", WEEKDAYS_ES[targetDay.weekday ?? 0])} block>
+                    {WEEKDAYS_ES[targetDay.weekday ?? 0]} · {kindLabel(targetDay.kind)}
+                  </GlassButton>
+                ))}
+                {nonTrainingTargets.length === 0 && <p className="text-xs text-neutral-400">{CRONOS_LABELS.planner.moveAllTraining}</p>}
+              </div>
             )}
+            <div className="flex justify-end"><GlassButton variant="ghost" onClick={closeMoveDialog}>Cancelar</GlassButton></div>
           </div>
-        )}
-        <div className="flex gap-3 mt-6">
-          <GlassButton variant="ghost" onClick={closeMoveDialog} block>
-            Cancelar
-          </GlassButton>
-        </div>
-      </GlassCard>
+        </GlassCard>
       </div>
     </div>
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2
-            className="text-neutral-100 font-semibold"
-            style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight }}
-          >
-            {CRONOS_LABELS.planner.title}
-          </h2>
-          <p className="text-neutral-400" style={{ fontSize: TYPE.caption.size }}>
-            Organiza los días de la semana de esta rutina.
-          </p>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <p className="uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Plan semanal</p>
+          <h2 className="text-neutral-100" style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, lineHeight: TYPE.title2.lineHeight }}>{CRONOS_LABELS.planner.title}</h2>
+          <p className="text-neutral-400" style={{ fontSize: TYPE.caption.size }}>Organiza los días de la semana de esta rutina.</p>
         </div>
         <GlassButton variant="primary" icon={<Save />} onClick={handleSave} disabled={saving || !canSave} aria-label={CRONOS_LABELS.planner.saveWeekly}>
           {saving ? CRONOS_LABELS.planner.savingWeekly : CRONOS_LABELS.planner.saveWeekly}
         </GlassButton>
       </div>
 
-      {!canSave && (
-        <p className="text-xs text-red-400">{validationMessage}</p>
-      )}
+      {!canSave && <p className="text-xs" style={{ color: STATUS.error.text }}>{validationMessage}</p>}
 
-      <div className="grid gap-3 sm:grid-cols-4 lg:grid-cols-7">
-        {WEEKDAYS_ES.map((weekdayName, wd) => {
-          const day = draft.days.find((d) => d.weekday === wd);
-          const label = day ? displayDayLabel(day, "weekly") : weekdayName;
-          const kind = day?.kind ?? "training";
-          const exCount = day?.exercises.length ?? 0;
-          const isMovingFrom = moveFromWeekday === wd;
-          const isDefaultTarget = defaultTarget === wd;
-          return (
-            <div onClick={(e) => e.stopPropagation()}>
-              <GlassCard key={wd} raised className="flex flex-col gap-2 p-4">
-              <div className="flex items-center justify-between">
-                <span
-                  className="text-neutral-100 font-medium"
-                  style={{ fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight }}
-                >
-                  {weekdayName}
-                </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${kindClass(kind)}`} style={{ fontSize: "10px" }}>
-                  {kindLabel(kind)}
-                </span>
+      <div className="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:overflow-visible sm:px-0">
+        <div className="grid min-w-[760px] gap-3 sm:min-w-0 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          {WEEKDAYS_ES.map((weekdayName, wd) => {
+            const day = draft.days.find((d) => d.weekday === wd);
+            const label = day ? displayDayLabel(day, "weekly") : weekdayName;
+            const kind = day?.kind ?? "training";
+            const exCount = day?.exercises.length ?? 0;
+            const isMovingFrom = moveFromWeekday === wd;
+            const isDefaultTarget = defaultTarget === wd;
+            const tone = kindTone(kind);
+            return (
+              <div key={wd} onClick={(e) => e.stopPropagation()}>
+                <GlassCard raised className="flex h-full min-h-[188px] flex-col gap-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight }}>{weekdayName}</span>
+                    <span className="inline-flex items-center rounded-full border px-2 py-0.5" style={{ fontSize: TYPE.label.size, fontWeight: TYPE.label.weight, letterSpacing: TYPE.label.tracking, color: tone.color, background: tone.background, borderColor: tone.border }}>{kindLabel(kind)}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-neutral-200" style={{ fontSize: TYPE.subhead.size, lineHeight: TYPE.subhead.lineHeight, overflowWrap: "anywhere" }}>{label}</p>
+                    <p className="text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{exCount} {exCount === 1 ? "ejercicio" : "ejercicios"}</p>
+                  </div>
+                  <div className="mt-auto space-y-2 pt-1">
+                    <GlassButton variant="ghost" icon={<Moon size={14} />} onClick={() => setDayKind(wd, kind === "rest" ? "training" : "rest")} disabled={allTraining && kind === "training"} aria-label={kind === "rest" ? "Quitar descanso" : "Marcar descanso"} block>
+                      {kind === "rest" ? "Quitar descanso" : "Marcar descanso"}
+                    </GlassButton>
+                    <div className="flex justify-end gap-1">
+                      {wd > 0 && <GlassButton variant="ghost" icon={<ArrowUp size={12} />} onClick={() => swapDays(wd, wd - 1)} aria-label="Mover día arriba" />}
+                      {wd < 6 && <GlassButton variant="ghost" icon={<ArrowDown size={12} />} onClick={() => swapDays(wd, wd + 1)} aria-label="Mover día abajo" />}
+                    </div>
+                    {isMovingFrom && <p className="text-xs" style={{ color: "var(--cronos-accent-text, #f87171)" }}>Mover sesión a…</p>}
+                    {isDefaultTarget && moveDialogOpen && <p className="text-xs" style={{ color: STATUS.success.text }}>Destino sugerido</p>}
+                  </div>
+                </GlassCard>
               </div>
-              <div className="text-neutral-400 text-sm" style={{ fontSize: TYPE.caption.size }}>
-                {label}
-              </div>
-              <div className="text-neutral-500 text-xs" style={{ fontSize: TYPE.caption.size }}>
-                {exCount} {exCount === 1 ? "ejercicio" : "ejercicios"}
-              </div>
-              <div className="flex items-center justify-between gap-1 mt-auto pt-2">
-                <GlassButton
-                  variant="ghost"
-                  icon={<Moon size={14} />}
-                  onClick={() => setDayKind(wd, kind === "rest" ? "training" : "rest")}
-                  disabled={allTraining && kind === "training"}
-                  aria-label={kind === "rest" ? "Quitar descanso" : "Marcar descanso"}
-                >
-                  {kind === "rest" ? "Quitar descanso" : "Marcar descanso"}
-                </GlassButton>
-                <div className="flex gap-0.5">
-                  {wd > 0 && (
-                    <GlassButton variant="ghost" icon={<ArrowUp size={12} />} onClick={() => swapDays(wd, wd - 1)} aria-label="Mover día arriba" />
-                  )}
-                  {wd < 6 && (
-                    <GlassButton variant="ghost" icon={<ArrowDown size={12} />} onClick={() => swapDays(wd, wd + 1)} aria-label="Mover día abajo" />
-                  )}
-                </div>
-              </div>
-              {isMovingFrom && (
-                <div className="text-xs text-accent mt-2" style={{ fontSize: TYPE.caption.size }}>
-                  Mover sesión a…
-                </div>
-              )}
-              {isDefaultTarget && moveDialogOpen && (
-                <div className="text-xs text-emerald-400 mt-1" style={{ fontSize: TYPE.caption.size }}>
-                  Destino sugerido
-                </div>
-              )}
-            </GlassCard>
-              </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      {allTraining && (
-        <p className="text-xs text-red-400">{CRONOS_LABELS.planner.moveAllTraining}</p>
-      )}
-
+      {allTraining && <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.planner.moveAllTraining}</p>}
       {moveDialogOpen && moveDialogContent}
-
-      {saveResult && !saveResult.ok && (
-        <p className="text-xs text-red-400">{CRONOS_LABELS.planner.weeklySaveError}</p>
-      )}
-      {saveResult && saveResult.ok && (
-        <p className="text-xs text-emerald-400">{CRONOS_LABELS.planner.weeklySaved}</p>
-      )}
+      {saveResult && !saveResult.ok && <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.planner.weeklySaveError}</p>}
+      {saveResult && saveResult.ok && <p className="text-xs" style={{ color: STATUS.success.text }}>{CRONOS_LABELS.planner.weeklySaved}</p>}
     </div>
   );
 }

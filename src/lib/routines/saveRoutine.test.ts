@@ -8,8 +8,10 @@ import {
   subscribeSave,
 } from "./saveRoutine";
 import type { Exercise } from "@/types/supabase";
+import type { RoutineWithExercises } from "@/hooks/useGymData";
 import type { RoutineDraftV2 } from "./routineDayModel";
-import { validateDraft } from "./routineDayModel";
+import { draftFromRoutine, validateDraft } from "./routineDayModel";
+import { buildRoutineDescription } from "./routineMeta";
 
 function ex(id: string): Exercise {
   return {
@@ -430,6 +432,142 @@ describe("saveRoutine · camino feliz", () => {
     expect(rows.find((r) => r.id === "d1-r1")?.day_index).toBe(0);
     expect(rows.find((r) => r.id === "d3-r1")?.day_index).toBe(3);
   });
+
+  it("A13: crear rutina semanal, guardar, rehidratar → los días conservan su identidad", async () => {
+    fixture.userId = "user-1";
+    const dayIdLunes = uid();
+    const dayIdMartes = uid();
+
+    const draft = makeDraft({
+      id: null,
+      title: "Rutina semanal",
+      mode: "weekly",
+      description: "Rutina semanal",
+      days: [
+        {
+          id: dayIdLunes,
+          order: 0,
+          weekday: 0,
+          label: "Lunes",
+          kind: "training",
+          exercises: [
+            {
+              exercise: ex("ex-1"),
+              rowId: `${dayIdLunes}-r1`,
+              target_sets: 3,
+              rest_seconds: 90,
+              order_index: 0,
+              target_reps_min: 8,
+              target_reps_max: 12,
+            },
+          ],
+        },
+        {
+          id: dayIdMartes,
+          order: 1,
+          weekday: 1,
+          label: "Martes",
+          kind: "training",
+          exercises: [
+            {
+              exercise: ex("ex-2"),
+              rowId: `${dayIdMartes}-r1`,
+              target_sets: 3,
+              rest_seconds: 90,
+              order_index: 0,
+              target_reps_min: 8,
+              target_reps_max: 12,
+            },
+          ],
+        },
+        { id: uid(), order: 2, weekday: 2, label: "Miércoles", kind: "rest", exercises: [] },
+        { id: uid(), order: 3, weekday: 3, label: "Jueves", kind: "rest", exercises: [] },
+        { id: uid(), order: 4, weekday: 4, label: "Viernes", kind: "rest", exercises: [] },
+        { id: uid(), order: 5, weekday: 5, label: "Sábado", kind: "rest", exercises: [] },
+        { id: uid(), order: 6, weekday: 6, label: "Domingo", kind: "rest", exercises: [] },
+      ],
+    });
+
+    const result = await runSave("user-1", draft, {
+      existingDescription: "",
+      verifyTitle: "Rutina semanal",
+    });
+    expect(result).toEqual({ ok: true, routineId: expect.any(String) });
+
+    // Los ids de día viajan en la descripción guardada
+    const upsert = routineUpsertValues();
+    const savedDescription = (upsert as Record<string, unknown>).description as string;
+    const meta = JSON.parse(savedDescription);
+    expect(meta.mode).toBe("weekly");
+    const lunesMeta = meta.days.find((d: { id: string }) => d.id === dayIdLunes);
+    const martesMeta = meta.days.find((d: { id: string }) => d.id === dayIdMartes);
+    expect(lunesMeta).toBeDefined();
+    expect(martesMeta).toBeDefined();
+
+    // Rehidratar con draftFromRoutine real: los ids de día se conservan
+    const routine = {
+      id: "routine-1",
+      user_id: "user-1",
+      title: "Rutina semanal",
+      description: savedDescription,
+      exercises: [
+        {
+          exercise: { id: "ex-1", name: "Ex 1", name_es: "Ex 1", body_part: "Pecho", target: "Pectorales", equipment: "Mancuernas", gif_url: "", instructions: [], is_active: true, is_hidden: false } as unknown as Exercise,
+          target_sets: 3,
+          rest_seconds: 90,
+          rowId: `${dayIdLunes}-r1`,
+          order_index: 0,
+          target_reps_min: 8,
+          target_reps_max: 12,
+          dayIndex: 0,
+          dayLabel: "Lunes",
+          groupId: null,
+        },
+        {
+          exercise: { id: "ex-2", name: "Ex 2", name_es: "Ex 2", body_part: "Espalda", target: "Dorsales", equipment: "Mancuernas", gif_url: "", instructions: [], is_active: true, is_hidden: false } as unknown as Exercise,
+          target_sets: 3,
+          rest_seconds: 90,
+          rowId: `${dayIdMartes}-r1`,
+          order_index: 0,
+          target_reps_min: 8,
+          target_reps_max: 12,
+          dayIndex: 1,
+          dayLabel: "Martes",
+          groupId: null,
+        },
+      ],
+      routineMode: "weekly",
+    } as unknown as RoutineWithExercises;
+
+    const rehydrated = draftFromRoutine(routine as RoutineWithExercises);
+    expect(rehydrated.days).toHaveLength(7);
+    expect(rehydrated.days[0].id).toBe(dayIdLunes);
+    expect(rehydrated.days[1].id).toBe(dayIdMartes);
+  });
+
+  it("A18: editar título 5 veces rápido → un solo guardado con el último título", async () => {
+    fixture.userId = "user-1";
+    const draft = makeDraft({
+      id: null,
+      title: "Título inicial",
+      description: "desc",
+      days: [trainingDay("Lunes", 0, 1)],
+    });
+
+    // 5 ediciones rápidas del mismo draftKey
+    for (let i = 1; i <= 5; i += 1) {
+      draft.title = `Título ${i}`;
+      saveRoutine("user-1", draft);
+    }
+
+    // Forzar procesamiento inmediato de la cola
+    await flushSave(draft.draftKey);
+
+    // Solo un upsert con el último título
+    const upserts = writes.filter((w) => w.table === "routines" && w.op === "upsert");
+    expect(upserts).toHaveLength(1);
+    expect(upserts[0].values).toMatchObject({ title: "Título 5" });
+  });
 });
 
 describe("saveRoutine · rutina existente", () => {
@@ -543,43 +681,69 @@ describe("saveRoutine · rutina existente", () => {
     expect(writes.find((w) => w.table === "routine_exercises" && w.op === "upsert")).toBeUndefined();
   });
 
-  it("A16: guardar rutina legacy convertida a semanal conserva ejercicios con rowId y day_index nuevo", async () => {
+  it("A16: guardar conversión legacy→weekly conserva ejercicios con rowId y day_index nuevo", async () => {
     const dayId = uid();
-    const envelope = '{"v":1,"text":"Rutina convertida","mode":"weekly","days":[{"id":"'+dayId+'","order":0,"weekday":0,"label":"Lunes","kind":"training"}]}';
+    const legacyDesc = "Rutina antigua de fuerza";
+    // Sobre JSON semanal (resultado de la conversión desde texto plano legado)
+    const envelope = buildRoutineDescription(legacyDesc, {
+      mode: "weekly",
+      days: [
+        { id: dayId, order: 0, weekday: 0, label: "Lunes", kind: "training" },
+        { id: uid(), order: 1, weekday: 1, label: "Martes", kind: "rest" },
+        { id: uid(), order: 2, weekday: 2, label: "Miércoles", kind: "rest" },
+        { id: uid(), order: 3, weekday: 3, label: "Jueves", kind: "rest" },
+        { id: uid(), order: 4, weekday: 4, label: "Viernes", kind: "rest" },
+        { id: uid(), order: 5, weekday: 5, label: "Sábado", kind: "rest" },
+        { id: uid(), order: 6, weekday: 6, label: "Domingo", kind: "rest" },
+      ],
+    });
+
+    // Borrador de conversión: partir del legado (texto plano en BD), crear over semanal.
+    // El snapshot lleva el texto legado; existingDescription simula lo que hay en BD.
+    const converted = makeDraft({
+      id: "routine-1",
+      title: "Rutina convertida",
+      description: envelope,
+      mode: "weekly",
+      snapshot: { title: "Rutina antigua", description: legacyDesc, rows: [] },
+      days: [
+        {
+          id: dayId,
+          order: 0,
+          weekday: 0,
+          label: "Lunes",
+          kind: "training",
+          exercises: [
+            {
+              exercise: ex("ex-1"),
+              rowId: `${dayId}-r1`,
+              target_sets: 3,
+              rest_seconds: 90,
+              order_index: 0,
+              target_reps_min: 8,
+              target_reps_max: 12,
+            },
+          ],
+        },
+        { id: uid(), order: 1, weekday: 1, label: "Martes", kind: "rest", exercises: [] },
+        { id: uid(), order: 2, weekday: 2, label: "Miércoles", kind: "rest", exercises: [] },
+        { id: uid(), order: 3, weekday: 3, label: "Jueves", kind: "rest", exercises: [] },
+        { id: uid(), order: 4, weekday: 4, label: "Viernes", kind: "rest", exercises: [] },
+        { id: uid(), order: 5, weekday: 5, label: "Sábado", kind: "rest", exercises: [] },
+        { id: uid(), order: 6, weekday: 6, label: "Domingo", kind: "rest", exercises: [] },
+      ],
+    });
+
     const result = await runSave(
       "user-1",
-      makeDraft({
-        id: "routine-1",
-        title: "Rutina convertida",
-        description: envelope,
-        snapshot: { title: "Rutina convertida", description: envelope, rows: [] },
-        days: [
-          {
-            id: dayId,
-            order: 0,
-            weekday: 0,
-            label: "Lunes",
-            kind: "training",
-            exercises: [
-              {
-                exercise: ex("ex-1"),
-                rowId: `${dayId}-r1`,
-                target_sets: 3,
-                rest_seconds: 90,
-                order_index: 0,
-                target_reps_min: 8,
-                target_reps_max: 12,
-              },
-            ],
-          },
-        ],
-      }),
-      { existingDescription: envelope, verifyTitle: "Rutina convertida" },
+      converted,
+      { existingDescription: legacyDesc, verifyTitle: "Rutina convertida" },
     );
 
     expect(result).toEqual({ ok: true, routineId: expect.any(String) });
     const upd = routineUpdateValues();
     expect(upd).toMatchObject({ title: "Rutina convertida", description: expect.any(String) });
+    expect(routineUpsertValues()).toBeUndefined();
     const rows = exerciseRows();
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({

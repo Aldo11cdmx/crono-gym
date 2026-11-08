@@ -7,7 +7,7 @@ import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useRoutines } from "@/hooks/useGymData";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
-import { TYPE } from "@/design/tokens";
+import { TYPE, GLASS } from "@/design/tokens";
 import { useActiveSession } from "@/context/ActiveSessionContext";
 import { TRAIN_PATH } from "@/components/shell/navItems";
 import { RoutineCard } from "./RoutineCard";
@@ -23,8 +23,8 @@ export function RoutinesPage() {
   } | { mode: "edit"; routine: RoutineWithExercises } | null>(null);
   const [planning, setPlanning] = useState<RoutineWithExercises | null>(null);
   const [dayPickerRoutine, setDayPickerRoutine] = useState<RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" } | null>(null);
-  const [sessionConflict, setSessionConflict] = useState<{ routineId: string; title: string } | null>(null);
-  const { isActive, start } = useActiveSession();
+  const [sessionConflict, setSessionConflict] = useState<{ routineId: string | null; title: string; dayLabel?: string | null } | null>(null);
+  const { isActive, start, session } = useActiveSession();
   const navigate = useNavigate();
 
   const openNew = useCallback(() => setEditing({ mode: "new" }), []);
@@ -38,8 +38,12 @@ export function RoutinesPage() {
 
   const handleTrain = useCallback(
     (routine: RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" }) => {
-      if (isActive) {
-        setSessionConflict({ routineId: routine.id, title: routine.title });
+      if (isActive && session) {
+        setSessionConflict({
+          routineId: session.routineId,
+          title: session.title,
+          dayLabel: session.dayLabel,
+        });
         return;
       }
       const draft = draftFromRoutine(routine);
@@ -91,17 +95,6 @@ export function RoutinesPage() {
     return (
       <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
         {error}
-      </div>
-    );
-  }
-
-  if (sessionConflict) {
-    return (
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-        <p>Ya hay una sesión activa: "{sessionConflict.title}".</p>
-        <GlassButton variant="ghost" onClick={closeConflict}>
-          Entendido
-        </GlassButton>
       </div>
     );
   }
@@ -158,6 +151,31 @@ export function RoutinesPage() {
           Nueva rutina
         </GlassButton>
       </div>
+
+      {sessionConflict && (
+        <GlassCard raised style={{ border: `1px solid ${GLASS.border}` }}>
+          <div className="p-4">
+            <p className="text-sm text-amber-200 mb-3">
+              Hay una sesión activa: <strong className="text-neutral-100">{sessionConflict.title}</strong>{sessionConflict.dayLabel ? ` (${sessionConflict.dayLabel})` : ""}.
+            </p>
+            <div className="flex gap-2">
+              <GlassButton
+                variant="primary"
+                onClick={() => {
+                  closeConflict();
+                  navigate(TRAIN_PATH);
+                }}
+                block
+              >
+                Ir a la sesión activa
+              </GlassButton>
+              <GlassButton variant="ghost" onClick={closeConflict}>
+                Entendido
+              </GlassButton>
+            </div>
+          </div>
+        </GlassCard>
+      )}
 
       {routines.length === 0 ? (
         <GlassCard>

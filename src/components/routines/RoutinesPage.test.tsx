@@ -15,15 +15,25 @@ import type { ReactNode } from "react";
 
 const mockStart = vi.hoisted(() => vi.fn(() => ({ ok: true })));
 const mockIsActive = vi.hoisted(() => ({ value: false }));
+const mockSession = vi.hoisted(() => ({ value: null as { routineId: string; title: string; dayLabel: string | null } | null }));
+const mockNavigate = vi.hoisted(() => ({ value: vi.fn() }));
 
 vi.mock("@/hooks/useGymData", () => ({
   useRoutines: vi.fn(),
 }));
 
 vi.mock("@/context/ActiveSessionContext", () => ({
-  useActiveSession: vi.fn(() => ({ isActive: mockIsActive.value, start: mockStart })),
+  useActiveSession: vi.fn(() => ({ isActive: mockIsActive.value, start: mockStart, session: mockSession.value })),
   ActiveSessionProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
+
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router-dom")>();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate.value,
+  };
+});
 
 const OUTLET_CONTEXT: WorkspaceOutletContext = {
   userId: "user-1",
@@ -92,7 +102,9 @@ describe("RoutinesPage", () => {
   beforeEach(() => {
     cleanup();
     mockIsActive.value = false;
+    mockSession.value = null;
     mockStart.mockClear();
+    mockNavigate.value.mockClear();
   });
 
   afterEach(() => {
@@ -277,6 +289,11 @@ describe("RoutinesPage", () => {
         expect.objectContaining({ exercise: EXERCISE, dayIndex: 0, dayLabel: "Lunes" }),
       ]),
     });
+    const call = (mockStart.mock.calls as any[])[0];
+    expect(call).toBeDefined();
+    const planned = call?.[0]?.planned;
+    expect(planned).toHaveLength(1); // Solo el Lunes, no el Martes
+    expect(planned.find((p: any) => p.dayLabel === "Martes")).toBeUndefined();
   });
 
   it("rutina individual con 3 días → selector con 3 días, elegir el 2º inicia con sus ejercicios y routineDayId", () => {
@@ -330,8 +347,9 @@ describe("RoutinesPage", () => {
     });
   });
 
-  it("A25: con sesión activa, clic Entrenar → aviso visible y sin nueva sesión", () => {
+  it("A25: con sesión activa, clic Entrenar → aviso visible sobre la lista, start no llamado", () => {
     mockIsActive.value = true;
+    mockSession.value = { routineId: "session-1", title: "Rutina Activa", dayLabel: "Lunes" };
 
     const single = makeRoutine({
       title: "Rutina individual",
@@ -352,7 +370,126 @@ describe("RoutinesPage", () => {
 
     fireEvent.click(screen.getByText("Entrenar"));
 
-    expect(screen.getByText(/Ya hay una sesión activa/)).toBeTruthy();
+    // La lista de rutinas sigue visible (no se reemplaza la página)
+    expect(screen.getByText("Rutina individual")).toBeTruthy();
+    // El aviso nombra la sesión activa, no la rutina que se quiso iniciar
+    expect(screen.getByText(/Rutina Activa/)).toBeTruthy();
+    expect(screen.getByText(/Lunes/)).toBeTruthy();
     expect(mockStart).not.toHaveBeenCalled();
+  });
+
+  it("sesión activa: clic 'Ir a la sesión activa' navega a /entrenar y cierra el aviso", () => {
+    mockIsActive.value = true;
+    mockSession.value = { routineId: "session-1", title: "Rutina Activa", dayLabel: "Lunes" };
+
+    const single = makeRoutine({
+      title: "Rutina individual",
+      routineMode: "single",
+      exercises: [makeRoutineExercise()],
+    });
+
+    vi.mocked(useRoutines).mockReturnValue({
+      routines: [single],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+
+    renderPageWithSession();
+
+    fireEvent.click(screen.getByText("Entrenar"));
+    expect(screen.getByText(/Rutina Activa/)).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Ir a la sesión activa"));
+    expect(mockNavigate.value).toHaveBeenCalledWith("/entrenar");
+    // El aviso se cerró al navegar
+    expect(screen.queryByText(/Rutina Activa/)).toBeNull();
+  });
+
+  it("A24: rutina sin días de entrenamiento → clic Entrenar no inicia sesión", () => {
+    const weekly = makeRoutine({
+      title: "Rutina solo descanso",
+      routineMode: "weekly",
+      description: JSON.stringify({
+        v: 1,
+        text: "Rutina solo descanso",
+        mode: "weekly",
+        days: [
+          { id: "day-lunes", order: 0, weekday: 0, label: "Lunes", kind: "rest" },
+          { id: "day-domingo", order: 6, weekday: 6, label: "Domingo", kind: "rest" },
+        ],
+      }),
+      exercises: [],
+    });
+
+    vi.mocked(useRoutines).mockReturnValue({
+      routines: [weekly],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+
+    renderPageWithSession();
+
+    fireEvent.click(screen.getByText("Entrenar"));
+
+    expect(mockStart).not.toHaveBeenCalled();
+  });
+
+  it("rutina con día de entrenamiento y día de descanso → selector solo muestra el día de entrenamiento", () => {
+    const lunesId = "11111111-1111-1111-1111-111111111101";
+    const lunesEx = makeRoutineExercise({ dayIndex: 0, dayLabel: "Lunes", rowId: "row-lunes-1" });
+    const martesEx = makeRoutineExercise({ dayIndex: 1, dayLabel: "Martes", rowId: "row-martes-1" });
+
+    const weekly = makeRoutine({
+      title: "Rutina semanal",
+      routineMode: "weekly",
+      description: JSON.stringify({
+        v: 1,
+        text: "Rutina semanal",
+        mode: "weekly",
+        days: [
+          { id: lunesId, order: 0, weekday: 0, label: "Lunes", kind: "training" },
+          { id: "22222222-2222-2222-2222-222222222202", order: 1, weekday: 1, label: "Martes", kind: "training" },
+          { id: "33333333-3333-3333-3333-333333333303", order: 6, weekday: 6, label: "Domingo", kind: "rest" },
+        ],
+      }),
+      exercises: [lunesEx, martesEx],
+    });
+
+    vi.mocked(useRoutines).mockReturnValue({
+      routines: [weekly],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      toggleFavorite: vi.fn(),
+      pendingIds: new Set(),
+    } as never);
+
+    renderPageWithSession();
+
+    fireEvent.click(screen.getByText("Entrenar"));
+
+    // Solo los días de entrenamiento aparecen en el selector (no el descanso)
+    expect(screen.getByText("Lunes")).toBeTruthy();
+    expect(screen.getByText("Martes")).toBeTruthy();
+    expect(screen.queryByText("Domingo")).toBeNull();
+    expect(screen.queryByText("Descanso")).toBeNull();
+
+    fireEvent.click(screen.getByText("Lunes"));
+
+    expect(mockStart).toHaveBeenCalledTimes(1);
+    expect(mockStart).toHaveBeenCalledWith({
+      routine: { id: "routine-1", title: "Rutina semanal" },
+      routineDayId: lunesId,
+      dayLabel: "Lunes",
+      planned: expect.arrayContaining([
+        expect.objectContaining({ dayIndex: 0, dayLabel: "Lunes" }),
+      ]),
+    });
   });
 });

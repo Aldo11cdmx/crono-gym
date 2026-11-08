@@ -331,8 +331,58 @@ describe("DashboardPage", () => {
     fireEvent.click(screen.getByText("Comenzar entrenamiento"));
     expect(mockStart).toHaveBeenCalledWith({
       routine: { id: "r-1", title: "Full Body" },
+      routineDayId: expect.any(String),
+      dayLabel: "Pecho",
+      planned: expect.arrayContaining([
+        expect.objectContaining({ dayIndex: 0, dayLabel: "Pecho" }),
+      ]),
     });
+    expect(mockStart).toHaveBeenCalledTimes(1);
+    const planned = mockStart.mock.calls[0][0].planned;
+    expect(planned).toHaveLength(1); // Solo el ejercicio de hoy (Lunes/Pecho), no otros días
     expect(mockNavigate).toHaveBeenCalledWith("/entrenar");
+  });
+
+  it("día de descanso: CTA no inicia sesión cuando hoy es descanso", () => {
+    mockStart.mockReturnValue({ ok: true });
+    mockState.routines = [
+      {
+        id: "r-rest",
+        title: "Rutina solo descanso",
+        exercises: [],
+        is_favorite: false,
+        user_id: "user-1",
+        description: JSON.stringify({
+          v: 1,
+          text: "Rutina solo descanso",
+          mode: "weekly",
+          days: Array.from({ length: 7 }, (_, i) => ({
+            id: crypto.randomUUID(),
+            order: i,
+            weekday: i,
+            label: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][i],
+            kind: "rest",
+          })),
+        }),
+        created_at: "2026-01-01T00:00:00Z",
+        source: "user",
+        authored_by_coach: null,
+        is_template: false,
+      },
+    ];
+
+    render(
+      <MemoryRouter>
+        <DashboardPage userId="user-1" />
+      </MemoryRouter>,
+    );
+
+    // Hoy es Lunes (FIXED_NOW): todos los días son descanso, así que
+    // el CTA principal no inicia sesión.
+    const cta = screen.getByRole("button", { name: /Comenzar|Sin sesión|programada/i });
+    fireEvent.click(cta);
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it("shows Continuar entrenamiento when a session is active", () => {

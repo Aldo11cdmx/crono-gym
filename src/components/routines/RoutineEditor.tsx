@@ -24,7 +24,7 @@ import {
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { CRONOS_LABELS } from "@/lib/i18n";
-import { TYPE } from "@/design/tokens";
+import { GLASS, SCRIM, STATUS, TEXT, TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
@@ -117,19 +117,15 @@ function translationFor(code: string): string {
   return map[code] ?? code;
 }
 
-function dayKindBadgeClass(kind: RoutineDay["kind"]): string {
-  const base = "text-xs px-2 py-0.5 rounded-full";
-  switch (kind) {
-    case "training":
-      return base + " text-accent bg-accent/10";
-    case "rest":
-      return base + " text-neutral-400 bg-neutral-800/50";
-    case "mobility":
-      return base + " text-cyan-400 bg-cyan-950/20";
-    case "empty":
-      return base + " text-neutral-500 bg-neutral-900/30";
-  }
-  return base;
+function dayKindTone(kind: RoutineDay["kind"]) {
+  if (kind === "training") return { color: "var(--cronos-accent-text, #f87171)", background: "rgba(239,68,68,0.10)", border: "rgba(239,68,68,0.28)" };
+  if (kind === "mobility") return { color: STATUS.success.text, background: STATUS.success.muted, border: STATUS.success.border };
+  if (kind === "rest") return { color: TEXT.secondary, background: GLASS.fillSubtle, border: GLASS.border };
+  return { color: TEXT.tertiary, background: "transparent", border: GLASS.border };
+}
+
+function dayKindBadgeClass(_kind: RoutineDay["kind"]): string {
+  return "inline-flex items-center rounded-full border px-2 py-0.5";
 }
 
 export function RoutineEditor({
@@ -552,317 +548,146 @@ export function RoutineEditor({
   }, [draft, targetDayIndex]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: "#000", backdropFilter: reducedMotion ? "none" : "blur(20px)" }}>
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-neutral-900/80">
-        <h2 className="text-neutral-100 font-semibold" style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight }}>
-          {isEditMode ? "Editar rutina" : "Nueva rutina"}
-        </h2>
-        <GlassButton variant="ghost" icon={<X />} onClick={handleClose} aria-label="Cerrar editor" />
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: "rgba(0,0,0,0.97)", backdropFilter: reducedMotion ? "none" : "blur(20px)" }}>
+      <div className="border-b px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: `linear-gradient(180deg, ${GLASS.fillRaised} 0%, rgba(0,0,0,0.94) 100%)` }}>
+        <div className="mx-auto flex w-full max-w-5xl items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <p className="uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>{isEditMode ? "Edición" : "Nueva"}</p>
+            <h2 className="text-neutral-100" style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, lineHeight: TYPE.title2.lineHeight }}>{isEditMode ? "Editar rutina" : "Nueva rutina"}</h2>
+            <p className="text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{draft.mode === "weekly" ? "Plan semanal · 7 días" : "Rutina individual"}</p>
+          </div>
+          <GlassButton variant="ghost" icon={<X />} onClick={handleClose} aria-label="Cerrar editor" />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-8">
-        <div className="space-y-6">
-          <GlassCard>
-            <div className="space-y-4 p-6">
+      <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+        <div className="mx-auto w-full max-w-5xl space-y-5">
+          <GlassCard raised><div className="space-y-5"><div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs text-neutral-500 mb-1 uppercase tracking-wider" style={{ fontWeight: 600 }}>
-                  Nombre de la rutina
-                </label>
-                <input type="text" value={draft.title} onChange={setTitle} className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-neutral-100 focus:border-accent/50 focus:outline-none transition-colors" placeholder={CRONOS_LABELS.namePlaceholder} />
+                <label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Nombre de la rutina</label>
+                <input type="text" value={draft.title} onChange={setTitle} className="w-full rounded-2xl border bg-black/25 px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border }} placeholder={CRONOS_LABELS.namePlaceholder} />
               </div>
               <div>
-                <label className="block text-xs text-neutral-500 mb-1 uppercase tracking-wider" style={{ fontWeight: 600 }}>
-                  Descripción
-                </label>
-                <textarea value={draft.description} onChange={setDescription} rows={3} className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-neutral-100 focus:border-accent/50 focus:outline-none transition-colors" placeholder="Anota qu\u00e9 trabaja esta rutina\u2026" />
+                <label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Descripción</label>
+                <textarea value={draft.description} onChange={setDescription} rows={3} className="w-full rounded-2xl border bg-black/25 px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border }} placeholder="Anota qué trabaja esta rutina…" />
               </div>
-              {mode === "new" && (
-                <div>
-                  <label className="block text-xs text-neutral-500 mb-1 uppercase tracking-wider" style={{ fontWeight: 600 }}>
-                    Tipo de plan
-                  </label>
-                  <div className="flex gap-2">
-                    <GlassButton
-                      variant={draftMode === "single" ? "primary" : "ghost"}
-                      onClick={() => requestSwitchMode("single")}
-                      aria-label="Plan individual"
-                    >
-                      Individual
-                    </GlassButton>
-                    <GlassButton
-                      variant={draftMode === "weekly" ? "primary" : "ghost"}
-                      onClick={() => requestSwitchMode("weekly")}
-                      aria-label="Plan semanal"
-                    >
-                      Semanal
-                    </GlassButton>
-                    <GlassButton
-                      variant="ghost"
-                      onClick={() => { setTemplateError(null); setTemplateOpen(true); }}
-                      aria-label="Desde plantilla"
-                    >
-                      Desde plantilla
-                    </GlassButton>
-                  </div>
-                  <p className="text-neutral-500 text-xs mt-1" style={{ fontSize: TYPE.caption.size }}>
-                    {draftMode === "weekly" ? "7 d\u00edas fijos (Lunes\u2013Domingo)" : "D\u00edas libres (individual)"}
-                  </p>
-                </div>
-              )}
-              {mode === "edit" && draft.needsModeConfirmation && (
-                <div className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-3">
-                  <p className="text-neutral-300 text-sm mb-3" style={{ fontSize: TYPE.caption.size }}>
-                    Esta rutina no tiene plan semanal asignado.
-                  </p>
-                  <GlassButton
-                    variant="primary"
-                    onClick={() => setDraftMode("weekly")}
-                    aria-label="Convertir a plan semanal"
-                  >
-                    {CRONOS_LABELS.planner.convertToWeekly}
-                  </GlassButton>
-                </div>
-              )}
             </div>
-          </GlassCard>
+            <div className="space-y-4 rounded-2xl border p-4" style={{ borderColor: GLASS.border, background: GLASS.fillSubtle }}>
+              {mode === "new" ? (<>
+                <label className="block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Tipo de plan</label>
+                <div className="flex flex-wrap gap-2">
+                  <GlassButton variant={draftMode === "single" ? "primary" : "ghost"} onClick={() => requestSwitchMode("single")} aria-label="Plan individual">Individual</GlassButton>
+                  <GlassButton variant={draftMode === "weekly" ? "primary" : "ghost"} onClick={() => requestSwitchMode("weekly")} aria-label="Plan semanal">Semanal</GlassButton>
+                </div>
+                <p className="text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{draftMode === "weekly" ? "7 días fijos (Lunes–Domingo)." : "Días libres (individual)."}</p>
+                <GlassButton variant="ghost" onClick={() => { setTemplateError(null); setTemplateOpen(true); }} aria-label="Desde plantilla">Desde plantilla</GlassButton>
+              </>) : mode === "edit" && draft.needsModeConfirmation ? (<div className="space-y-3">
+                <p className="text-neutral-300" style={{ fontSize: TYPE.caption.size }}>Esta rutina no tiene plan semanal asignado.</p>
+                <GlassButton variant="primary" onClick={() => setDraftMode("weekly")} aria-label="Convertir a plan semanal">{CRONOS_LABELS.planner.convertToWeekly}</GlassButton>
+              </div>) : (<p className="text-neutral-500" style={{ fontSize: TYPE.subhead.size }}>Revisa nombre, días y ejercicios antes de guardar.</p>)}
+            </div>
+          </div></div></GlassCard>
 
-          <div className="space-y-3">
-            {draft.days.map((day, dayIndex) => (
-              <GlassCard key={day.id} raised className="group">
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-2">
-                        <input value={day.label} onChange={(e) => setDayLabel(dayIndex, e.target.value)} className="bg-transparent border-none text-neutral-100 focus:ring-0 outline-none min-w-[120px]" style={{ fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight }} placeholder={"D\u00eda " + (day.order + 1)} />
-                        <select value={day.kind} onChange={(e) => setDayKind(dayIndex, e.target.value as RoutineDay["kind"])} className="bg-neutral-950/50 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-neutral-300 focus:border-accent/50 focus:outline-none">
-                          <option value="training">Entrenamiento</option>
-                          <option value="rest">Descanso</option>
-                          <option value="mobility">Movilidad</option>
-                          <option value="empty">Vac\u00edo</option>
-                        </select>
-                        <span className={dayKindBadgeClass(day.kind)} style={{ fontSize: "10px", padding: "0 4px", borderRadius: "9999px" }}>
-                          {displayDayLabel(day, draft.mode)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {dayIndex > 0 && (
-                        <GlassButton variant="ghost" icon={<ArrowUp size={14} />} onClick={(e) => { e.stopPropagation(); moveDay(dayIndex, dayIndex - 1); }} aria-label="Mover d\u00eda arriba" />
-                      )}
-                      {dayIndex < draft.days.length - 1 && (
-                        <GlassButton variant="ghost" icon={<ArrowDown size={14} />} onClick={(e) => { e.stopPropagation(); moveDay(dayIndex, dayIndex + 1); }} aria-label="Mover d\u00eda abajo" />
-                      )}
-                      <GlassButton variant="ghost" icon={<Copy />} onClick={(e) => { e.stopPropagation(); duplicateDay(dayIndex); }} aria-label="Duplicar d\u00eda" />
-                      <GlassButton variant="destructive" icon={<Trash2 />} onClick={(e) => { e.stopPropagation(); removeDay(dayIndex); }} aria-label="Eliminar d\u00eda" />
-                    </div>
+          <section className="space-y-3" aria-label="Estructura de la rutina">
+            <div className="flex items-center justify-between gap-3 px-1">
+              <h3 className="text-neutral-100" style={{ fontSize: TYPE.headline.size, fontWeight: TYPE.headline.weight }}>Estructura</h3>
+              <p className="text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{draft.days.length} {draft.days.length === 1 ? "día" : "días"}</p>
+            </div>
+            {draft.days.map((day, dayIndex) => {
+              const tone = dayKindTone(day.kind);
+              return (
+              <GlassCard key={day.id} raised><div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <input value={day.label} onChange={(e) => setDayLabel(dayIndex, e.target.value)} className="min-w-[140px] rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight }} placeholder={"Día " + (day.order + 1)} />
+                    <select value={day.kind} onChange={(e) => setDayKind(dayIndex, e.target.value as RoutineDay["kind"])} className="rounded-xl border bg-black/20 px-3 py-2 text-neutral-300 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }}>
+                      <option value="training">Entrenamiento</option><option value="rest">Descanso</option><option value="mobility">Movilidad</option><option value="empty">Vacío</option>
+                    </select>
+                    <span className={dayKindBadgeClass(day.kind)} style={{ fontSize: TYPE.label.size, fontWeight: TYPE.label.weight, letterSpacing: TYPE.label.tracking, color: tone.color, background: tone.background, borderColor: tone.border }}>{displayDayLabel(day, draft.mode)}</span>
                   </div>
+                  <div className="flex items-center gap-1">
+                    {dayIndex > 0 && (<GlassButton variant="ghost" icon={<ArrowUp size={14} />} onClick={(e) => { e.stopPropagation(); moveDay(dayIndex, dayIndex - 1); }} aria-label="Mover día arriba" />)}
+                    {dayIndex < draft.days.length - 1 && (<GlassButton variant="ghost" icon={<ArrowDown size={14} />} onClick={(e) => { e.stopPropagation(); moveDay(dayIndex, dayIndex + 1); }} aria-label="Mover día abajo" />)}
+                    <GlassButton variant="ghost" icon={<Copy />} onClick={(e) => { e.stopPropagation(); duplicateDay(dayIndex); }} aria-label="Duplicar día" />
+                    <GlassButton variant="destructive" icon={<Trash2 />} onClick={(e) => { e.stopPropagation(); removeDay(dayIndex); }} aria-label="Eliminar día" />
+                  </div>
+                </div>
 
-                  {day.kind === "training" && (
-                    <div className="flex gap-3">
-                      {day.exercises.map((ex, exIndex) => (
-                        <GlassCard key={ex.rowId ?? ex.exercise.id} flush className="flex flex-col gap-2 min-w-[200px]">
-                          <div className="flex items-start justify-between gap-2">
-                            <span className="text-neutral-300 truncate max-w-[150px]" title={ex.exercise.name} style={{ fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight }}>
-                              {ex.exercise.name}
-                            </span>
-                            <GlassButton variant="ghost" icon={<Trash2 />} onClick={(e) => { e.stopPropagation(); removeExercise(dayIndex, exIndex); }} aria-label="Quitar ejercicio" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[10px] text-neutral-500 uppercase mb-1">Series</label>
-                              <input type="number" value={ex.target_sets} onChange={(e) => setExerciseSets(dayIndex, exIndex, Number(e.target.value) || 1)} className="w-full bg-neutral-950 border border-white/10 rounded-lg px-2 py-2 text-xs text-neutral-100 focus:border-accent/50 focus:outline-none" />
-                            </div>
-                            <div>
-                              <label className="text-[10px] text-neutral-500 uppercase mb-1">Descanso (s)</label>
-                              <input type="number" value={ex.rest_seconds} onChange={(e) => setExerciseRest(dayIndex, exIndex, Number(e.target.value) || 0)} className="w-full bg-neutral-950 border border-white/10 rounded-lg px-2 py-2 text-xs text-neutral-100 focus:border-accent/50 focus:outline-none" />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[10px] text-neutral-500 uppercase mb-1">Reps m\u00edn</label>
-                              <input type="number" value={ex.target_reps_min ?? ""} onChange={(e) => setExerciseReps(dayIndex, exIndex, "min", e.target.value === "" ? null : Number(e.target.value))} className="w-full bg-neutral-950 border border-white/10 rounded-lg px-2 py-2 text-xs text-neutral-100 focus:border-accent/50 focus:outline-none" />
-                            </div>
-                            <div>
-                              <label className="text-[10px] text-neutral-500 uppercase mb-1">Reps m\u00e1x</label>
-                              <input type="number" value={ex.target_reps_max ?? ""} onChange={(e) => setExerciseReps(dayIndex, exIndex, "max", e.target.value === "" ? null : Number(e.target.value))} className="w-full bg-neutral-950 border border-white/10 rounded-lg px-2 py-2 text-xs text-neutral-100 focus:border-accent/50 focus:outline-none" />
-                            </div>
-                          </div>
-                        </GlassCard>
-                      ))}
-                      {day.exercises.length === 0 && (
-                        <div className="text-neutral-600 text-sm italic">
-                          {CRONOS_LABELS.emptyDay}
+                {day.kind === "training" && (<div className="space-y-3">
+                  {day.exercises.length > 0 ? (<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {day.exercises.map((ex, exIndex) => (
+                      <GlassCard key={ex.rowId ?? ex.exercise.id} flush className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="min-w-0 text-neutral-200" title={ex.exercise.name} style={{ fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight, overflowWrap: "anywhere" }}>{ex.exercise.name}</span>
+                          <GlassButton variant="ghost" icon={<Trash2 size={15} />} onClick={(e) => { e.stopPropagation(); removeExercise(dayIndex, exIndex); }} aria-label="Quitar ejercicio" />
                         </div>
-                      )}
-                      <GlassButton variant="ghost" icon={<Plus />} onClick={(e) => { e.stopPropagation(); openPickerForDay(dayIndex); }} aria-label="A\u00f1adir ejercicio al d\u00eda">
-                        A\u00f1adir ejercicio
-                      </GlassButton>
-                    </div>
-                  )}
-                </div>
-              </GlassCard>
-            ))}
-            <GlassButton variant="secondary" icon={<Plus />} onClick={addDay} block disabled={draft.mode === "weekly"} aria-label="A\u00f1adir d\u00eda de entrenamiento">
-              A\u00f1adir d\u00eda
-            </GlassButton>
-          </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Series</label><input type="number" value={ex.target_sets} onChange={(e) => setExerciseSets(dayIndex, exIndex, Number(e.target.value) || 1)} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
+                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Descanso (s)</label><input type="number" value={ex.rest_seconds} onChange={(e) => setExerciseRest(dayIndex, exIndex, Number(e.target.value) || 0)} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
+                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Reps mín</label><input type="number" value={ex.target_reps_min ?? ""} onChange={(e) => setExerciseReps(dayIndex, exIndex, "min", e.target.value === "" ? null : Number(e.target.value))} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
+                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Reps máx</label><input type="number" value={ex.target_reps_max ?? ""} onChange={(e) => setExerciseReps(dayIndex, exIndex, "max", e.target.value === "" ? null : Number(e.target.value))} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
+                        </div>
+                      </GlassCard>
+                    ))}
+                  </div>) : (<div className="rounded-2xl border px-4 py-3 text-neutral-500" style={{ borderColor: GLASS.border, background: GLASS.fillSubtle, fontSize: TYPE.subhead.size }}>{CRONOS_LABELS.emptyDay}</div>)}
+                  <GlassButton variant="ghost" icon={<Plus />} onClick={(e) => { e.stopPropagation(); openPickerForDay(dayIndex); }} aria-label="Añadir ejercicio al día">Añadir ejercicio</GlassButton>
+                </div>)}
+              </div></GlassCard>
+            );})}
+            <GlassButton variant="secondary" icon={<Plus />} onClick={addDay} block disabled={draft.mode === "weekly"} aria-label="Añadir día de entrenamiento">Añadir día</GlassButton>
+          </section>
         </div>
       </div>
 
-      <div className="border-t border-white/10 bg-neutral-900/80 p-6 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <GlassButton variant="ghost" icon={<Copy />} onClick={handleDuplicate} disabled={!isEditMode} aria-label="Duplicar rutina">
-              Duplicar
-            </GlassButton>
+      <div className="border-t px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: "rgba(0,0,0,0.88)", backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <GlassButton variant="ghost" icon={<Copy />} onClick={handleDuplicate} disabled={!isEditMode} aria-label="Duplicar rutina">Duplicar</GlassButton>
+            <GlassButton variant="primary" icon={<Save />} onClick={handleSave} disabled={saving || !canSave} aria-label="Guardar rutina">{saving ? CRONOS_LABELS.saving : CRONOS_LABELS.save}</GlassButton>
           </div>
-          <GlassButton variant="primary" icon={<Save />} onClick={handleSave} disabled={saving || !canSave} aria-label="Guardar rutina">
-            {saving ? CRONOS_LABELS.saving : CRONOS_LABELS.save}
-          </GlassButton>
+          {!canSave && !saving && <p className="text-xs" style={{ color: STATUS.error.text }}>{validationMessages.length > 0 ? validationMessages.join(", ") : CRONOS_LABELS.routineValidation.noTitle}</p>}
+          {saveResult && !saveResult.ok && <p className="text-xs" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.saveError}</p>}
+          {saveResult && saveResult.ok && <p className="text-xs" style={{ color: STATUS.success.text }}>{CRONOS_LABELS.saved}</p>}
         </div>
-        {!canSave && !saving && (
-          <p className="text-xs text-red-400">
-            {validationMessages.length > 0 ? validationMessages.join(", ") : CRONOS_LABELS.routineValidation.noTitle}
-          </p>
-        )}
-        {saveResult && !saveResult.ok && (
-          <p className="text-xs text-red-400">{CRONOS_LABELS.saveError}</p>
-        )}
-        {saveResult && saveResult.ok && (
-          <p className="text-xs text-emerald-400">{CRONOS_LABELS.saved}</p>
-        )}
       </div>
 
-      <UnifiedExerciseSelectorSheet
-        isOpen={pickerOpen}
-        mode="single"
-        onClose={closePicker}
-        dayContext={dayContext}
-        onSelectSingle={(exercise) => {
-          if (targetDayIndex !== null) {
-            addExerciseToDay(targetDayIndex, exercise);
-          }
-        }}
-      />
+      <UnifiedExerciseSelectorSheet isOpen={pickerOpen} mode="single" onClose={closePicker} dayContext={dayContext} onSelectSingle={(exercise) => { if (targetDayIndex !== null) addExerciseToDay(targetDayIndex, exercise); }} />
 
-      {closeConfirmOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={(e) => e.stopPropagation()}>
-          <GlassCard raised className="w-full max-w-md p-6">
-            <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
-              Tienes cambios sin guardar
-            </h3>
-            <p className="text-neutral-400 text-sm mb-6">
-              \u00bfQu\u00e9 deseas hacer antes de cerrar?
-            </p>
-            <div className="flex gap-3">
-              <GlassButton variant="primary" onClick={handleCloseConfirmSave} disabled={saving || !canSave}>
-                Guardar y salir
-              </GlassButton>
-              <GlassButton variant="destructive" onClick={handleCloseConfirmDiscard}>
-                Descartar cambios
-              </GlassButton>
-              <GlassButton variant="ghost" onClick={() => setCloseConfirmOpen(false)}>
-                Cancelar
-              </GlassButton>
-            </div>
-          </GlassCard>
+      {closeConfirmOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={(e) => e.stopPropagation()}><div className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
+        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>Tienes cambios sin guardar</h3>
+        <p className="text-neutral-400 text-sm">¿Qué deseas hacer antes de cerrar?</p>
+        <div className="flex flex-wrap gap-2">
+          <GlassButton variant="primary" onClick={handleCloseConfirmSave} disabled={saving || !canSave}>Guardar y salir</GlassButton>
+          <GlassButton variant="destructive" onClick={handleCloseConfirmDiscard}>Descartar cambios</GlassButton>
+          <GlassButton variant="ghost" onClick={() => setCloseConfirmOpen(false)}>Cancelar</GlassButton>
         </div>
-      )}
+      </div></GlassCard></div></div>)}
 
-      {removeConfirmOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={cancelRemoveExercises}>
-          <div onClick={(e) => e.stopPropagation()}>
-            <GlassCard raised className="w-full max-w-md p-6">
-            <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
-              {CRONOS_LABELS.planner.removeExercisesTitle}
-            </h3>
-            <p className="text-neutral-400 text-sm mb-6">
-              {CRONOS_LABELS.planner.removeExercisesBody.replace("{count}", String(removeConfirmExerciseCount))}
-            </p>
-            <div className="flex gap-3">
-              <GlassButton variant="destructive" onClick={confirmRemoveExercises}>
-                {CRONOS_LABELS.planner.removeExercisesConfirm}
-              </GlassButton>
-              <GlassButton variant="ghost" onClick={cancelRemoveExercises}>
-                {CRONOS_LABELS.planner.removeExercisesCancel}
-              </GlassButton>
-            </div>
-          </GlassCard>
-          </div>
-        </div>
-      )}
+      {removeConfirmOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={cancelRemoveExercises}><div onClick={(e) => e.stopPropagation()} className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
+        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>{CRONOS_LABELS.planner.removeExercisesTitle}</h3>
+        <p className="text-neutral-400 text-sm">{CRONOS_LABELS.planner.removeExercisesBody.replace("{count}", String(removeConfirmExerciseCount))}</p>
+        <div className="flex flex-wrap gap-2"><GlassButton variant="destructive" onClick={confirmRemoveExercises}>{CRONOS_LABELS.planner.removeExercisesConfirm}</GlassButton><GlassButton variant="ghost" onClick={cancelRemoveExercises}>{CRONOS_LABELS.planner.removeExercisesCancel}</GlassButton></div>
+      </div></GlassCard></div></div>)}
 
-      {switchModeConfirmOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setSwitchModeConfirmOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()}>
-            <GlassCard raised className="w-full max-w-md p-6">
-            <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
-              {CRONOS_LABELS.planner.switchModeDiscardTitle}
-            </h3>
-            <p className="text-neutral-400 text-sm mb-6">
-              {CRONOS_LABELS.planner.switchModeDiscardBody}
-            </p>
-            <div className="flex gap-3">
-              <GlassButton variant="destructive" onClick={() => { setSwitchModeConfirmOpen(false); setDraftMode(pendingDraftMode); }}>
-                {CRONOS_LABELS.planner.switchModeDiscardConfirm}
-              </GlassButton>
-              <GlassButton variant="ghost" onClick={() => setSwitchModeConfirmOpen(false)}>
-                {CRONOS_LABELS.planner.switchModeDiscardCancel}
-              </GlassButton>
-            </div>
-          </GlassCard>
-          </div>
-        </div>
-      )}
+      {switchModeConfirmOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={() => setSwitchModeConfirmOpen(false)}><div onClick={(e) => e.stopPropagation()} className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
+        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>{CRONOS_LABELS.planner.switchModeDiscardTitle}</h3>
+        <p className="text-neutral-400 text-sm">{CRONOS_LABELS.planner.switchModeDiscardBody}</p>
+        <div className="flex flex-wrap gap-2"><GlassButton variant="destructive" onClick={() => { setSwitchModeConfirmOpen(false); setDraftMode(pendingDraftMode); }}>{CRONOS_LABELS.planner.switchModeDiscardConfirm}</GlassButton><GlassButton variant="ghost" onClick={() => setSwitchModeConfirmOpen(false)}>{CRONOS_LABELS.planner.switchModeDiscardCancel}</GlassButton></div>
+      </div></GlassCard></div></div>)}
 
-      {templateOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => { setTemplateError(null); setTemplateOpen(false); }}>
-          <div onClick={(e) => e.stopPropagation()}>
-            <GlassCard raised className="w-full max-w-md p-6">
-            <h3 className="text-neutral-100 font-semibold mb-3" style={{ fontSize: TYPE.subhead.size }}>
-              Elegir plantilla
-            </h3>
-            <p className="text-neutral-400 text-sm mb-6" style={{ fontSize: TYPE.caption.size }}>
-              Clona una plantilla base y adapta los días y ejercicios a tu gusto.
-            </p>
-            <div className="space-y-3">
-              {templateError && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-                  {templateError}
-                </div>
-              )}
-              {ROUTINE_TEMPLATES.map((template) => (
-                <GlassButton
-                  key={template.id}
-                  variant="ghost"
-                  block
-                  onClick={() => applyTemplateToDraft(template)}
-                  disabled={templateLoading}
-                  aria-label={`Plantilla ${template.title}`}
-                >
-                  <div className="flex justify-between">
-                    <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>
-                      {template.title}
-                    </span>
-                    <span className="text-xs text-neutral-500">
-                      {template.days.length} día{template.days.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <p className="text-neutral-500 text-sm mt-1" style={{ fontSize: TYPE.caption.size }}>
-                    {template.days.filter((d) => d.exercises.length > 0).length} día{template.days.filter((d) => d.exercises.length > 0).length !== 1 ? "s con ejercicios" : " con ejercicio"}
-                  </p>
-                </GlassButton>
-              ))}
-            </div>
-            <div className="flex justify-end mt-6">
-              <GlassButton variant="ghost" onClick={() => { setTemplateError(null); setTemplateOpen(false); }} disabled={templateLoading}>
-                Cancelar
-              </GlassButton>
-            </div>
-            </GlassCard>
-          </div>
-        </div>
-      )}
+      {templateOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={() => { setTemplateError(null); setTemplateOpen(false); }}><div onClick={(e) => e.stopPropagation()} className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
+        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>Elegir plantilla</h3>
+        <p className="text-neutral-400" style={{ fontSize: TYPE.caption.size }}>Clona una plantilla base y adapta los días y ejercicios a tu gusto.</p>
+        {templateError && <div className="rounded-xl border px-3 py-2 text-xs" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted, color: STATUS.error.text }}>{templateError}</div>}
+        <div className="space-y-2">{ROUTINE_TEMPLATES.map((template) => (
+          <GlassButton key={template.id} variant="ghost" block onClick={() => applyTemplateToDraft(template)} disabled={templateLoading} aria-label={`Plantilla ${template.title}`}><div className="w-full text-left">
+            <div className="flex items-center justify-between gap-2"><span style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>{template.title}</span><span className="text-xs text-neutral-500">{template.days.length} día{template.days.length !== 1 ? "s" : ""}</span></div>
+            <p className="mt-1 text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{template.days.filter((d) => d.exercises.length > 0).length} día{template.days.filter((d) => d.exercises.length > 0).length !== 1 ? "s con ejercicios" : " con ejercicio"}</p>
+          </div></GlassButton>
+        ))}</div>
+        <div className="flex justify-end"><GlassButton variant="ghost" onClick={() => { setTemplateError(null); setTemplateOpen(false); }} disabled={templateLoading}>Cancelar</GlassButton></div>
+      </div></GlassCard></div></div>)}
     </div>
   );
 }

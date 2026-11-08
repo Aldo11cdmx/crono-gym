@@ -8,7 +8,7 @@
 
 import { useCallback } from "react";
 import { hapticSuccess } from "@/lib/haptics";
-import { ACCENT, MOTION, RADIUS, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
+import { ACCENT, GLASS, MOTION, RADIUS, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 
 interface SelectionBarProps {
   selectedCount: number;
@@ -46,7 +46,7 @@ export function SelectionBar({ selectedCount, onAdd, onClear }: SelectionBarProp
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         background: "rgba(10, 10, 12, 0.9)",
-        boxShadow: "0 -8px 24px rgba(0,0,0,0.35)",
+        boxShadow: GLASS.shadow,
       }}
     >
       <span

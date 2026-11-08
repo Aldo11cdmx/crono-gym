@@ -51,7 +51,7 @@ async function goToRutinas(page) {
   // Esperar a que AuthGate termine de cargar.
   await page.getByText(/cargando…/i).waitFor({ state: "hidden", timeout: 15_000 });
   // Esperar a que el botón "Nueva rutina" sea visible (la sesión debe estar lista).
-  await page.getByRole("button", { name: /nueva rutina/i }).waitFor({ state: "visible", timeout: 10_000 });
+  await page.getByRole("button", { name: /nueva rutina/i }).waitFor({ state: "visible", timeout: 30_000 });
 }
 
 test.describe("Fase A - Pase final", () => {

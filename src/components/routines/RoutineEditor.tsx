@@ -187,7 +187,11 @@ export function RoutineEditor({
   const [draft, setDraft] = useState<RoutineDraftV2>(initialDraft);
 
   useEffect(() => {
-    setDraft(initialDraft);
+    // Solo restaurar el draft inicial cuando el draft actual sigue siendo la referencia original.
+    // Esto evita sobrescribir cambios del usuario o plantillas aplicadas cuando draftMode cambia.
+    if (draft === initialDraftRef.current) {
+      setDraft(initialDraft);
+    }
     initialDraftRef.current = initialDraft;
   }, [initialDraft]);
 

@@ -81,6 +81,21 @@ vi.mock("@/components/UnifiedExerciseSelectorSheet", () => {
   };
 });
 
+const mockCatalog: Exercise[] = [
+  { id: "cat-1", name: "Sentadilla", name_es: "Sentadilla", body_part: "Piernas", target: "Piernas", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-2", name: "Press de banca", name_es: "Press de banca", body_part: "Pecho", target: "Pecho", equipment: "Banco de pesas", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-3", name: "Remo con barra", name_es: "Remo con barra", body_part: "Espalda", target: "Espalda", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-4", name: "Press militar", name_es: "Press militar", body_part: "Hombros", target: "Hombros", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-5", name: "Peso muerto", name_es: "Peso muerto", body_part: "Piernas", target: "Piernas", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-6", name: "Dominadas", name_es: "Dominadas", body_part: "Espalda", target: "Espalda", equipment: "Peso Corporal", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-7", name: "Zancadas", name_es: "Zancadas", body_part: "Piernas", target: "Piernas", equipment: "Peso Corporal", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-8", name: "Curl con barra", name_es: "Curl con barra", body_part: "Brazos", target: "Brazos", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-9", name: "Elevaciones laterales", name_es: "Elevaciones laterales", body_part: "Hombros", target: "Hombros", equipment: "Mancuernas", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-10", name: "Elevación de gemelos", name_es: "Elevación de gemelos", body_part: "Piernas", target: "Piernas", equipment: "Máquina Selectorizada", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-11", name: "Extensión de tríceps en polea", name_es: "Extensión de tríceps en polea", body_part: "Brazos", target: "Brazos", equipment: "Polea", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+  { id: "cat-12", name: "Curl femoral", name_es: "Curl femoral", body_part: "Piernas", target: "Piernas", equipment: "Máquina Selectorizada", gif_url: "", instructions: [], is_active: true, is_hidden: false },
+];
+
 let mockCatalogFind: (name: string) => Exercise | null = (name) =>
   mockCatalog.find((e) => e.name === name) ?? null;
 
@@ -94,17 +109,6 @@ vi.mock("@/hooks/useExerciseCatalog", () => ({
     find: mockCatalogFind,
   })),
 }));
-
-const mockCatalog: Exercise[] = [
-  { id: "cat-1", name: "Sentadilla", name_es: "Sentadilla", body_part: "Piernas", target: "Piernas", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-2", name: "Press de banca", name_es: "Press de banca", body_part: "Pecho", target: "Pecho", equipment: "Banco de pesas", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-3", name: "Remo con barra", name_es: "Remo con barra", body_part: "Espalda", target: "Espalda", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-4", name: "Press militar", name_es: "Press militar", body_part: "Hombros", target: "Hombros", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-5", name: "Peso muerto", name_es: "Peso muerto", body_part: "Piernas", target: "Piernas", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-6", name: "Dominadas", name_es: "Dominadas", body_part: "Espalda", target: "Espalda", equipment: "Peso Corporal", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-7", name: "Zancadas", name_es: "Zancadas", body_part: "Piernas", target: "Piernas", equipment: "Peso Corporal", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-8", name: "Curl con barra", name_es: "Curl con barra", body_part: "Brazos", target: "Brazos", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-];
 
 function ex(id: string): Exercise {
   return {
@@ -295,9 +299,14 @@ describe("RoutineEditor", () => {
       const semanaBtn = screen.getByRole("button", { name: /semana equilibrada/i });
       fireEvent.click(semanaBtn);
 
-      // Modo weekly activado: 7 días renderizados y el botón Guardar existe
+      // Título válido para habilitar el botón Guardar
+      const titleInput = screen.getByPlaceholderText(/Mi rutina de 4 días|Nueva rutina/i);
+      fireEvent.change(titleInput, { target: { value: "Semana equilibrada" } });
+
+      // Modo weekly activado: 7 días renderizados y el botón Guardar está habilitado
       const saveBtn = screen.getByRole("button", { name: /guardar rutina/i });
       expect(saveBtn).toBeTruthy();
+      expect((saveBtn as HTMLButtonElement).disabled).toBe(false);
 
       // Hay 7 días renderizados (badges de tipo de día)
       const dayTypeBadges = screen.getAllByText(/Entrenamiento|Descanso|Movilidad/i);

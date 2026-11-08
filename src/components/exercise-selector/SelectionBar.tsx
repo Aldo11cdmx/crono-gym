@@ -45,7 +45,8 @@ export function SelectionBar({ selectedCount, onAdd, onClear }: SelectionBarProp
         borderTop: `1px solid rgba(255,255,255,0.10)`,
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        background: "rgba(10, 10, 12, 0.85)",
+        background: "rgba(10, 10, 12, 0.9)",
+        boxShadow: "0 -8px 24px rgba(0,0,0,0.35)",
       }}
     >
       <span

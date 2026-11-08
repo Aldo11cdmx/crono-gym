@@ -518,8 +518,8 @@ export function UnifiedExerciseSelectorSheet({
         onClick={(e) => e.stopPropagation()}
         style={{
           ...sheetStyle,
-          width: isMobile ? "100vw" : "min(92vw, 700px)",
-          maxHeight: isMobile ? "92dvh" : "80dvh",
+          width: isMobile ? "100vw" : "min(92vw, 720px)",
+          maxHeight: isMobile ? "92dvh" : "82dvh",
           borderRadius: isMobile ? `${RADIUS.sheet}` : RADIUS.modal,
           border: `1px solid ${GLASS.border}`,
           background: SOLID.popover,
@@ -532,12 +532,12 @@ export function UnifiedExerciseSelectorSheet({
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
             gap: SPACE.md,
             padding: `${SPACE.md} ${SPACE.lg} ${SPACE.sm}`,
             borderBottom: `1px solid ${GLASS.border}`,
-            background: SOLID.popover,
+            background: `linear-gradient(180deg, ${GLASS.fillRaised} 0%, ${SOLID.popover} 100%)`,
           }}
         >
           <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: SPACE.xs }}>

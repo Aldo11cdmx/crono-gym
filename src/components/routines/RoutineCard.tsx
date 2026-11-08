@@ -2,11 +2,16 @@ import { MoreHorizontal, Play, Star } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
-import { TYPE } from "@/design/tokens";
+import { ACCENT, GLASS, STATUS, TEXT, TYPE } from "@/design/tokens";
+
+type RoutineCardRoutine = RoutineWithExercises & {
+  routineMode: "single" | "weekly" | "legacy";
+  is_favorite?: boolean;
+};
 
 interface RoutineCardProps {
-  routine: RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" };
-  onTrain: (routine: RoutineWithExercises & { routineMode: "single" | "weekly" | "legacy" }) => void;
+  routine: RoutineCardRoutine;
+  onTrain: (routine: RoutineCardRoutine) => void;
   onEdit: () => void;
   onPlan?: () => void;
 }
@@ -22,6 +27,12 @@ function dayCountFromExercises(routine: RoutineWithExercises): number {
   return new Set(routine.exercises.map((e) => e.dayIndex ?? 0)).size;
 }
 
+function modeLabel(mode: RoutineCardRoutine["routineMode"]): string {
+  if (mode === "weekly") return "Semanal";
+  if (mode === "legacy") return "Sin clasificar";
+  return "Individual";
+}
+
 export function RoutineCard({
   routine,
   onTrain,
@@ -33,8 +44,6 @@ export function RoutineCard({
   const isWeekly = routine.routineMode === "weekly";
   const isLegacy = routine.routineMode === "legacy";
   const incomplete = routineIsIncomplete(routine);
-
-  // E5: Iniciar entrenamiento. Deshabilitado si la rutina está incompleta.
   const trainingDisabled = incomplete;
 
   const statusLabel = incomplete ? "Guardado incompleto" : null;
@@ -44,62 +53,114 @@ export function RoutineCard({
       ? "Rutina sin plan. Ábrela para clasificarla."
       : null;
 
+  const modeTone = isWeekly
+    ? { color: ACCENT.text, background: ACCENT.subtle, border: ACCENT.border }
+    : isLegacy
+      ? { color: TEXT.secondary, background: GLASS.fillSubtle, border: GLASS.border }
+      : { color: TEXT.secondary, background: GLASS.fillSubtle, border: GLASS.border };
+
   return (
     <div onClick={onEdit} className="cursor-pointer">
-      <GlassCard raised className="hover:border-white/20 transition-colors">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+      <GlassCard raised className="h-full transition-colors" style={{ minHeight: 196 }}>
+        <div className="flex h-full flex-col gap-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className="inline-flex items-center rounded-full border px-2 py-0.5"
+                  style={{
+                    fontSize: TYPE.label.size,
+                    fontWeight: TYPE.label.weight,
+                    letterSpacing: TYPE.label.tracking,
+                    textTransform: "uppercase",
+                    color: modeTone.color,
+                    background: modeTone.background,
+                    borderColor: modeTone.border,
+                  }}
+                >
+                  {modeLabel(routine.routineMode)}
+                </span>
+                {routine.is_favorite ? (
+                  <span
+                    className="inline-flex items-center rounded-full border px-2 py-0.5"
+                    style={{
+                      fontSize: TYPE.label.size,
+                      fontWeight: TYPE.label.weight,
+                      letterSpacing: TYPE.label.tracking,
+                      textTransform: "uppercase",
+                      color: STATUS.warning.text,
+                      background: STATUS.warning.muted,
+                      borderColor: STATUS.warning.border,
+                    }}
+                  >
+                    Favorita
+                  </span>
+                ) : null}
+              </div>
               <h2
-                className="text-neutral-100 truncate"
-                style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight }}
+                className="text-neutral-100"
+                style={{
+                  fontSize: TYPE.headline.size,
+                  fontWeight: TYPE.headline.weight,
+                  lineHeight: TYPE.headline.lineHeight,
+                  overflowWrap: "anywhere",
+                }}
                 title={routine.title}
               >
                 {routine.title}
               </h2>
-              {isWeekly && (
-                <span className="text-xs px-2 py-0.5 rounded-full text-accent bg-accent/10" style={{ fontSize: "10px" }}>
-                  Semanal
-                </span>
-              )}
-              {isLegacy && (
-                <span className="text-xs px-2 py-0.5 rounded-full text-neutral-400 bg-neutral-800/50" style={{ fontSize: "10px" }}>
-                  Sin clasificar
-                </span>
-              )}
             </div>
             <GlassButton
               variant="ghost"
-              icon={<Star />}
+              icon={<Star size={16} fill={routine.is_favorite ? "currentColor" : "none"} />}
               disabled
               aria-label="Favoritos (no disponible en esta versión)"
+              className="shrink-0"
             />
           </div>
-          {(routine.description ?? "") && (
+
+          {(routine.description ?? "") && !routine.description?.startsWith("{") ? (
             <p
-              className="text-neutral-400 line-clamp-2"
+              className="line-clamp-2 text-neutral-400"
               style={{ fontSize: TYPE.subhead.size, lineHeight: TYPE.subhead.lineHeight }}
             >
               {routine.description}
             </p>
-          )}
-          {statusLabel && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-              <p className="font-medium">{statusLabel}</p>
-              <p className="text-red-400/70 mt-1">{statusHint}</p>
+          ) : null}
+
+          {statusLabel ? (
+            <div
+              className="rounded-2xl border px-3 py-2"
+              style={{
+                borderColor: STATUS.error.border,
+                background: STATUS.error.muted,
+                color: STATUS.error.text,
+              }}
+            >
+              <p style={{ fontSize: TYPE.caption.size, fontWeight: 600 }}>{statusLabel}</p>
+              <p className="mt-1 opacity-90" style={{ fontSize: TYPE.caption.size }}>
+                {statusHint}
+              </p>
             </div>
-          )}
-          {!incomplete && !isLegacy && (
-            <div className="flex items-center gap-3 text-neutral-500" style={{ fontSize: TYPE.caption.size }}>
-              <span>{dayCount} {dayCount === 1 ? "día" : "días"}</span>
-              <span>·</span>
-              <span>{exerciseCount} {exerciseCount === 1 ? "ejercicio" : "ejercicios"}</span>
+          ) : !incomplete ? (
+            <div
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-neutral-500"
+              style={{ fontSize: TYPE.caption.size }}
+            >
+              <span>
+                {dayCount} {dayCount === 1 ? "día" : "días"}
+              </span>
+              <span aria-hidden="true">·</span>
+              <span>
+                {exerciseCount} {exerciseCount === 1 ? "ejercicio" : "ejercicios"}
+              </span>
             </div>
-          )}
-          <div className="flex gap-2">
+          ) : null}
+
+          <div className="mt-auto flex items-center gap-2 pt-1">
             <GlassButton
               variant="primary"
-              icon={<Play />}
+              icon={<Play size={16} />}
               onClick={(e) => {
                 e.stopPropagation();
                 onTrain(routine);
@@ -110,14 +171,21 @@ export function RoutineCard({
             >
               Entrenar
             </GlassButton>
-            {onPlan && isWeekly && (
-              <GlassButton variant="ghost" onClick={(e) => { e.stopPropagation(); onPlan(); }} aria-label={`Planificar ${routine.title}`}>
+            {onPlan && isWeekly ? (
+              <GlassButton
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPlan();
+                }}
+                aria-label={`Planificar ${routine.title}`}
+              >
                 Planificar
               </GlassButton>
-            )}
+            ) : null}
             <GlassButton
               variant="ghost"
-              icon={<MoreHorizontal />}
+              icon={<MoreHorizontal size={16} />}
               aria-label="Más opciones"
               onClick={(e) => {
                 e.stopPropagation();

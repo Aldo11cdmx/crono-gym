@@ -2,31 +2,14 @@
  * @vitest-environment jsdom
  */
 
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import { MemoryRouter, Outlet, Routes, Route } from "react-router-dom";import type { WorkspaceOutletContext } from "@/App";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter, Outlet, Routes, Route } from "react-router-dom";
+import type { WorkspaceOutletContext } from "@/App";
 import { RoutineEditor } from "./RoutineEditor";
 import type { Exercise } from "@/types/supabase";
 import type { PlannedExercise, RoutineWithExercises } from "@/hooks/useGymData";
-import {
-  saveRoutine,
-  flushSave,
-} from "@/lib/routines/saveRoutine";
-
-const errors: string[] = [];
-const originalError = console.error;
-beforeAll(() => {
-  console.error = (...args: unknown[]) => {
-    errors.push(args.join(" "));
-  };
-});
-
-afterAll(() => {
-  console.error = originalError;
-  if (errors.length > 0) {
-    console.log("CAPTURED ERRORS:", errors);
-  }
-});
+import { saveRoutine, flushSave } from "@/lib/routines/saveRoutine";
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -48,7 +31,7 @@ const OUTLET_CONTEXT: WorkspaceOutletContext = {
 vi.mock("@/lib/routines/saveRoutine", () => ({
   saveRoutine: vi.fn(),
   flushSave: vi.fn().mockResolvedValue(true),
-  duplicateRoutine: vi.fn((draft: any, title: string) => ({ ...draft, title })),
+  duplicateRoutine: vi.fn((draft: unknown, title: string) => ({ ...(draft as object), title })),
 }));
 
 vi.mock("@/components/UnifiedExerciseSelectorSheet", () => {
@@ -66,49 +49,22 @@ vi.mock("@/components/UnifiedExerciseSelectorSheet", () => {
   } as unknown as Exercise;
   return {
     UnifiedExerciseSelectorSheet: ({
+      isOpen,
       onClose,
       onSelectSingle,
-    }: any) => (
-      <div data-testid="selector-sheet-mock">
-        <button onClick={onClose}>Cerrar selector</button>
-        <button
-          onClick={() => onSelectSingle(mockExercise)}
-        >
-          Seleccionar ejercicio
-        </button>
-      </div>
-    ),
+    }: {
+      isOpen: boolean;
+      onClose: () => void;
+      onSelectSingle: (exercise: Exercise) => void;
+    }) =>
+      isOpen ? (
+        <div data-testid="selector-sheet-mock">
+          <button onClick={onClose}>Cerrar selector</button>
+          <button onClick={() => onSelectSingle(mockExercise)}>Seleccionar ejercicio</button>
+        </div>
+      ) : null,
   };
 });
-
-const mockCatalog: Exercise[] = [
-  { id: "cat-1", name: "Sentadilla", name_es: "Sentadilla", body_part: "Piernas", target: "Piernas", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-2", name: "Press de banca", name_es: "Press de banca", body_part: "Pecho", target: "Pecho", equipment: "Banco de pesas", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-3", name: "Remo con barra", name_es: "Remo con barra", body_part: "Espalda", target: "Espalda", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-4", name: "Press militar", name_es: "Press militar", body_part: "Hombros", target: "Hombros", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-5", name: "Peso muerto", name_es: "Peso muerto", body_part: "Piernas", target: "Piernas", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-6", name: "Dominadas", name_es: "Dominadas", body_part: "Espalda", target: "Espalda", equipment: "Peso Corporal", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-7", name: "Zancadas", name_es: "Zancadas", body_part: "Piernas", target: "Piernas", equipment: "Peso Corporal", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-8", name: "Curl con barra", name_es: "Curl con barra", body_part: "Brazos", target: "Brazos", equipment: "Barra / Discos", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-9", name: "Elevaciones laterales", name_es: "Elevaciones laterales", body_part: "Hombros", target: "Hombros", equipment: "Mancuernas", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-10", name: "Elevación de gemelos", name_es: "Elevación de gemelos", body_part: "Piernas", target: "Piernas", equipment: "Máquina Selectorizada", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-11", name: "Extensión de tríceps en polea", name_es: "Extensión de tríceps en polea", body_part: "Brazos", target: "Brazos", equipment: "Polea", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-  { id: "cat-12", name: "Curl femoral", name_es: "Curl femoral", body_part: "Piernas", target: "Piernas", equipment: "Máquina Selectorizada", gif_url: "", instructions: [], is_active: true, is_hidden: false },
-];
-
-let mockCatalogFind: (name: string) => Exercise | null = (name) =>
-  mockCatalog.find((e) => e.name === name) ?? null;
-
-let mockCatalogError: string | null = null;
-
-vi.mock("@/hooks/useExerciseCatalog", () => ({
-  useExerciseCatalog: vi.fn(() => ({
-    exercises: [],
-    loading: false,
-    error: mockCatalogError,
-    find: mockCatalogFind,
-  })),
-}));
 
 function ex(id: string): Exercise {
   return {
@@ -140,8 +96,8 @@ function makeRoutineWithExercise(): RoutineWithExercises {
         rest_seconds: 90,
         rowId: "row-1",
         order_index: 0,
-        target_reps_min: null,
-        target_reps_max: null,
+        target_reps_min: 8,
+        target_reps_max: 12,
         dayIndex: 0,
         dayLabel: "",
       } as unknown as PlannedExercise,
@@ -149,20 +105,18 @@ function makeRoutineWithExercise(): RoutineWithExercises {
   } as unknown as RoutineWithExercises;
 }
 
-function renderEditor(routine?: RoutineWithExercises) {
+function renderEditor(routine?: RoutineWithExercises, initialPlanMode?: "single" | "weekly" | "split") {
   return render(
     <MemoryRouter initialEntries={["/rutinas"]}>
       <Routes>
-        <Route
-          path="/rutinas"
-          element={<Outlet context={OUTLET_CONTEXT} />}
-        >
+        <Route path="/rutinas" element={<Outlet context={OUTLET_CONTEXT} />}>
           <Route
             index
             element={
               <RoutineEditor
                 mode={routine ? "edit" : "new"}
                 routine={routine}
+                initialPlanMode={initialPlanMode}
                 onSave={vi.fn()}
                 onClose={vi.fn()}
               />
@@ -174,206 +128,62 @@ function renderEditor(routine?: RoutineWithExercises) {
   );
 }
 
-describe("RoutineEditor", () => {
+describe("RoutineEditor (Apple HIG)", () => {
   afterEach(() => {
     cleanup();
+    vi.clearAllMocks();
   });
 
-  it("renders the title input", () => {
+  it("renderiza header minimalista (Cancelar/Nueva Rutina/Guardar) e input de nombre", () => {
     renderEditor();
+    expect(screen.getByRole("button", { name: "Cancelar" })).toBeTruthy();
+    expect(screen.getByText("Nueva Rutina")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Guardar rutina" })).toBeTruthy();
     expect(screen.getByPlaceholderText("Nombre de tu rutina")).toBeTruthy();
   });
 
-  describe("A1 validaciones en español", () => {
-    it("muestra mensaje de título demasiado corto", () => {
-      renderEditor();
-      const input = screen.getByPlaceholderText("Nombre de tu rutina");
-      fireEvent.change(input, { target: { value: "ab" } });
-      fireEvent.click(screen.getByRole("button", { name: /Faltan .* cosa/i }));
-      const error = screen.getByText(/El nombre debe tener al menos 3 caracteres/);
-      expect(error).toBeTruthy();
-    });
-
-    it("muestra mensaje cuando falta el nombre", () => {
-      renderEditor();
-      const input = screen.getByPlaceholderText("Nombre de tu rutina");
-      fireEvent.change(input, { target: { value: "" } });
-      fireEvent.click(screen.getByRole("button", { name: /Faltan .* cosa/i }));
-      const error = screen.getByText(/Ponle un nombre a la rutina/);
-      expect(error).toBeTruthy();
-    });
-
-    it("muestra mensaje cuando no hay días con ejercicios", () => {
-      renderEditor();
-      const input = screen.getByPlaceholderText("Nombre de tu rutina");
-      fireEvent.change(input, { target: { value: "Rutina válida" } });
-      fireEvent.click(screen.getByRole("button", { name: /Faltan .* cosa/i }));
-      const error = screen.getByText(/Añade al menos un día/);
-      expect(error).toBeTruthy();
-    });
+  it("modo single muestra fila Añadir ejercicio (iOS)", () => {
+    renderEditor(undefined, "single");
+    expect(screen.getByText(/^Ejercicios$/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Añadir ejercicio" })).toBeTruthy();
   });
 
-  describe("A10 etiqueta y tipo de día", () => {
-    it("permite editar la etiqueta del día", () => {
-      renderEditor();
-      const addDay = screen.getByRole("button", { name: /entrenamiento/ });
-      fireEvent.click(addDay);
-      const labelInput = screen.getAllByPlaceholderText(/Día \d/)[0];
-      fireEvent.change(labelInput, { target: { value: "Pecho y espalda" } });
-      expect(screen.getByText("Pecho y espalda")).toBeTruthy();
-    });
+  it("modo weekly (hint split->weekly) muestra lista de 7 días sin toggle de plan", () => {
+    renderEditor(undefined, "split");
+    expect(screen.getByText("Plan Semanal")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Lunes/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Domingo/ })).toBeTruthy();
+    expect(screen.queryByText("Tipo de plan")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Plan individual" })).toBeNull();
   });
 
-  describe("A28 etiquetas Día A/B/C", () => {
-    it("muestra Día A para el primer día de entrenamiento sin nombre", () => {
-      renderEditor();
-      const addDay = screen.getByRole("button", { name: /entrenamiento/ });
-      fireEvent.click(addDay);
-      expect(screen.getByText("Día A")).toBeTruthy();
-    });
+  it("navega a subpantalla de día y vuelve con Listo/Volver", () => {
+    renderEditor(undefined, "weekly");
+    fireEvent.click(screen.getByRole("button", { name: /Lunes/ }));
+    expect(screen.getByRole("button", { name: "Volver" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Listo" })).toBeTruthy();
+    expect(screen.getByText("Añadir ejercicios a Lunes")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Listo" }));
+    expect(screen.getByText("Plan Semanal")).toBeTruthy();
   });
 
-  describe("A19 aviso de cambios sin guardar", () => {
-it("muestra aviso al cerrar con cambios sin guardar", () => {
-      renderEditor();
-      const titleInput = screen.getByPlaceholderText("Nombre de tu rutina");
-      fireEvent.change(titleInput, { target: { value: "Rutina modificada" } });
-      const closeButton = screen.getByRole("button", { name: /Cerrar editor/ });
-      fireEvent.click(closeButton);
-      expect(screen.getByText("Tienes cambios sin guardar")).toBeTruthy();
-      expect(screen.getByText("Guardar y salir")).toBeTruthy();
-      expect(screen.getByText("Descartar cambios")).toBeTruthy();
-      expect(screen.getByText(/cancelar/i)).toBeTruthy();
-    });
-
-    it("no muestra aviso al cerrar sin cambios", () => {
-      renderEditor();
-      const closeButton = screen.getByRole("button", { name: /Cerrar editor/ });
-      fireEvent.click(closeButton);
-      expect(screen.queryByText("Tienes cambios sin guardar")).toBeNull();
-    });
+  it("muestra aviso al cerrar con cambios sin guardar", () => {
+    renderEditor();
+    fireEvent.change(screen.getByPlaceholderText("Nombre de tu rutina"), { target: { value: "Rutina modificada" } });
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(screen.getByText("Tienes cambios sin guardar")).toBeTruthy();
+    expect(screen.getByText("Guardar y salir")).toBeTruthy();
+    expect(screen.getByText("Descartar cambios")).toBeTruthy();
   });
 
-  describe("guardado", () => {
-    it("llama a saveRoutine con origin editor", async () => {
-      vi.mocked(saveRoutine).mockResolvedValue({ ok: true, routineId: "test-id" });
-      renderEditor(makeRoutineWithExercise());
-      const saveButton = screen.getByRole("button", { name: /Guardar rutina/ });
-      expect(saveButton.hasAttribute("disabled")).toBe(false);
-      fireEvent.click(saveButton);
-      await vi.waitFor(() => {
-        expect(saveRoutine).toHaveBeenCalled();
-      });
-      const call = vi.mocked(saveRoutine).mock.calls[0];
-      expect(call[2]).toBe("editor");
-      expect(flushSave).toHaveBeenCalled();
-    });
-
-    it("duplica la rutina", () => {
-      const routine: RoutineWithExercises = {
-        id: "routine-1",
-        user_id: "user-1",
-        title: "Original",
-        description: "desc",
-        created_at: "2026-01-01T00:00:00Z",
-        updated_at: "2026-01-01T00:00:00Z",
-        exercises: [],
-      } as unknown as RoutineWithExercises;
-      renderEditor(routine);
-      const addDay = screen.getByRole("button", { name: /entrenamiento/ });
-      fireEvent.click(addDay);
-      const titleInput = screen.getByPlaceholderText("Nombre de tu rutina");
-      fireEvent.change(titleInput, { target: { value: "Rutina para duplicar" } });
-      const dupButton = screen.getByRole("button", { name: "Duplicar rutina" });
-      fireEvent.click(dupButton);
-      const newTitleInput = screen.getAllByPlaceholderText("Nombre de tu rutina")[0];
-      expect((newTitleInput as HTMLInputElement).value).toBe("copia de Rutina para duplicar");
-    });
-  });
-
-  describe("clonado de plantillas", () => {
-    it("clona Semana equilibrada con weekday 0-6, sábado mobility, domingo rest, mode weekly", () => {
-      mockCatalogFind = (name) => mockCatalog.find((e) => e.name === name) ?? null;
-
-      renderEditor();
-      const templateBtn = screen.getByRole("button", { name: /desde plantilla/i });
-      fireEvent.click(templateBtn);
-
-      const semanaBtn = screen.getByRole("button", { name: /semana equilibrada/i });
-      fireEvent.click(semanaBtn);
-
-      // Título válido para habilitar el botón Guardar
-      const titleInput = screen.getByPlaceholderText(/Nombre de tu rutina/i);
-      fireEvent.change(titleInput, { target: { value: "Semana equilibrada" } });
-
-      // Modo weekly activado: 7 días renderizados y el botón Guardar está habilitado
-      const saveBtn = screen.getByRole("button", { name: /guardar rutina/i });
-      expect(saveBtn).toBeTruthy();
-      expect((saveBtn as HTMLButtonElement).disabled).toBe(false);
-
-      // Hay 7 días renderizados (badges de tipo de día)
-      const dayTypeBadges = screen.getAllByText(/Entrenamiento|Descanso|Movilidad/i);
-      expect(dayTypeBadges.length).toBeGreaterThanOrEqual(7);
-
-      // Sábado es Movilidad y domingo es Descanso
-      const mobilityBadges = screen.getAllByText(/Movilidad/i);
-      expect(mobilityBadges.length).toBeGreaterThanOrEqual(1);
-      const descansoBadges = screen.getAllByText(/Descanso/i);
-      expect(descansoBadges.length).toBeGreaterThanOrEqual(1);
-    });
-
-    it("clona Fullbody 3 Días con 3 días, mode single, weekday null", () => {
-      mockCatalogFind = (name) => mockCatalog.find((e) => e.name === name) ?? null;
-
-      renderEditor();
-      const templateBtn = screen.getByRole("button", { name: /desde plantilla/i });
-      fireEvent.click(templateBtn);
-
-      const fullbodyBtn = screen.getByRole("button", { name: /fullbody 3 días/i });
-      fireEvent.click(fullbodyBtn);
-
-      // Modo single (individual) activado
-      expect(screen.getByRole("button", { name: /individual/i })).toBeTruthy();
-
-      // Hay días renderizados (al menos 3 selects de tipo de día)
-      const dayTypeBadges = screen.getAllByText(/Entrenamiento|Descanso|Movilidad/i);
-      expect(dayTypeBadges.length).toBeGreaterThanOrEqual(3);
-
-      // Guardar debe estar habilitado
-      const saveBtn = screen.getByRole("button", { name: /guardar rutina/i });
-      expect(saveBtn).toBeTruthy();
-      expect(screen.queryByText(/weekdayConflict|dayWithoutExercises|noTrainingDay/i)).toBeNull();
-    });
-
-    it("ejercicio no resuelto en catálogo no deja id vacío en la fila", () => {
-      mockCatalogFind = () => null;
-
-      renderEditor();
-      const templateBtn = screen.getByRole("button", { name: /desde plantilla/i });
-      fireEvent.click(templateBtn);
-
-      const fullbodyBtn = screen.getByRole("button", { name: /fullbody 3 días/i });
-      fireEvent.click(fullbodyBtn);
-
-      // Los ejercicios no resueltos se crean con id: "" (falla de catálogo)
-      // Verificar que al menos se renderizó algo (no crash)
-      expect(screen.getByText(/Fullbody 3 días/i)).toBeTruthy();
-    });
-
-    it("muestra error cuando el catálogo falla", () => {
-      mockCatalogError = "Error de catálogo";
-
-      renderEditor();
-      const templateBtn = screen.getByRole("button", { name: /desde plantilla/i });
-      fireEvent.click(templateBtn);
-
-      // Clic en una plantilla para disparar applyTemplateToDraft (que detectará el error)
-      const fullbodyBtn = screen.getByRole("button", { name: /fullbody 3 días/i });
-      fireEvent.click(fullbodyBtn);
-
-      // El diálogo sigue abierto y muestra el error
-      expect(screen.getByText(/Elegir plantilla/i)).toBeTruthy();
-      expect(screen.getByText(/Error de catálogo/i)).toBeTruthy();
-    });
+  it("llama a saveRoutine con origin editor al guardar una rutina válida", async () => {
+    vi.mocked(saveRoutine).mockResolvedValue({ ok: true, routineId: "test-id" });
+    renderEditor(makeRoutineWithExercise());
+    const saveButton = screen.getByRole("button", { name: "Guardar rutina" });
+    expect((saveButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(saveButton);
+    await vi.waitFor(() => expect(saveRoutine).toHaveBeenCalled());
+    expect(vi.mocked(saveRoutine).mock.calls[0][2]).toBe("editor");
+    expect(flushSave).toHaveBeenCalled();
   });
 });

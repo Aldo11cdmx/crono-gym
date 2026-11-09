@@ -2319,6 +2319,51 @@ export function translateTarget(value: string): string {
   return lookup(TARGET_LABELS, value);
 }
 
+/** Bloque 1 — UI de Rutinas (header, tabs, tarjeta, creación). */
+export const ROUTINES_UI_LABELS = {
+  title: "Rutinas",
+  newRoutine: "Nueva rutina",
+  tabMine: "Mis Rutinas",
+  tabCatalog: "Catálogo",
+  createTitle: "Crear rutina",
+  createSingle: "Rutina Individual",
+  createSingleDesc: "Para un solo día o sesión específica",
+  createWeekly: "Plan Semanal (7 días)",
+  createWeeklyDesc: "Programa completo de lunes a domingo",
+  cancel: "Cancelar",
+  startWorkout: "Iniciar Entreno",
+  options: "Opciones",
+  edit: "Editar",
+  editRoutine: "Editar rutina",
+  plan: "Planificar semana",
+  duplicate: "Duplicar rutina",
+  delete: "Eliminar rutina",
+  deleteConfirm: "¿Eliminar esta rutina? Esta acción no se puede deshacer.",
+  focused: "ENFOCADO",
+  exercises: "ejercicios",
+  minApprox: "min",
+  loading: "Cargando rutinas…",
+  loadError: "No se pudieron cargar las rutinas",
+  retry: "Reintentar",
+  back: "Volver",
+  planning: "Planificación",
+  activeSession: "Hay una sesión activa:",
+  goToActive: "Ir a la sesión activa",
+  understood: "Entendido",
+  emptyTitle: "Crea tu primera rutina",
+  emptyBody: "Guarda ejercicios, series y descansos para empezar con una estructura clara.",
+  noFilter: "No hay rutinas en este filtro.",
+  showAll: "Ver todas",
+  chooseDay: "Elegir día de entrenamiento",
+  chooseDayHint: "Selecciona el día que quieres entrenar.",
+  incomplete: "Guardado incompleto",
+  weeklyPlanner: "Planificador semanal",
+  weeklyPlannerHint: "Ajusta qué sesión corresponde a cada día.",
+  catalogEmptyTitle: "Catálogo en construcción",
+  catalogEmptyBody: "Pronto podrás explorar rutinas y plantillas desde aquí.",
+  weekdaysShort: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+} as const;
+
 export function translateEquipment(value: string): string {
   return lookup(EQUIPMENT_LABELS, value);
 }

@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Outlet, Routes, Route } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { RoutinesPage } from "./RoutinesPage";
@@ -21,9 +21,9 @@ const OUTLET_CONTEXT: WorkspaceOutletContext = {
   email: "user@example.com",
 };
 
-describe("RoutinesPage (visual limpia)", () => {
-  it("renderiza base vacía sin romper", () => {
-    const { container } = render(
+describe("RoutinesPage (Bloque 1)", () => {
+  it("renderiza header, tabs y estado vacío", () => {
+    render(
       <MemoryRouter initialEntries={["/rutinas"]}>
         <Routes>
           <Route path="/rutinas" element={<Outlet context={OUTLET_CONTEXT} />}>
@@ -32,6 +32,10 @@ describe("RoutinesPage (visual limpia)", () => {
         </Routes>
       </MemoryRouter>,
     );
-    expect(container).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Rutinas" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Mis Rutinas" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Catálogo" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Nueva rutina" }).length).toBeGreaterThan(0);
+    expect(screen.getByText("Crea tu primera rutina")).toBeTruthy();
   });
 });

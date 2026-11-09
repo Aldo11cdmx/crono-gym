@@ -1,21 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { X, Plus, Trash2, Save, Copy, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
-import { GlassButton } from "@/components/ui/GlassButton";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { ChevronLeft, ChevronRight, Flame, Plus, Trash2 } from "lucide-react";
 import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
 import type { Exercise } from "@/types/supabase";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
-import {
-  saveRoutine,
-  flushSave,
-  duplicateRoutine,
-  type SaveResult,
-} from "@/lib/routines/saveRoutine";
+import { saveRoutine, flushSave, type SaveResult } from "@/lib/routines/saveRoutine";
 import {
   draftFromRoutine,
   validateDraft,
   newDraftKey,
-  displayDayLabel,
   type LoadedRoutineSnapshot,
   type RoutineDraftV2,
   type RoutineDay,
@@ -23,28 +15,21 @@ import {
 } from "@/lib/routines/routineDayModel";
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
-import { CRONOS_LABELS } from "@/lib/i18n";
-import { GLASS, MOTION, SCRIM, SOLID, STATUS, SURFACE, TEXT, TYPE } from "@/design/tokens";
+import { CRONOS_LABELS, ROUTINES_UI_LABELS, translateMuscle, translateTarget } from "@/lib/i18n";
+import { ACCENT, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, SURFACE, TEXT, TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
-import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
 
 interface RoutineEditorProps {
   mode: "new" | "edit";
   routine?: RoutineWithExercises;
-  onSave: () => void;
+  /** Modo inicial al crear (hint desde Bloque 1). `split` se mapea a `weekly`. */
+  initialPlanMode?: "single" | "weekly" | "split";
+  onSave: () => Promise<void> | void;
   onClose: () => void;
 }
 
 function emptyDay(order: number): RoutineDay {
-  return {
-    id: crypto.randomUUID(),
-    order,
-    weekday: null,
-    label: "",
-    kind: "training",
-    exercises: [],
-  };
+  return { id: crypto.randomUUID(), order, weekday: null, label: "", kind: "training", exercises: [] };
 }
 
 function draftExercise(exercise: Exercise, orderIndex: number): DraftExercise {
@@ -61,7 +46,7 @@ function draftExercise(exercise: Exercise, orderIndex: number): DraftExercise {
 
 function emptyWeekDraftFromRoutine(routine: RoutineWithExercises, snapshot: LoadedRoutineSnapshot | null = null): RoutineDraftV2 {
   const days: RoutineDay[] = [];
-  const byDay = new Map<number, typeof routine.exercises[number][]>();
+  const byDay = new Map<number, (typeof routine.exercises)[number][]>();
   for (const ex of routine.exercises) {
     const di = ex.dayIndex ?? 0;
     const list = byDay.get(di) ?? [];
@@ -99,76 +84,77 @@ function emptyWeekDraftFromRoutine(routine: RoutineWithExercises, snapshot: Load
   };
 }
 
-function translationFor(code: string): string {
-  const map: Record<string, string> = {
-    titleTooShort: CRONOS_LABELS.routineValidation.titleTooShort,
-    noTitle: CRONOS_LABELS.routineValidation.noTitle,
-    noExercises: CRONOS_LABELS.routineValidation.noExercises,
-    noTrainingDay: CRONOS_LABELS.routineValidation.noTrainingDay,
-    dayWithoutExercises: CRONOS_LABELS.routineValidation.dayWithoutExercises,
-    invalidDayId: CRONOS_LABELS.routineValidation.invalidDayId,
-    missingRowId: CRONOS_LABELS.routineValidation.missingRowId,
-    duplicateRowId: CRONOS_LABELS.routineValidation.duplicateRowId,
-    duplicateExerciseInDay: CRONOS_LABELS.routineValidation.duplicateExerciseInDay,
-    missingSnapshot: CRONOS_LABELS.routineValidation.missingSnapshot,
-    weekdayConflict: CRONOS_LABELS.routineValidation.weekdayConflict,
-    tooManyDays: CRONOS_LABELS.routineValidation.tooManyDays,
-  };
-  return map[code] ?? code;
+function weekdayName(index: number): string {
+  const names = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  return names[index] ?? `Día ${index + 1}`;
 }
 
-function dayKindTone(kind: RoutineDay["kind"]) {
-  if (kind === "training") return { color: "var(--cronos-accent-text, #f87171)", background: "rgba(239,68,68,0.10)", border: "rgba(239,68,68,0.28)" };
-  if (kind === "mobility") return { color: STATUS.success.text, background: STATUS.success.muted, border: STATUS.success.border };
-  if (kind === "rest") return { color: TEXT.secondary, background: GLASS.fillSubtle, border: GLASS.border };
-  return { color: TEXT.tertiary, background: "transparent", border: GLASS.border };
+function weekdayInitial(index: number): string {
+  return (["L", "M", "X", "J", "V", "S", "D"][index] ?? "·");
 }
 
-function dayKindBadgeClass(_kind: RoutineDay["kind"]): string {
-  return "inline-flex items-center rounded-full border px-2 py-0.5";
+function dayMuscleSummary(day: RoutineDay): string | null {
+  const labels: string[] = [];
+  const seen = new Set<string>();
+  for (const ex of day.exercises) {
+    const raw = ex.exercise.body_part?.trim() || ex.exercise.target?.trim() || "";
+    if (!raw) continue;
+    const label = (ex.exercise.body_part ? translateMuscle(raw) : translateTarget(raw)).toUpperCase();
+    if (!seen.has(label)) {
+      seen.add(label);
+      labels.push(label);
+    }
+    if (labels.length >= 2) break;
+  }
+  return labels.length > 0 ? labels.join(" • ") : null;
 }
 
-export function RoutineEditor({
-  mode,
-  routine,
-  onSave,
-  onClose,
-}: RoutineEditorProps) {
+function dayMetrics(day: RoutineDay): string | null {
+  if (day.exercises.length === 0) return null;
+  const totalSets = day.exercises.reduce((sum, ex) => sum + (ex.target_sets ?? 0), 0);
+  const restSec = day.exercises.reduce((sum, ex) => sum + (ex.target_sets ?? 0) * (ex.rest_seconds ?? 0), 0);
+  const minutes = Math.max(1, Math.round((totalSets * 45 + restSec) / 60));
+  return `${day.exercises.length} ej. • ~${minutes} min`;
+}
+
+export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose }: RoutineEditorProps) {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [targetDayIndex, setTargetDayIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<SaveResult | null>(null);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
-  const [draftMode, setDraftMode] = useState<"single" | "weekly">("single");
-  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
-  const [removeConfirmDayIndex, setRemoveConfirmDayIndex] = useState<number | null>(null);
-  const [removeConfirmExerciseCount, setRemoveConfirmExerciseCount] = useState(0);
-  const [switchModeConfirmOpen, setSwitchModeConfirmOpen] = useState(false);
-  const [pendingDraftMode, setPendingDraftMode] = useState<"single" | "weekly">("single");
-  const [templateOpen, setTemplateOpen] = useState(false);
-  const [templateLoading, setTemplateLoading] = useState(false);
-  const [templateError, setTemplateError] = useState<string | null>(null);
-  const [validationExpanded, setValidationExpanded] = useState(false);
+  const [dayDetailIndex, setDayDetailIndex] = useState<number | null>(null);
+  const [draftMode, setDraftMode] = useState<"single" | "weekly">(
+    initialPlanMode === "weekly" || initialPlanMode === "split" ? "weekly" : "single",
+  );
 
   const initialDraftRef = useRef<RoutineDraftV2 | null>(null);
+  const createHintAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (mode !== "new" || createHintAppliedRef.current || initialPlanMode == null) return;
+    createHintAppliedRef.current = true;
+    setDraftMode(initialPlanMode === "weekly" || initialPlanMode === "split" ? "weekly" : "single");
+  }, [mode, initialPlanMode]);
 
   const initialDraft = useMemo((): RoutineDraftV2 => {
     if (mode === "edit" && routine) {
       const loaded = draftFromRoutine(routine);
-      if (loaded.needsModeConfirmation && draftMode === "weekly") {
-        return emptyWeekDraftFromRoutine(routine, loaded.snapshot);
-      }
+      if (loaded.needsModeConfirmation && draftMode === "weekly") return emptyWeekDraftFromRoutine(routine, loaded.snapshot);
       return loaded;
     }
-    const days: RoutineDay[] = draftMode === "weekly" ? [...Array(7).keys()].map((wd) => ({
-      id: crypto.randomUUID(),
-      order: wd,
-      weekday: wd,
-      label: "",
-      kind: wd < 5 ? "training" : "rest",
-      exercises: [],
-    })) : [];
+    const days: RoutineDay[] =
+      draftMode === "weekly"
+        ? [...Array(7).keys()].map((wd) => ({
+            id: crypto.randomUUID(),
+            order: wd,
+            weekday: wd,
+            label: "",
+            kind: wd < 5 ? "training" : "rest",
+            exercises: [],
+          }))
+        : [emptyDay(0)];
     return {
       draftKey: newDraftKey(),
       id: null,
@@ -184,39 +170,26 @@ export function RoutineEditor({
   const [draft, setDraft] = useState<RoutineDraftV2>(initialDraft);
 
   useEffect(() => {
-    // Solo restaurar el draft inicial cuando el draft actual sigue siendo la referencia original.
-    // Esto evita sobrescribir cambios del usuario o plantillas aplicadas cuando draftMode cambia.
-    if (draft === initialDraftRef.current) {
-      setDraft(initialDraft);
-    }
+    if (draft === initialDraftRef.current) setDraft(initialDraft);
     initialDraftRef.current = initialDraft;
   }, [initialDraft]);
 
   const reducedMotion = useReducedMotion();
-  const catalog = useExerciseCatalog();
 
   const dirty = useMemo(() => {
     const init = initialDraftRef.current;
     if (!init) return false;
     if (init.title !== draft.title) return true;
-    if (init.description !== draft.description) return true;
     if (init.days.length !== draft.days.length) return true;
     for (let i = 0; i < draft.days.length; i++) {
       const a = init.days[i];
       const b = draft.days[i];
       if (!a || !b) return true;
-      if (a.label !== b.label) return true;
-      if (a.kind !== b.kind) return true;
-      if (a.exercises.length !== b.exercises.length) return true;
+      if (a.label !== b.label || a.kind !== b.kind || a.exercises.length !== b.exercises.length) return true;
       for (let j = 0; j < b.exercises.length; j++) {
         const ea = a.exercises[j];
         const eb = b.exercises[j];
-        if (!ea || !eb) return true;
-        if (ea.exercise.id !== eb.exercise.id) return true;
-        if (ea.target_sets !== eb.target_sets) return true;
-        if (ea.rest_seconds !== eb.rest_seconds) return true;
-        if (ea.target_reps_min !== eb.target_reps_min) return true;
-        if (ea.target_reps_max !== eb.target_reps_max) return true;
+        if (!ea || !eb || ea.exercise.id !== eb.exercise.id || ea.target_sets !== eb.target_sets || ea.rest_seconds !== eb.rest_seconds) return true;
       }
     }
     return false;
@@ -226,251 +199,44 @@ export function RoutineEditor({
     setDraft((d) => ({ ...d, title: e.target.value }));
   }, []);
 
-  const setDescription = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDraft((d) => ({ ...d, description: e.target.value }));
-  }, []);
-
-  const addDay = useCallback(() => {
-    setDraft((d) => {
-      const next = [...d.days, emptyDay(d.days.length)];
-      return { ...d, days: next };
-    });
-  }, []);
-
-  const removeDay = useCallback((index: number) => {
-    setDraft((d) => {
-      const next = [...d.days].map((day) => ({ ...day }));
-      next.splice(index, 1);
-      next.forEach((day, i) => {
-        day.order = i;
-      });
-      return { ...d, days: next };
-    });
-  }, []);
-
-  const moveDay = useCallback((fromIndex: number, toIndex: number) => {
-    setDraft((d) => {
-      const next = [...d.days].map((day) => ({ ...day }));
-      const [moved] = next.splice(fromIndex, 1);
-      next.splice(toIndex, 0, moved);
-      next.forEach((day, i) => {
-        day.order = i;
-      });
-      return { ...d, days: next };
-    });
-  }, []);
-
-  const setDayKind = useCallback((dayIndex: number, kind: RoutineDay["kind"]) => {
+  const addExerciseToDay = useCallback((dayIndex: number, exercise: Exercise) => {
     setDraft((d) => {
       const next = [...d.days].map((day) => ({ ...day }));
       const day = next[dayIndex];
-      if (day.kind !== "training" && (kind === "rest" || kind === "mobility" || kind === "empty")) {
-        // Ya es no-training: solo cambia el kind.
-        next[dayIndex] = { ...next[dayIndex], kind };
-        return { ...d, days: next };
-      }
-      if (kind === "training") {
-        // Volver a training: solo cambia el kind.
-        next[dayIndex] = { ...next[dayIndex], kind: "training" };
-        return { ...d, days: next };
-      }
-      // Cambiar de training a no-training con ejercicios: requiere confirmación.
-      if (day.exercises.length > 0) {
-        setRemoveConfirmDayIndex(dayIndex);
-        setRemoveConfirmExerciseCount(day.exercises.length);
-        setRemoveConfirmOpen(true);
-        return d;
-      }
-      next[dayIndex] = { ...next[dayIndex], kind, exercises: [] };
+      next[dayIndex] = { ...day, kind: "training", exercises: [...day.exercises, draftExercise(exercise, day.exercises.length)] };
       return { ...d, days: next };
     });
+    setPickerOpen(false);
+    setTargetDayIndex(null);
   }, []);
-
-  const setDayLabel = useCallback((dayIndex: number, value: string) => {
-    setDraft((d) => {
-      const next = [...d.days].map((day) => ({ ...day }));
-      next[dayIndex] = { ...next[dayIndex], label: value };
-      return { ...d, days: next };
-    });
-  }, []);
-
-  const addExerciseToDay = useCallback(
-    (dayIndex: number, exercise: Exercise) => {
-      setDraft((d) => {
-        const next = [...d.days].map((day) => ({ ...day }));
-        const day = next[dayIndex];
-        const nextExercises = [
-          ...day.exercises,
-          draftExercise(exercise, day.exercises.length),
-        ];
-        next[dayIndex] = { ...day, exercises: nextExercises };
-        return { ...d, days: next };
-      });
-      setPickerOpen(false);
-      setTargetDayIndex(null);
-    },
-    [],
-  );
 
   const removeExercise = useCallback((dayIndex: number, exerciseIndex: number) => {
     setDraft((d) => {
       const next = [...d.days].map((day) => ({ ...day }));
-      const day = next[dayIndex];
-      const nextExercises = [...day.exercises];
-      nextExercises.splice(exerciseIndex, 1);
-      nextExercises.forEach((ex, i) => {
+      const exs = [...next[dayIndex].exercises];
+      exs.splice(exerciseIndex, 1);
+      exs.forEach((ex, i) => {
         ex.order_index = i;
       });
-      next[dayIndex] = { ...day, exercises: nextExercises };
+      next[dayIndex] = { ...next[dayIndex], exercises: exs };
       return { ...d, days: next };
     });
   }, []);
 
-  const setExerciseSets = useCallback(
-    (dayIndex: number, exerciseIndex: number, value: number) => {
-      setDraft((d) => {
-        const next = [...d.days].map((day) => ({ ...day }));
-        const day = next[dayIndex];
-        const ex = { ...day.exercises[exerciseIndex], target_sets: Math.max(1, value) };
-        const nextExercises = [...day.exercises];
-        nextExercises[exerciseIndex] = ex;
-        next[dayIndex] = { ...day, exercises: nextExercises };
-        return { ...d, days: next };
-      });
-    },
-    [],
-  );
-
-  const setExerciseRest = useCallback(
-    (dayIndex: number, exerciseIndex: number, value: number) => {
-      setDraft((d) => {
-        const next = [...d.days].map((day) => ({ ...day }));
-        const day = next[dayIndex];
-        const ex = { ...day.exercises[exerciseIndex], rest_seconds: Math.max(0, value) };
-        const nextExercises = [...day.exercises];
-        nextExercises[exerciseIndex] = ex;
-        next[dayIndex] = { ...day, exercises: nextExercises };
-        return { ...d, days: next };
-      });
-    },
-    [],
-  );
-
-  const setExerciseReps = useCallback(
-    (dayIndex: number, exerciseIndex: number, field: "min" | "max", value: number | null) => {
-      setDraft((d) => {
-        const next = [...d.days].map((day) => ({ ...day }));
-        const day = next[dayIndex];
-        const ex = { ...day.exercises[exerciseIndex] };
-        if (field === "min") ex.target_reps_min = value;
-        else ex.target_reps_max = value;
-        const nextExercises = [...day.exercises];
-        nextExercises[exerciseIndex] = ex;
-        next[dayIndex] = { ...day, exercises: nextExercises };
-        return { ...d, days: next };
-      });
-    },
-    [],
-  );
-
-  const duplicateDay = useCallback((dayIndex: number) => {
+  const setDayRest = useCallback((dayIndex: number, isRest: boolean) => {
     setDraft((d) => {
-      const day = { ...d.days[dayIndex] };
-      const copy = {
-        ...day,
-        id: crypto.randomUUID(),
-        order: d.days.length,
-        exercises: day.exercises.map((ex) => ({
-          ...ex,
-          rowId: crypto.randomUUID(),
-        })),
-      };
-      const next = [...d.days].map((d2) => ({ ...d2 }));
-      next.splice(dayIndex + 1, 0, copy);
-      next.forEach((d2, i) => {
-        d2.order = i;
-      });
-      return { ...d, days: next };
-    });
-  }, []);
-
-  const applyTemplateToDraft = useCallback(
-    (template: (typeof ROUTINE_TEMPLATES)[number]) => {
-      if (catalog.loading) return;
-      if (catalog.error) {
-        setTemplateError(catalog.error);
-        return;
-      }
-      setTemplateLoading(true);
-      try {
-        const isWeekly = template.days.length === 7;
-        const days: RoutineDay[] = template.days.map((td, i) => {
-          const isMobility = td.label.toLowerCase().includes("movilidad");
-          const kind = isMobility ? "mobility" : td.exercises.length > 0 ? "training" : "rest";
-          const exercises = td.exercises.map((ex, ei) => {
-            const resolved = catalog.find(ex.name);
-            const exercise: Exercise = resolved
-              ? resolved
-              : ({ id: "", name: ex.name, name_es: null } as Exercise);
-            return {
-              rowId: crypto.randomUUID(),
-              exercise,
-              target_sets: ex.sets,
-              rest_seconds: ex.restSeconds,
-              order_index: ei,
-              target_reps_min: ex.repsMin,
-              target_reps_max: ex.repsMax,
-            };
-          });
-          return {
-            id: crypto.randomUUID(),
-            order: i,
-            weekday: isWeekly ? i : null,
-            label: td.label,
-            kind,
-            exercises,
-          };
-        });
-
-        setDraft((d) => ({
-          ...d,
-          title: template.title,
-          description: `Plantilla: ${template.title}`,
-          mode: isWeekly ? "weekly" : "single",
-          days,
-        }));
-
-        setDraftMode(isWeekly ? "weekly" : "single");
-      } finally {
-        setTemplateLoading(false);
-      }
-      setTemplateOpen(false);
-    },
-    [catalog]
-  );
-
-  const confirmRemoveExercises = useCallback(() => {
-    setDraft((d) => {
-      if (removeConfirmDayIndex === null) return d;
       const next = [...d.days].map((day) => ({ ...day }));
-      next[removeConfirmDayIndex] = { ...next[removeConfirmDayIndex], kind: "rest", exercises: [] };
+      const day = next[dayIndex];
+      next[dayIndex] = isRest
+        ? { ...day, kind: "rest", exercises: [] }
+        : { ...day, kind: "training" };
       return { ...d, days: next };
     });
-    setRemoveConfirmOpen(false);
-    setRemoveConfirmDayIndex(null);
-    setRemoveConfirmExerciseCount(0);
-  }, [removeConfirmDayIndex]);
-
-  const cancelRemoveExercises = useCallback(() => {
-    setRemoveConfirmOpen(false);
-    setRemoveConfirmDayIndex(null);
-    setRemoveConfirmExerciseCount(0);
   }, []);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     setSaveResult(null);
-
     try {
       const promise = saveRoutine(userId, draft, "editor");
       await flushSave(draft.draftKey);
@@ -483,29 +249,19 @@ export function RoutineEditor({
     } finally {
       setSaving(false);
     }
-  }, [userId, draft, draft.draftKey, onSave]);
-
-  const handleDuplicate = useCallback(() => {
-    const copy = duplicateRoutine(draft, "copia de " + draft.title);
-    setDraft(copy);
-  }, [draft]);
+  }, [userId, draft, onSave]);
 
   const problems = validateDraft(draft);
   const hasValidationErrors = problems.length > 0;
   const canSave = draft.title.trim().length >= 3 && !hasValidationErrors;
-  const validationMessages = problems.map(translationFor);
 
-  const hasExercises = draft.days.some((d) => d.exercises.length > 0);
-
-  const requestSwitchMode = useCallback((nextMode: "single" | "weekly") => {
-    if (nextMode === draftMode) return;
-    if (hasExercises) {
-      setPendingDraftMode(nextMode);
-      setSwitchModeConfirmOpen(true);
+  const handleClose = useCallback(() => {
+    if (dirty) {
+      setCloseConfirmOpen(true);
       return;
     }
-    setDraftMode(nextMode);
-  }, [draftMode, hasExercises]);
+    onClose();
+  }, [dirty, onClose]);
 
   const openPickerForDay = useCallback((dayIndex: number) => {
     setTargetDayIndex(dayIndex);
@@ -517,214 +273,645 @@ export function RoutineEditor({
     setTargetDayIndex(null);
   }, []);
 
-  const isEditMode = mode === "edit";
-
-  const handleClose = useCallback(() => {
-    if (dirty) {
-      setCloseConfirmOpen(true);
-      return;
-    }
-    onClose();
-  }, [dirty, onClose]);
-
-  const handleCloseConfirmSave = useCallback(async () => {
-    setCloseConfirmOpen(false);
-    await handleSave();
-  }, [handleSave]);
-
-  const handleCloseConfirmDiscard = useCallback(() => {
-    setCloseConfirmOpen(false);
-    onClose();
-  }, [onClose]);
-
   const dayContext = useMemo(() => {
     const idx = targetDayIndex ?? 0;
     const day = draft.days[idx];
     if (!day) return undefined;
-    return {
-      dayIndex: idx,
-      dayLabel: day.label,
-      dayExercises: day.exercises.map((ex) => ex.exercise),
-    };
+    return { dayIndex: idx, dayLabel: day.label, dayExercises: day.exercises.map((ex) => ex.exercise) };
   }, [draft, targetDayIndex]);
 
+  const isWeekly = draft.mode === "weekly" || draftMode === "weekly";
+  const headerTitle = mode === "edit" ? "Editar rutina" : isWeekly ? "Plan Semanal" : "Nueva Rutina";
+  const transition = reducedMotion ? undefined : `transform ${MOTION.fast} ${MOTION.easeOut}, opacity ${MOTION.fast} ${MOTION.easeOut}`;
+
+  const nameInput = (
+    <input
+      type="text"
+      value={draft.title}
+      onChange={setTitle}
+      placeholder={isWeekly ? "Nombre del programa…" : CRONOS_LABELS.namePlaceholder}
+      aria-label="Nombre de la rutina"
+      style={{
+        width: "100%",
+        border: "none",
+        background: "transparent",
+        color: TEXT.primary,
+        fontSize: TYPE.hero.size,
+        lineHeight: TYPE.hero.lineHeight,
+        fontWeight: 900,
+        letterSpacing: TYPE.hero.tracking,
+        padding: `${SPACE.xs}px 0 0`,
+        marginBottom: SPACE.lg,
+        outline: "none",
+      }}
+    />
+  );
+
+  const addRow = (label: string, onClick: () => void) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
+        minHeight: 56,
+        padding: `0 ${SPACE.md}px`,
+        borderRadius: RADIUS.card,
+        border: `1px solid ${GLASS.border}`,
+        background: SOLID.card,
+        color: ACCENT.text,
+        cursor: "pointer",
+        textAlign: "left",
+        transition,
+      }}
+    >
+      <span style={{ display: "inline-flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
+        <span
+          aria-hidden="true"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 32,
+            height: 32,
+            borderRadius: RADIUS.pill,
+            background: ACCENT.subtle,
+            color: ACCENT.text,
+            flexShrink: 0,
+          }}
+        >
+          <Plus size={16} aria-hidden="true" />
+        </span>
+        <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600, color: ACCENT.text }}>{label}</span>
+      </span>
+      <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" />
+    </button>
+  );
+
+  const detailDay = dayDetailIndex != null ? draft.days[dayDetailIndex] : null;
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: SCRIM.modal, backdropFilter: reducedMotion ? "none" : "blur(20px)" }}>
-      <div className="border-b px-4 py-3 sm:px-6" style={{ borderColor: GLASS.border, background: SOLID.popover, backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
-          <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="text-neutral-100" style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, lineHeight: TYPE.title2.lineHeight }}>{isEditMode ? "Editar rutina" : "Nueva rutina"}</h2>
-            <p className="hidden sm:block text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{isEditMode ? "Edición" : "Nueva"} · {draft.mode === "weekly" ? "Plan semanal · 7 días" : "Rutina individual"}</p>
-          </div>
-          <GlassButton variant="ghost" icon={<X />} onClick={handleClose} aria-label="Cerrar editor" />
-        </div>
-      </div>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: SURFACE.base,
+        color: TEXT.primary,
+      }}
+    >
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 2,
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
+          alignItems: "center",
+          gap: SPACE.xs,
+          padding: `${SPACE.sm}px ${SPACE.md}px`,
+          borderBottom: `1px solid ${GLASS.border}`,
+          background: SOLID.card,
+        }}
+      >
+        <button
+          type="button"
+          onClick={dayDetailIndex != null ? () => setDayDetailIndex(null) : handleClose}
+          aria-label={dayDetailIndex != null ? ROUTINES_UI_LABELS.back : ROUTINES_UI_LABELS.cancel}
+          style={{
+            justifySelf: "start",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 2,
+            minHeight: MOTION.minTouchTarget,
+            padding: 0,
+            border: "none",
+            background: "transparent",
+            color: TEXT.secondary,
+            fontSize: TYPE.subhead.size,
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          {dayDetailIndex != null ? <ChevronLeft size={18} aria-hidden="true" /> : null}
+          {dayDetailIndex != null ? ROUTINES_UI_LABELS.back : ROUTINES_UI_LABELS.cancel}
+        </button>
+        <h2 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary, textAlign: "center" }}>
+          {dayDetailIndex != null ? weekdayName(draft.days[dayDetailIndex]?.weekday ?? dayDetailIndex) : headerTitle}
+        </h2>
+        <button
+          type="button"
+          onClick={dayDetailIndex != null ? () => setDayDetailIndex(null) : () => void handleSave()}
+          disabled={dayDetailIndex != null ? false : saving || !canSave}
+          aria-label={dayDetailIndex != null ? "Listo" : "Guardar rutina"}
+          style={{
+            justifySelf: "end",
+            minHeight: MOTION.minTouchTarget,
+            padding: 0,
+            border: "none",
+            background: "transparent",
+            color: ACCENT.text,
+            fontSize: TYPE.subhead.size,
+            fontWeight: 700,
+            cursor: dayDetailIndex == null && (saving || !canSave) ? "not-allowed" : "pointer",
+            opacity: dayDetailIndex == null && (saving || !canSave) ? 0.4 : 1,
+          }}
+        >
+          {dayDetailIndex != null ? "Listo" : saving ? CRONOS_LABELS.saving : "Guardar"}
+        </button>
+      </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
-        <div className="mx-auto w-full max-w-5xl space-y-5">
-          <GlassCard raised><div className="space-y-5"><div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Nombre de la rutina</label>
-                <input type="text" value={draft.title} onChange={setTitle} className="w-full rounded-2xl border bg-black/25 px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.subhead.size }} placeholder={CRONOS_LABELS.namePlaceholder} />
-              </div>
-              <div>
-                <label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Descripción</label>
-                <textarea value={draft.description} onChange={setDescription} rows={3} className="w-full rounded-2xl border bg-black/25 px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border }} placeholder="Anota qué trabaja esta rutina…" />
-              </div>
-            </div>
-            <div className="space-y-4 rounded-2xl border p-4" style={{ borderColor: GLASS.border, background: GLASS.fillSubtle }}>
-              {mode === "new" ? (<>
-                <label className="block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Tipo de plan</label>
-                <div className="flex flex-wrap gap-2">
-                  <GlassButton variant={draftMode === "single" ? "primary" : "ghost"} onClick={() => requestSwitchMode("single")} aria-label="Plan individual">Individual</GlassButton>
-                  <GlassButton variant={draftMode === "weekly" ? "primary" : "ghost"} onClick={() => requestSwitchMode("weekly")} aria-label="Plan semanal">Semanal</GlassButton>
-                </div>
-                <p className="text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{draftMode === "weekly" ? "7 días fijos (Lunes–Domingo)." : "Días libres (individual)."}</p>
-                <GlassButton variant="ghost" onClick={() => { setTemplateError(null); setTemplateOpen(true); }} aria-label="Desde plantilla">Desde plantilla</GlassButton>
-              </>) : mode === "edit" && draft.needsModeConfirmation ? (<div className="space-y-3">
-                <p className="text-neutral-300" style={{ fontSize: TYPE.caption.size }}>Esta rutina no tiene plan semanal asignado.</p>
-                <GlassButton variant="primary" onClick={() => setDraftMode("weekly")} aria-label="Convertir a plan semanal">{CRONOS_LABELS.planner.convertToWeekly}</GlassButton>
-              </div>) : (<p className="text-neutral-500" style={{ fontSize: TYPE.subhead.size }}>Revisa nombre, días y ejercicios antes de guardar.</p>)}
-            </div>
-          </div></div></GlassCard>
+      <div style={{ flex: 1, overflowY: "auto", padding: `${SPACE.xs}px ${SPACE.md}px ${SPACE.xl}px` }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: SPACE.md }}>
+          {dayDetailIndex == null ? (
+            <>
+              {nameInput}
 
-          <section className="space-y-3" aria-label="Estructura de la rutina">
-            <div className="flex items-center justify-between gap-3 px-1">
-              <h3 className="text-neutral-100" style={{ fontSize: TYPE.headline.size, fontWeight: TYPE.headline.weight }}>Estructura</h3>
-              <p className="text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{draft.days.length} {draft.days.length === 1 ? "día" : "días"}</p>
-            </div>
-            {draft.days.map((day, dayIndex) => {
-              const tone = dayKindTone(day.kind);
-              return (
-              <GlassCard key={day.id} raised><div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <input value={day.label} onChange={(e) => setDayLabel(dayIndex, e.target.value)} className="min-w-[140px] rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight }} placeholder={"Día " + (day.order + 1)} />
-                    <select value={day.kind} onChange={(e) => setDayKind(dayIndex, e.target.value as RoutineDay["kind"])} className="rounded-xl border bg-black/20 px-3 py-2 text-neutral-300 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }}>
-                      <option value="training">Entrenamiento</option><option value="rest">Descanso</option><option value="mobility">Movilidad</option><option value="empty">Vacío</option>
-                    </select>
-                    <span className={dayKindBadgeClass(day.kind)} style={{ fontSize: TYPE.label.size, fontWeight: TYPE.label.weight, letterSpacing: TYPE.label.tracking, color: tone.color, background: tone.background, borderColor: tone.border }}>{displayDayLabel(day, draft.mode)}</span>
+              {isWeekly ? (
+                <section aria-label="Plan semanal" style={{ display: "flex", flexDirection: "column" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: SPACE.xs,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: TYPE.label.size,
+                        lineHeight: TYPE.label.lineHeight,
+                        fontWeight: TYPE.label.weight,
+                        letterSpacing: TYPE.label.tracking,
+                        color: TEXT.tertiary,
+                        textTransform: "uppercase",
+                        fontFamily: TYPE.mono.font,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      Progreso semanal • {draft.days.filter((d) => d.exercises.length > 0 || d.kind === "rest").length} de 7 días
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {dayIndex > 0 && (<GlassButton variant="ghost" icon={<ArrowUp size={14} />} onClick={(e) => { e.stopPropagation(); moveDay(dayIndex, dayIndex - 1); }} aria-label="Mover día arriba" />)}
-                    {dayIndex < draft.days.length - 1 && (<GlassButton variant="ghost" icon={<ArrowDown size={14} />} onClick={(e) => { e.stopPropagation(); moveDay(dayIndex, dayIndex + 1); }} aria-label="Mover día abajo" />)}
-                    <GlassButton variant="ghost" icon={<Copy />} onClick={(e) => { e.stopPropagation(); duplicateDay(dayIndex); }} aria-label="Duplicar día" />
-                    <GlassButton variant="destructive" icon={<Trash2 />} onClick={(e) => { e.stopPropagation(); removeDay(dayIndex); }} aria-label="Eliminar día" />
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+                      gap: 6,
+                      marginBottom: SPACE.lg,
+                    }}
+                    aria-hidden="true"
+                  >
+                    {draft.days.map((day) => {
+                      const planned = day.exercises.length > 0 || day.kind === "rest";
+                      return (
+                        <span
+                          key={day.id}
+                          style={{
+                            height: 8,
+                            borderRadius: RADIUS.pill,
+                            background: planned ? ACCENT.base : GLASS.fillSubtle,
+                            boxShadow: day.exercises.length > 0 ? ACCENT.glow : "none",
+                          }}
+                        />
+                      );
+                    })}
                   </div>
-                </div>
 
-                {day.kind === "training" && (<div className="space-y-3">
-                  {day.exercises.length > 0 ? (<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    {day.exercises.map((ex, exIndex) => (
-                      <GlassCard key={ex.rowId ?? ex.exercise.id} flush className="flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="min-w-0 text-neutral-200" title={ex.exercise.name} style={{ fontSize: TYPE.subhead.size, fontWeight: TYPE.subhead.weight, overflowWrap: "anywhere" }}>{ex.exercise.name}</span>
-                          <GlassButton variant="ghost" icon={<Trash2 size={15} />} onClick={(e) => { e.stopPropagation(); removeExercise(dayIndex, exIndex); }} aria-label="Quitar ejercicio" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Series</label><input type="number" value={ex.target_sets} onChange={(e) => setExerciseSets(dayIndex, exIndex, Number(e.target.value) || 1)} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
-                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Descanso (s)</label><input type="number" value={ex.rest_seconds} onChange={(e) => setExerciseRest(dayIndex, exIndex, Number(e.target.value) || 0)} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
-                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Reps mín</label><input type="number" value={ex.target_reps_min ?? ""} onChange={(e) => setExerciseReps(dayIndex, exIndex, "min", e.target.value === "" ? null : Number(e.target.value))} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
-                          <div><label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, color: TEXT.tertiary }}>Reps máx</label><input type="number" value={ex.target_reps_max ?? ""} onChange={(e) => setExerciseReps(dayIndex, exIndex, "max", e.target.value === "" ? null : Number(e.target.value))} className="w-full rounded-xl border bg-black/20 px-3 py-2 text-neutral-100 outline-none focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.caption.size }} /></div>
-                        </div>
-                      </GlassCard>
-                    ))}
-                  </div>) : (<div className="rounded-2xl border px-4 py-3 text-neutral-500" style={{ borderColor: GLASS.border, background: GLASS.fillSubtle, fontSize: TYPE.subhead.size }}>{CRONOS_LABELS.emptyDay}</div>)}
-                  <GlassButton variant="ghost" icon={<Plus />} onClick={(e) => { e.stopPropagation(); openPickerForDay(dayIndex); }} aria-label="Añadir ejercicio al día">Añadir ejercicio</GlassButton>
-                </div>)}
-              </div></GlassCard>
-            );})}
-            <GlassButton variant="secondary" icon={<Plus />} onClick={addDay} block disabled={draft.mode === "weekly"} aria-label="Añadir día de entrenamiento">Añadir día</GlassButton>
-          </section>
-        </div>
-      </div>
+                  <div
+                    style={{
+                      borderRadius: RADIUS.card,
+                      border: `1px solid ${GLASS.borderStrong}`,
+                      background: SOLID.card,
+                      overflow: "hidden",
+                      boxShadow: GLASS.shadow,
+                    }}
+                  >
+                    {draft.days.map((day, index) => {
+                      const count = day.exercises.length;
+                      const configured = count > 0;
+                      const muscles = dayMuscleSummary(day);
+                      const metrics = dayMetrics(day);
+                      const subtitle = configured
+                        ? muscles ?? metrics ?? `${count} ej.`
+                        : day.kind === "rest"
+                          ? "Descanso"
+                          : "Sin ejercicios";
+                      return (
+                        <button
+                          key={day.id}
+                          type="button"
+                          onClick={() => setDayDetailIndex(index)}
+                          aria-label={`${weekdayName(day.weekday ?? index)}: ${configured ? `${count} ej.` : day.kind === "rest" ? "Descanso" : "Sin ejercicios"}`}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: SPACE.sm,
+                            width: "100%",
+                            minHeight: 64,
+                            padding: `0 ${SPACE.md}px`,
+                            border: "none",
+                            borderBottom: index < draft.days.length - 1 ? `1px solid ${GLASS.border}` : "none",
+                            background: "transparent",
+                            color: TEXT.primary,
+                            textAlign: "left",
+                            cursor: "pointer",
+                            transition,
+                          }}
+                        >
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 36,
+                                height: 36,
+                                borderRadius: RADIUS.pill,
+                                flexShrink: 0,
+                                fontFamily: TYPE.mono.font,
+                                fontSize: TYPE.caption.size,
+                                fontWeight: 700,
+                                fontVariantNumeric: "tabular-nums",
+                                background: configured ? ACCENT.subtle : GLASS.fillSubtle,
+                                border: `1px solid ${configured ? ACCENT.border : GLASS.border}`,
+                                color: configured ? ACCENT.text : TEXT.tertiary,
+                                boxShadow: configured ? ACCENT.glow : "none",
+                              }}
+                            >
+                              {weekdayInitial(day.weekday ?? index)}
+                            </span>
+                            <span style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: 2 }}>
+                              <span
+                                style={{
+                                  fontSize: TYPE.subhead.size,
+                                  lineHeight: TYPE.subhead.lineHeight,
+                                  fontWeight: 700,
+                                  letterSpacing: TYPE.subhead.tracking,
+                                  color: TEXT.primary,
+                                }}
+                              >
+                                {weekdayName(day.weekday ?? index)}
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: TYPE.mono.font,
+                                  fontSize: TYPE.caption.size,
+                                  lineHeight: TYPE.caption.lineHeight,
+                                  fontWeight: configured ? 500 : 400,
+                                  fontVariantNumeric: "tabular-nums",
+                                  color: day.kind === "rest" && !configured ? TEXT.tertiary : configured ? TEXT.secondary : TEXT.tertiary,
+                                  textTransform: day.kind === "rest" && !configured ? "uppercase" : undefined,
+                                  letterSpacing: day.kind === "rest" && !configured ? TYPE.label.tracking : undefined,
+                                }}
+                              >
+                                {subtitle}
+                              </span>
+                            </span>
+                          </span>
+                          <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" style={{ flexShrink: 0 }} />
+                        </button>
+                      );
+                    })}
+                  </div>
 
-<div className="border-t px-4 py-2.5 sm:px-6 sm:py-3" style={{ borderColor: GLASS.border, background: SOLID.popover, backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-2">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {isEditMode && (
-              <GlassButton variant="ghost" icon={<Copy />} onClick={handleDuplicate} disabled={!isEditMode} aria-label="Duplicar rutina">Duplicar</GlassButton>
-            )}
-            <GlassButton variant="primary" icon={<Save />} onClick={handleSave} disabled={saving || !canSave} aria-label="Guardar rutina">{saving ? CRONOS_LABELS.saving : CRONOS_LABELS.save}</GlassButton>
-          </div>
-          {saving && (
-            <p className="rounded-xl border px-3 py-1.5 text-xs" aria-live="polite" style={{ borderColor: GLASS.border, background: SURFACE.sunken, color: TEXT.secondary }}>
-              Guardando cambios de la rutina…
-            </p>
-          )}
-          {!canSave && !saving && hasValidationErrors && (
-            <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: SPACE.sm,
+                      marginTop: SPACE.md,
+                      marginBottom: SPACE.lg,
+                      padding: SPACE.md,
+                      borderRadius: RADIUS.card,
+                      border: `1px solid ${GLASS.border}`,
+                      background: GLASS.fillSubtle,
+                    }}
+                  >
+                    <Flame size={16} color={ACCENT.text} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div style={{ minWidth: 0 }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontFamily: TYPE.mono.font,
+                          fontSize: TYPE.label.size,
+                          lineHeight: TYPE.label.lineHeight,
+                          fontWeight: TYPE.label.weight,
+                          letterSpacing: TYPE.label.tracking,
+                          color: TEXT.secondary,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Periodo de adaptación recomendado
+                      </p>
+                      <p style={{ margin: `${SPACE.xs}px 0 0`, fontSize: TYPE.caption.size, lineHeight: TYPE.caption.lineHeight, color: TEXT.secondary }}>
+                        Mantén este programa entre 6 a 12 semanas. Cambiar de rutina constantemente impide la adaptación neuromuscular y la sobrecarga progresiva.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              ) : (
+                <section aria-label="Ejercicios" style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+                  <p
+                    style={{
+                      margin: `0 0 ${SPACE.xs}px`,
+                      fontSize: TYPE.label.size,
+                      lineHeight: TYPE.label.lineHeight,
+                      fontWeight: TYPE.label.weight,
+                      letterSpacing: TYPE.label.tracking,
+                      color: TEXT.tertiary,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Ejercicios
+                  </p>
+                  {(draft.days[0]?.exercises.length ?? 0) > 0
+                    ? draft.days[0]!.exercises.map((ex, exIndex) => (
+                        <div
+                          key={ex.rowId ?? `${ex.exercise.id}-${exIndex}`}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: SPACE.sm,
+                            minHeight: 56,
+                            padding: SPACE.md,
+                            borderRadius: RADIUS.card,
+                            border: `1px solid ${GLASS.border}`,
+                            background: SOLID.card,
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
+                              {ex.exercise.name_es || ex.exercise.name}
+                            </p>
+                            <p
+                              style={{
+                                margin: 0,
+                                fontFamily: TYPE.mono.font,
+                                fontSize: TYPE.caption.size,
+                                fontVariantNumeric: "tabular-nums",
+                                color: TEXT.tertiary,
+                              }}
+                            >
+                              {ex.target_sets} series
+                              {ex.target_reps_min != null || ex.target_reps_max != null
+                                ? ` · ${ex.target_reps_min ?? "?"}–${ex.target_reps_max ?? "?"} reps`
+                                : ""}
+                              {ex.rest_seconds ? ` · ${ex.rest_seconds}s` : ""}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeExercise(0, exIndex)}
+                            aria-label={`Quitar ${ex.exercise.name_es || ex.exercise.name}`}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: MOTION.minTouchTarget,
+                              height: MOTION.minTouchTarget,
+                              border: "none",
+                              borderRadius: RADIUS.control,
+                              background: "transparent",
+                              color: TEXT.tertiary,
+                              cursor: "pointer",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Trash2 size={18} aria-hidden="true" />
+                          </button>
+                        </div>
+                      ))
+                    : null}
+                  {addRow("Añadir ejercicio", () => openPickerForDay(0))}
+                </section>
+              )}
+
+              {saveResult && !saveResult.ok ? (
+                <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.secondary }} aria-live="polite">
+                  {CRONOS_LABELS.saveError}
+                </p>
+              ) : null}
+            </>
+          ) : detailDay ? (
+            <section aria-label={`Ejercicios de ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`} style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
               <button
                 type="button"
-                onClick={() => setValidationExpanded((v) => !v)}
-                aria-expanded={validationExpanded}
-                className="flex w-full items-center justify-between rounded-xl border px-3 py-1.5 text-left transition-colors"
-                style={{ borderColor: GLASS.border, background: GLASS.fillSubtle, color: TEXT.secondary }}
+                onClick={() => setDayRest(dayDetailIndex, detailDay.kind !== "rest" || detailDay.exercises.length > 0)}
+                aria-pressed={detailDay.kind === "rest" && detailDay.exercises.length === 0}
+                aria-label="Marcar como día de descanso"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: SPACE.sm,
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `0 ${SPACE.md}px`,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.border : GLASS.border}`,
+                  background: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.subtle : GLASS.fillSubtle,
+                  color: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.text : TEXT.secondary,
+                  fontSize: TYPE.subhead.size,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
               >
-                <span className="text-xs" style={{ color: STATUS.warning.text }}>Faltan {validationMessages.length} {validationMessages.length === 1 ? "cosa para guardar" : "cosas para guardar"}</span>
-                <ChevronDown size={14} style={{ color: TEXT.tertiary, transform: validationExpanded ? "rotate(180deg)" : "none", transition: `transform ${MOTION.fast} ${MOTION.easeOut}` }} />
+                <span>Día de descanso</span>
+                <span
+                  aria-hidden="true"
+                  style={{
+                    fontFamily: TYPE.mono.font,
+                    fontSize: TYPE.label.size,
+                    fontWeight: TYPE.label.weight,
+                    letterSpacing: TYPE.label.tracking,
+                    textTransform: "uppercase",
+                    color: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.text : TEXT.tertiary,
+                  }}
+                >
+                  {detailDay.kind === "rest" && detailDay.exercises.length === 0 ? "Activo" : "No"}
+                </span>
               </button>
-              {validationExpanded && (
-                <ul className="mt-1.5 space-y-1 px-3 text-xs" style={{ color: STATUS.warning.text }}>
-                  {validationMessages.slice(0, 4).map((m) => <li key={m}>• {m}</li>)}
-                </ul>
+
+              {detailDay.exercises.map((ex, exIndex) => (
+                <div
+                  key={ex.rowId ?? `${ex.exercise.id}-${exIndex}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: SPACE.sm,
+                    padding: SPACE.md,
+                    borderRadius: RADIUS.card,
+                    border: `1px solid ${GLASS.border}`,
+                    background: SOLID.card,
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
+                      {ex.exercise.name_es || ex.exercise.name}
+                    </p>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontFamily: TYPE.mono.font,
+                        fontSize: TYPE.caption.size,
+                        fontVariantNumeric: "tabular-nums",
+                        color: TEXT.tertiary,
+                      }}
+                    >
+                      {ex.target_sets} series
+                      {ex.target_reps_min != null || ex.target_reps_max != null
+                        ? ` · ${ex.target_reps_min ?? "?"}–${ex.target_reps_max ?? "?"} reps`
+                        : ""}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeExercise(dayDetailIndex, exIndex)}
+                    aria-label={`Quitar ${ex.exercise.name_es || ex.exercise.name}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: MOTION.minTouchTarget,
+                      height: MOTION.minTouchTarget,
+                      border: "none",
+                      borderRadius: RADIUS.control,
+                      background: "transparent",
+                      color: TEXT.tertiary,
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Trash2 size={18} aria-hidden="true" />
+                  </button>
+                </div>
+              ))}
+              {addRow(
+                `Añadir ejercicios a ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`,
+                () => openPickerForDay(dayDetailIndex),
               )}
-            </div>
-          )}
-          {!canSave && !saving && !hasValidationErrors && (
-            <p className="text-xs" style={{ color: STATUS.warning.text }}>{CRONOS_LABELS.routineValidation.noTitle}</p>
-          )}
-          {saveResult && !saveResult.ok && (
-            <div className="rounded-xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted }}>
-              <p className="font-medium" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.saveError}</p>
-              <p className="mt-1" style={{ color: STATUS.error.text }}>{translationFor(saveResult.error)}</p>
-            </div>
-          )}
-          {saveResult && saveResult.ok && (
-            <p className="rounded-xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.success.border, background: STATUS.success.muted, color: STATUS.success.text }}>
-              {CRONOS_LABELS.saved}
-            </p>
-          )}
+            </section>
+          ) : null}
         </div>
       </div>
 
-      <UnifiedExerciseSelectorSheet isOpen={pickerOpen} mode="single" onClose={closePicker} dayContext={dayContext} onSelectSingle={(exercise) => { if (targetDayIndex !== null) addExerciseToDay(targetDayIndex, exercise); }} />
+      <UnifiedExerciseSelectorSheet
+        isOpen={pickerOpen}
+        mode="single"
+        onClose={closePicker}
+        dayContext={dayContext}
+        onSelectSingle={(exercise) => {
+          if (targetDayIndex !== null) addExerciseToDay(targetDayIndex, exercise);
+        }}
+      />
 
-      {closeConfirmOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={(e) => e.stopPropagation()}><div className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
-        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>Tienes cambios sin guardar</h3>
-        <p className="text-neutral-400 text-sm">¿Qué deseas hacer antes de cerrar?</p>
-        <div className="flex flex-wrap gap-2">
-          <GlassButton variant="primary" onClick={handleCloseConfirmSave} disabled={saving || !canSave}>Guardar y salir</GlassButton>
-          <GlassButton variant="destructive" onClick={handleCloseConfirmDiscard}>Descartar cambios</GlassButton>
-          <GlassButton variant="ghost" onClick={() => setCloseConfirmOpen(false)}>Cancelar</GlassButton>
+      {closeConfirmOpen ? (
+        <div
+          role="presentation"
+          onClick={() => setCloseConfirmOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 60,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: SPACE.md,
+            background: SCRIM.modal,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Cambios sin guardar"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: RADIUS.card,
+              border: `1px solid ${GLASS.borderStrong}`,
+              background: SOLID.popover,
+              padding: SPACE.card,
+              display: "flex",
+              flexDirection: "column",
+              gap: SPACE.sm,
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary }}>
+              Tienes cambios sin guardar
+            </h3>
+            <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.secondary }}>
+              ¿Qué deseas hacer antes de cerrar?
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: SPACE.xs }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  setCloseConfirmOpen(false);
+                  await handleSave();
+                }}
+                disabled={saving || !canSave}
+                style={{
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `0 ${SPACE.md}px`,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${ACCENT.base}`,
+                  background: "transparent",
+                  color: ACCENT.text,
+                  fontWeight: 700,
+                  cursor: saving || !canSave ? "not-allowed" : "pointer",
+                  opacity: saving || !canSave ? 0.4 : 1,
+                }}
+              >
+                Guardar y salir
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCloseConfirmOpen(false);
+                  onClose();
+                }}
+                style={{
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `0 ${SPACE.md}px`,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${GLASS.border}`,
+                  background: "transparent",
+                  color: TEXT.secondary,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Descartar cambios
+              </button>
+              <button
+                type="button"
+                onClick={() => setCloseConfirmOpen(false)}
+                style={{
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `0 ${SPACE.md}px`,
+                  borderRadius: RADIUS.control,
+                  border: "none",
+                  background: "transparent",
+                  color: TEXT.tertiary,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
         </div>
-      </div></GlassCard></div></div>)}
-
-      {removeConfirmOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={cancelRemoveExercises}><div onClick={(e) => e.stopPropagation()} className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
-        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>{CRONOS_LABELS.planner.removeExercisesTitle}</h3>
-        <p className="text-neutral-400 text-sm">{CRONOS_LABELS.planner.removeExercisesBody.replace("{count}", String(removeConfirmExerciseCount))}</p>
-        <div className="flex flex-wrap gap-2"><GlassButton variant="destructive" onClick={confirmRemoveExercises}>{CRONOS_LABELS.planner.removeExercisesConfirm}</GlassButton><GlassButton variant="ghost" onClick={cancelRemoveExercises}>{CRONOS_LABELS.planner.removeExercisesCancel}</GlassButton></div>
-      </div></GlassCard></div></div>)}
-
-      {switchModeConfirmOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={() => setSwitchModeConfirmOpen(false)}><div onClick={(e) => e.stopPropagation()} className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
-        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>{CRONOS_LABELS.planner.switchModeDiscardTitle}</h3>
-        <p className="text-neutral-400 text-sm">{CRONOS_LABELS.planner.switchModeDiscardBody}</p>
-        <div className="flex flex-wrap gap-2"><GlassButton variant="destructive" onClick={() => { setSwitchModeConfirmOpen(false); setDraftMode(pendingDraftMode); }}>{CRONOS_LABELS.planner.switchModeDiscardConfirm}</GlassButton><GlassButton variant="ghost" onClick={() => setSwitchModeConfirmOpen(false)}>{CRONOS_LABELS.planner.switchModeDiscardCancel}</GlassButton></div>
-      </div></GlassCard></div></div>)}
-
-      {templateOpen && (<div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backgroundColor: SCRIM.modal }} onClick={() => { setTemplateError(null); setTemplateOpen(false); }}><div onClick={(e) => e.stopPropagation()} className="w-full max-w-md"><GlassCard raised><div className="space-y-4">
-        <h3 className="text-neutral-100" style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>Elegir plantilla</h3>
-        <p className="text-neutral-400" style={{ fontSize: TYPE.caption.size }}>Clona una plantilla base y adapta los días y ejercicios a tu gusto.</p>
-        {templateError && <div className="rounded-xl border px-3 py-2 text-xs" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted, color: STATUS.error.text }}>{templateError}</div>}
-        <div className="space-y-2">{ROUTINE_TEMPLATES.map((template) => (
-          <GlassButton key={template.id} variant="ghost" block onClick={() => applyTemplateToDraft(template)} disabled={templateLoading} aria-label={`Plantilla ${template.title}`}><div className="w-full text-left">
-            <div className="flex items-center justify-between gap-2"><span style={{ fontSize: TYPE.subhead.size, fontWeight: 600 }}>{template.title}</span><span className="text-xs text-neutral-500">{template.days.length} día{template.days.length !== 1 ? "s" : ""}</span></div>
-            <p className="mt-1 text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{template.days.filter((d) => d.exercises.length > 0).length} día{template.days.filter((d) => d.exercises.length > 0).length !== 1 ? "s con ejercicios" : " con ejercicio"}</p>
-          </div></GlassButton>
-        ))}</div>
-        <div className="flex justify-end"><GlassButton variant="ghost" onClick={() => { setTemplateError(null); setTemplateOpen(false); }} disabled={templateLoading}>Cancelar</GlassButton></div>
-      </div></GlassCard></div></div>)}
+      ) : null}
     </div>
   );
 }

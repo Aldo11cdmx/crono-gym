@@ -120,7 +120,7 @@ function dayMetrics(day: RoutineDay): string | null {
 export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose }: RoutineEditorProps) {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [targetDayIndex, setTargetDayIndex] = useState<number | null>(null);
+  const [targetDayIndex, setTargetDayIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<SaveResult | null>(null);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
@@ -199,15 +199,17 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
     setDraft((d) => ({ ...d, title: e.target.value }));
   }, []);
 
-  const addExerciseToDay = useCallback((dayIndex: number, exercise: Exercise) => {
+  // Mutador aditivo (RoutineDraftV2): inserta uno o varios ejercicios sin sobrescribir existentes.
+  const addExercisesToDay = useCallback((dayIndex: number, exercises: Exercise[]) => {
+    if (exercises.length === 0) return;
     setDraft((d) => {
       const next = [...d.days].map((day) => ({ ...day }));
       const day = next[dayIndex];
-      next[dayIndex] = { ...day, kind: "training", exercises: [...day.exercises, draftExercise(exercise, day.exercises.length)] };
+      if (!day) return d;
+      const additions = exercises.map((exercise, i) => draftExercise(exercise, day.exercises.length + i));
+      next[dayIndex] = { ...day, kind: "training", exercises: [...day.exercises, ...additions] };
       return { ...d, days: next };
     });
-    setPickerOpen(false);
-    setTargetDayIndex(null);
   }, []);
 
   const removeExercise = useCallback((dayIndex: number, exerciseIndex: number) => {
@@ -235,15 +237,21 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
   }, []);
 
   const handleSave = useCallback(async () => {
+    const hasAnyExercise = draft.days.some((d) => d.exercises.length > 0);
+    const title = draft.title.trim().length >= 3 ? draft.title.trim() : hasAnyExercise ? "Nueva Rutina" : draft.title;
+    const finalDraft: RoutineDraftV2 = title !== draft.title ? { ...draft, title } : draft;
+    const blocking = validateDraft(finalDraft).filter((p) => p !== "noTitle" && p !== "titleTooShort");
+    if (!hasAnyExercise || blocking.length > 0) return;
     setSaving(true);
     setSaveResult(null);
     try {
-      const promise = saveRoutine(userId, draft, "editor");
-      await flushSave(draft.draftKey);
+      const promise = saveRoutine(userId, finalDraft, "editor");
+      await flushSave(finalDraft.draftKey);
       const result = await promise;
       setSaveResult(result);
       if (result.ok) {
-        initialDraftRef.current = draft;
+        setDraft(finalDraft);
+        initialDraftRef.current = finalDraft;
         onSave();
       }
     } finally {
@@ -252,8 +260,9 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
   }, [userId, draft, onSave]);
 
   const problems = validateDraft(draft);
-  const hasValidationErrors = problems.length > 0;
-  const canSave = draft.title.trim().length >= 3 && !hasValidationErrors;
+  const hasAnyExercise = draft.days.some((d) => d.exercises.length > 0);
+  const nonTitleProblems = problems.filter((p) => p !== "noTitle" && p !== "titleTooShort");
+  const canSave = hasAnyExercise && nonTitleProblems.length === 0;
 
   const handleClose = useCallback(() => {
     if (dirty) {
@@ -263,21 +272,25 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
     onClose();
   }, [dirty, onClose]);
 
-  const openPickerForDay = useCallback((dayIndex: number) => {
-    setTargetDayIndex(dayIndex);
+  // Punto de integración del selector unificado (modo múltiple).
+  const onOpenExercisePicker = useCallback((dayIndex?: number) => {
+    setTargetDayIndex(dayIndex ?? 0);
     setPickerOpen(true);
   }, []);
 
   const closePicker = useCallback(() => {
     setPickerOpen(false);
-    setTargetDayIndex(null);
   }, []);
 
+  const handleSelectMultiple = useCallback((exercises: Exercise[]) => {
+    addExercisesToDay(targetDayIndex, exercises);
+    setPickerOpen(false);
+  }, [addExercisesToDay, targetDayIndex]);
+
   const dayContext = useMemo(() => {
-    const idx = targetDayIndex ?? 0;
-    const day = draft.days[idx];
+    const day = draft.days[targetDayIndex];
     if (!day) return undefined;
-    return { dayIndex: idx, dayLabel: day.label, dayExercises: day.exercises.map((ex) => ex.exercise) };
+    return { dayIndex: targetDayIndex, dayLabel: day.label, dayExercises: day.exercises.map((ex) => ex.exercise) };
   }, [draft, targetDayIndex]);
 
   const isWeekly = draft.mode === "weekly" || draftMode === "weekly";
@@ -690,7 +703,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                         </div>
                       ))
                     : null}
-                  {addRow("Añadir ejercicio", () => openPickerForDay(0))}
+                  {addRow("Añadir ejercicio", () => onOpenExercisePicker(0))}
                 </section>
               )}
 
@@ -796,7 +809,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
               ))}
               {addRow(
                 `Añadir ejercicios a ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`,
-                () => openPickerForDay(dayDetailIndex),
+                () => onOpenExercisePicker(dayDetailIndex),
               )}
             </section>
           ) : null}
@@ -805,12 +818,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
 
       <UnifiedExerciseSelectorSheet
         isOpen={pickerOpen}
-        mode="single"
+        mode="multiple"
         onClose={closePicker}
         dayContext={dayContext}
-        onSelectSingle={(exercise) => {
-          if (targetDayIndex !== null) addExerciseToDay(targetDayIndex, exercise);
-        }}
+        onSelectMultiple={handleSelectMultiple}
       />
 
       {closeConfirmOpen ? (

@@ -376,72 +376,226 @@ export function UnifiedExerciseSelectorSheet({
           overflow: "hidden",
         }}
       >
-        <header style={{ padding: `${SPACE.md}px ${SPACE.lg}px ${SPACE.sm}px`, borderBottom: `1px solid ${GLASS.border}`, background: GLASS.fillSubtle }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: SPACE.md }}>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: TYPE.label.size, fontWeight: TYPE.label.weight, letterSpacing: TYPE.label.tracking, textTransform: "uppercase", color: ACCENT.text }}>Cronos Performance</p>
-              <h2 style={{ margin: `${SPACE.xs}px 0 0`, fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, lineHeight: TYPE.title2.lineHeight, color: TEXT.primary }}>{title}</h2>
-              <p style={{ margin: `${SPACE.xs}px 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                {filtered.length} ejercicio{filtered.length !== 1 ? "s" : ""}{dayContext?.dayLabel ? ` · ${dayContext.dayLabel}` : ""}
-              </p>
-            </div>
-            <button type="button" onClick={onClose} aria-label="Cerrar" style={iconBtnStyle()}>
+        <header
+          style={{
+            padding: `${SPACE.sm}px ${SPACE.md}px`,
+            borderBottom: `1px solid ${GLASS.border}`,
+            background: GLASS.fillSubtle,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
+            <h2
+              style={{
+                margin: 0,
+                minWidth: 0,
+                fontSize: TYPE.headline.size,
+                fontWeight: TYPE.headline.weight,
+                lineHeight: TYPE.headline.lineHeight,
+                letterSpacing: TYPE.headline.tracking,
+                color: TEXT.primary,
+              }}
+            >
+              {title}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: MOTION.minTouchTarget,
+                minHeight: MOTION.minTouchTarget,
+                borderRadius: RADIUS.round,
+                border: `1px solid ${GLASS.border}`,
+                background: GLASS.fillSubtle,
+                color: TEXT.secondary,
+                cursor: "pointer",
+                padding: 0,
+                flexShrink: 0,
+              }}
+            >
               <X size={18} aria-hidden="true" />
             </button>
           </div>
           {dayContext && dayMuscleSlugs.size > 0 && (
-            <div style={{ marginTop: SPACE.sm, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
-              <span style={{ fontSize: TYPE.caption.size, fontWeight: 600, color: TEXT.secondary }}>Balance</span>
+            <div style={{ marginTop: SPACE.xs, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
               {[...dayMuscleSlugs].map((slug) => (
-                <span key={slug} style={{ padding: `2px ${SPACE.sm}px`, borderRadius: RADIUS.pill, border: `1px solid ${ACCENT.border}`, background: ACCENT.subtle, color: TEXT.primary, fontSize: TYPE.caption.size }}>{slug}</span>
+                <span
+                  key={slug}
+                  style={{
+                    padding: `2px ${SPACE.sm}px`,
+                    borderRadius: RADIUS.pill,
+                    border: `1px solid ${ACCENT.border}`,
+                    background: ACCENT.subtle,
+                    color: TEXT.primary,
+                    fontSize: TYPE.caption.size,
+                  }}
+                >
+                  {slug}
+                </span>
               ))}
             </div>
           )}
         </header>
 
-        <div ref={scrollContainer} style={{ flex: 1, overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: `${SPACE.md}px ${SPACE.lg}px ${mode === "multiple" && selectedIds.size > 0 ? "96px" : SPACE.lg}px` }}>
-          <div style={{ position: "sticky", top: 0, zIndex: 1, paddingBottom: SPACE.sm, background: `linear-gradient(180deg, ${SOLID.popover} 70%, transparent 100%)` }}>
+        <div
+          ref={scrollContainer}
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            overflowX: "hidden",
+            overscrollBehavior: "contain",
+            WebkitOverflowScrolling: "touch",
+            padding: `${SPACE.sm}px ${SPACE.md}px 144px`,
+          }}
+        >
+          <div
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              paddingTop: SPACE.xs,
+              paddingBottom: SPACE.xs,
+              background: `linear-gradient(180deg, ${SOLID.popover} 80%, transparent 100%)`,
+            }}
+          >
             <div style={{ position: "relative" }}>
-              <Search size={18} style={{ position: "absolute", left: SPACE.md, top: "50%", transform: "translateY(-50%)", color: TEXT.tertiary, pointerEvents: "none" }} aria-hidden="true" />
+              <Search
+                size={18}
+                style={{
+                  position: "absolute",
+                  left: SPACE.md,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: TEXT.tertiary,
+                  pointerEvents: "none",
+                }}
+                aria-hidden="true"
+              />
+              <style>{`[data-testid="selector-search-input"]::placeholder{color:${TEXT.tertiary};opacity:1;}`}</style>
               <input
                 data-testid="selector-search-input"
-                type="text"
+                type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
                 placeholder="Buscar por nombre, músculo o equipo…"
-                style={{ width: "100%", minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.xl}px 0 44px`, borderRadius: RADIUS.control, border: `1px solid ${GLASS.borderStrong}`, background: SURFACE.sunken, color: TEXT.primary, fontSize: TYPE.body.size, fontFamily: "inherit", outline: "none" }}
+                autoComplete="off"
+                style={{
+                  width: "100%",
+                  height: MOTION.minTouchTarget,
+                  minHeight: MOTION.minTouchTarget,
+                  paddingLeft: 44,
+                  paddingRight: query ? MOTION.minTouchTarget : SPACE.md,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${GLASS.borderStrong}`,
+                  background: SOLID.popover,
+                  color: TEXT.primary,
+                  fontSize: TYPE.subhead.size,
+                  fontFamily: "inherit",
+                  outline: "none",
+                }}
               />
               {query && (
-                <button type="button" onClick={() => setQuery("")} aria-label="Limpiar búsqueda" style={{ ...iconBtnStyle(), position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", border: "none", background: "transparent" }}>
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Limpiar búsqueda"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: MOTION.minTouchTarget,
+                    minHeight: MOTION.minTouchTarget,
+                    position: "absolute",
+                    right: 4,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    border: "none",
+                    background: "transparent",
+                    color: TEXT.secondary,
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
                   <X size={16} aria-hidden="true" />
                 </button>
               )}
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: SPACE.xs, marginBottom: SPACE.md, padding: 2, borderRadius: RADIUS.control, border: `1px solid ${GLASS.border}`, background: GLASS.fillSubtle }}>
+          <div style={{ display: "flex", gap: SPACE.xs, marginBottom: SPACE.sm, padding: 2, borderRadius: RADIUS.control, border: `1px solid ${GLASS.border}`, background: GLASS.fillSubtle }}>
             {(["all", "frequent"] as const).map((t) => (
-              <button key={t} type="button" aria-pressed={tab === t} onClick={() => setTab(t)} style={{ flex: 1, minHeight: MOTION.minTouchTarget, borderRadius: RADIUS.control, border: "none", background: tab === t ? ACCENT.subtle : "transparent", color: tab === t ? TEXT.primary : TEXT.secondary, fontSize: TYPE.subhead.size, fontWeight: tab === t ? 600 : 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: SPACE.xs }}>
+              <button
+                key={t}
+                type="button"
+                aria-pressed={tab === t}
+                onClick={() => setTab(t)}
+                style={{
+                  flex: 1,
+                  minHeight: MOTION.minTouchTarget,
+                  borderRadius: RADIUS.control,
+                  border: "none",
+                  background: tab === t ? ACCENT.subtle : "transparent",
+                  color: tab === t ? TEXT.primary : TEXT.secondary,
+                  fontSize: TYPE.subhead.size,
+                  fontWeight: tab === t ? 600 : 500,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: SPACE.xs,
+                }}
+              >
                 {t === "frequent" && <Sparkles size={14} aria-hidden="true" />}
                 {t === "all" ? "Todos" : `Frecuentes (${frequentIds.length})`}
               </button>
             ))}
           </div>
 
-          <div style={{ marginBottom: SPACE.md }}>
-            <button type="button" onClick={handleToggleAnatomical} aria-expanded={isAnatomicalOpen} aria-controls="anatomical-accordion" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm, minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.md}px`, borderRadius: RADIUS.control, border: `1px solid ${GLASS.border}`, background: isAnatomicalOpen ? ACCENT.subtle : GLASS.fillSubtle, color: TEXT.secondary, fontSize: TYPE.subhead.size, cursor: "pointer" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}><Activity size={16} aria-hidden="true" />Categorías musculares{selectedMuscles.length > 0 && <span style={{ marginLeft: SPACE.xs, padding: `0 ${SPACE.xs}px`, borderRadius: RADIUS.pill, background: ACCENT.base, color: TEXT.onAccent, fontSize: TYPE.caption.size }}>{selectedMuscles.length}</span>}</span>
+          <div style={{ marginBottom: SPACE.sm }}>
+            <button
+              type="button"
+              onClick={handleToggleAnatomical}
+              aria-expanded={isAnatomicalOpen}
+              aria-controls="anatomical-accordion"
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: SPACE.sm,
+                minHeight: MOTION.minTouchTarget,
+                padding: `0 ${SPACE.md}px`,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${GLASS.border}`,
+                background: isAnatomicalOpen ? ACCENT.subtle : GLASS.fillSubtle,
+                color: TEXT.secondary,
+                fontSize: TYPE.subhead.size,
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
+                <Activity size={16} aria-hidden="true" />
+                Categorías musculares
+                {selectedMuscles.length > 0 && (
+                  <span style={{ marginLeft: SPACE.xs, padding: `0 ${SPACE.xs}px`, borderRadius: RADIUS.pill, background: ACCENT.base, color: TEXT.onAccent, fontSize: TYPE.caption.size }}>
+                    {selectedMuscles.length}
+                  </span>
+                )}
+              </span>
               <ChevronDown size={16} aria-hidden="true" style={{ transform: isAnatomicalOpen ? "rotate(180deg)" : "rotate(0deg)", transition: reducedMotion ? "none" : `transform ${MOTION.fast} ${MOTION.easeOut}` }} />
             </button>
             {isAnatomicalOpen && (
-              <div id="anatomical-accordion" style={{ marginTop: SPACE.sm, maxHeight: isMobile ? "50dvh" : "none", overflowY: "auto" }}>
+              <div id="anatomical-accordion" style={{ marginTop: SPACE.xs, maxHeight: isMobile ? "50dvh" : "none", overflowY: "auto" }}>
                 <MuscleSelector selected={selectedMuscles} onChange={handleMuscleSelectorChange} counts={muscleCountsBySlug} legendLabel="Músculos del catálogo" className="" />
               </div>
             )}
           </div>
 
-          <div style={{ marginBottom: SPACE.md }}>
+          <div style={{ marginBottom: SPACE.sm }}>
             <p style={groupLabelStyle()}>Filtros</p>
             <div style={{ display: "flex", gap: SPACE.xs, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
               <Chip active={onlyMyGym} label="Mi gimnasio" onClick={() => { setOnlyMyGym((v) => !v); setPage(1); }} />
@@ -450,7 +604,7 @@ export function UnifiedExerciseSelectorSheet({
           </div>
 
           {activeFilterCount > 0 && (
-            <div style={{ marginBottom: SPACE.md, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
+            <div style={{ marginBottom: SPACE.sm, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
               {selectedEquipment && <RemovableChip label={translateEquipment(selectedEquipment)} onRemove={() => setSelectedEquipment(null)} />}
               {onlyMyGym && <RemovableChip label="Mi gimnasio" onRemove={() => setOnlyMyGym(false)} />}
               {query && <RemovableChip label={`"${query}"`} onRemove={() => setQuery("")} />}
@@ -506,15 +660,32 @@ export function UnifiedExerciseSelectorSheet({
         </div>
 
         {mode === "multiple" && selectedIds.size > 0 && (
-          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.md, padding: `${SPACE.md}px ${SPACE.lg}px calc(${SPACE.md}px + env(safe-area-inset-bottom, 0px))`, borderTop: `1px solid ${GLASS.borderStrong}`, background: "rgba(10,10,12,0.92)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>{selectedIds.size} seleccionado{selectedIds.size !== 1 ? "s" : ""}</p>
-              <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>Listos para añadir a la rutina</p>
-            </div>
-            <div style={{ display: "flex", gap: SPACE.sm }}>
-              <button type="button" onClick={() => setSelectedIds(new Set())} style={secondaryBtnStyle()}>Limpiar</button>
-              <button type="button" onClick={handleConfirm} style={primaryBtnStyle()}>{`Agregar ${selectedIds.size} ejercicio${selectedIds.size !== 1 ? "s" : ""}`}</button>
-            </div>
+          <div
+            style={{
+              position: "fixed",
+              left: SPACE.md,
+              right: SPACE.md,
+              bottom: `calc(${SPACE.lg}px + env(safe-area-inset-bottom, 0px))`,
+              zIndex: Z_INDEX.modal + 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: SPACE.md,
+              padding: 14,
+              borderRadius: RADIUS.card,
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(0,0,0,0.9)",
+              backdropFilter: "blur(40px)",
+              WebkitBackdropFilter: "blur(40px)",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+            }}
+          >
+            <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary, minWidth: 0 }}>
+              {`${selectedIds.size} ${selectedIds.size === 1 ? "ejercicio seleccionado" : "ejercicios seleccionados"}`}
+            </p>
+            <button type="button" onClick={handleConfirm} style={primaryBtnStyle()} aria-label="Añadir a rutina">
+              Añadir a rutina
+            </button>
           </div>
         )}
       </div>
@@ -570,8 +741,24 @@ function SelectorCard({ exercise, order, selected, multiSelect, expanded, alread
         {alreadyInDay ? (
           <span style={{ padding: `4px ${SPACE.sm}px`, borderRadius: RADIUS.pill, border: `1px solid ${GLASS.border}`, color: TEXT.tertiary, fontSize: TYPE.caption.size, fontWeight: 600, flexShrink: 0 }}>Ya en día</span>
         ) : multiSelect ? (
-          <span style={{ width: 32, height: 32, borderRadius: RADIUS.round, border: `2px solid ${active ? ACCENT.base : GLASS.borderStrong}`, background: active ? ACCENT.base : "transparent", color: active ? TEXT.onAccent : TEXT.secondary, display: "grid", placeItems: "center", fontSize: TYPE.caption.size, fontWeight: 700, flexShrink: 0 }}>
-            {order !== null ? order : <Check size={14} aria-hidden="true" />}
+          <span
+            aria-hidden="true"
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: RADIUS.control,
+              border: `2px solid ${active ? ACCENT.base : GLASS.borderStrong}`,
+              background: active ? ACCENT.base : "transparent",
+              color: active ? TEXT.onAccent : "transparent",
+              display: "grid",
+              placeItems: "center",
+              fontSize: TYPE.caption.size,
+              fontWeight: 700,
+              flexShrink: 0,
+              transition: "none",
+            }}
+          >
+            {active && order !== null ? order : <Check size={14} aria-hidden="true" />}
           </span>
         ) : (
           <span style={{ width: 32, height: 32, borderRadius: RADIUS.round, border: `1px solid ${GLASS.border}`, display: "grid", placeItems: "center", color: TEXT.tertiary, flexShrink: 0 }} aria-hidden="true"><Check size={14} /></span>
@@ -610,7 +797,6 @@ function RemovableChip({ label, onRemove }: { label: string; onRemove: () => voi
 function StateBlock({ text, tone }: { text: string; tone?: "error" }) {
   return <div role={tone === "error" ? "alert" : undefined} style={{ padding: SPACE.section, textAlign: "center", color: tone === "error" ? DANGER.base : TEXT.tertiary, fontSize: TYPE.subhead.size }}>{text}</div>;
 }
-function iconBtnStyle(): CSSProperties { return { display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: MOTION.minTouchTarget, minHeight: MOTION.minTouchTarget, borderRadius: RADIUS.control, border: `1px solid ${GLASS.border}`, background: GLASS.fillSubtle, color: TEXT.secondary, cursor: "pointer", padding: 0 }; }
 function primaryBtnStyle(): CSSProperties { return { minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.lg}px`, borderRadius: RADIUS.control, border: `1px solid ${ACCENT.base}`, background: ACCENT.base, color: TEXT.onAccent, fontSize: TYPE.subhead.size, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }; }
 function secondaryBtnStyle(): CSSProperties { return { minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.md}px`, borderRadius: RADIUS.control, border: `1px solid ${GLASS.borderStrong}`, background: "transparent", color: TEXT.secondary, fontSize: TYPE.subhead.size, fontWeight: 600, cursor: "pointer" }; }
 function groupLabelStyle(): CSSProperties { return { margin: `0 0 ${SPACE.xs}px`, fontSize: TYPE.label.size, fontWeight: TYPE.label.weight, letterSpacing: TYPE.label.tracking, textTransform: "uppercase", color: TEXT.tertiary }; }

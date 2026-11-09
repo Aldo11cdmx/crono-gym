@@ -34,38 +34,6 @@ vi.mock("@/lib/routines/saveRoutine", () => ({
   duplicateRoutine: vi.fn((draft: unknown, title: string) => ({ ...(draft as object), title })),
 }));
 
-vi.mock("@/components/UnifiedExerciseSelectorSheet", () => {
-  const mockExercise: Exercise = {
-    id: "selector-ex",
-    name: "Ejercicio selector",
-    name_es: "Ejercicio selector",
-    body_part: "Pecho",
-    target: "Pecho",
-    equipment: "Mancuernas",
-    gif_url: "",
-    instructions: [],
-    is_active: true,
-    is_hidden: false,
-  } as unknown as Exercise;
-  return {
-    UnifiedExerciseSelectorSheet: ({
-      isOpen,
-      onClose,
-      onSelectSingle,
-    }: {
-      isOpen: boolean;
-      onClose: () => void;
-      onSelectSingle: (exercise: Exercise) => void;
-    }) =>
-      isOpen ? (
-        <div data-testid="selector-sheet-mock">
-          <button onClick={onClose}>Cerrar selector</button>
-          <button onClick={() => onSelectSingle(mockExercise)}>Seleccionar ejercicio</button>
-        </div>
-      ) : null,
-  };
-});
-
 function ex(id: string): Exercise {
   return {
     id,
@@ -185,5 +153,17 @@ describe("RoutineEditor (Apple HIG)", () => {
     await vi.waitFor(() => expect(saveRoutine).toHaveBeenCalled());
     expect(vi.mocked(saveRoutine).mock.calls[0][2]).toBe("editor");
     expect(flushSave).toHaveBeenCalled();
+  });
+
+  it("habilita Guardar cuando hay ejercicios aunque el nombre sea corto (asigna título por defecto)", async () => {
+    vi.mocked(saveRoutine).mockResolvedValue({ ok: true, routineId: "test-id" });
+    renderEditor(makeRoutineWithExercise());
+    fireEvent.change(screen.getByPlaceholderText("Nombre de tu rutina"), { target: { value: "x" } });
+    const saveButton = screen.getByRole("button", { name: "Guardar rutina" });
+    expect((saveButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(saveButton);
+    await vi.waitFor(() => expect(saveRoutine).toHaveBeenCalled());
+    const savedDraft = vi.mocked(saveRoutine).mock.calls[0][1] as { title: string };
+    expect(savedDraft.title).toBe("Nueva Rutina");
   });
 });

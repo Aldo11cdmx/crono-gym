@@ -225,10 +225,10 @@ describe("UnifiedExerciseSelectorSheet — modo múltiple", () => {
     act(() => {
       fireEvent.click(screen.getByText("Zancada"));
     });
-    expect(screen.getByText("Agregar 2 ejercicios")).toBeDefined();
+    expect(screen.getByText("2 ejercicios seleccionados")).toBeDefined();
 
     act(() => {
-      fireEvent.click(screen.getByText("Agregar 2 ejercicios"));
+      fireEvent.click(screen.getByRole("button", { name: "Añadir a rutina", hidden: true }));
     });
 
     expect(hapticSuccessMock).toHaveBeenCalled();
@@ -244,12 +244,13 @@ describe("UnifiedExerciseSelectorSheet — modo múltiple", () => {
     act(() => {
       fireEvent.click(screen.getByText("Sentadilla"));
     });
-    expect(screen.getByText("Agregar 1 ejercicio")).toBeDefined();
+    expect(screen.getByText("1 ejercicio seleccionado")).toBeDefined();
 
     act(() => {
       fireEvent.click(screen.getByText("Sentadilla"));
     });
-    expect(screen.queryByText("Agregar 1 ejercicio")).toBeNull();
+    expect(screen.queryByText("1 ejercicio seleccionado")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Añadir a rutina" })).toBeNull();
   });
 });
 
@@ -276,7 +277,7 @@ describe("UnifiedExerciseSelectorSheet — frequent_exercises", () => {
     expect(addBatch).not.toHaveBeenCalled();
 
     act(() => {
-      fireEvent.click(screen.getByText("Agregar 1 ejercicio"));
+      fireEvent.click(screen.getByRole("button", { name: "Añadir a rutina", hidden: true }));
     });
     expect(addBatch).toHaveBeenCalledTimes(1);
   });

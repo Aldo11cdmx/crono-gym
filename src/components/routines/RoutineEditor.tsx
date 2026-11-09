@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { X, Plus, Trash2, Save, Copy, ArrowUp, ArrowDown } from "lucide-react";
+import { X, Plus, Trash2, Save, Copy, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
@@ -24,7 +24,7 @@ import {
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { CRONOS_LABELS } from "@/lib/i18n";
-import { GLASS, SCRIM, SOLID, STATUS, SURFACE, TEXT, TYPE } from "@/design/tokens";
+import { GLASS, MOTION, SCRIM, SOLID, STATUS, SURFACE, TEXT, TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { ROUTINE_TEMPLATES } from "@/lib/routines/routineTemplates";
@@ -149,6 +149,7 @@ export function RoutineEditor({
   const [templateOpen, setTemplateOpen] = useState(false);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateError, setTemplateError] = useState<string | null>(null);
+  const [validationExpanded, setValidationExpanded] = useState(false);
 
   const initialDraftRef = useRef<RoutineDraftV2 | null>(null);
 
@@ -549,12 +550,11 @@ export function RoutineEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: SCRIM.modal, backdropFilter: reducedMotion ? "none" : "blur(20px)" }}>
-      <div className="border-b px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: `linear-gradient(180deg, ${GLASS.fillRaised} 0%, ${SOLID.popover} 100%)` }}>
-        <div className="mx-auto flex w-full max-w-5xl items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <p className="uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>{isEditMode ? "Edición" : "Nueva"}</p>
+      <div className="border-b px-4 py-3 sm:px-6" style={{ borderColor: GLASS.border, background: SOLID.popover, backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
+          <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3">
+          <div className="min-w-0">
             <h2 className="text-neutral-100" style={{ fontSize: TYPE.title2.size, fontWeight: TYPE.title2.weight, lineHeight: TYPE.title2.lineHeight }}>{isEditMode ? "Editar rutina" : "Nueva rutina"}</h2>
-            <p className="text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{draft.mode === "weekly" ? "Plan semanal · 7 días" : "Rutina individual"}</p>
+            <p className="hidden sm:block text-neutral-500" style={{ fontSize: TYPE.caption.size }}>{isEditMode ? "Edición" : "Nueva"} · {draft.mode === "weekly" ? "Plan semanal · 7 días" : "Rutina individual"}</p>
           </div>
           <GlassButton variant="ghost" icon={<X />} onClick={handleClose} aria-label="Cerrar editor" />
         </div>
@@ -566,7 +566,7 @@ export function RoutineEditor({
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Nombre de la rutina</label>
-                <input type="text" value={draft.title} onChange={setTitle} className="w-full rounded-2xl border bg-black/25 px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border }} placeholder={CRONOS_LABELS.namePlaceholder} />
+                <input type="text" value={draft.title} onChange={setTitle} className="w-full rounded-2xl border bg-black/25 px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[var(--cronos-accent-border)]" style={{ borderColor: GLASS.border, fontSize: TYPE.subhead.size }} placeholder={CRONOS_LABELS.namePlaceholder} />
               </div>
               <div>
                 <label className="mb-1 block uppercase" style={{ fontSize: TYPE.label.size, letterSpacing: TYPE.label.tracking, fontWeight: TYPE.label.weight, color: TEXT.tertiary }}>Descripción</label>
@@ -640,36 +640,49 @@ export function RoutineEditor({
         </div>
       </div>
 
-            <div className="border-t px-4 py-4 sm:px-6" style={{ borderColor: GLASS.border, background: SOLID.popover, backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <GlassButton variant="ghost" icon={<Copy />} onClick={handleDuplicate} disabled={!isEditMode} aria-label="Duplicar rutina">Duplicar</GlassButton>
+<div className="border-t px-4 py-2.5 sm:px-6 sm:py-3" style={{ borderColor: GLASS.border, background: SOLID.popover, backdropFilter: reducedMotion ? "none" : "blur(16px)" }}>
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            {isEditMode && (
+              <GlassButton variant="ghost" icon={<Copy />} onClick={handleDuplicate} disabled={!isEditMode} aria-label="Duplicar rutina">Duplicar</GlassButton>
+            )}
             <GlassButton variant="primary" icon={<Save />} onClick={handleSave} disabled={saving || !canSave} aria-label="Guardar rutina">{saving ? CRONOS_LABELS.saving : CRONOS_LABELS.save}</GlassButton>
           </div>
           {saving && (
-            <p className="rounded-2xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: GLASS.border, background: SURFACE.sunken, color: TEXT.secondary }}>
+            <p className="rounded-xl border px-3 py-1.5 text-xs" aria-live="polite" style={{ borderColor: GLASS.border, background: SURFACE.sunken, color: TEXT.secondary }}>
               Guardando cambios de la rutina…
             </p>
           )}
           {!canSave && !saving && hasValidationErrors && (
-            <div className="rounded-2xl border px-3 py-2.5" aria-live="polite" style={{ borderColor: STATUS.warning.border, background: STATUS.warning.muted }}>
-              <p className="text-xs font-medium" style={{ color: STATUS.warning.text }}>Revisa estos puntos antes de guardar</p>
-              <ul className="mt-1.5 space-y-1 text-xs" style={{ color: STATUS.warning.text }}>
-                {validationMessages.slice(0, 4).map((m) => <li key={m}>• {m}</li>)}
-              </ul>
+            <div>
+              <button
+                type="button"
+                onClick={() => setValidationExpanded((v) => !v)}
+                aria-expanded={validationExpanded}
+                className="flex w-full items-center justify-between rounded-xl border px-3 py-1.5 text-left transition-colors"
+                style={{ borderColor: GLASS.border, background: GLASS.fillSubtle, color: TEXT.secondary }}
+              >
+                <span className="text-xs" style={{ color: STATUS.warning.text }}>Faltan {validationMessages.length} {validationMessages.length === 1 ? "cosa para guardar" : "cosas para guardar"}</span>
+                <ChevronDown size={14} style={{ color: TEXT.tertiary, transform: validationExpanded ? "rotate(180deg)" : "none", transition: `transform ${MOTION.fast} ${MOTION.easeOut}` }} />
+              </button>
+              {validationExpanded && (
+                <ul className="mt-1.5 space-y-1 px-3 text-xs" style={{ color: STATUS.warning.text }}>
+                  {validationMessages.slice(0, 4).map((m) => <li key={m}>• {m}</li>)}
+                </ul>
+              )}
             </div>
           )}
           {!canSave && !saving && !hasValidationErrors && (
             <p className="text-xs" style={{ color: STATUS.warning.text }}>{CRONOS_LABELS.routineValidation.noTitle}</p>
           )}
           {saveResult && !saveResult.ok && (
-            <div className="rounded-2xl border px-3 py-2.5" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted }}>
-              <p className="text-xs font-medium" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.saveError}</p>
-              <p className="mt-1 text-xs" style={{ color: STATUS.error.text }}>{translationFor(saveResult.error)}</p>
+            <div className="rounded-xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.error.border, background: STATUS.error.muted }}>
+              <p className="font-medium" style={{ color: STATUS.error.text }}>{CRONOS_LABELS.saveError}</p>
+              <p className="mt-1" style={{ color: STATUS.error.text }}>{translationFor(saveResult.error)}</p>
             </div>
           )}
           {saveResult && saveResult.ok && (
-            <p className="rounded-2xl border px-3 py-2.5 text-xs" aria-live="polite" style={{ borderColor: STATUS.success.border, background: STATUS.success.muted, color: STATUS.success.text }}>
+            <p className="rounded-xl border px-3 py-2 text-xs" aria-live="polite" style={{ borderColor: STATUS.success.border, background: STATUS.success.muted, color: STATUS.success.text }}>
               {CRONOS_LABELS.saved}
             </p>
           )}

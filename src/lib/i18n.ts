@@ -1854,7 +1854,7 @@ export const CRONOS_LABELS = {
   retry: "Reintentar",
 
   nameLabel: "Nombre de la rutina",
-  namePlaceholder: "Mi rutina de 4 días",
+  namePlaceholder: "Nombre de tu rutina",
   dayHeading: (n: number): string => `Día ${n}`,
   dayExerciseCount: (n: number): string => `${n} ${n === 1 ? "ejercicio" : "ejercicios"}`,
   prescription: (sets: number, repsMin: number, repsMax: number): string => {

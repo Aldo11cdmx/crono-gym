@@ -19,6 +19,20 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /*
+   * Placeholder ink.
+   *
+   * A placeholder is not a value the user typed, so it must never read at
+   * `text-primary`. Painting it in the tertiary tier keeps an empty field
+   * visibly empty -- the brief's specific complaint about "Mi rutina de 4 días"
+   * looking like an already-written name. Scoped to inputs so it does not
+   * leak into `<select>` option labels or any other element.
+   */
+  input::placeholder, textarea::placeholder {
+    color: var(--text-tertiary);
+    opacity: 1;
+  }
+
   /* Elementos cliqueables: sin selección de texto ni resaltado de navegador web en móvil. */
   button,
   [role="button"],

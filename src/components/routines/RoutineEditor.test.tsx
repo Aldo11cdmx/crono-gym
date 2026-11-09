@@ -181,30 +181,33 @@ describe("RoutineEditor", () => {
 
   it("renders the title input", () => {
     renderEditor();
-    expect(screen.getByPlaceholderText("Mi rutina de 4 días")).toBeTruthy();
+    expect(screen.getByPlaceholderText("Nombre de tu rutina")).toBeTruthy();
   });
 
   describe("A1 validaciones en español", () => {
     it("muestra mensaje de título demasiado corto", () => {
       renderEditor();
-      const input = screen.getByPlaceholderText("Mi rutina de 4 días");
+      const input = screen.getByPlaceholderText("Nombre de tu rutina");
       fireEvent.change(input, { target: { value: "ab" } });
+      fireEvent.click(screen.getByRole("button", { name: /Faltan .* cosa/i }));
       const error = screen.getByText(/El nombre debe tener al menos 3 caracteres/);
       expect(error).toBeTruthy();
     });
 
     it("muestra mensaje cuando falta el nombre", () => {
       renderEditor();
-      const input = screen.getByPlaceholderText("Mi rutina de 4 días");
+      const input = screen.getByPlaceholderText("Nombre de tu rutina");
       fireEvent.change(input, { target: { value: "" } });
+      fireEvent.click(screen.getByRole("button", { name: /Faltan .* cosa/i }));
       const error = screen.getByText(/Ponle un nombre a la rutina/);
       expect(error).toBeTruthy();
     });
 
     it("muestra mensaje cuando no hay días con ejercicios", () => {
       renderEditor();
-      const input = screen.getByPlaceholderText("Mi rutina de 4 días");
+      const input = screen.getByPlaceholderText("Nombre de tu rutina");
       fireEvent.change(input, { target: { value: "Rutina válida" } });
+      fireEvent.click(screen.getByRole("button", { name: /Faltan .* cosa/i }));
       const error = screen.getByText(/Añade al menos un día/);
       expect(error).toBeTruthy();
     });
@@ -231,16 +234,16 @@ describe("RoutineEditor", () => {
   });
 
   describe("A19 aviso de cambios sin guardar", () => {
-    it("muestra aviso al cerrar con cambios sin guardar", () => {
+it("muestra aviso al cerrar con cambios sin guardar", () => {
       renderEditor();
-      const titleInput = screen.getByPlaceholderText("Mi rutina de 4 días");
+      const titleInput = screen.getByPlaceholderText("Nombre de tu rutina");
       fireEvent.change(titleInput, { target: { value: "Rutina modificada" } });
       const closeButton = screen.getByRole("button", { name: /Cerrar editor/ });
       fireEvent.click(closeButton);
       expect(screen.getByText("Tienes cambios sin guardar")).toBeTruthy();
       expect(screen.getByText("Guardar y salir")).toBeTruthy();
       expect(screen.getByText("Descartar cambios")).toBeTruthy();
-      expect(screen.getByText("Cancelar")).toBeTruthy();
+      expect(screen.getByText(/cancelar/i)).toBeTruthy();
     });
 
     it("no muestra aviso al cerrar sin cambios", () => {
@@ -279,11 +282,11 @@ describe("RoutineEditor", () => {
       renderEditor(routine);
       const addDay = screen.getByRole("button", { name: /entrenamiento/ });
       fireEvent.click(addDay);
-      const titleInput = screen.getByPlaceholderText("Mi rutina de 4 días");
+      const titleInput = screen.getByPlaceholderText("Nombre de tu rutina");
       fireEvent.change(titleInput, { target: { value: "Rutina para duplicar" } });
       const dupButton = screen.getByRole("button", { name: "Duplicar rutina" });
       fireEvent.click(dupButton);
-      const newTitleInput = screen.getAllByPlaceholderText("Mi rutina de 4 días")[0];
+      const newTitleInput = screen.getAllByPlaceholderText("Nombre de tu rutina")[0];
       expect((newTitleInput as HTMLInputElement).value).toBe("copia de Rutina para duplicar");
     });
   });
@@ -300,7 +303,7 @@ describe("RoutineEditor", () => {
       fireEvent.click(semanaBtn);
 
       // Título válido para habilitar el botón Guardar
-      const titleInput = screen.getByPlaceholderText(/Mi rutina de 4 días|Nueva rutina/i);
+      const titleInput = screen.getByPlaceholderText(/Nombre de tu rutina/i);
       fireEvent.change(titleInput, { target: { value: "Semana equilibrada" } });
 
       // Modo weekly activado: 7 días renderizados y el botón Guardar está habilitado

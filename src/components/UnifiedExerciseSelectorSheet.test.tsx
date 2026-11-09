@@ -189,6 +189,26 @@ describe("UnifiedExerciseSelectorSheet — modo simple", () => {
     expect((onSelectSingle.mock.calls[0][0] as Exercise).id).toBe("1");
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it("se renderiza en portal a document.body (fuera del árbol que lo monta)", () => {
+    const onClose = vi.fn();
+    const { container } = render(
+      <div data-testid="host">
+        <UnifiedExerciseSelectorSheet
+          isOpen
+          mode="single"
+          onClose={onClose}
+          onSelectSingle={vi.fn()}
+        />
+      </div>,
+    );
+
+    const closeBtn = screen.getByRole("button", { name: "Cerrar", hidden: true });
+    expect(closeBtn).toBeDefined();
+    expect(container.querySelector('[data-testid="selector-search-input"]')).toBeNull();
+    expect(container.querySelector('button[aria-label="Cerrar"]')).toBeNull();
+    expect(document.body.contains(closeBtn)).toBe(true);
+  });
 });
 
 describe("UnifiedExerciseSelectorSheet — modo múltiple", () => {

@@ -416,22 +416,22 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
       </header>
 
       <div style={{ flex: 1, overflowY: "auto" }}>
-        <div style={{ maxWidth: 520, margin: "0 auto", padding: `${SPACE.md}px ${SPACE.md}px ${SPACE.xl}px`, display: "flex", flexDirection: "column", gap: SPACE.md }}>
+        <div style={{ maxWidth: 520, margin: "0 auto", padding: "16px 16px 128px", display: "flex", flexDirection: "column", gap: 16 }}>
           {dayDetailIndex == null ? (
             <>
               {/* Identity Card + Quick-Fill Chips */}
               <div
                 style={{
-                  borderRadius: RADIUS.card,
-                  border: `1px solid ${GLASS.border}`,
+                  borderRadius: "24px",
+                  border: "1px solid rgba(255,255,255,0.08)",
                   background: "#1C1C1E",
-                  padding: SPACE.md,
+                  padding: "20px",
                   display: "flex",
                   flexDirection: "column",
-                  gap: SPACE.md,
+                  gap: 16,
                 }}
               >
-                <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <span
                     style={{
                       fontSize: 11,
@@ -455,10 +455,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       border: "none",
                       background: "transparent",
                       color: TEXT.primary,
-                      fontSize: TYPE.hero.size,
-                      lineHeight: TYPE.hero.lineHeight,
+                      fontSize: "20px",
                       fontWeight: 700,
-                      letterSpacing: TYPE.hero.tracking,
+                      lineHeight: "28px",
+                      letterSpacing: "-0.005em",
                       padding: 0,
                       outline: "none",
                     }}
@@ -469,9 +469,9 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                 <div
                   style={{
                     display: "flex",
-                    gap: SPACE.xs,
+                    gap: 8,
                     overflowX: "auto",
-                    paddingBottom: SPACE.xs,
+                    paddingBottom: 8,
                     scrollbarWidth: "none",
                     msOverflowStyle: "none",
                   }}
@@ -484,9 +484,9 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       style={{
                         flexShrink: 0,
                         minHeight: 32,
-                        padding: `0 ${SPACE.md}px`,
+                        padding: `0 16px`,
                         borderRadius: 9999,
-                        border: `1px solid ${GLASS.border}`,
+                        border: "1px solid rgba(255,255,255,0.08)",
                         background: "rgba(255,255,255,0.04)",
                         color: TEXT.secondary,
                         fontSize: 13,
@@ -505,7 +505,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       onMouseLeave={(e) => {
                         if (!reducedMotion) {
                           e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                          e.currentTarget.style.borderColor = GLASS.border;
+                          e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
                           e.currentTarget.style.color = TEXT.secondary;
                         }
                       }}
@@ -522,13 +522,13 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                   {/* Microciclo Bento */}
                   <div
                     style={{
-                      borderRadius: RADIUS.card,
-                      border: `1px solid ${GLASS.border}`,
+                      borderRadius: "24px",
+                      border: "1px solid rgba(255,255,255,0.08)",
                       background: "#1C1C1E",
-                      padding: SPACE.md,
+                      padding: "20px",
                       display: "flex",
                       flexDirection: "column",
-                      gap: SPACE.md,
+                      gap: 16,
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -557,13 +557,16 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       </span>
                     </div>
 
-                    {/* 7 Capsule Tracker */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: SPACE.xs }}>
+                    {/* 7 Capsule Tracker - horizontal, no wrapping */}
+                    <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none", msOverflowStyle: "none" }}>
                       {draft.days.map((day, index) => {
                         const hasExercises = day.exercises.length > 0;
                         const isRest = day.kind === "rest";
 
                         let capsuleStyle: React.CSSProperties = {
+                          width: 1,
+                          flex: 1,
+                          minWidth: 28,
                           height: 3,
                           borderRadius: 9999,
                           transition: reducedMotion ? "none" : "all 200ms ease",
@@ -592,11 +595,12 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                               display: "flex",
                               flexDirection: "column",
                               alignItems: "center",
-                              gap: SPACE.xs,
+                              gap: 6,
                               padding: 0,
                               border: "none",
                               background: "transparent",
                               cursor: "pointer",
+                              flexShrink: 0,
                             }}
                           >
                             <div style={{ width: "100%", ...capsuleStyle }} />
@@ -617,17 +621,8 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                     </div>
                   </div>
 
-                  {/* 7-Day List - Apple Fitness+ Style */}
-                  <div
-                    style={{
-                      borderRadius: "24px",
-                      border: `1px solid ${GLASS.border}`,
-                      background: "#1C1C1E",
-                      overflow: "hidden",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
+                  {/* 7-Day List - Apple Fitness+ Style: Individual Cards */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {draft.days.map((day, index) => {
                       const count = day.exercises.length;
                       const hasExercises = count > 0;
@@ -654,7 +649,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             style={{
                               fontSize: 11,
                               fontWeight: 500,
-                              padding: `2px ${SPACE.md}px`,
+                              padding: `2px 12px`,
                               borderRadius: 9999,
                               background: "rgba(255,255,255,0.04)",
                               color: TEXT.tertiary,
@@ -676,7 +671,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                               fontSize: 11,
                               fontWeight: 700,
                               fontVariantNumeric: "tabular-nums",
-                              padding: `2px ${SPACE.md}px`,
+                              padding: `2px 12px`,
                               borderRadius: 9999,
                               background: "rgba(255,59,48,0.15)",
                               color: ACCENT.text,
@@ -692,7 +687,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             style={{
                               fontSize: 11,
                               fontWeight: 500,
-                              padding: `4px ${SPACE.md}px`,
+                              padding: `4px 12px`,
                               borderRadius: 9999,
                               background: "rgba(255,255,255,0.05)",
                               color: TEXT.tertiary,
@@ -713,13 +708,13 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "space-between",
-                            gap: SPACE.md,
+                            gap: 12,
                             width: "100%",
                             minHeight: 64,
-                            padding: `0 ${SPACE.md}px`,
-                            border: "none",
-                            borderBottom: index < draft.days.length - 1 ? `1px solid ${GLASS.border}` : "none",
-                            background: "transparent",
+                            padding: "0 16px",
+                            borderRadius: "24px",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "#1C1C1E",
                             color: TEXT.primary,
                             textAlign: "left",
                             cursor: "pointer",
@@ -733,9 +728,9 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                width: 40,
-                                height: 40,
-                                borderRadius: "16px",
+                                width: 44,
+                                height: 44,
+                                borderRadius: "12px",
                                 flexShrink: 0,
                                 fontFamily: TYPE.mono.font,
                                 fontSize: 12,
@@ -751,10 +746,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             <div style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: 2 }}>
                               <span
                                 style={{
-                                  fontSize: TYPE.subhead.size,
-                                  lineHeight: TYPE.subhead.lineHeight,
+                                  fontSize: 15,
+                                  lineHeight: 20,
                                   fontWeight: 700,
-                                  letterSpacing: TYPE.subhead.tracking,
+                                  letterSpacing: -0.005,
                                   color: dayNameColor,
                                 }}
                               >
@@ -772,7 +767,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                               </span>
                             </div>
                           </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             {rightAction}
                             <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" style={{ flexShrink: 0 }} />
                           </div>
@@ -786,10 +781,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                     style={{
                       display: "flex",
                       alignItems: "flex-start",
-                      gap: SPACE.sm,
-                      padding: SPACE.md,
-                      borderRadius: RADIUS.card,
-                      border: `1px solid ${GLASS.border}`,
+                      gap: 12,
+                      padding: "16px",
+                      borderRadius: "24px",
+                      border: "1px solid rgba(255,255,255,0.08)",
                       background: "rgba(28,28,30,0.6)",
                     }}
                   >
@@ -809,7 +804,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       >
                         Periodo de adaptación recomendado
                       </p>
-                      <p style={{ margin: `${SPACE.xs}px 0 0`, fontSize: TYPE.caption.size, lineHeight: TYPE.caption.lineHeight, color: TEXT.secondary }}>
+                      <p style={{ margin: "8px 0 0", fontSize: TYPE.caption.size, lineHeight: TYPE.caption.lineHeight, color: TEXT.secondary }}>
                         Mantén este programa entre 6 a 12 semanas. Cambiar de rutina constantemente impide la adaptación neuromuscular y la sobrecarga progresiva.
                       </p>
                     </div>
@@ -817,10 +812,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                 </>
               ) : (
                 /* Single Mode: Exercise List with Editorial Empty State */
-                <section aria-label="Ejercicios" style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+                <section aria-label="Ejercicios" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <p
                     style={{
-                      margin: `0 0 ${SPACE.xs}px`,
+                      margin: "0 0 8px",
                       fontSize: TYPE.label.size,
                       lineHeight: TYPE.label.lineHeight,
                       fontWeight: TYPE.label.weight,
@@ -839,11 +834,11 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "space-between",
-                            gap: SPACE.sm,
+                            gap: 12,
                             minHeight: 56,
-                            padding: SPACE.md,
-                            borderRadius: RADIUS.card,
-                            border: `1px solid ${GLASS.border}`,
+                            padding: "20px",
+                            borderRadius: "24px",
+                            border: "1px solid rgba(255,255,255,0.08)",
                             background: SOLID.card,
                           }}
                         >
@@ -875,10 +870,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                               display: "inline-flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              width: MOTION.minTouchTarget,
-                              height: MOTION.minTouchTarget,
+                              width: 44,
+                              height: 44,
                               border: "none",
-                              borderRadius: RADIUS.control,
+                              borderRadius: 12,
                               background: "transparent",
                               color: TEXT.tertiary,
                               cursor: "pointer",
@@ -894,14 +889,14 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       <div
                         style={{
                           borderRadius: "24px",
-                          border: `1px solid ${GLASS.border}`,
+                          border: "1px solid rgba(255,255,255,0.08)",
                           background: "#1C1C1E",
-                          padding: `${SPACE.xl}px ${SPACE.md}px`,
+                          padding: "32px 20px",
                           display: "flex",
                           flexDirection: "column",
                           alignItems: "center",
                           textAlign: "center",
-                          gap: SPACE.md,
+                          gap: 16,
                         }}
                       >
                         <div
@@ -919,7 +914,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                         >
                           <Dumbbell size={24} aria-hidden="true" />
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs, maxWidth: 260 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 260 }}>
                           <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: TEXT.primary }}>
                             Estructura tu sesión
                           </p>
@@ -943,7 +938,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            gap: SPACE.xs,
+                            gap: 8,
                             boxShadow: "0 4px 16px rgba(255,59,48,0.25)",
                           }}
                         >
@@ -959,12 +954,12 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      gap: SPACE.sm,
+                      gap: 12,
                       width: "100%",
                       minHeight: 56,
-                      padding: `0 ${SPACE.md}px`,
-                      borderRadius: RADIUS.card,
-                      border: `1px solid ${GLASS.border}`,
+                      padding: "0 16px",
+                      borderRadius: "24px",
+                      border: "1px solid rgba(255,255,255,0.08)",
                       background: SOLID.card,
                       color: ACCENT.text,
                       cursor: "pointer",
@@ -972,7 +967,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       transition,
                     }}
                   >
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                       <span
                         aria-hidden="true"
                         style={{
@@ -981,7 +976,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                           justifyContent: "center",
                           width: 32,
                           height: 32,
-                          borderRadius: RADIUS.pill,
+                          borderRadius: 9999,
                           background: ACCENT.subtle,
                           color: ACCENT.text,
                           flexShrink: 0,
@@ -1004,7 +999,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
             </>
           ) : detailDay ? (
             /* Day Detail View */
-            <section aria-label={`Ejercicios de ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`} style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
+            <section aria-label={`Ejercicios de ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Native iOS Toggle for Rest Day */}
               <button
                 type="button"
@@ -1015,11 +1010,11 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  gap: SPACE.md,
-                  minHeight: MOTION.minTouchTarget,
-                  padding: `0 ${SPACE.md}px`,
-                  borderRadius: RADIUS.control,
-                  border: `1px solid ${detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.border : GLASS.border}`,
+                  gap: 12,
+                  minHeight: 44,
+                  padding: "0 16px",
+                  borderRadius: 12,
+                  border: `1px solid ${detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.border : "rgba(255,255,255,0.08)"}`,
                   background: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? "rgba(255,59,48,0.12)" : "rgba(28,28,30,0.6)",
                   color: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.text : TEXT.secondary,
                   fontSize: TYPE.subhead.size,
@@ -1064,10 +1059,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    gap: SPACE.sm,
-                    padding: SPACE.md,
-                    borderRadius: RADIUS.card,
-                    border: `1px solid ${GLASS.border}`,
+                    gap: 12,
+                    padding: "20px",
+                    borderRadius: "24px",
+                    border: "1px solid rgba(255,255,255,0.08)",
                     background: SOLID.card,
                   }}
                 >
@@ -1098,10 +1093,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      width: MOTION.minTouchTarget,
-                      height: MOTION.minTouchTarget,
+                      width: 44,
+                      height: 44,
                       border: "none",
-                      borderRadius: RADIUS.control,
+                      borderRadius: 12,
                       background: "transparent",
                       color: TEXT.tertiary,
                       cursor: "pointer",
@@ -1118,14 +1113,14 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                 <div
                   style={{
                     borderRadius: "24px",
-                    border: `1px solid ${GLASS.border}`,
+                    border: "1px solid rgba(255,255,255,0.08)",
                     background: "#1C1C1E",
-                    padding: `${SPACE.xl}px ${SPACE.md}px`,
+                    padding: "32px 20px",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     textAlign: "center",
-                    gap: SPACE.md,
+                    gap: 16,
                   }}
                 >
                   <div
@@ -1143,7 +1138,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                   >
                     <Dumbbell size={24} aria-hidden="true" />
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs, maxWidth: 260 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 260 }}>
                     <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: TEXT.primary }}>
                       Estructura tu sesión
                     </p>
@@ -1167,7 +1162,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: SPACE.xs,
+                      gap: 8,
                       boxShadow: "0 4px 16px rgba(255,59,48,0.25)",
                     }}
                   >
@@ -1184,12 +1179,12 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  gap: SPACE.sm,
+                  gap: 12,
                   width: "100%",
                   minHeight: 56,
-                  padding: `0 ${SPACE.md}px`,
-                  borderRadius: RADIUS.card,
-                  border: `1px solid ${GLASS.border}`,
+                  padding: "0 16px",
+                  borderRadius: "24px",
+                  border: "1px solid rgba(255,255,255,0.08)",
                   background: SOLID.card,
                   color: ACCENT.text,
                   cursor: "pointer",
@@ -1197,7 +1192,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                   transition,
                 }}
               >
-                <span style={{ display: "inline-flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                   <span
                     aria-hidden="true"
                     style={{
@@ -1206,7 +1201,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       justifyContent: "center",
                       width: 32,
                       height: 32,
-                      borderRadius: RADIUS.pill,
+                      borderRadius: 9999,
                       background: ACCENT.subtle,
                       color: ACCENT.text,
                       flexShrink: 0,

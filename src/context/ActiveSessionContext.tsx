@@ -131,6 +131,8 @@ export interface ActiveSessionValue {
   restoreDraft: () => void;
   /** Throws the unfinished session away. */
   discardDraft: () => void;
+  /** Discards only the recoverable draft (orphan session) without ending an active session. */
+  discardRecoverableDraft: () => void;
   /** Desecha y limpia por completo la sesión activa y cualquier borrador huérfano. */
   discardSession?: () => void;
   /** The id a recovered session writes under; null before the recovery. */
@@ -187,6 +189,30 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
   /** The session as it is right now, for the lookup that resolves later. */
   const sessionRef = useRef<ActiveSession | null>(null);
   sessionRef.current = session;
+  /** Safety timeout to prevent deadlock if loadRecoverableDraft hangs. */
+  const safetyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * Clear the safety timeout.
+   */
+  const clearSafetyTimeout = useCallback(() => {
+    if (safetyTimeoutRef.current) {
+      clearTimeout(safetyTimeoutRef.current);
+      safetyTimeoutRef.current = null;
+    }
+  }, []);
+
+  /**
+   * Force reset rehydrating state - called on timeout or cleanup.
+   */
+  const forceResetRehydrating = useCallback(() => {
+    if (import.meta.env.DEV) {
+      console.log("[CRONOS-REHYDRATE] forceResetRehydrating: forcing rehydrating=false");
+    }
+    rehydratingRef.current = false;
+    setRehydrating(false);
+    clearSafetyTimeout();
+  }, [clearSafetyTimeout]);
 
   /**
    * The lookup.
@@ -210,9 +236,21 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       );
     }
     setRehydrating(true);
+
+    // Safety timeout: if loadRecoverableDraft hangs, force reset after 2500ms
+    safetyTimeoutRef.current = setTimeout(() => {
+      if (import.meta.env.DEV) {
+        console.log("[CRONOS-REHYDRATE] effect: safety timeout fired, requestId:", id);
+      }
+      if (alive && requestIdRef.current === id) {
+        forceResetRehydrating();
+      }
+    }, 2500);
+
     void loadRecoverableDraft(rehydrateFor)
       .then((draft) => {
         if (!alive || requestIdRef.current !== id) return;
+        clearSafetyTimeout();
         setRehydrating(false);
         rehydratingRef.current = false;
         if (import.meta.env.DEV) {
@@ -246,6 +284,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         if (!alive || requestIdRef.current !== id) return;
+        clearSafetyTimeout();
         setRehydrating(false);
         rehydratingRef.current = false;
         if (import.meta.env.DEV) {
@@ -259,8 +298,9 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       });
     return () => {
       alive = false;
+      clearSafetyTimeout();
     };
-  }, [rehydrateFor, retryNonce]);
+  }, [rehydrateFor, retryNonce, forceResetRehydrating, clearSafetyTimeout]);
 
   const rehydrate = useCallback((userId: string | null) => {
     if (import.meta.env.DEV) {
@@ -269,7 +309,20 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
         Boolean(userId),
         "rehydratingRef.current:",
         rehydratingRef.current,
+        "currentUserRef.current:",
+        currentUserRef.current,
       );
+    }
+    // Prevent redundant rehydration for the same user
+    if (userId !== null && userId === currentUserRef.current) {
+      if (import.meta.env.DEV) {
+        console.log("[CRONOS-REHYDRATE] rehydrate: already hydrated for this user, skipping");
+      }
+      // If rehydrating is stuck true, force reset it
+      if (rehydratingRef.current) {
+        forceResetRehydrating();
+      }
+      return;
     }
     if (userId !== currentUserRef.current && currentUserRef.current !== null) {
       // Cambio de cuenta: invalida la recuperación pendiente y no mezcla
@@ -291,13 +344,14 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       setRehydrateFor(null);
       return;
     }
+    currentUserRef.current = userId;
     rehydratingRef.current = true;
     if (import.meta.env.DEV) {
       console.log("[CRONOS-REHYDRATE] rehydrate: userId present -> rehydrating true");
     }
     setRehydrating(true);
     setRehydrateFor(userId);
-  }, []);
+  }, [forceResetRehydrating]);
 
   const retryRehydrate = useCallback(() => {
     if (!rehydrateFor) return;
@@ -356,6 +410,21 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore
     }
+  }, [recoveredLogId]);
+
+  /**
+   * Discards the recoverable draft (orphan session) without ending an active session.
+   * Used when user wants to start a new routine but there's a stale draft blocking it.
+   */
+  const discardRecoverableDraft = useCallback(() => {
+    const draft = draftRef.current;
+    if (draft) {
+      void deleteDraft(draft.logId);
+    }
+    setRecoverableDraft(null);
+    setPendingRestEndsAt(null);
+    setRecoveredLogId(null);
+    // Note: we don't clear session here, only the recoverable draft
   }, [recoveredLogId]);
 
   const start = useCallback(
@@ -424,7 +493,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
     setWarmups((previous) => previous.filter((request) => request.id !== id));
   }, []);
 
-  // Memoised so the pill's one-second tick does not re-render the whole tree
+// Memoised so the pill's one-second tick does not re-render the whole tree
   // just because a new object identity came out of the provider.
   const value = useMemo<ActiveSessionValue>(
     () => ({
@@ -441,6 +510,7 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       retryRehydrate,
       restoreDraft,
       discardDraft,
+      discardRecoverableDraft,
       discardSession,
       recoveredLogId,
       pendingRestEndsAt,
@@ -458,6 +528,8 @@ export function ActiveSessionProvider({ children }: { children: ReactNode }) {
       retryRehydrate,
       restoreDraft,
       discardDraft,
+      discardRecoverableDraft,
+      discardSession,
       recoveredLogId,
       pendingRestEndsAt,
     ],

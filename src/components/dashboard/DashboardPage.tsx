@@ -182,7 +182,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await (supabase as any)
+        const { data, error } = await (supabase as any)
           .from("coaches")
           .select("id")
           .eq("is_active", true)
@@ -190,9 +190,19 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           .limit(1)
           .maybeSingle();
         if (cancelled) return;
+        // 403 is expected for non-coach users due to RLS - handle silently
+        if (error && error.code !== "PGRST116") {
+          // PGRST116 = "The result contains 0 rows" (not an error for maybeSingle)
+          if (import.meta.env.DEV) {
+            console.warn("[Dashboard] coaches query error:", error.message);
+          }
+        }
         if (data) setCoachId(data.id);
-      } catch {
-        // Si no se puede leer el coach, el banner simplemente no se muestra.
+      } catch (err) {
+        // Network or unexpected errors - fail silently, banner won't show
+        if (import.meta.env.DEV && err instanceof Error) {
+          console.warn("[Dashboard] coaches query failed:", err.message);
+        }
       }
     })();
     return () => {

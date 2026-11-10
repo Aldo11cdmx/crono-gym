@@ -60,6 +60,8 @@ export function AuthGate() {
   } = useProfile(userId);
   const location = useLocation();
   const navigate = useNavigate();
+  /** Track the last userId we rehydrated for, to prevent duplicate calls. */
+  const lastRehydratedUserIdRef = useRef<string | null>(null);
 
   /**
    * Look for a session that never finished, before anything decides there is
@@ -72,16 +74,27 @@ export function AuthGate() {
    * a component that only mounts once the app has already decided.
    */
   useEffect(() => {
+    if (!userId) {
+      lastRehydratedUserIdRef.current = null;
+      return;
+    }
+    // Prevent duplicate rehydration for the same user
+    if (lastRehydratedUserIdRef.current === userId) {
+      if (import.meta.env.DEV) {
+        console.log("[CRONOS-REHYDRATE] AuthGate: already rehydrated for this user, skipping");
+      }
+      return;
+    }
     if (import.meta.env.DEV) {
       console.log(
         "[CRONOS-REHYDRATE] AuthGate: recovery start, userId present:",
         Boolean(userId),
       );
     }
-    if (!userId) return;
     if (import.meta.env.DEV) {
       console.log("[CRONOS-REHYDRATE] AuthGate: calling rehydrate");
     }
+    lastRehydratedUserIdRef.current = userId;
     rehydrate(userId);
   }, [userId, rehydrate]);
 

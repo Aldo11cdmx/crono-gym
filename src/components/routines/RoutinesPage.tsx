@@ -43,7 +43,7 @@ export function RoutinesPage() {
   const [tab, setTab] = useState<RoutineTab>("mine");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<RoutineWithMode | null>(null);
-  const { isActive, start, session } = useActiveSession();
+  const { isActive, start, session, discardRecoverableDraft } = useActiveSession();
   const navigate = useNavigate();
 
   const showToast = useCallback((message: string, type: "error" | "warning" | "info" = "info") => {
@@ -77,13 +77,10 @@ export function RoutinesPage() {
   }, []);
 
   const handleTrain = useCallback(
-    (routine: RoutineWithMode) => {
+    async (routine: RoutineWithMode) => {
+      // If there's already an active session, navigate to it directly
       if (isActive) {
-        setSessionConflict({
-          routineId: routine.id,
-          title: session?.title ?? routine.title,
-          dayLabel: session?.dayLabel,
-        });
+        navigate(TRAIN_PATH);
         return;
       }
       const draft = draftFromRoutine(routine);
@@ -113,32 +110,65 @@ export function RoutinesPage() {
         dayLabel: day.label,
         groupId: ex.groupId,
       }));
-      const result = start({
+
+      // Try to start the session, handling all failure cases
+      let result = start({
         routine: { id: routine.id, title: routine.title },
         routineDayId: day.id,
         dayLabel: day.label || undefined,
         planned,
       });
+
+      // If rehydrating is stuck, force reset and retry once
+      if (!result.ok && result.reason === "rehydrating") {
+        if (import.meta.env.DEV) {
+          console.log("[handleTrain] rehydrating stuck, forcing reset and retrying");
+        }
+        // The context now has a safety timeout, but we can also try to trigger a retry
+        // by calling start again after a brief moment - the rehydrating flag should clear
+        await new Promise((r) => setTimeout(r, 100));
+        result = start({
+          routine: { id: routine.id, title: routine.title },
+          routineDayId: day.id,
+          dayLabel: day.label || undefined,
+          planned,
+        });
+      }
+
+      // If there's an active session (race condition), navigate to it
+      if (!result.ok && result.reason === "active_session") {
+        navigate(TRAIN_PATH);
+        return;
+      }
+
+      // If there's a recoverable draft blocking us, discard it and retry
+      if (!result.ok && result.reason === "recoverable_draft") {
+        if (import.meta.env.DEV) {
+          console.log("[handleTrain] recoverable_draft blocking, discarding and retrying");
+        }
+        discardRecoverableDraft();
+        // Brief pause to let state update
+        await new Promise((r) => setTimeout(r, 50));
+        result = start({
+          routine: { id: routine.id, title: routine.title },
+          routineDayId: day.id,
+          dayLabel: day.label || undefined,
+          planned,
+        });
+      }
+
       if (result.ok) {
         navigate(TRAIN_PATH);
       } else {
-        switch (result.reason) {
-          case "rehydrating":
-            showToast("Restaurando sesión anterior… Vuelve a intentarlo en un momento.", "info");
-            break;
-          case "active_session":
-            showToast("Ya hay una sesión activa. Termínala o descártala para iniciar una nueva.", "warning");
-            break;
-          case "recoverable_draft":
-            showToast("Hay una sesión guardada pendiente. Recupérala o descártala desde la pantalla de entrenamiento.", "warning");
-            break;
-          case "invalid":
-            showToast("Datos de rutina inválidos. Intenta editarla y guardarla de nuevo.", "error");
-            break;
+        // Only show toast for truly invalid data
+        if (result.reason === "invalid") {
+          showToast("Datos de rutina inválidos. Intenta editarla y guardarla de nuevo.", "error");
+        } else if (result.reason === "rehydrating") {
+          showToast("Restaurando sesión anterior… Vuelve a intentarlo en un momento.", "info");
         }
       }
     },
-    [isActive, session, start, navigate, showToast],
+    [isActive, session, start, navigate, showToast, discardRecoverableDraft],
   );
 
   const handleDuplicateRoutine = useCallback(

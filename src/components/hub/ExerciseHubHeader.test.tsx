@@ -30,6 +30,7 @@ const NO_SESSION = {
   rehydrate: vi.fn(),
   restoreDraft: vi.fn(),
   discardDraft: vi.fn(),
+  discardRecoverableDraft: vi.fn(),
   recoveredLogId: null,
   pendingRestEndsAt: null,
 };
@@ -47,6 +48,7 @@ const SESSION = {
   rehydrate: vi.fn(),
   restoreDraft: vi.fn(),
   discardDraft: vi.fn(),
+  discardRecoverableDraft: vi.fn(),
   recoveredLogId: null,
   pendingRestEndsAt: null,
 };

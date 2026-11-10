@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, AlertCircle, Loader2 } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -15,7 +15,7 @@ import { RoutineCard } from "./RoutineCard";
 import { RoutineEditor } from "./RoutineEditor";
 import { draftFromRoutine, displayDayLabel } from "@/lib/routines/routineDayModel";
 import type { SaveResult } from "@/lib/routines/saveRoutine";
-import { ACCENT, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
+import { ACCENT, DANGER, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS } from "@/lib/i18n";
 
@@ -39,11 +39,18 @@ export function RoutinesPage() {
     title: string;
     dayLabel?: string | null;
   } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "error" | "warning" | "info" } | null>(null);
   const [tab, setTab] = useState<RoutineTab>("mine");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<RoutineWithMode | null>(null);
   const { isActive, start, session } = useActiveSession();
   const navigate = useNavigate();
+
+  const showToast = useCallback((message: string, type: "error" | "warning" | "info" = "info") => {
+    hapticLight();
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  }, []);
 
   const routineRows = routines as RoutineWithMode[];
 
@@ -80,9 +87,15 @@ export function RoutinesPage() {
         return;
       }
       const draft = draftFromRoutine(routine);
-      if (draft.incomplete) return;
+      if (draft.incomplete) {
+        showToast("Esta rutina tiene días programados pero sin ejercicios. Edítala para añadir ejercicios.", "warning");
+        return;
+      }
       const trainingDays = draft.days.filter((d) => d.kind === "training");
-      if (trainingDays.length === 0) return;
+      if (trainingDays.length === 0) {
+        showToast("Esta rutina no tiene días de entrenamiento. Añade al menos un día con ejercicios.", "warning");
+        return;
+      }
       if (trainingDays.length > 1) {
         setDayPickerRoutine(routine);
         return;
@@ -106,9 +119,26 @@ export function RoutinesPage() {
         dayLabel: day.label || undefined,
         planned,
       });
-      if (result.ok) navigate(TRAIN_PATH);
+      if (result.ok) {
+        navigate(TRAIN_PATH);
+      } else {
+        switch (result.reason) {
+          case "rehydrating":
+            showToast("Restaurando sesión anterior… Vuelve a intentarlo en un momento.", "info");
+            break;
+          case "active_session":
+            showToast("Ya hay una sesión activa. Termínala o descártala para iniciar una nueva.", "warning");
+            break;
+          case "recoverable_draft":
+            showToast("Hay una sesión guardada pendiente. Recupérala o descártala desde la pantalla de entrenamiento.", "warning");
+            break;
+          case "invalid":
+            showToast("Datos de rutina inválidos. Intenta editarla y guardarla de nuevo.", "error");
+            break;
+        }
+      }
     },
-    [isActive, session, start, navigate],
+    [isActive, session, start, navigate, showToast],
   );
 
   const handleDuplicateRoutine = useCallback(
@@ -146,6 +176,54 @@ export function RoutinesPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, paddingBottom: SPACE.lg }}>
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            top: SPACE.md,
+            left: SPACE.md,
+            right: SPACE.md,
+            zIndex: Z_INDEX.toast,
+            display: "flex",
+            alignItems: "center",
+            gap: SPACE.sm,
+            padding: `${SPACE.sm} ${SPACE.md}`,
+            borderRadius: RADIUS.card,
+            border: `1px solid ${toast.type === "error" ? DANGER.border : toast.type === "warning" ? ACCENT.border : GLASS.borderStrong}`,
+            background: toast.type === "error" ? DANGER.muted : toast.type === "warning" ? ACCENT.subtle : GLASS.fillRaised,
+            boxShadow: GLASS.shadow,
+            animation: "cronos-sheet-up 200ms ease-out both",
+          }}
+          role="alert"
+          aria-live="polite"
+        >
+          {toast.type === "error" && <AlertCircle size={18} style={{ color: DANGER.text, flexShrink: 0 }} aria-hidden="true" />}
+          {toast.type === "warning" && <AlertCircle size={18} style={{ color: ACCENT.text, flexShrink: 0 }} aria-hidden="true" />}
+          {toast.type === "info" && <Loader2 size={18} style={{ color: TEXT.primary, flexShrink: 0, animation: "spin 1s linear infinite" }} aria-hidden="true" />}
+          <span style={{ flex: 1, fontSize: TYPE.subhead.size, color: toast.type === "error" ? DANGER.text : toast.type === "warning" ? ACCENT.text : TEXT.primary }}>
+            {toast.message}
+          </span>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            aria-label="Cerrar"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: RADIUS.control,
+              border: "none",
+              background: "transparent",
+              color: TEXT.tertiary,
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ fontSize: 18, lineHeight: 1 }}>×</span>
+          </button>
+        </div>
+      )}
       {showMainHeader && (
         <header
           style={{

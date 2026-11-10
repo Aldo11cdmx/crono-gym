@@ -1,13 +1,12 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Copy, MoreHorizontal, Pencil, Play, Trash2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { GlassButton } from "@/components/ui/GlassButton";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
 import type { Exercise } from "@/types/supabase";
 import { ACCENT, GLASS, MOTION, RADIUS, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight } from "@/lib/haptics";
-import { ROUTINES_UI_LABELS, translateMuscle, translateTarget } from "@/lib/i18n";
+import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
 import { draftFromRoutine, displayDayLabel } from "@/lib/routines/routineDayModel";
 
 type RoutineCardRoutine = RoutineWithExercises & {
@@ -33,7 +32,7 @@ function routineIsIncomplete(routine: RoutineWithExercises): boolean {
 function muscleLabel(exercise: Exercise): string {
   const raw = exercise.body_part?.trim() || exercise.target?.trim() || "";
   if (!raw) return "";
-  return exercise.body_part ? translateMuscle(raw) : translateTarget(raw);
+  return exercise.body_part ? translateBodyPart(raw) : translateTarget(raw);
 }
 
 function uniqueMuscles(routine: RoutineWithExercises, max = 3): string[] {
@@ -96,6 +95,26 @@ export function RoutineCard({
   const pressStyle = reducedMotion
     ? undefined
     : { transition: `transform ${MOTION.fast} ${MOTION.easeOut}` };
+
+  const trainButtonStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    width: "100%",
+    height: "44px",
+    borderRadius: "12px",
+    border: "none",
+    background: "#FF3B30",
+    color: "#FFFFFF",
+    fontSize: TYPE.body.size,
+    fontWeight: 600,
+    cursor: incomplete ? "not-allowed" : "pointer",
+    opacity: incomplete ? 0.5 : 1,
+    boxShadow: "0 4px 16px rgba(255,59,48,0.25)",
+    transition: reducedMotion ? "none" : "transform 150ms ease, box-shadow 150ms ease",
+    ...pressStyle,
+  } as React.CSSProperties;
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
@@ -186,16 +205,15 @@ export function RoutineCard({
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    padding: "2px 10px",
+                    padding: "4px 10px",
                     borderRadius: "9999px",
                     border: "1px solid rgba(255,255,255,0.08)",
                     background: "rgba(255,255,255,0.05)",
-                    fontSize: TYPE.label.size,
-                    lineHeight: TYPE.label.lineHeight,
-                    fontWeight: TYPE.label.weight,
-                    letterSpacing: TYPE.label.tracking,
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    letterSpacing: "0.08em",
                     textTransform: "uppercase",
-                    color: TEXT.secondary,
+                    color: "#D4D4D4",
                   }}
                 >
                   {m}
@@ -239,19 +257,36 @@ export function RoutineCard({
           )}
         </div>
 
-        <GlassButton
-          variant="primary"
-          block
-          icon={<Play size={18} aria-hidden="true" />}
+        <button
+          type="button"
           disabled={incomplete}
           onClick={() => {
-            hapticLight();
-            if (!incomplete) onTrain(routine);
+            if (!incomplete) {
+              hapticLight();
+              onTrain(routine);
+            }
           }}
           aria-label={ROUTINES_UI_LABELS.startWorkout}
+          style={trainButtonStyle}
+          onMouseDown={() => {
+            if (!incomplete && !reducedMotion) {
+              document.activeElement?.setAttribute("style", "transform: scale(0.98)");
+            }
+          }}
+          onMouseUp={() => {
+            if (!incomplete && !reducedMotion) {
+              document.activeElement?.removeAttribute("style");
+            }
+          }}
+          onMouseLeave={() => {
+            if (!incomplete && !reducedMotion) {
+              document.activeElement?.removeAttribute("style");
+            }
+          }}
         >
+          <Play size={18} aria-hidden="true" style={{ flexShrink: 0 }} />
           {ROUTINES_UI_LABELS.startWorkout}
-        </GlassButton>
+        </button>
 
         {menuOpen && (
           <div

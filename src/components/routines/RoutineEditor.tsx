@@ -71,15 +71,15 @@ interface RoutineEditorProps {
 
 /**
  * DualMiniMuscleMap — Capsula contenedora con dos mapas anatómicos escalados
- * FRENTE (anterior) y ESPALDA (posterior) en un contenedor fijo de 124x116px.
+ * FRENTE (anterior) y ESPALDA (posterior) en un contenedor fijo de 144x136px.
  */
 function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
   return (
     <div
       style={{
         position: "relative",
-        width: 124,
-        height: 116,
+        width: 144,
+        height: 136,
         flexShrink: 0,
         borderRadius: "24px",
         background: "rgba(0,0,0,0.5)",
@@ -89,14 +89,14 @@ function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
         alignItems: "center",
         justifyContent: "center",
         gap: 2,
-        padding: "4px 4px",
+        padding: "5px 5px",
       }}
     >
       {/* Mapa Anterior (FRENTE) */}
       <div
         style={{
-          width: 56,
-          height: 108,
+          width: 64,
+          height: 126,
           position: "relative",
           overflow: "hidden",
           display: "flex",
@@ -108,7 +108,7 @@ function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
           style={{
             width: 150,
             height: 290,
-            transform: "scale(0.36)",
+            transform: "scale(0.42)",
             transformOrigin: "top center",
             pointerEvents: "none",
           }}
@@ -145,8 +145,8 @@ function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
       {/* Mapa Posterior (ESPALDA) */}
       <div
         style={{
-          width: 56,
-          height: 108,
+          width: 64,
+          height: 126,
           position: "relative",
           overflow: "hidden",
           display: "flex",
@@ -158,7 +158,7 @@ function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
           style={{
             width: 150,
             height: 290,
-            transform: "scale(0.36)",
+            transform: "scale(0.42)",
             transformOrigin: "top center",
             pointerEvents: "none",
           }}
@@ -454,51 +454,52 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         background: "#1C1C1E",
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: "24px",
-        padding: 16,
+        padding: 20,
         overflow: "hidden",
       }}
     >
-      {/* Main Row: Two-column layout */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        {/* Left Column: Text & Metrics */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Weekly Mode Day Badge */}
-          {isWeeklyMode && (
-            <span
-              style={{
-                fontSize: "10px",
-                fontFamily: "ui-monospace, SFMono-Regular, monospace",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "#FF3B30",
-              }}
-            >
-              {WEEKDAYS_FULL[activeDayIndex].toUpperCase()}
-            </span>
-          )}
-
-          {/* Title / Focus Input */}
-          <input
-            type="text"
-            value={isWeeklyMode ? activeDay.label : title}
-            onChange={(e) => isWeeklyMode ? setDayLabel(activeDayIndex, e.target.value) : setTitle(e.target.value)}
-            placeholder={isWeeklyMode ? "Enfoque del día (ej. Espalda)" : "Nombre de la rutina"}
-            aria-label={isWeeklyMode ? "Enfoque del día" : "Nombre de la rutina"}
+      {/* Top Row: Day Badge + Title Input (full width) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+        {isWeeklyMode && (
+          <span
             style={{
-              fontSize: isWeeklyMode ? "20px" : "24px",
+              fontSize: "10px",
+              fontFamily: "ui-monospace, SFMono-Regular, monospace",
               fontWeight: 700,
-              color: "#FFFFFF",
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              padding: 0,
-              width: "100%",
-              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              letterSpacing: "-0.02em",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "#FF3B30",
             }}
-          />
+          >
+            {WEEKDAYS_FULL[activeDayIndex].toUpperCase()}
+          </span>
+        )}
 
+        <input
+          type="text"
+          value={isWeeklyMode ? activeDay.label : title}
+          onChange={(e) => isWeeklyMode ? setDayLabel(activeDayIndex, e.target.value) : setTitle(e.target.value)}
+          placeholder={isWeeklyMode ? "Enfoque del día (ej. Espalda)" : "Nombre de la rutina"}
+          aria-label={isWeeklyMode ? "Enfoque del día" : "Nombre de la rutina"}
+          style={{
+            fontSize: "16px",
+            fontWeight: 700,
+            color: "#FFFFFF",
+            background: "transparent",
+            border: "none",
+            outline: "none",
+            padding: 0,
+            width: "100%",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            letterSpacing: "-0.02em",
+          }}
+        />
+      </div>
+
+      {/* Bottom Row: Metrics + Rest Toggle (left) | Dual Muscle Map (right) */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+        {/* Left Column: Metrics & Rest Toggle */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
           {/* Metrics Line */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: "11px", fontWeight: 500, color: "#71717A" }}>
@@ -568,8 +569,8 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         <DualMiniMuscleMap counts={activeTelemetry.counts} />
       </div>
 
-      {/* Bottom Row: Quick Name Chips */}
-      <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      {/* Quick Name Chips */}
+      <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {currentChips.map((chip) => (
             <button
@@ -602,73 +603,12 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
 
   const exerciseList = (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <h3 style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "#D4D4D4", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-          {isWeeklyMode ? `Ejercicios de ${WEEKDAYS_FULL[activeDayIndex]}` : "Ejercicios"}
-        </h3>
-        <button
-          type="button"
-          onClick={() => setSelectorOpen(true)}
-          aria-label={isWeeklyMode ? `Añadir ejercicios a ${WEEKDAYS_FULL[activeDayIndex]}` : "Añadir ejercicio"}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 12px",
-            borderRadius: "9999px",
-            border: "1px solid rgba(255,59,48,0.3)",
-            background: "rgba(255,59,48,0.1)",
-            color: "#FF3B30",
-            fontSize: "11px",
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
-          }}
-        >
-          <Plus size={12} aria-hidden="true" /> Añadir
-        </button>
-      </div>
+      {/* Section Header - NO "+ Añadir" button here anymore */}
+      <h3 style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "#D4D4D4", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+        {isWeeklyMode ? `Ejercicios de ${WEEKDAYS_FULL[activeDayIndex]}` : "Ejercicios"}
+      </h3>
 
-      {activeDayExercises.length === 0 ? (
-        <button
-          type="button"
-          onClick={() => setSelectorOpen(true)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            padding: 20,
-            borderRadius: "20px",
-            border: "1px dashed rgba(255,255,255,0.1)",
-            background: "rgba(28,28,30,0.7)",
-            cursor: "pointer",
-            transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 40,
-                height: 40,
-                borderRadius: "12px",
-                background: "rgba(255,59,48,0.1)",
-                color: "#FF3B30",
-              }}
-            >
-              <Plus size={20} aria-hidden="true" />
-            </div>
-            <div style={{ textAlign: "left", flex: 1 }}>
-              <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#FFFFFF" }}>Añadir ejercicios a la sesión</p>
-              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#71717A" }}>Toca para abrir el catálogo y seleccionar</p>
-            </div>
-          </div>
-          <ChevronRight size={20} style={{ color: "#3F3F46", flexShrink: 0 }} aria-hidden="true" />
-        </button>
-      ) : (
+      {activeDayExercises.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {activeDayExercises.map((ex, idx) => (
             <div
@@ -748,6 +688,46 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
           ))}
         </div>
       )}
+
+      {/* "Añadir ejercicios a la sesión" action card - ALWAYS VISIBLE at the end */}
+      <button
+        type="button"
+        onClick={() => setSelectorOpen(true)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          padding: 20,
+          borderRadius: "20px",
+          border: "1px dashed rgba(255,255,255,0.1)",
+          background: "rgba(28,28,30,0.7)",
+          cursor: "pointer",
+          transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              borderRadius: "12px",
+              background: "rgba(255,59,48,0.1)",
+              color: "#FF3B30",
+            }}
+          >
+            <Plus size={20} aria-hidden="true" />
+          </div>
+          <div style={{ textAlign: "left", flex: 1 }}>
+            <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#FFFFFF" }}>Añadir ejercicios a la sesión</p>
+            <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#71717A" }}>Toca para abrir el catálogo y seleccionar</p>
+          </div>
+        </div>
+        <ChevronRight size={20} style={{ color: "#3F3F46", flexShrink: 0 }} aria-hidden="true" />
+      </button>
     </div>
   );
 

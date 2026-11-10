@@ -53,9 +53,8 @@ function emptyWeekDraftFromRoutine(routine: RoutineWithExercises, snapshot: Load
     list.push(ex);
     byDay.set(di, list);
   }
-  const sorted = [...byDay.keys()].sort((a, b) => a - b);
   for (let i = 0; i < 7; i += 1) {
-    const dayExs = sorted[i] !== undefined ? byDay.get(sorted[i]) ?? [] : [];
+    const dayExs = byDay.get(i) ?? [];
     days.push({
       id: crypto.randomUUID(),
       order: i,
@@ -142,6 +141,17 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
     if (mode === "edit" && routine) {
       const loaded = draftFromRoutine(routine);
       if (loaded.needsModeConfirmation && draftMode === "weekly") return emptyWeekDraftFromRoutine(routine, loaded.snapshot);
+      if (draftMode === "weekly" && loaded.mode === "single") {
+        const fullWeek = [...Array(7).keys()].map((wd) => emptyDay(wd));
+        fullWeek[0] = {
+          ...(loaded.days[0] ?? emptyDay(0)),
+          id: crypto.randomUUID(),
+          order: 0,
+          weekday: 0,
+          kind: (loaded.days[0]?.exercises.length ?? 0) > 0 ? "training" : "rest",
+        };
+        return { ...loaded, mode: "weekly", days: fullWeek };
+      }
       return loaded;
     }
     const days: RoutineDay[] =

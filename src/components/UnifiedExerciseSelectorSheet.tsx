@@ -112,6 +112,7 @@ export function UnifiedExerciseSelectorSheet({
   const [onlyMyGym, setOnlyMyGym] = useState(false);
   const [selectedMuscles, setSelectedMuscles] = useState<Slug[]>([]);
   const [isAnatomicalOpen, setIsAnatomicalOpen] = useState(false);
+  const [isEquipmentOpen, setIsEquipmentOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [localExercises, setLocalExercises] = useState<Exercise[]>([]);
@@ -290,6 +291,134 @@ export function UnifiedExerciseSelectorSheet({
   const handleMuscleSelectorChange = useCallback((next: Slug[]) => setSelectedMuscles(next), []);
   const handleClearMuscles = useCallback(() => setSelectedMuscles([]), []);
   const handleToggleAnatomical = useCallback(() => setIsAnatomicalOpen((prev) => !prev), []);
+  const handleToggleEquipment = useCallback(() => setIsEquipmentOpen((prev) => !prev), []);
+
+  const equipmentOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const options: { key: string; label: string }[] = [];
+    for (const ex of baseRows) {
+      const key = normaliseExerciseName(ex.equipment);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      options.push({ key, label: translateEquipment(ex.equipment) });
+    }
+    return options.sort((a, b) => a.label.localeCompare(b.label));
+  }, [baseRows]);
+
+  const muscleCountsBySlug = useMemo(() => muscleCounts(baseRows, ENABLED_MUSCLE_SLUGS), [baseRows]);
+  const muscleSelectionLabels = selectionLabels(selectedMuscles);
+
+  const renderFilterSections = useCallback(() => (
+    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+      {/* Sección 1: Tipo de Equipamiento */}
+      <button
+        type="button"
+        onClick={handleToggleEquipment}
+        aria-expanded={isEquipmentOpen}
+        aria-controls="equipment-accordion"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: SPACE.sm,
+          minHeight: MOTION.minTouchTarget,
+          padding: `0 ${SPACE.md}px`,
+          borderRadius: RADIUS.control,
+          border: `1px solid ${GLASS.border}`,
+          background: isEquipmentOpen ? ACCENT.subtle : GLASS.fillSubtle,
+          color: TEXT.secondary,
+          fontSize: TYPE.subhead.size,
+          cursor: "pointer",
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
+          <Dumbbell size={16} aria-hidden="true" />
+          Tipo de equipamiento
+          {selectedEquipment && (
+            <span style={{ marginLeft: SPACE.xs, padding: `0 ${SPACE.xs}px`, borderRadius: RADIUS.pill, background: ACCENT.base, color: TEXT.onAccent, fontSize: TYPE.caption.size }}>
+              1
+            </span>
+          )}
+        </span>
+        <ChevronDown size={16} aria-hidden="true" style={{ transform: isEquipmentOpen ? "rotate(180deg)" : "rotate(0deg)", transition: reducedMotion ? "none" : `transform ${MOTION.fast} ${MOTION.easeOut}` }} />
+      </button>
+      {isEquipmentOpen && (
+        <div id="equipment-accordion" style={{ marginTop: SPACE.xs, maxHeight: isMobile ? "50dvh" : "none", overflowY: "auto" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+            {equipmentOptions.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                aria-pressed={selectedEquipment === opt.key}
+                onClick={() => { setSelectedEquipment(selectedEquipment === opt.key ? null : opt.key); setPage(1); }}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: SPACE.sm,
+                  minHeight: MOTION.minTouchTarget,
+                  padding: `0 ${SPACE.md}px`,
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${selectedEquipment === opt.key ? ACCENT.border : GLASS.border}`,
+                  background: selectedEquipment === opt.key ? ACCENT.subtle : "transparent",
+                  color: selectedEquipment === opt.key ? TEXT.primary : TEXT.secondary,
+                  fontSize: TYPE.subhead.size,
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                <span>{opt.label}</span>
+                {selectedEquipment === opt.key && <Check size={16} color={ACCENT.base} aria-hidden="true" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sección 2: Grupo Muscular */}
+      <button
+        type="button"
+        onClick={handleToggleAnatomical}
+        aria-expanded={isAnatomicalOpen}
+        aria-controls="anatomical-accordion"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: SPACE.sm,
+          minHeight: MOTION.minTouchTarget,
+          padding: `0 ${SPACE.md}px`,
+          borderRadius: RADIUS.control,
+          border: `1px solid ${GLASS.border}`,
+          background: isAnatomicalOpen ? ACCENT.subtle : GLASS.fillSubtle,
+          color: TEXT.secondary,
+          fontSize: TYPE.subhead.size,
+          cursor: "pointer",
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
+          <Activity size={16} aria-hidden="true" />
+          Grupo muscular
+          {selectedMuscles.length > 0 && (
+            <span style={{ marginLeft: SPACE.xs, padding: `0 ${SPACE.xs}px`, borderRadius: RADIUS.pill, background: ACCENT.base, color: TEXT.onAccent, fontSize: TYPE.caption.size }}>
+              {selectedMuscles.length}
+            </span>
+          )}
+        </span>
+        <ChevronDown size={16} aria-hidden="true" style={{ transform: isAnatomicalOpen ? "rotate(180deg)" : "rotate(0deg)", transition: reducedMotion ? "none" : `transform ${MOTION.fast} ${MOTION.easeOut}` }} />
+      </button>
+      {isAnatomicalOpen && (
+        <div id="anatomical-accordion" style={{ marginTop: SPACE.xs, maxHeight: isMobile ? "50dvh" : "none", overflowY: "auto" }}>
+          <MuscleSelector selected={selectedMuscles} onChange={handleMuscleSelectorChange} counts={muscleCountsBySlug} legendLabel="Músculos del catálogo" className="" />
+        </div>
+      )}
+    </div>
+  ), [isEquipmentOpen, isAnatomicalOpen, selectedEquipment, selectedMuscles.length, equipmentOptions, isMobile, reducedMotion, handleToggleEquipment, handleToggleAnatomical, handleMuscleSelectorChange, muscleCountsBySlug]);
+
+  const activeFilterCount = (selectedEquipment ? 1 : 0) + (query.length > 0 ? 1 : 0) + (selectedMuscles.length > 0 ? 1 : 0);
 
   const handleRenameExercise = useCallback(async (id: string, name: string, name_es: string | null) => {
     setOpError(null);
@@ -316,25 +445,6 @@ export function UnifiedExerciseSelectorSheet({
     }
   }, []);
 
-  const activeFilterCount = (selectedEquipment ? 1 : 0) + (onlyMyGym ? 1 : 0) + (query.length > 0 ? 1 : 0) + (selectedMuscles.length > 0 ? 1 : 0);
-  const muscleCountsBySlug = useMemo(() => muscleCounts(baseRows, ENABLED_MUSCLE_SLUGS), [baseRows]);
-  const muscleSelectionLabels = selectionLabels(selectedMuscles);
-
-  const equipmentChips = useMemo(() => {
-    const seen = new Set<string>();
-    const chips: { key: string; label: string; active: boolean; onToggle: (k: string) => void }[] = [];
-    for (const ex of baseRows) {
-      const key = normaliseExerciseName(ex.equipment);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      chips.push({
-        key, label: translateEquipment(ex.equipment), active: selectedEquipment === key,
-        onToggle: (k) => { setSelectedEquipment(k === key ? null : k); setPage(1); },
-      });
-    }
-    return chips;
-  }, [baseRows, selectedEquipment]);
-
   function handleKeyboard(key: string) {
     const rows = scrollContainer.current?.querySelectorAll('[role="option"]') ?? [];
     if (rows.length === 0) return;
@@ -355,341 +465,296 @@ export function UnifiedExerciseSelectorSheet({
     transition: reducedMotion ? "none" : `transform ${MOTION.normal} ${MOTION.easeOut}, opacity ${MOTION.normal} ${MOTION.easeOut}`,
   };
 
-  return createPortal(
-    <div
-      style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", background: SCRIM.modal, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
-      onClick={onClose}
-      aria-hidden="true"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          ...sheetAnim,
-          width: isMobile ? "100vw" : "min(96vw, 920px)",
-          maxHeight: isMobile ? "94dvh" : "86dvh",
-          borderRadius: isMobile ? RADIUS.sheet : RADIUS.modal,
-          border: `1px solid ${GLASS.border}`,
-          background: `linear-gradient(180deg, ${SURFACE.raised} 0%, ${SOLID.popover} 100%)`,
-          boxShadow: GLASS.shadow,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        <header
-          style={{
-            padding: `${SPACE.sm}px ${SPACE.md}px`,
-            borderBottom: `1px solid ${GLASS.border}`,
-            background: GLASS.fillSubtle,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
-            <h2
-              style={{
-                margin: 0,
-                minWidth: 0,
-                fontSize: TYPE.headline.size,
-                fontWeight: TYPE.headline.weight,
-                lineHeight: TYPE.headline.lineHeight,
-                letterSpacing: TYPE.headline.tracking,
-                color: TEXT.primary,
-              }}
-            >
-              {title}
-            </h2>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Cerrar"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minWidth: MOTION.minTouchTarget,
-                minHeight: MOTION.minTouchTarget,
-                borderRadius: RADIUS.round,
-                border: `1px solid ${GLASS.border}`,
-                background: GLASS.fillSubtle,
-                color: TEXT.secondary,
-                cursor: "pointer",
-                padding: 0,
-                flexShrink: 0,
-              }}
-            >
-              <X size={18} aria-hidden="true" />
-            </button>
-          </div>
-          {dayContext && dayMuscleSlugs.size > 0 && (
-            <div style={{ marginTop: SPACE.xs, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
-              {[...dayMuscleSlugs].map((slug) => (
-                <span
-                  key={slug}
-                  style={{
-                    padding: `2px ${SPACE.sm}px`,
-                    borderRadius: RADIUS.pill,
-                    border: `1px solid ${ACCENT.border}`,
-                    background: ACCENT.subtle,
-                    color: TEXT.primary,
-                    fontSize: TYPE.caption.size,
-                  }}
-                >
-                  {slug}
-                </span>
-              ))}
-            </div>
-          )}
-        </header>
+  const floatingBarStyle: CSSProperties = {
+    position: "fixed",
+    left: SPACE.md,
+    right: SPACE.md,
+    bottom: `calc(${SPACE.lg}px + env(safe-area-inset-bottom, 0px))`,
+    zIndex: Z_INDEX.modal + 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: SPACE.md,
+    padding: SPACE.md,
+    borderRadius: RADIUS.card,
+    border: "1px solid rgba(255,255,255,0.15)",
+    background: "rgba(0,0,0,0.9)",
+    backdropFilter: "blur(40px)",
+    WebkitBackdropFilter: "blur(40px)",
+    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+  };
 
+  return createPortal(
+    <>
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: Z_INDEX.modal, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", background: SCRIM.modal, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+        onClick={onClose}
+        aria-hidden="true"
+      >
         <div
-          ref={scrollContainer}
+          onClick={(e) => e.stopPropagation()}
           style={{
-            flex: 1,
-            overflowY: "auto",
-            overflowX: "hidden",
-            overscrollBehavior: "contain",
-            WebkitOverflowScrolling: "touch",
-            padding: `${SPACE.sm}px ${SPACE.md}px 144px`,
+            ...sheetAnim,
+            width: isMobile ? "100vw" : "min(96vw, 920px)",
+            maxHeight: isMobile ? "94dvh" : "86dvh",
+            borderRadius: isMobile ? RADIUS.sheet : RADIUS.modal,
+            border: `1px solid ${GLASS.border}`,
+            background: `linear-gradient(180deg, ${SURFACE.raised} 0%, ${SOLID.popover} 100%)`,
+            boxShadow: GLASS.shadow,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
           }}
         >
-          <div
+          <header
             style={{
-              position: "sticky",
-              top: 0,
-              zIndex: 1,
-              paddingTop: SPACE.xs,
-              paddingBottom: SPACE.xs,
-              background: `linear-gradient(180deg, ${SOLID.popover} 80%, transparent 100%)`,
+              padding: `${SPACE.sm}px ${SPACE.md}px`,
+              borderBottom: `1px solid ${GLASS.border}`,
+              background: GLASS.fillSubtle,
             }}
           >
-            <div style={{ position: "relative" }}>
-              <Search
-                size={18}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
+              <h2
                 style={{
-                  position: "absolute",
-                  left: SPACE.md,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: TEXT.tertiary,
-                  pointerEvents: "none",
-                }}
-                aria-hidden="true"
-              />
-              <style>{`[data-testid="selector-search-input"]::placeholder{color:${TEXT.tertiary};opacity:1;}`}</style>
-              <input
-                data-testid="selector-search-input"
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
-                placeholder="Buscar por nombre, músculo o equipo…"
-                autoComplete="off"
-                style={{
-                  width: "100%",
-                  height: MOTION.minTouchTarget,
-                  minHeight: MOTION.minTouchTarget,
-                  paddingLeft: 44,
-                  paddingRight: query ? MOTION.minTouchTarget : SPACE.md,
-                  borderRadius: RADIUS.control,
-                  border: `1px solid ${GLASS.borderStrong}`,
-                  background: SOLID.popover,
+                  margin: 0,
+                  minWidth: 0,
+                  fontSize: TYPE.headline.size,
+                  fontWeight: TYPE.headline.weight,
+                  lineHeight: TYPE.headline.lineHeight,
+                  letterSpacing: TYPE.headline.tracking,
                   color: TEXT.primary,
-                  fontSize: TYPE.subhead.size,
-                  fontFamily: "inherit",
-                  outline: "none",
-                }}
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery("")}
-                  aria-label="Limpiar búsqueda"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minWidth: MOTION.minTouchTarget,
-                    minHeight: MOTION.minTouchTarget,
-                    position: "absolute",
-                    right: 4,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    border: "none",
-                    background: "transparent",
-                    color: TEXT.secondary,
-                    cursor: "pointer",
-                    padding: 0,
-                  }}
-                >
-                  <X size={16} aria-hidden="true" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: SPACE.xs, marginBottom: SPACE.sm, padding: 2, borderRadius: RADIUS.control, border: `1px solid ${GLASS.border}`, background: GLASS.fillSubtle }}>
-            {(["all", "frequent"] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                aria-pressed={tab === t}
-                onClick={() => setTab(t)}
-                style={{
-                  flex: 1,
-                  minHeight: MOTION.minTouchTarget,
-                  borderRadius: RADIUS.control,
-                  border: "none",
-                  background: tab === t ? ACCENT.subtle : "transparent",
-                  color: tab === t ? TEXT.primary : TEXT.secondary,
-                  fontSize: TYPE.subhead.size,
-                  fontWeight: tab === t ? 600 : 500,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: SPACE.xs,
                 }}
               >
-                {t === "frequent" && <Sparkles size={14} aria-hidden="true" />}
-                {t === "all" ? "Todos" : `Frecuentes (${frequentIds.length})`}
+                {title}
+              </h2>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: MOTION.minTouchTarget,
+                  minHeight: MOTION.minTouchTarget,
+                  borderRadius: RADIUS.round,
+                  border: `1px solid ${GLASS.border}`,
+                  background: GLASS.fillSubtle,
+                  color: TEXT.secondary,
+                  cursor: "pointer",
+                  padding: 0,
+                  flexShrink: 0,
+                }}
+              >
+                <X size={18} aria-hidden="true" />
               </button>
-            ))}
-          </div>
+            </div>
+            {dayContext && dayMuscleSlugs.size > 0 && (
+              <div style={{ marginTop: SPACE.xs, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
+                {[...dayMuscleSlugs].map((slug) => (
+                  <span
+                    key={slug}
+                    style={{
+                      padding: `2px ${SPACE.sm}px`,
+                      borderRadius: RADIUS.pill,
+                      border: `1px solid ${ACCENT.border}`,
+                      background: ACCENT.subtle,
+                      color: TEXT.primary,
+                      fontSize: TYPE.caption.size,
+                    }}
+                  >
+                    {slug}
+                  </span>
+                ))}
+              </div>
+            )}
+          </header>
 
-          <div style={{ marginBottom: SPACE.sm }}>
-            <button
-              type="button"
-              onClick={handleToggleAnatomical}
-              aria-expanded={isAnatomicalOpen}
-              aria-controls="anatomical-accordion"
+          <div
+            ref={scrollContainer}
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              overflowX: "hidden",
+              overscrollBehavior: "contain",
+              WebkitOverflowScrolling: "touch",
+              padding: `${SPACE.sm}px ${SPACE.md}px ${SPACE.xl}px`,
+            }}
+          >
+            <div
               style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: SPACE.sm,
-                minHeight: MOTION.minTouchTarget,
-                padding: `0 ${SPACE.md}px`,
-                borderRadius: RADIUS.control,
-                border: `1px solid ${GLASS.border}`,
-                background: isAnatomicalOpen ? ACCENT.subtle : GLASS.fillSubtle,
-                color: TEXT.secondary,
-                fontSize: TYPE.subhead.size,
-                cursor: "pointer",
+                position: "sticky",
+                top: 0,
+                zIndex: 1,
+                paddingTop: SPACE.xs,
+                paddingBottom: SPACE.xs,
+                background: `linear-gradient(180deg, ${SOLID.popover} 80%, transparent 100%)`,
               }}
             >
-              <span style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
-                <Activity size={16} aria-hidden="true" />
-                Categorías musculares
-                {selectedMuscles.length > 0 && (
-                  <span style={{ marginLeft: SPACE.xs, padding: `0 ${SPACE.xs}px`, borderRadius: RADIUS.pill, background: ACCENT.base, color: TEXT.onAccent, fontSize: TYPE.caption.size }}>
-                    {selectedMuscles.length}
-                  </span>
+              <div style={{ position: "relative" }}>
+                <Search
+                  size={18}
+                  style={{
+                    position: "absolute",
+                    left: SPACE.md,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: TEXT.tertiary,
+                    pointerEvents: "none",
+                  }}
+                  aria-hidden="true"
+                />
+                <style>{`[data-testid="selector-search-input"]::placeholder{color:${TEXT.tertiary};opacity:1;}`}</style>
+                <input
+                  data-testid="selector-search-input"
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+                  placeholder="Buscar por nombre, músculo o equipo…"
+                  autoComplete="off"
+                  style={{
+                    width: "100%",
+                    height: MOTION.minTouchTarget,
+                    minHeight: MOTION.minTouchTarget,
+                    paddingLeft: 44,
+                    paddingRight: query ? MOTION.minTouchTarget : SPACE.md,
+                    borderRadius: RADIUS.control,
+                    border: `1px solid ${GLASS.borderStrong}`,
+                    background: SOLID.popover,
+                    color: TEXT.primary,
+                    fontSize: TYPE.subhead.size,
+                    fontFamily: "inherit",
+                    outline: "none",
+                  }}
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label="Limpiar búsqueda"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: MOTION.minTouchTarget,
+                      minHeight: MOTION.minTouchTarget,
+                      position: "absolute",
+                      right: 4,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      border: "none",
+                      background: "transparent",
+                      color: TEXT.secondary,
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  >
+                    <X size={16} aria-hidden="true" />
+                  </button>
                 )}
-              </span>
-              <ChevronDown size={16} aria-hidden="true" style={{ transform: isAnatomicalOpen ? "rotate(180deg)" : "rotate(0deg)", transition: reducedMotion ? "none" : `transform ${MOTION.fast} ${MOTION.easeOut}` }} />
-            </button>
-            {isAnatomicalOpen && (
-              <div id="anatomical-accordion" style={{ marginTop: SPACE.xs, maxHeight: isMobile ? "50dvh" : "none", overflowY: "auto" }}>
-                <MuscleSelector selected={selectedMuscles} onChange={handleMuscleSelectorChange} counts={muscleCountsBySlug} legendLabel="Músculos del catálogo" className="" />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: SPACE.xs, marginBottom: SPACE.sm, padding: 2, borderRadius: RADIUS.control, border: `1px solid ${GLASS.border}`, background: GLASS.fillSubtle }}>
+              {(["all", "frequent"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={tab === t}
+                  onClick={() => setTab(t)}
+                  style={{
+                    flex: 1,
+                    minHeight: MOTION.minTouchTarget,
+                    borderRadius: RADIUS.control,
+                    border: "none",
+                    background: tab === t ? ACCENT.subtle : "transparent",
+                    color: tab === t ? TEXT.primary : TEXT.secondary,
+                    fontSize: TYPE.subhead.size,
+                    fontWeight: tab === t ? 600 : 500,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: SPACE.xs,
+                  }}
+                >
+                  {t === "frequent" && <Sparkles size={14} aria-hidden="true" />}
+                  {t === "all" ? "Todos" : `Frecuentes (${frequentIds.length})`}
+                </button>
+              ))}
+            </div>
+
+            {renderFilterSections()}
+
+            {activeFilterCount > 0 && (
+              <div style={{ marginBottom: SPACE.sm, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
+                {selectedEquipment && <RemovableChip label={translateEquipment(selectedEquipment)} onRemove={() => setSelectedEquipment(null)} />}
+                {query && <RemovableChip label={`"${query}"`} onRemove={() => setQuery("")} />}
+                {selectedMuscles.length > 0 && <RemovableChip label={muscleSelectionLabels} onRemove={handleClearMuscles} />}
+                <button type="button" onClick={handleClear} style={{ background: "none", border: "none", color: TEXT.tertiary, fontSize: TYPE.caption.size, cursor: "pointer", padding: `0 ${SPACE.xs}px`, minHeight: MOTION.minTouchTarget }}>Limpiar filtros</button>
+              </div>
+            )}
+
+            {catalogLoading && displayed.length === 0 && <StateBlock text="Cargando catálogo…" />}
+            {catalogError && displayed.length === 0 && <StateBlock text={catalogError} tone="error" />}
+            {opError && <StateBlock text={opError} tone="error" />}
+
+            {displayed.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(320px, 1fr))", gap: SPACE.sm }}>
+                {displayed.map((ex) => (
+                  <SelectorCard
+                    key={ex.id}
+                    exercise={ex}
+                    order={mode === "multiple" ? orderOf(ex.id) : null}
+                    selected={isSelected(ex.id)}
+                    multiSelect={mode === "multiple"}
+                    expanded={expandedId === ex.id}
+                    alreadyInDay={alreadyInDay.has(ex.id)}
+                    onSelect={handleSelect}
+                    onTogglePreview={handleTogglePreview}
+                    onRename={handleRenameExercise}
+                    onHide={handleHideExercise}
+                    hidden={!ex.is_active || ex.is_hidden}
+                  />
+                ))}
+                {hasMore && <div data-testid="selector-sentinel" style={{ height: 1 }} aria-hidden="true" />}
+              </div>
+            )}
+
+            {hasMore && !("IntersectionObserver" in window) && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: SPACE.md }}>
+                <button type="button" onClick={handleLoadMore} style={secondaryBtnStyle()}>Cargar más ejercicios</button>
+              </div>
+            )}
+
+            {displayed.length === 0 && !catalogLoading && !catalogError && (
+              <div role="status" aria-live="polite" style={{ padding: `${SPACE.section}px ${SPACE.md}px`, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: SPACE.md }}>
+                <div style={{ width: 56, height: 56, borderRadius: RADIUS.round, background: GLASS.fillSubtle, border: `1px solid ${GLASS.border}`, display: "grid", placeItems: "center", color: TEXT.tertiary }}><Search size={24} aria-hidden="true" /></div>
+                <div>
+                  <p style={{ margin: 0, fontSize: TYPE.body.size, fontWeight: 600, color: TEXT.primary }}>
+                    {localExercises.length === 0 ? "El catálogo está vacío." : query || selectedEquipment || selectedMuscles.length > 0 ? "No se encontraron coincidencias para la búsqueda." : "No se encontró ningún ejercicio con esos filtros."}
+                  </p>
+                  <p style={{ margin: `${SPACE.xs}px 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>Ajusta la búsqueda o limpia los filtros para ver más resultados.</p>
+                </div>
+                {activeFilterCount > 0 && <button type="button" onClick={handleClear} style={primaryBtnStyle()}>Limpiar filtros</button>}
               </div>
             )}
           </div>
-
-          <div style={{ marginBottom: SPACE.sm }}>
-            <p style={groupLabelStyle()}>Filtros</p>
-            <div style={{ display: "flex", gap: SPACE.xs, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
-              <Chip active={onlyMyGym} label="Mi gimnasio" onClick={() => { setOnlyMyGym((v) => !v); setPage(1); }} />
-              {equipmentChips.map((chip) => <Chip key={chip.key} active={chip.active} label={chip.label} onClick={() => chip.onToggle(chip.key)} />)}
-            </div>
-          </div>
-
-          {activeFilterCount > 0 && (
-            <div style={{ marginBottom: SPACE.sm, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
-              {selectedEquipment && <RemovableChip label={translateEquipment(selectedEquipment)} onRemove={() => setSelectedEquipment(null)} />}
-              {onlyMyGym && <RemovableChip label="Mi gimnasio" onRemove={() => setOnlyMyGym(false)} />}
-              {query && <RemovableChip label={`"${query}"`} onRemove={() => setQuery("")} />}
-              {selectedMuscles.length > 0 && <RemovableChip label={muscleSelectionLabels} onRemove={handleClearMuscles} />}
-              <button type="button" onClick={handleClear} style={{ background: "none", border: "none", color: TEXT.tertiary, fontSize: TYPE.caption.size, cursor: "pointer", padding: `0 ${SPACE.xs}px`, minHeight: MOTION.minTouchTarget }}>Limpiar filtros</button>
-            </div>
-          )}
-
-          {catalogLoading && displayed.length === 0 && <StateBlock text="Cargando catálogo…" />}
-          {catalogError && displayed.length === 0 && <StateBlock text={catalogError} tone="error" />}
-          {opError && <StateBlock text={opError} tone="error" />}
-
-          {displayed.length > 0 && (
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(320px, 1fr))", gap: SPACE.sm }}>
-              {displayed.map((ex) => (
-                <SelectorCard
-                  key={ex.id}
-                  exercise={ex}
-                  order={mode === "multiple" ? orderOf(ex.id) : null}
-                  selected={isSelected(ex.id)}
-                  multiSelect={mode === "multiple"}
-                  expanded={expandedId === ex.id}
-                  alreadyInDay={alreadyInDay.has(ex.id)}
-                  onSelect={handleSelect}
-                  onTogglePreview={handleTogglePreview}
-                  onRename={handleRenameExercise}
-                  onHide={handleHideExercise}
-                  hidden={!ex.is_active || ex.is_hidden}
-                />
-              ))}
-              {hasMore && <div data-testid="selector-sentinel" style={{ height: 1 }} aria-hidden="true" />}
-            </div>
-          )}
-
-          {hasMore && !("IntersectionObserver" in window) && (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: SPACE.md }}>
-              <button type="button" onClick={handleLoadMore} style={secondaryBtnStyle()}>Cargar más ejercicios</button>
-            </div>
-          )}
-
-          {displayed.length === 0 && !catalogLoading && !catalogError && (
-            <div role="status" aria-live="polite" style={{ padding: `${SPACE.section}px ${SPACE.md}px`, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: SPACE.md }}>
-              <div style={{ width: 56, height: 56, borderRadius: RADIUS.round, background: GLASS.fillSubtle, border: `1px solid ${GLASS.border}`, display: "grid", placeItems: "center", color: TEXT.tertiary }}><Search size={24} aria-hidden="true" /></div>
-              <div>
-                <p style={{ margin: 0, fontSize: TYPE.body.size, fontWeight: 600, color: TEXT.primary }}>
-                  {localExercises.length === 0 ? "El catálogo está vacío." : query || selectedEquipment || selectedMuscles.length > 0 ? "No se encontraron coincidencias para la búsqueda." : onlyMyGym ? "No hay ejercicios con disponibilidad confirmada para Mi Gym." : "No se encontró ningún ejercicio con esos filtros."}
-                </p>
-                <p style={{ margin: `${SPACE.xs}px 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>Ajusta la búsqueda o limpia los filtros para ver más resultados.</p>
-              </div>
-              {activeFilterCount > 0 && <button type="button" onClick={handleClear} style={primaryBtnStyle()}>Limpiar filtros</button>}
-            </div>
-          )}
         </div>
-
-        {mode === "multiple" && selectedIds.size > 0 && (
-          <div
-            style={{
-              position: "fixed",
-              left: SPACE.md,
-              right: SPACE.md,
-              bottom: `calc(${SPACE.lg}px + env(safe-area-inset-bottom, 0px))`,
-              zIndex: Z_INDEX.modal + 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: SPACE.md,
-              padding: 14,
-              borderRadius: RADIUS.card,
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "rgba(0,0,0,0.9)",
-              backdropFilter: "blur(40px)",
-              WebkitBackdropFilter: "blur(40px)",
-              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
-            }}
-          >
-            <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary, minWidth: 0 }}>
-              {`${selectedIds.size} ${selectedIds.size === 1 ? "ejercicio seleccionado" : "ejercicios seleccionados"}`}
-            </p>
-            <button type="button" onClick={handleConfirm} style={primaryBtnStyle()} aria-label="Añadir a rutina">
-              Añadir a rutina
-            </button>
-          </div>
-        )}
       </div>
-    </div>,
+
+      {mode === "multiple" && selectedIds.size > 0 && (
+        <div style={floatingBarStyle}>
+          <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary, minWidth: 0 }}>
+            {`${selectedIds.size} ${selectedIds.size === 1 ? "ejercicio seleccionado" : "ejercicios seleccionados"}`}
+          </p>
+          <button type="button" onClick={handleConfirm} style={primaryBtnStyle()} aria-label="Añadir a rutina">
+            Añadir a rutina
+          </button>
+        </div>
+      )}
+    </>,
     document.body,
   );
 }
@@ -786,11 +851,6 @@ function SelectorCard({ exercise, order, selected, multiSelect, expanded, alread
   );
 }
 
-function Chip({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
-  return (
-    <button type="button" aria-pressed={active} onClick={onClick} style={{ display: "inline-flex", alignItems: "center", minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.md}px`, borderRadius: RADIUS.pill, border: `1px solid ${active ? ACCENT.border : GLASS.border}`, background: active ? ACCENT.subtle : "transparent", color: active ? TEXT.primary : TEXT.secondary, fontSize: TYPE.caption.size, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>{label}</button>
-  );
-}
 function RemovableChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return <button type="button" onClick={onRemove} style={{ display: "inline-flex", alignItems: "center", gap: SPACE.xs, minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.sm}px`, borderRadius: RADIUS.pill, border: `1px solid ${ACCENT.border}`, background: ACCENT.subtle, color: TEXT.primary, fontSize: TYPE.caption.size, cursor: "pointer" }}>{label}<X size={12} aria-hidden="true" /></button>;
 }
@@ -799,5 +859,4 @@ function StateBlock({ text, tone }: { text: string; tone?: "error" }) {
 }
 function primaryBtnStyle(): CSSProperties { return { minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.lg}px`, borderRadius: RADIUS.control, border: `1px solid ${ACCENT.base}`, background: ACCENT.base, color: TEXT.onAccent, fontSize: TYPE.subhead.size, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }; }
 function secondaryBtnStyle(): CSSProperties { return { minHeight: MOTION.minTouchTarget, padding: `0 ${SPACE.md}px`, borderRadius: RADIUS.control, border: `1px solid ${GLASS.borderStrong}`, background: "transparent", color: TEXT.secondary, fontSize: TYPE.subhead.size, fontWeight: 600, cursor: "pointer" }; }
-function groupLabelStyle(): CSSProperties { return { margin: `0 0 ${SPACE.xs}px`, fontSize: TYPE.label.size, fontWeight: TYPE.label.weight, letterSpacing: TYPE.label.tracking, textTransform: "uppercase", color: TEXT.tertiary }; }
 const SURFACE_ROLE_CARD = "rgba(255,255,255,0.03)";

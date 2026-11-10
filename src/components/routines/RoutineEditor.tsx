@@ -31,6 +31,7 @@ const WEEKDAYS_SHORT = ["L", "M", "X", "J", "V", "S", "D"];
 const WEEKDAYS_FULL = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 const QUICK_CHIPS_SINGLE = ["Push", "Pull", "Pierna", "Torso", "Full Body", "Espalda & Bíceps"] as const;
+const QUICK_CHIPS_WEEKLY = ["Espalda & Bíceps", "Pecho & Tríceps", "Pierna Completa", "Hombro & Brazo", "Torso", "Glúteo & Femoral"] as const;
 
 function emptyDay(order: number, weekday: number | null, kind: RoutineDay["kind"]): RoutineDay {
   return {
@@ -66,6 +67,132 @@ interface RoutineEditorProps {
   routine?: RoutineWithExercises | null;
   onSave?: (result: SaveResult) => void;
   onClose: () => void;
+}
+
+/**
+ * DualMiniMuscleMap — Capsula contenedora con dos mapas anatómicos escalados
+ * FRENTE (anterior) y ESPALDA (posterior) en un contenedor fijo de 124x116px.
+ */
+function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: 124,
+        height: 116,
+        flexShrink: 0,
+        borderRadius: "24px",
+        background: "rgba(0,0,0,0.5)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 2,
+        padding: "4px 4px",
+      }}
+    >
+      {/* Mapa Anterior (FRENTE) */}
+      <div
+        style={{
+          width: 56,
+          height: 108,
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 150,
+            height: 290,
+            transform: "scale(0.36)",
+            transformOrigin: "top center",
+            pointerEvents: "none",
+          }}
+        >
+          <MuscleReadonlyMap
+            counts={counts}
+            side="front"
+            aspectRatio={150 / 290}
+            label="Vista frontal"
+            backgroundColor="transparent"
+            caption={null}
+            overflow="visible"
+            inertFill="rgba(255,255,255,0.03)"
+            litFill="#FF3B30"
+            mostLitFill="rgba(255,59,48,0.3)"
+          />
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            bottom: 4,
+            left: 0,
+            right: 0,
+            textAlign: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <span style={{ fontSize: "8px", fontFamily: "ui-monospace, SFMono-Regular, monospace", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#52525B" }}>
+            FRENTE
+          </span>
+        </div>
+      </div>
+
+      {/* Mapa Posterior (ESPALDA) */}
+      <div
+        style={{
+          width: 56,
+          height: 108,
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 150,
+            height: 290,
+            transform: "scale(0.36)",
+            transformOrigin: "top center",
+            pointerEvents: "none",
+          }}
+        >
+          <MuscleReadonlyMap
+            counts={counts}
+            side="back"
+            aspectRatio={150 / 290}
+            label="Vista posterior"
+            backgroundColor="transparent"
+            caption={null}
+            overflow="visible"
+            inertFill="rgba(255,255,255,0.03)"
+            litFill="#FF3B30"
+            mostLitFill="rgba(255,59,48,0.3)"
+          />
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            bottom: 4,
+            left: 0,
+            right: 0,
+            textAlign: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <span style={{ fontSize: "8px", fontFamily: "ui-monospace, SFMono-Regular, monospace", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#52525B" }}>
+            ESPALDA
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) {
@@ -311,6 +438,16 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
     </div>
   ) : null;
 
+  const currentChips = isWeeklyMode ? QUICK_CHIPS_WEEKLY : QUICK_CHIPS_SINGLE;
+  const handleChipClick = useCallback((chip: string) => {
+    hapticLight();
+    if (isWeeklyMode) {
+      setDayLabel(activeDayIndex, chip);
+    } else {
+      setTitle(chip);
+    }
+  }, [isWeeklyMode, activeDayIndex]);
+
   const heroCard = (
     <div
       style={{
@@ -318,32 +455,38 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: "24px",
         padding: 16,
+        overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Main Row: Two-column layout */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        {/* Left Column: Text & Metrics */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Weekly Mode Day Badge */}
           {isWeeklyMode && (
             <span
               style={{
                 fontSize: "10px",
-                fontWeight: 600,
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
-                color: "#FF3B30",
                 fontFamily: "ui-monospace, SFMono-Regular, monospace",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#FF3B30",
               }}
             >
               {WEEKDAYS_FULL[activeDayIndex].toUpperCase()}
             </span>
           )}
+
+          {/* Title / Focus Input */}
           <input
             type="text"
             value={isWeeklyMode ? activeDay.label : title}
             onChange={(e) => isWeeklyMode ? setDayLabel(activeDayIndex, e.target.value) : setTitle(e.target.value)}
-            placeholder={isWeeklyMode ? "Enfoque del día (ej. Espalda y Bíceps)" : "Nombre de la rutina"}
+            placeholder={isWeeklyMode ? "Enfoque del día (ej. Espalda)" : "Nombre de la rutina"}
             aria-label={isWeeklyMode ? "Enfoque del día" : "Nombre de la rutina"}
             style={{
-              fontSize: isWeeklyMode ? "22px" : "28px",
+              fontSize: isWeeklyMode ? "20px" : "24px",
               fontWeight: 700,
               color: "#FFFFFF",
               background: "transparent",
@@ -352,37 +495,12 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
               padding: 0,
               width: "100%",
               fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              letterSpacing: "-0.02em",
             }}
           />
-          {!isWeeklyMode && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
-              {QUICK_CHIPS_SINGLE.map((chip) => (
-                <button
-                  key={chip}
-                  type="button"
-                  onClick={() => { hapticLight(); setTitle(chip); }}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "6px 12px",
-                    borderRadius: "9999px",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    background: "#2C2C2E",
-                    color: "#D4D4D4",
-                    fontSize: "11px",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
-                  }}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-          )}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+
+          {/* Metrics Line */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: "11px", fontWeight: 500, color: "#71717A" }}>
               ~{activeTelemetry.minutes} min
             </span>
@@ -395,6 +513,8 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
               {dayTotalSets(activeDay)} series
             </span>
           </div>
+
+          {/* Weekly Toggle: Día de descanso */}
           {isWeeklyMode && (
             <label
               style={{
@@ -403,7 +523,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
                 gap: 10,
                 cursor: "pointer",
                 userSelect: "none",
-                paddingTop: 4,
+                paddingTop: 2,
               }}
             >
               <span style={{ fontSize: "13px", fontWeight: 500, color: "#A3A3A3" }}>Día de descanso</span>
@@ -443,45 +563,38 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
             </label>
           )}
         </div>
-        <div style={{ width: 160, height: 160, flexShrink: 0 }}>
-          <div
-            style={{
-              background: "rgba(0,0,0,0.4)",
-              border: "1px solid rgba(255,255,255,0.05)",
-              borderRadius: "16px",
-              padding: "6px 8px",
-              display: "flex",
-              gap: 8,
-              height: "100%",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <MuscleReadonlyMap
-              counts={activeTelemetry.counts}
-              side="front"
-              aspectRatio={1}
-              label={`Vista frontal - ${WEEKDAYS_FULL[activeDayIndex]}`}
-              backgroundColor="transparent"
-              caption={null}
-              overflow="visible"
-              inertFill="rgba(255,255,255,0.03)"
-              litFill="#FF3B30"
-              mostLitFill="rgba(255,59,48,0.3)"
-            />
-            <MuscleReadonlyMap
-              counts={activeTelemetry.counts}
-              side="back"
-              aspectRatio={1}
-              label={`Vista posterior - ${WEEKDAYS_FULL[activeDayIndex]}`}
-              backgroundColor="transparent"
-              caption={null}
-              overflow="visible"
-              inertFill="rgba(255,255,255,0.03)"
-              litFill="#FF3B30"
-              mostLitFill="rgba(255,59,48,0.3)"
-            />
-          </div>
+
+        {/* Right Column: Dual Mini Muscle Map Capsule */}
+        <DualMiniMuscleMap counts={activeTelemetry.counts} />
+      </div>
+
+      {/* Bottom Row: Quick Name Chips */}
+      <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {currentChips.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => handleChipClick(chip)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 10px",
+                borderRadius: "9999px",
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "#2C2C2E",
+                color: "#D4D4D4",
+                fontSize: "10px",
+                fontWeight: 500,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            >
+              {chip}
+            </button>
+          ))}
         </div>
       </div>
     </div>
@@ -646,7 +759,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         minHeight: "100vh",
         background: "#000000",
         color: "#FFFFFF",
-        paddingBottom: 100,
+        paddingBottom: 128,
       }}
     >
       <header

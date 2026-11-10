@@ -621,13 +621,21 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                     </div>
                   </div>
 
-                  {/* 7-Day List - Apple Fitness+ Style: Individual Cards */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {/* 7-Day List - iOS Inset Grouped List */}
+                  <div
+                    style={{
+                      borderRadius: "24px",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "#1C1C1E",
+                      overflow: "hidden",
+                    }}
+                  >
                     {draft.days.map((day, index) => {
                       const count = day.exercises.length;
                       const hasExercises = count > 0;
                       const isRest = day.kind === "rest";
                       const muscles = dayMuscleSummary(day);
+                      const isLast = index === draft.days.length - 1;
 
                       let indicatorBg: string = "#2C2C2E";
                       let indicatorBorder: string = "rgba(255,255,255,0.08)";
@@ -711,10 +719,10 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             gap: 12,
                             width: "100%",
                             minHeight: 64,
-                            padding: "0 16px",
-                            borderRadius: "24px",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            background: "#1C1C1E",
+                            padding: "14px 16px",
+                            border: "none",
+                            borderBottom: isLast ? "none" : "1px solid rgba(255,255,255,0.06)",
+                            background: "transparent",
                             color: TEXT.primary,
                             textAlign: "left",
                             cursor: "pointer",
@@ -728,8 +736,8 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                width: 44,
-                                height: 44,
+                                width: 40,
+                                height: 40,
                                 borderRadius: "12px",
                                 flexShrink: 0,
                                 fontFamily: TYPE.mono.font,

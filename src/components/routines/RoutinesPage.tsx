@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { CalendarDays, Dumbbell, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -13,10 +13,9 @@ import { supabase } from "@lib/supabase";
 import { saveRoutine, flushSave, duplicateRoutine } from "@/lib/routines/saveRoutine";
 import { RoutineCard } from "./RoutineCard";
 import { RoutineEditor } from "./RoutineEditor";
-import { WeeklyPlanner } from "./WeeklyPlanner";
 import { draftFromRoutine, displayDayLabel } from "@/lib/routines/routineDayModel";
+import type { SaveResult } from "@/lib/routines/saveRoutine";
 import { ACCENT, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS } from "@/lib/i18n";
 
@@ -34,12 +33,6 @@ const TAB_OPTIONS = [
 export function RoutinesPage() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const { routines, loading, error, refresh } = useRoutines(userId);
-  const [editing, setEditing] = useState<
-    | { mode: "new"; initialPlanMode: "single" | "weekly" }
-    | { mode: "edit"; routine: RoutineWithExercises }
-    | null
-  >(null);
-  const [planning, setPlanning] = useState<RoutineWithExercises | null>(null);
   const [dayPickerRoutine, setDayPickerRoutine] = useState<RoutineWithMode | null>(null);
   const [sessionConflict, setSessionConflict] = useState<{
     routineId: string | null;
@@ -47,10 +40,10 @@ export function RoutinesPage() {
     dayLabel?: string | null;
   } | null>(null);
   const [tab, setTab] = useState<RoutineTab>("mine");
-  const [createOpen, setCreateOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingRoutine, setEditingRoutine] = useState<RoutineWithMode | null>(null);
   const { isActive, start, session } = useActiveSession();
   const navigate = useNavigate();
-  const reducedMotion = useReducedMotion();
 
   const routineRows = routines as RoutineWithMode[];
 
@@ -64,25 +57,17 @@ export function RoutinesPage() {
     [routineRows],
   );
 
-  const openNew = useCallback(() => setCreateOpen(true), []);
-  const openCreateSingle = useCallback(() => {
-    hapticLight();
-    setCreateOpen(false);
-    setEditing({ mode: "new", initialPlanMode: "single" });
+  const openNew = useCallback(() => {
+    setEditingRoutine(null);
+    setEditorOpen(true);
   }, []);
-  const openCreateWeekly = useCallback(() => {
-    hapticLight();
-    setCreateOpen(false);
-    setEditing({ mode: "new", initialPlanMode: "weekly" });
+  const openEdit = useCallback((routine: RoutineWithMode) => {
+    setEditingRoutine(routine);
+    setEditorOpen(true);
   }, []);
-  const openEdit = useCallback((routine: RoutineWithExercises) => {
-    setEditing({ mode: "edit", routine });
+  const openPlan = useCallback((_routine: RoutineWithMode) => {
+    // Weekly planner removed pending the new planner component.
   }, []);
-  const openPlan = useCallback((routine: RoutineWithExercises) => {
-    setPlanning(routine);
-  }, []);
-  const close = useCallback(() => setEditing(null), []);
-  const closePlan = useCallback(() => setPlanning(null), []);
 
   const handleTrain = useCallback(
     (routine: RoutineWithMode) => {
@@ -150,123 +135,93 @@ export function RoutinesPage() {
 
   const closeDayPicker = useCallback(() => setDayPickerRoutine(null), []);
   const closeConflict = useCallback(() => setSessionConflict(null), []);
-  const closeCreate = useCallback(() => setCreateOpen(false), []);
 
-  if (editing) {
-    return (
-      <RoutineEditor
-        mode={editing.mode === "new" ? "new" : "edit"}
-        routine={editing.mode === "edit" ? editing.routine : undefined}
-        initialPlanMode={editing.mode === "new" ? editing.initialPlanMode : undefined}
-        onSave={async () => {
-          close();
-          void refresh();
-        }}
-        onClose={close}
-      />
-    );
-  }
+  const handleEditorSave = useCallback((_result: SaveResult) => {
+    setEditorOpen(false);
+    setEditingRoutine(null);
+    void refresh();
+  }, [refresh]);
 
-  if (planning) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
-        <GlassCard raised>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                {ROUTINES_UI_LABELS.planning}
-              </p>
-              <h1
-                style={{
-                  margin: 0,
-                  fontSize: TYPE.title2.size,
-                  lineHeight: TYPE.title2.lineHeight,
-                  fontWeight: TYPE.title2.weight,
-                  color: TEXT.primary,
-                }}
-              >
-                {planning.title}
-              </h1>
-            </div>
-            <GlassButton variant="ghost" onClick={closePlan} aria-label={ROUTINES_UI_LABELS.back}>
-              {ROUTINES_UI_LABELS.back}
-            </GlassButton>
-          </div>
-        </GlassCard>
-        <WeeklyPlanner
-          routine={planning}
-          onSave={async () => {
-            closePlan();
-            void refresh();
-          }}
-        />
-      </div>
-    );
-  }
+  const showMainHeader = !editorOpen;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, paddingBottom: SPACE.lg }}>
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: Z_INDEX.sticky,
-          marginLeft: `-${SPACE.md}`,
-          marginRight: `-${SPACE.md}`,
-          paddingLeft: SPACE.md,
-          paddingRight: SPACE.md,
-          paddingTop: SPACE.sm,
-          paddingBottom: SPACE.sm,
-          background: SCRIM.overlay,
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
-          <h1
-            style={{
-              margin: 0,
-              fontSize: TYPE.title1.size,
-              lineHeight: TYPE.title1.lineHeight,
-              fontWeight: 900,
-              letterSpacing: TYPE.title1.tracking,
-              color: TEXT.primary,
-            }}
-          >
-            {ROUTINES_UI_LABELS.title}
-          </h1>
-          <button
-            type="button"
-            onClick={() => {
-              hapticLight();
-              openNew();
-            }}
-            aria-label={ROUTINES_UI_LABELS.newRoutine}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: MOTION.minTouchTarget,
-              height: MOTION.minTouchTarget,
-              borderRadius: RADIUS.pill,
-              border: `1px solid ${GLASS.borderStrong}`,
-              background: SOLID.card,
-              color: TEXT.primary,
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-          >
-            <Plus size={22} aria-hidden="true" />
-          </button>
-        </div>
-      </header>
+      {showMainHeader && (
+        <header
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: Z_INDEX.sticky,
+            marginLeft: `-${SPACE.md}`,
+            marginRight: `-${SPACE.md}`,
+            paddingLeft: SPACE.md,
+            paddingRight: SPACE.md,
+            paddingTop: SPACE.sm,
+            paddingBottom: SPACE.sm,
+            background: SCRIM.overlay,
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: TYPE.title1.size,
+                lineHeight: TYPE.title1.lineHeight,
+                fontWeight: 900,
+                letterSpacing: TYPE.title1.tracking,
+                color: TEXT.primary,
+              }}
+            >
+              {ROUTINES_UI_LABELS.title}
+            </h1>
+            <button
+              type="button"
+              onClick={() => {
+                hapticLight();
+                openNew();
+              }}
+              aria-label={ROUTINES_UI_LABELS.newRoutine}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: MOTION.minTouchTarget,
+                height: MOTION.minTouchTarget,
+                borderRadius: RADIUS.pill,
+                border: `1px solid ${GLASS.borderStrong}`,
+                background: SOLID.card,
+                color: TEXT.primary,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              <Plus size={22} aria-hidden="true" />
+            </button>
+          </div>
+        </header>
+      )}
 
-      <SegmentedControl
-        value={tab}
-        options={TAB_OPTIONS}
-        onChange={(value) => setTab(value as RoutineTab)}
-        ariaLabel={ROUTINES_UI_LABELS.title}
-      />
+      {showMainHeader && (
+        <SegmentedControl
+          value={tab}
+          options={TAB_OPTIONS}
+          onChange={(value) => setTab(value as RoutineTab)}
+          ariaLabel={ROUTINES_UI_LABELS.title}
+        />
+      )}
+
+      {editorOpen && (
+        <RoutineEditor
+          routine={editingRoutine}
+          onSave={handleEditorSave}
+          onClose={() => {
+            setEditorOpen(false);
+            setEditingRoutine(null);
+          }}
+        />
+      )}
 
       {sessionConflict ? (
         <GlassCard raised style={{ border: `1px solid ${ACCENT.border}`, background: ACCENT.subtle }}>
@@ -386,98 +341,6 @@ export function RoutinesPage() {
           ))}
         </div>
       )}
-
-      {createOpen ? (
-        <div
-          role="presentation"
-          onClick={closeCreate}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: Z_INDEX.sheet,
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-            padding: SPACE.sm,
-            background: SCRIM.modal,
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={ROUTINES_UI_LABELS.createTitle}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "100%",
-              maxWidth: 560,
-              borderRadius: RADIUS.sheet,
-              border: `1px solid ${GLASS.borderStrong}`,
-              background: SOLID.popover,
-              boxShadow: GLASS.shadow,
-              padding: SPACE.card,
-              display: "flex",
-              flexDirection: "column",
-              gap: SPACE.md,
-              ...(reducedMotion
-                ? {}
-                : { animation: `cronos-sheet-up ${MOTION.fast} ${MOTION.easeOut} both` }),
-            }}
-          >
-            <h2
-              style={{
-                margin: 0,
-                fontSize: TYPE.title2.size,
-                lineHeight: TYPE.title2.lineHeight,
-                fontWeight: TYPE.title2.weight,
-                color: TEXT.primary,
-              }}
-            >
-              {ROUTINES_UI_LABELS.createTitle}
-            </h2>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
-              <GlassButton
-                variant="secondary"
-                block
-                icon={<Dumbbell size={20} aria-hidden="true" />}
-                onClick={openCreateSingle}
-                style={{ justifyContent: "flex-start", textAlign: "left", gap: SPACE.md, padding: `${SPACE.md}px ${SPACE.md}px` }}
-              >
-                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                  <span style={{ fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary }}>
-                    {ROUTINES_UI_LABELS.createSingle}
-                  </span>
-                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary }}>
-                    {ROUTINES_UI_LABELS.createSingleDesc}
-                  </span>
-                </span>
-              </GlassButton>
-              <GlassButton
-                variant="secondary"
-                block
-                icon={<CalendarDays size={20} aria-hidden="true" />}
-                onClick={openCreateWeekly}
-                style={{ justifyContent: "flex-start", textAlign: "left", gap: SPACE.md, padding: `${SPACE.md}px ${SPACE.md}px` }}
-              >
-                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                  <span style={{ fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary }}>
-                    {ROUTINES_UI_LABELS.createWeekly}
-                  </span>
-                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary }}>
-                    {ROUTINES_UI_LABELS.createWeeklyDesc}
-                  </span>
-                </span>
-              </GlassButton>
-            </div>
-
-            <GlassButton variant="ghost" block onClick={closeCreate} style={{ marginTop: SPACE.xs }}>
-              {ROUTINES_UI_LABELS.cancel}
-            </GlassButton>
-          </div>
-        </div>
-      ) : null}
 
       {dayPickerRoutine ? (
         <div

@@ -1,12 +1,12 @@
 /**
- * RoutineEditor.tsx — armador de rutinas
- * 
+ * RoutineEditor.tsx — armador de rutinas (Apple HIG iOS 18)
+ *
  * - `single`: rutina individual, un solo día
  * - `weekly`: estudio semanal con navegación horizontal de días
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Trash2, Moon, Play, List, Flame, ChevronLeft } from "lucide-react";
+import { Plus, Trash2, Moon, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
@@ -23,31 +23,9 @@ import { countMuscleSets } from "@/components/MuscleReadonlyMap";
 import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
 import { MuscleReadonlyMap } from "@/components/MuscleReadonlyMap";
 import type { Slug } from "react-muscle-highlighter";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { GlassButton } from "@/components/ui/GlassButton";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
-import {
-  ACCENT,
-  DANGER,
-  GLASS,
-  MOTION,
-  RADIUS,
-  SURFACE,
-  TEXT,
-  TYPE,
-  SPACE,
-  Z_INDEX,
-} from "@/design/tokens";
 import { translateMuscle } from "@/lib/i18n";
-
-type EditorMode = "single" | "weekly";
-
-interface RoutineEditorProps {
-  routine?: RoutineWithExercises | null;
-  onSave?: (result: SaveResult) => void;
-  onClose: () => void;
-}
 
 const WEEKDAYS_SHORT = ["L", "M", "X", "J", "V", "S", "D"];
 const WEEKDAYS_FULL = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -66,20 +44,28 @@ function emptyDay(order: number, weekday: number | null, kind: RoutineDay["kind"
 }
 
 function dayTotalSets(day: RoutineDay): number {
-  return day.exercises.reduce((sum, ex) => sum + ex.target_sets, 0);
+  return (day.exercises ?? []).reduce((sum, ex) => sum + ex.target_sets, 0);
 }
 
 function dayRestSeconds(day: RoutineDay): number {
-  return day.exercises.reduce((sum, ex) => sum + ex.rest_seconds, 0);
+  return (day.exercises ?? []).reduce((sum, ex) => sum + ex.rest_seconds, 0);
 }
 
 function dayMuscleCounts(day: RoutineDay): Map<Slug, number> {
   return countMuscleSets(
-    day.exercises.map((ex) => ({
+    (day.exercises ?? []).map((ex) => ({
       exercise: ex.exercise as { target: string; body_part: string },
       target_sets: ex.target_sets,
     })),
   );
+}
+
+type EditorMode = "single" | "weekly";
+
+interface RoutineEditorProps {
+  routine?: RoutineWithExercises | null;
+  onSave?: (result: SaveResult) => void;
+  onClose: () => void;
 }
 
 export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) {
@@ -130,15 +116,6 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
 
   const activeDay = safeDays[activeDayIndex] ?? safeDays[0] ?? emptyDay(0, null, "training");
   const activeDayExercises = Array.isArray(activeDay?.exercises) ? activeDay.exercises : [];
-
-  const telemetry = useMemo(() => {
-    const sourceDays = safeDays;
-    const exerciseCount = sourceDays.reduce((sum, d) => sum + (Array.isArray(d.exercises) ? d.exercises.length : 0), 0);
-    const totalSets = sourceDays.reduce((sum, d) => sum + dayTotalSets(d), 0);
-    const restSec = sourceDays.reduce((sum, d) => sum + dayRestSeconds(d), 0);
-    const minutes = estimateMinutes(exerciseCount, restSec);
-    return { exerciseCount, totalSets, minutes };
-  }, [safeDays]);
 
   const activeTelemetry = useMemo(() => {
     const counts = dayMuscleCounts(activeDay);
@@ -221,7 +198,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
     setDays((prev) =>
       prev.map((d, i) =>
         i === activeDayIndex
-          ? { ...d, exercises: [...d.exercises, ...next] }
+          ? { ...d, exercises: [...(Array.isArray(d.exercises) ? d.exercises : []), ...next] }
           : d,
       ),
     );
@@ -233,9 +210,9 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
     setDays((prev) =>
       prev.map((d, i) => {
         if (i !== dayIndex) return d;
-        const next = [...d.exercises];
-        next.splice(exerciseIndex, 1);
-        return { ...d, exercises: next.map((ex, idx) => ({ ...ex, order_index: idx })) };
+        const exercises = Array.isArray(d.exercises) ? [...d.exercises] : [];
+        exercises.splice(exerciseIndex, 1);
+        return { ...d, exercises: exercises.map((ex, idx) => ({ ...ex, order_index: idx })) };
       }),
     );
     hapticLight();
@@ -245,11 +222,11 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
     setDays((prev) =>
       prev.map((d, i) => {
         if (i !== dayIndex) return d;
-        const next = [...d.exercises];
-        const ex = next[exerciseIndex];
+        const exercises = Array.isArray(d.exercises) ? [...d.exercises] : [];
+        const ex = exercises[exerciseIndex];
         if (!ex) return d;
-        next[exerciseIndex] = { ...ex, target_sets: Math.max(1, ex.target_sets + delta) };
-        return { ...d, exercises: next };
+        exercises[exerciseIndex] = { ...ex, target_sets: Math.max(1, ex.target_sets + delta) };
+        return { ...d, exercises };
       }),
     );
     hapticLight();
@@ -259,405 +236,405 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
     setDays((prev) =>
       prev.map((d, i) => {
         if (i !== dayIndex) return d;
-        const next = [...d.exercises];
-        const ex = next[exerciseIndex];
+        const exercises = Array.isArray(d.exercises) ? [...d.exercises] : [];
+        const ex = exercises[exerciseIndex];
         if (!ex) return d;
         const currentReps = ex.target_reps_min ?? ex.target_reps_max ?? 8;
         const newReps = Math.max(1, currentReps + delta);
-        next[exerciseIndex] = { 
-          ...ex, 
+        exercises[exerciseIndex] = {
+          ...ex,
           target_reps_min: newReps,
           target_reps_max: newReps,
         };
-        return { ...d, exercises: next };
+        return { ...d, exercises };
       }),
     );
     hapticLight();
   }, []);
 
-  const headerTitle = routine ? "Editar rutina" : "Nueva Rutina";
-
   const cardStyle = {
-    borderRadius: RADIUS.card,
-    border: `1px solid ${GLASS.border}`,
-    background: SURFACE.raised,
+    borderRadius: "20px",
+    border: "1px solid rgba(255,255,255,0.08)",
+    background: "#1C1C1E",
   } as const;
 
-  const weeklyContent = (
-    <div>
-      {/* Horizontal navigation bar at the top with grid-cols-7 */}
-      <div style={{ marginBottom: SPACE.md }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: 6,
-            padding: 6,
-            borderRadius: RADIUS.card,
-            border: `1px solid ${GLASS.border}`,
-            background: SURFACE.raised,
-          }}
-          role="tablist"
-          aria-label="Días de la semana"
-        >
-          {WEEKDAYS_SHORT.map((short, i) => {
-            const day = safeDays[i];
-            const hasExercises = Array.isArray(day?.exercises) ? day.exercises.length > 0 : false;
-            const isActive = i === activeDayIndex;
-            return (
-              <button
-                key={short}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-label={`${WEEKDAYS_FULL[i]} ${hasExercises ? "con ejercicios" : day.kind === "rest" ? "día de descanso" : "sin ejercicios"}`}
-                onClick={() => handleDayPress(i)}
+  const weeklyStrip = isWeeklyMode ? (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 16 }}>
+      {WEEKDAYS_SHORT.map((short, i) => {
+        const day = safeDays[i] ?? emptyDay(i, i, "training");
+        const hasExercises = Array.isArray(day?.exercises) ? day.exercises.length > 0 : false;
+        const isActive = i === activeDayIndex;
+        return (
+          <button
+            key={short}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            aria-label={`${WEEKDAYS_FULL[i]} ${hasExercises ? "con ejercicios" : day?.kind === "rest" ? "día de descanso" : "sin ejercicios"}`}
+            onClick={() => handleDayPress(i)}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 40,
+              borderRadius: "12px",
+              background: isActive ? "#FF3B30" : "transparent",
+              color: isActive ? "#FFFFFF" : "#A3A3A3",
+              fontSize: "11px",
+              fontWeight: isActive ? 700 : 600,
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+              border: "none",
+            }}
+          >
+            {short}
+            {hasExercises && (
+              <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 48,
-                  borderRadius: "16px",
-                  border: isActive
-                    ? `1.5px solid ${ACCENT.base}`
-                    : `1px solid ${GLASS.border}`,
-                  background: isActive
-                    ? ACCENT.subtle
-                    : "transparent",
-                  color: isActive ? TEXT.primary : TEXT.secondary,
-                  fontSize: TYPE.label.size,
-                  fontWeight: isActive ? 700 : 600,
-                  letterSpacing: TYPE.label.tracking,
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  transition: reducedMotion ? "none" : `all ${MOTION.fast} ${MOTION.standard}`,
+                  width: 4,
+                  height: 4,
+                  borderRadius: "50%",
+                  background: isActive ? "#FFFFFF" : "#FF3B30",
+                  marginTop: 2,
                 }}
-              >
-                {short}
-                {hasExercises && (
-                  <div
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      background: ACCENT.base,
-                      marginTop: 2,
-                    }}
-                    aria-hidden="true"
-                  />
-                )}
-                {day?.kind === "rest" && !hasExercises && (
-                  <Moon size={10} style={{ color: TEXT.tertiary, marginTop: 2 }} aria-hidden="true" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+                aria-hidden="true"
+              />
+            )}
+            {day?.kind === "rest" && !hasExercises && (
+              <Moon size={10} style={{ color: "#71717A", marginTop: 2 }} aria-hidden="true" />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  ) : null;
 
-      {/* Content for currently active day only */}
-      <div>
-        {/* Hero card with MuscleReadonlyMap positioned on the right */}
-        <GlassCard raised style={{ padding: SPACE.md, marginBottom: SPACE.md }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: SPACE.md }}>
-              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: SPACE.xs }}>
-                <span
-                  style={{
-                    fontSize: TYPE.label.size,
-                    fontWeight: TYPE.label.weight,
-                    letterSpacing: TYPE.label.tracking,
-                    textTransform: "uppercase",
-                    color: ACCENT.text,
-                    fontFamily: TYPE.mono.font,
-                  }}
-                >
-                  {WEEKDAYS_FULL[activeDayIndex].toUpperCase()}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
-                  <input
-                    type="text"
-                    value={activeDay.label}
-                    onChange={(e) => setDayLabel(activeDayIndex, e.target.value)}
-                    placeholder="Enfoque del día (ej. Espalda y Bíceps)"
-                    aria-label="Enfoque del día"
-                    style={{
-                      fontSize: TYPE.headline.size,
-                      fontWeight: TYPE.headline.weight,
-                      color: TEXT.primary,
-                      background: "transparent",
-                      border: "none",
-                      outline: "none",
-                      padding: 0,
-                      minWidth: 0,
-                      flex: 1,
-                    }}
-                  />
-                </div>
-                <span
-                  style={{
-                    fontFamily: TYPE.mono.font,
-                    fontSize: TYPE.caption.size,
-                    fontWeight: TYPE.mono.weight,
-                    letterSpacing: TYPE.mono.tracking,
-                    color: TEXT.tertiary,
-                  }}
-                >
-                  {activeDayExercises.length} ejercicios • {dayTotalSets(activeDay)} series • ~{activeTelemetry.minutes} min
-                </span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
-                <label style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, fontWeight: 600, cursor: "pointer", userSelect: "none", display: "flex", alignItems: "center", gap: SPACE.xs }}>
-                  <input
-                    type="checkbox"
-                checked={activeDay?.kind === "rest"}
-                onChange={toggleRestDay}
-                    style={{ width: 20, height: 20, accentColor: ACCENT.base, cursor: "pointer" }}
-                  />
-                  Día de descanso
-                </label>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.md }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                {activeDayExercises.length > 0 && (
-                  <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.secondary, textTransform: "uppercase", letterSpacing: TYPE.label.tracking, marginBottom: SPACE.xs }}>
-                    Músculos del día
-                  </p>
-                )}
-              </div>
-              <div style={{ width: 140, height: 140, flexShrink: 0 }}>
-                <MuscleReadonlyMap
-                  counts={activeTelemetry.counts}
-                  side="front"
-                  aspectRatio={1}
-                  label={`Distribución muscular de ${WEEKDAYS_FULL[activeDayIndex]}`}
-                  backgroundColor="transparent"
-                  caption={null}
-                />
-              </div>
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Exercise list for active day with stepper controls for sets and repetitions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: SPACE.xs }}>
-            <h3
+  const heroCard = (
+    <div
+      style={{
+        background: "#1C1C1E",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "24px",
+        padding: 16,
+      }}
+    >
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 12 }}>
+          {isWeeklyMode && (
+            <span
               style={{
-                margin: 0,
-                fontSize: TYPE.headline.size,
-                fontWeight: TYPE.headline.weight,
-                color: TEXT.primary,
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                color: "#FF3B30",
+                fontFamily: "ui-monospace, SFMono-Regular, monospace",
               }}
             >
-              Ejercicios de {WEEKDAYS_FULL[activeDayIndex]}
-            </h3>
-            <GlassButton
-              variant="primary"
-              onClick={() => setSelectorOpen(true)}
-              aria-label={`Añadir ejercicios a ${WEEKDAYS_FULL[activeDayIndex]}`}
-              style={{ fontSize: TYPE.caption.size, fontWeight: 700, textTransform: "uppercase", letterSpacing: TYPE.label.tracking }}
-            >
-              <Plus size={16} aria-hidden="true" /> Añadir ejercicios
-            </GlassButton>
-          </div>
-
-          {activeDayExercises.length === 0 ? (
-            <GlassCard raised style={{ padding: `${SPACE.xl}px ${SPACE.sm}px`, textAlign: "center" }}>
-              <Flame size={32} style={{ color: TEXT.tertiary, marginBottom: SPACE.sm }} aria-hidden="true" />
-              <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
-                Sin ejercicios aún. Añade el primero para este día.
-              </p>
-            </GlassCard>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
-              {activeDayExercises.map((ex, idx) => (
-                <div
-                  key={ex.rowId ?? ex.exercise.id}
+              {WEEKDAYS_FULL[activeDayIndex].toUpperCase()}
+            </span>
+          )}
+          <input
+            type="text"
+            value={isWeeklyMode ? activeDay.label : title}
+            onChange={(e) => isWeeklyMode ? setDayLabel(activeDayIndex, e.target.value) : setTitle(e.target.value)}
+            placeholder={isWeeklyMode ? "Enfoque del día (ej. Espalda y Bíceps)" : "Nombre de la rutina"}
+            aria-label={isWeeklyMode ? "Enfoque del día" : "Nombre de la rutina"}
+            style={{
+              fontSize: isWeeklyMode ? "22px" : "28px",
+              fontWeight: 700,
+              color: "#FFFFFF",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              padding: 0,
+              width: "100%",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            }}
+          />
+          {!isWeeklyMode && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+              {QUICK_CHIPS_SINGLE.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => { hapticLight(); setTitle(chip); }}
                   style={{
-                    ...cardStyle,
-                    padding: `${SPACE.sm}px ${SPACE.md}px`,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: SPACE.sm,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 12px",
+                    borderRadius: "9999px",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "#2C2C2E",
+                    color: "#D4D4D4",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: RADIUS.surface,
-                          overflow: "hidden",
-                          background: GLASS.fillSubtle,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Play size={18} style={{ color: TEXT.primary }} aria-hidden="true" />
-                      </div>
-                      <div style={{ minWidth: 0, marginLeft: SPACE.sm }}>
-                        <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {getExerciseName(ex.exercise as Exercise)}
-                        </p>
-                        <p style={{ margin: `2px 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                          {translateMuscle(ex.exercise.body_part)} • {getRepLabel(ex as unknown as DraftExercise)}
-                        </p>
-                      </div>
-                    </div>
-                    <GlassButton variant="ghost" onClick={() => removeExerciseFromDay(activeDayIndex, idx)} aria-label="Eliminar ejercicio" style={{ width: 32, height: 32, padding: 0, color: DANGER.text }}>
-                      <Trash2 size={16} aria-hidden="true" />
-                    </GlassButton>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: SPACE.md, flexWrap: "wrap" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
-                      <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, minWidth: 50 }}>Series</span>
-                      <GlassButton variant="ghost" onClick={() => changeSets(activeDayIndex, idx, -1)} aria-label="Quitar serie" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>-</GlassButton>
-                      <span style={{ fontFamily: TYPE.mono.font, fontSize: TYPE.caption.size, fontWeight: TYPE.mono.weight, color: TEXT.primary, minWidth: 32, textAlign: "center" }}>
-                        {ex.target_sets}
-                      </span>
-                      <GlassButton variant="ghost" onClick={() => changeSets(activeDayIndex, idx, 1)} aria-label="Añadir serie" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>+</GlassButton>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
-                      <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, minWidth: 50 }}>Reps</span>
-                      <GlassButton variant="ghost" onClick={() => changeReps(activeDayIndex, idx, -1)} aria-label="Quitar repetición" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>-</GlassButton>
-                      <span style={{ fontFamily: TYPE.mono.font, fontSize: TYPE.caption.size, fontWeight: TYPE.mono.weight, color: TEXT.primary, minWidth: 32, textAlign: "center" }}>
-                        {ex.target_reps_min ?? ex.target_reps_max ?? 8}
-                      </span>
-                      <GlassButton variant="ghost" onClick={() => changeReps(activeDayIndex, idx, 1)} aria-label="Añadir repetición" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>+</GlassButton>
-                    </div>
-                  </div>
-                </div>
+                  {chip}
+                </button>
               ))}
             </div>
           )}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+            <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: "11px", fontWeight: 500, color: "#71717A" }}>
+              ~{activeTelemetry.minutes} min
+            </span>
+            <span style={{ color: "#3F3F46" }}>•</span>
+            <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: "11px", fontWeight: 500, color: "#71717A" }}>
+              {activeDayExercises.length} ejerc.
+            </span>
+            <span style={{ color: "#3F3F46" }}>•</span>
+            <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: "11px", fontWeight: 600, color: "#FF3B30" }}>
+              {dayTotalSets(activeDay)} series
+            </span>
+          </div>
+          {isWeeklyMode && (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                cursor: "pointer",
+                userSelect: "none",
+                paddingTop: 4,
+              }}
+            >
+              <span style={{ fontSize: "13px", fontWeight: 500, color: "#A3A3A3" }}>Día de descanso</span>
+              <div style={{ position: "relative", width: 44, height: 26, flexShrink: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={activeDay?.kind === "rest"}
+                  onChange={toggleRestDay}
+                  style={{
+                    appearance: "none",
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "9999px",
+                    background: activeDay?.kind === "rest" ? "#FF3B30" : "#3F3F46",
+                    border: "none",
+                    outline: "none",
+                    cursor: "pointer",
+                    position: "relative",
+                    transition: reducedMotion ? "none" : "background 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    left: activeDay?.kind === "rest" ? 24 : 2,
+                    width: 22,
+                    height: 22,
+                    borderRadius: "50%",
+                    background: "#FFFFFF",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2)",
+                    transition: reducedMotion ? "none" : "left 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+                    pointerEvents: "none",
+                  }}
+                />
+              </div>
+            </label>
+          )}
         </div>
-
-        <UnifiedExerciseSelectorSheet
-          isOpen={selectorOpen}
-          onClose={() => setSelectorOpen(false)}
-          mode="multiple"
-          onSelectMultiple={addExercisesToDay}
-          title="Seleccionar ejercicios"
-          dayContext={{
-            dayIndex: activeDayIndex,
-            dayLabel: activeDay?.label ?? "",
-            dayExercises: Array.isArray(activeDay?.exercises) ? (activeDay.exercises.map((ex) => ex.exercise as Exercise)) : [],
-          }}
-        />
+        <div style={{ width: 160, height: 160, flexShrink: 0 }}>
+          <div
+            style={{
+              background: "rgba(0,0,0,0.4)",
+              border: "1px solid rgba(255,255,255,0.05)",
+              borderRadius: "16px",
+              padding: "6px 8px",
+              display: "flex",
+              gap: 8,
+              height: "100%",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MuscleReadonlyMap
+              counts={activeTelemetry.counts}
+              side="front"
+              aspectRatio={1}
+              label={`Vista frontal - ${WEEKDAYS_FULL[activeDayIndex]}`}
+              backgroundColor="transparent"
+              caption={null}
+              overflow="visible"
+              inertFill="rgba(255,255,255,0.03)"
+              litFill="#FF3B30"
+              mostLitFill="rgba(255,59,48,0.3)"
+            />
+            <MuscleReadonlyMap
+              counts={activeTelemetry.counts}
+              side="back"
+              aspectRatio={1}
+              label={`Vista posterior - ${WEEKDAYS_FULL[activeDayIndex]}`}
+              backgroundColor="transparent"
+              caption={null}
+              overflow="visible"
+              inertFill="rgba(255,255,255,0.03)"
+              litFill="#FF3B30"
+              mostLitFill="rgba(255,59,48,0.3)"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
 
-  const singleContent = (
-    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: SPACE.xs }}>
-        <h3 style={{ margin: 0, fontSize: TYPE.headline.size, fontWeight: TYPE.headline.weight, color: TEXT.primary }}>Ejercicios</h3>
-        <GlassButton
-          variant="primary"
+  const exerciseList = (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <h3 style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "#D4D4D4", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          {isWeeklyMode ? `Ejercicios de ${WEEKDAYS_FULL[activeDayIndex]}` : "Ejercicios"}
+        </h3>
+        <button
+          type="button"
           onClick={() => setSelectorOpen(true)}
-          aria-label="Añadir ejercicio"
-          style={{ fontSize: TYPE.caption.size, fontWeight: 700, textTransform: "uppercase", letterSpacing: TYPE.label.tracking }}
+          aria-label={isWeeklyMode ? `Añadir ejercicios a ${WEEKDAYS_FULL[activeDayIndex]}` : "Añadir ejercicio"}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "6px 12px",
+            borderRadius: "9999px",
+            border: "1px solid rgba(255,59,48,0.3)",
+            background: "rgba(255,59,48,0.1)",
+            color: "#FF3B30",
+            fontSize: "11px",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
         >
-          <Plus size={16} aria-hidden="true" /> Añadir ejercicio
-        </GlassButton>
+          <Plus size={12} aria-hidden="true" /> Añadir
+        </button>
       </div>
 
-              {days[0]?.exercises?.length === 0 ? (
-        <GlassCard raised style={{ padding: `${SPACE.xl}px ${SPACE.sm}px`, textAlign: "center" }}>
-          <List size={32} style={{ color: TEXT.tertiary, marginBottom: SPACE.sm }} aria-hidden="true" />
-          <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
-            Sin ejercicios aún. Añade el primero a tu rutina individual.
-          </p>
-        </GlassCard>
+      {activeDayExercises.length === 0 ? (
+        <button
+          type="button"
+          onClick={() => setSelectorOpen(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            padding: 20,
+            borderRadius: "20px",
+            border: "1px dashed rgba(255,255,255,0.1)",
+            background: "rgba(28,28,30,0.7)",
+            cursor: "pointer",
+            transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 40,
+                height: 40,
+                borderRadius: "12px",
+                background: "rgba(255,59,48,0.1)",
+                color: "#FF3B30",
+              }}
+            >
+              <Plus size={20} aria-hidden="true" />
+            </div>
+            <div style={{ textAlign: "left", flex: 1 }}>
+              <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#FFFFFF" }}>Añadir ejercicios a la sesión</p>
+              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#71717A" }}>Toca para abrir el catálogo y seleccionar</p>
+            </div>
+          </div>
+          <ChevronRight size={20} style={{ color: "#3F3F46", flexShrink: 0 }} aria-hidden="true" />
+        </button>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
-          {days[0]?.exercises?.map((ex, idx) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {activeDayExercises.map((ex, idx) => (
             <div
               key={ex.rowId ?? ex.exercise.id}
               style={{
                 ...cardStyle,
-                padding: `${SPACE.sm}px ${SPACE.md}px`,
+                padding: "12px 16px",
                 display: "flex",
                 flexDirection: "column",
-                gap: SPACE.sm,
+                gap: 10,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
-                <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
                   <div
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: RADIUS.surface,
+                      borderRadius: "10px",
                       overflow: "hidden",
-                      background: GLASS.fillSubtle,
+                      background: "rgba(255,255,255,0.03)",
                       flexShrink: 0,
                     }}
                   >
-                    <Play size={18} style={{ color: TEXT.primary }} aria-hidden="true" />
+                    <Play size={18} style={{ color: "#FFFFFF", margin: "auto", display: "block" }} aria-hidden="true" />
                   </div>
-                  <div style={{ minWidth: 0, marginLeft: SPACE.sm }}>
-                    <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {getExerciseName(ex.exercise as Exercise)}
                     </p>
-                    <p style={{ margin: `2px 0 0`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+                    <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#71717A" }}>
                       {translateMuscle(ex.exercise.body_part)} • {getRepLabel(ex as unknown as DraftExercise)}
                     </p>
                   </div>
                 </div>
-                <GlassButton variant="ghost" onClick={() => removeExerciseFromDay(0, idx)} aria-label="Eliminar ejercicio" style={{ width: 32, height: 32, padding: 0, color: DANGER.text }}>
+                <button
+                  type="button"
+                  onClick={() => removeExerciseFromDay(isWeeklyMode ? activeDayIndex : 0, idx)}
+                  aria-label="Eliminar ejercicio"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    padding: 0,
+                    borderRadius: "9999px",
+                    border: "none",
+                    background: "transparent",
+                    color: "#FF3B30",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: reducedMotion ? "none" : "background 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
+                >
                   <Trash2 size={16} aria-hidden="true" />
-                </GlassButton>
+                </button>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: SPACE.md, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
-                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, minWidth: 50 }}>Series</span>
-                  <GlassButton variant="ghost" onClick={() => changeSets(0, idx, -1)} aria-label="Quitar serie" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>-</GlassButton>
-                  <span style={{ fontFamily: TYPE.mono.font, fontSize: TYPE.caption.size, fontWeight: TYPE.mono.weight, color: TEXT.primary, minWidth: 32, textAlign: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: "11px", color: "#71717A", minWidth: 40 }}>Series</span>
+                  <button type="button" onClick={() => changeSets(isWeeklyMode ? activeDayIndex : 0, idx, -1)} aria-label="Quitar serie" style={{ width: 28, height: 28, padding: 0, borderRadius: "9999px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "#A3A3A3", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>−</button>
+                  <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: "12px", fontWeight: 600, color: "#FFFFFF", minWidth: 28, textAlign: "center" }}>
                     {ex.target_sets}
                   </span>
-                  <GlassButton variant="ghost" onClick={() => changeSets(0, idx, 1)} aria-label="Añadir serie" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>+</GlassButton>
+                  <button type="button" onClick={() => changeSets(isWeeklyMode ? activeDayIndex : 0, idx, 1)} aria-label="Añadir serie" style={{ width: 28, height: 28, padding: 0, borderRadius: "9999px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "#A3A3A3", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>+</button>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
-                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary, minWidth: 50 }}>Reps</span>
-                  <GlassButton variant="ghost" onClick={() => changeReps(0, idx, -1)} aria-label="Quitar repetición" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>-</GlassButton>
-                  <span style={{ fontFamily: TYPE.mono.font, fontSize: TYPE.caption.size, fontWeight: TYPE.mono.weight, color: TEXT.primary, minWidth: 32, textAlign: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: "11px", color: "#71717A", minWidth: 40 }}>Reps</span>
+                  <button type="button" onClick={() => changeReps(isWeeklyMode ? activeDayIndex : 0, idx, -1)} aria-label="Quitar repetición" style={{ width: 28, height: 28, padding: 0, borderRadius: "9999px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "#A3A3A3", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>−</button>
+                  <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: "12px", fontWeight: 600, color: "#FFFFFF", minWidth: 28, textAlign: "center" }}>
                     {ex.target_reps_min ?? ex.target_reps_max ?? 8}
                   </span>
-                  <GlassButton variant="ghost" onClick={() => changeReps(0, idx, 1)} aria-label="Añadir repetición" style={{ width: 32, height: 32, padding: 0, fontSize: TYPE.caption.size, fontWeight: 700 }}>+</GlassButton>
+                  <button type="button" onClick={() => changeReps(isWeeklyMode ? activeDayIndex : 0, idx, 1)} aria-label="Añadir repetición" style={{ width: 28, height: 28, padding: 0, borderRadius: "9999px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "#A3A3A3", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>+</button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
-
-      <UnifiedExerciseSelectorSheet
-        isOpen={selectorOpen}
-        onClose={() => setSelectorOpen(false)}
-        mode="single"
-        onSelectSingle={(exercise) => {
-          const next: DraftExercise = {
-            rowId: crypto.randomUUID(),
-            exercise: exercise as Exercise,
-            target_sets: 3,
-            target_reps_min: 8,
-            target_reps_max: 8,
-            rest_seconds: 90,
-            order_index: days[0]?.exercises?.length ?? 0,
-          };
-          setDays((prev) =>
-            prev.map((d, i) => (i === 0 ? { ...d, exercises: [...d.exercises, next] } : d)),
-          );
-          setSelectorOpen(false);
-          hapticLight();
-        }}
-        title="Seleccionar ejercicio"
-      />
     </div>
   );
 
@@ -667,8 +644,8 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        background: SURFACE.base,
-        color: TEXT.primary,
+        background: "#000000",
+        color: "#FFFFFF",
         paddingBottom: 100,
       }}
     >
@@ -676,185 +653,168 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         style={{
           position: "sticky",
           top: 0,
-          zIndex: Z_INDEX.sticky,
+          zIndex: 30,
           height: 48,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: `0 ${SPACE.md}px`,
-          background: GLASS.fillRaised,
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderBottom: `1px solid ${GLASS.border}`,
+          padding: "0 16px",
+          background: "rgba(0,0,0,0.8)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <GlassButton
-          variant="ghost"
+        <button
+          type="button"
           onClick={onClose}
-          aria-label="Volver"
+          aria-label="Cancelar"
           style={{
-            height: "auto",
-            minHeight: 32,
-            padding: `0 ${SPACE.sm}px`,
-            fontSize: TYPE.subhead.size,
-            fontWeight: 500,
-            background: "transparent",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            height: 32,
+            padding: "0 10px",
+            borderRadius: "9999px",
             border: "none",
-            color: TEXT.secondary,
+            background: "transparent",
+            color: "#A3A3A3",
+            fontSize: "13px",
+            fontWeight: 500,
+            cursor: "pointer",
+            transition: reducedMotion ? "none" : "color 150ms cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
-          <ChevronLeft size={18} aria-hidden="true" />
-        </GlassButton>
+          <ChevronLeft size={16} aria-hidden="true" /> Cancelar
+        </button>
 
-        <h2
+        <div
           style={{
-            margin: 0,
-            fontSize: TYPE.title2.size,
-            lineHeight: TYPE.title2.lineHeight,
-            fontWeight: TYPE.title2.weight,
-            letterSpacing: TYPE.title2.tracking,
-            color: TEXT.primary,
+            display: "inline-flex",
+            alignItems: "center",
+            padding: 2,
+            borderRadius: "14px",
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "#1C1C1E",
           }}
+          role="tablist"
+          aria-label="Modo de rutina"
         >
-          {headerTitle}
-        </h2>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "single"}
+            onClick={() => { hapticLight(); setMode("single"); }}
+            style={{
+              padding: "4px 14px",
+              borderRadius: "12px",
+              border: "none",
+              background: mode === "single" ? "#FF3B30" : "transparent",
+              color: mode === "single" ? "#FFFFFF" : "#71717A",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            Individual
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "weekly"}
+            onClick={() => { hapticLight(); setMode("weekly"); }}
+            style={{
+              padding: "4px 14px",
+              borderRadius: "12px",
+              border: "none",
+              background: mode === "weekly" ? "#FF3B30" : "transparent",
+              color: mode === "weekly" ? "#FFFFFF" : "#71717A",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            Semanal
+          </button>
+        </div>
 
-        <GlassButton
-          variant="primary"
+        <button
+          type="button"
           onClick={handleSave}
           disabled={!canSave || saveStatus === "saving"}
           aria-label={canSave ? "Guardar rutina" : "Guardar rutina (requiere título y al menos un ejercicio)"}
           style={{
-            height: "auto",
-            minHeight: 32,
-            padding: `0 ${SPACE.sm}px`,
-            fontSize: TYPE.caption.size,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "6px 14px",
+            borderRadius: "9999px",
+            border: "none",
+            background: canSave ? "#FF3B30" : "#1C1C1E",
+            color: canSave ? "#FFFFFF" : "#71717A",
+            fontSize: "11px",
             fontWeight: 700,
             textTransform: "uppercase",
-            letterSpacing: TYPE.label.tracking,
-            borderRadius: RADIUS.pill,
+            letterSpacing: "0.5px",
+            cursor: canSave ? "pointer" : "not-allowed",
+            boxShadow: canSave ? "0 2px 8px rgba(255,59,48,0.3)" : "none",
+            transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+            minWidth: 72,
           }}
         >
           {saveStatus === "saving" ? "Guardando…" : "Guardar"}
-        </GlassButton>
+        </button>
       </header>
 
-      <main style={{ padding: `${SPACE.sm}px ${SPACE.md}px ${SPACE.lg}px`, flex: 1, overflowY: "auto" }}>
-        {!isWeeklyMode && (
-          <div style={{ display: "flex", gap: SPACE.sm, marginBottom: SPACE.md }}>
-            <GlassButton
-              variant={mode === "single" ? "primary" : "ghost"}
-              onClick={() => setMode("single")}
-              aria-label="Rutina individual"
-              style={{ flex: 1, fontSize: TYPE.caption.size, fontWeight: 600 }}
-            >
-              Individual
-            </GlassButton>
-            <GlassButton
-              variant="ghost"
-              onClick={() => setMode("weekly")}
-              aria-label="Plan semanal"
-              style={{ flex: 1, fontSize: TYPE.caption.size, fontWeight: 600 }}
-            >
-              Semanal
-            </GlassButton>
-          </div>
-        )}
+      <main style={{ padding: "12px 16px 32px", flex: 1, overflowY: "auto" }}>
+        {weeklyStrip}
+        {heroCard}
+        {exerciseList}
 
-        <div style={{ marginBottom: SPACE.md }}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={isWeeklyMode ? "Nombre del programa (ej. V-Taper 5 Días)" : "Nombre de la rutina"}
-            aria-label={isWeeklyMode ? "Nombre del programa" : "Nombre de la rutina"}
-            style={{
-              width: "100%",
-              fontSize: isWeeklyMode ? TYPE.title2.size : TYPE.hero.size,
-              lineHeight: isWeeklyMode ? TYPE.title2.lineHeight : TYPE.hero.lineHeight,
-              fontWeight: isWeeklyMode ? TYPE.title2.weight : TYPE.hero.weight,
-              letterSpacing: isWeeklyMode ? TYPE.title2.tracking : TYPE.hero.tracking,
-              color: TEXT.primary,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              padding: 0,
+        {isWeeklyMode ? (
+          <UnifiedExerciseSelectorSheet
+            isOpen={selectorOpen}
+            onClose={() => setSelectorOpen(false)}
+            mode="multiple"
+            onSelectMultiple={addExercisesToDay}
+            title="Seleccionar ejercicios"
+            dayContext={{
+              dayIndex: activeDayIndex,
+              dayLabel: activeDay?.label ?? "",
+              dayExercises: Array.isArray(activeDay?.exercises) ? (activeDay.exercises.map((ex) => ex.exercise as Exercise)) : [],
             }}
           />
-        </div>
-
-        {!isWeeklyMode && (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: SPACE.xs,
-              marginBottom: SPACE.md,
+        ) : (
+          <UnifiedExerciseSelectorSheet
+            isOpen={selectorOpen}
+            onClose={() => setSelectorOpen(false)}
+            mode="single"
+            onSelectSingle={(exercise: Exercise) => {
+              const next: DraftExercise = {
+                rowId: crypto.randomUUID(),
+                exercise,
+                target_sets: 3,
+                target_reps_min: 8,
+                target_reps_max: 8,
+                rest_seconds: 90,
+                order_index: (safeDays[0]?.exercises ?? []).length,
+              };
+              setDays((prev) =>
+                prev.map((d, i) => (i === 0 ? { ...d, exercises: [...(Array.isArray(d.exercises) ? d.exercises : []), next] } : d)),
+              );
+              setSelectorOpen(false);
+              hapticLight();
             }}
-          >
-            {QUICK_CHIPS_SINGLE.map((chip) => (
-              <button
-                key={chip}
-                type="button"
-                onClick={() => {
-                  hapticLight();
-                  setTitle(chip);
-                }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: SPACE.xs,
-                  minHeight: MOTION.minTouchTarget,
-                  padding: `0 ${SPACE.sm}px`,
-                  borderRadius: RADIUS.pill,
-                  border: `1px solid ${GLASS.borderStrong}`,
-                  background: GLASS.fillSubtle,
-                  color: TEXT.secondary,
-                  fontSize: TYPE.caption.size,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {chip}
-              </button>
-            ))}
-          </div>
+            title="Seleccionar ejercicio"
+            dayContext={{
+              dayIndex: 0,
+              dayLabel: "",
+              dayExercises: Array.isArray(safeDays[0]?.exercises) ? (safeDays[0].exercises.map((ex) => ex.exercise as Exercise)) : [],
+            }}
+          />
         )}
-
-        <GlassCard raised style={{ padding: `${SPACE.sm}px ${SPACE.md}px`, marginBottom: SPACE.md }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: SPACE.sm,
-              border: `1px solid ${GLASS.border}`,
-              borderRadius: RADIUS.card,
-              background: SURFACE.raised,
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: SPACE.xs }}>
-              <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: TYPE.label.tracking }}>DURACIÓN</span>
-              <span style={{ fontFamily: TYPE.mono.font, fontSize: TYPE.mono.size, fontWeight: TYPE.mono.weight, letterSpacing: TYPE.mono.tracking, color: TEXT.primary }}>
-                ~{telemetry.minutes} min
-              </span>
-            </div>
-            <div style={{ borderLeft: `1px solid ${GLASS.border}`, borderRight: `1px solid ${GLASS.border}`, display: "flex", flexDirection: "column", alignItems: "center", gap: SPACE.xs }}>
-              <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: TYPE.label.tracking }}>EJERCICIOS</span>
-              <span style={{ fontFamily: TYPE.mono.font, fontSize: TYPE.mono.size, fontWeight: TYPE.mono.weight, letterSpacing: TYPE.mono.tracking, color: TEXT.primary }}>
-                {telemetry.exerciseCount}
-              </span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: SPACE.xs }}>
-              <span style={{ fontSize: TYPE.caption.size, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: TYPE.label.tracking }}>SERIES TOTALES</span>
-              <span style={{ fontFamily: TYPE.mono.font, fontSize: TYPE.mono.size, fontWeight: TYPE.mono.weight, letterSpacing: TYPE.mono.tracking, color: ACCENT.text }}>
-                {telemetry.totalSets} series
-              </span>
-            </div>
-          </div>
-        </GlassCard>
-
-        {isWeeklyMode ? weeklyContent : singleContent}
       </main>
     </div>
   );

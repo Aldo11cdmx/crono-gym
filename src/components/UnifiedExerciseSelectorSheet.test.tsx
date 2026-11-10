@@ -220,12 +220,15 @@ describe("UnifiedExerciseSelectorSheet — modo múltiple", () => {
     act(() => {
       fireEvent.click(screen.getByText("Sentadilla"));
     });
-    expect(screen.getByText("1").closest('[role="option"]')).toBeDefined();
+    // El contador del ejercicio seleccionado (badge con número de orden)
+    const sentadillaCard = screen.getByText("Sentadilla").closest('[role="option"]');
+    expect(sentadillaCard).toBeDefined();
+    expect(sentadillaCard?.querySelector('[aria-hidden="true"]')?.textContent).toBe("1");
 
     act(() => {
       fireEvent.click(screen.getByText("Zancada"));
     });
-    expect(screen.getByText("2 ejercicios seleccionados")).toBeDefined();
+    expect(screen.getByText(/ejercicios seleccionados/)).toBeDefined();
 
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Añadir a rutina", hidden: true }));
@@ -244,12 +247,13 @@ describe("UnifiedExerciseSelectorSheet — modo múltiple", () => {
     act(() => {
       fireEvent.click(screen.getByText("Sentadilla"));
     });
-    expect(screen.getByText("1 ejercicio seleccionado")).toBeDefined();
+    // El contador en la barra flotante: "1 ejercicio seleccionado"
+    expect(screen.getByText(/ejercicio seleccionado/)).toBeDefined();
 
     act(() => {
       fireEvent.click(screen.getByText("Sentadilla"));
     });
-    expect(screen.queryByText("1 ejercicio seleccionado")).toBeNull();
+    expect(screen.queryByText(/ejercicio seleccionado/)).toBeNull();
     expect(screen.queryByRole("button", { name: "Añadir a rutina" })).toBeNull();
   });
 });

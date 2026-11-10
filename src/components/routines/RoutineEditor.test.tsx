@@ -119,15 +119,15 @@ describe("RoutineEditor (Apple HIG)", () => {
   it("modo weekly (hint split->weekly) muestra lista de 7 días sin toggle de plan", () => {
     renderEditor(undefined, "split");
     expect(screen.getByText("Plan Semanal")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Lunes/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Domingo/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Lunes: Sin ejercicios/ })).toBeTruthy();
+    expect(screen.getByText("Sábado")).toBeTruthy();
     expect(screen.queryByText("Tipo de plan")).toBeNull();
     expect(screen.queryByRole("button", { name: "Plan individual" })).toBeNull();
   });
 
   it("navega a subpantalla de día y vuelve con Listo/Volver", () => {
     renderEditor(undefined, "weekly");
-    fireEvent.click(screen.getByRole("button", { name: /Lunes/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Lunes: Sin ejercicios/ }));
     expect(screen.getByRole("button", { name: "Volver" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Listo" })).toBeTruthy();
     expect(screen.getByText("Añadir ejercicios a Lunes")).toBeTruthy();

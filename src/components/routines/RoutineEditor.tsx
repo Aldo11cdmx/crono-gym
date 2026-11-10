@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Flame, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Dumbbell, Flame, Plus, Trash2 } from "lucide-react";
 import { UnifiedExerciseSelectorSheet } from "@/components/UnifiedExerciseSelectorSheet";
 import type { Exercise } from "@/types/supabase";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
@@ -22,7 +22,6 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 interface RoutineEditorProps {
   mode: "new" | "edit";
   routine?: RoutineWithExercises;
-  /** Modo inicial al crear (hint desde Bloque 1). `split` se mapea a `weekly`. */
   initialPlanMode?: "single" | "weekly" | "split";
   onSave: () => Promise<void> | void;
   onClose: () => void;
@@ -98,7 +97,7 @@ function dayMuscleSummary(day: RoutineDay): string | null {
   for (const ex of day.exercises) {
     const raw = ex.exercise.body_part?.trim() || ex.exercise.target?.trim() || "";
     if (!raw) continue;
-    const label = (ex.exercise.body_part ? translateMuscle(raw) : translateTarget(raw)).toUpperCase();
+    const label = (ex.exercise.body_part ? translateMuscle(raw) : translateTarget(raw));
     if (!seen.has(label)) {
       seen.add(label);
       labels.push(label);
@@ -108,13 +107,22 @@ function dayMuscleSummary(day: RoutineDay): string | null {
   return labels.length > 0 ? labels.join(" • ") : null;
 }
 
-function dayMetrics(day: RoutineDay): string | null {
-  if (day.exercises.length === 0) return null;
-  const totalSets = day.exercises.reduce((sum, ex) => sum + (ex.target_sets ?? 0), 0);
-  const restSec = day.exercises.reduce((sum, ex) => sum + (ex.target_sets ?? 0) * (ex.rest_seconds ?? 0), 0);
-  const minutes = Math.max(1, Math.round((totalSets * 45 + restSec) / 60));
-  return `${day.exercises.length} ej. • ~${minutes} min`;
-}
+const WEEKLY_QUICK_CHIPS = [
+  "V-Taper 5 Días",
+  "Push / Pull / Legs",
+  "Upper / Lower",
+  "Full Body 3x",
+  "Hipertrofia 6 Días",
+];
+
+const SINGLE_QUICK_CHIPS = [
+  "Empuje (Push)",
+  "Tirón (Pull)",
+  "Pierna & Glúteo",
+  "Espalda & Hombro",
+  "Torso",
+  "Brazo Completo",
+];
 
 export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose }: RoutineEditorProps) {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
@@ -127,6 +135,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
   const [draftMode, setDraftMode] = useState<"single" | "weekly">(
     initialPlanMode === "weekly" || initialPlanMode === "split" ? "weekly" : "single",
   );
+  const [titleInputValue, setTitleInputValue] = useState("");
 
   const initialDraftRef = useRef<RoutineDraftV2 | null>(null);
   const createHintAppliedRef = useRef(false);
@@ -182,6 +191,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
   useEffect(() => {
     if (draft === initialDraftRef.current) setDraft(initialDraft);
     initialDraftRef.current = initialDraft;
+    setTitleInputValue(initialDraft.title);
   }, [initialDraft]);
 
   const reducedMotion = useReducedMotion();
@@ -206,10 +216,11 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
   }, [draft]);
 
   const setTitle = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setDraft((d) => ({ ...d, title: e.target.value }));
+    const value = e.target.value;
+    setTitleInputValue(value);
+    setDraft((d) => ({ ...d, title: value }));
   }, []);
 
-  // Mutador aditivo (RoutineDraftV2): inserta uno o varios ejercicios sin sobrescribir existentes.
   const addExercisesToDay = useCallback((dayIndex: number, exercises: Exercise[]) => {
     if (exercises.length === 0) return;
     setDraft((d) => {
@@ -248,7 +259,9 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
 
   const handleSave = useCallback(async () => {
     const hasAnyExercise = draft.days.some((d) => d.exercises.length > 0);
-    const title = draft.title.trim().length >= 3 ? draft.title.trim() : hasAnyExercise ? "Nueva Rutina" : draft.title;
+    const isWeeklyMode = draft.mode === "weekly" || draftMode === "weekly";
+    const defaultTitle = isWeeklyMode ? "Plan Semanal" : "Nueva Rutina";
+    const title = draft.title.trim().length >= 3 ? draft.title.trim() : hasAnyExercise ? defaultTitle : draft.title;
     const finalDraft: RoutineDraftV2 = title !== draft.title ? { ...draft, title } : draft;
     const blocking = validateDraft(finalDraft).filter((p) => p !== "noTitle" && p !== "titleTooShort");
     if (!hasAnyExercise || blocking.length > 0) return;
@@ -267,7 +280,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
     } finally {
       setSaving(false);
     }
-  }, [userId, draft, onSave]);
+  }, [userId, draft, onSave, draftMode]);
 
   const problems = validateDraft(draft);
   const hasAnyExercise = draft.days.some((d) => d.exercises.length > 0);
@@ -282,7 +295,6 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
     onClose();
   }, [dirty, onClose]);
 
-  // Punto de integración del selector unificado (modo múltiple).
   const onOpenExercisePicker = useCallback((dayIndex?: number) => {
     setTargetDayIndex(dayIndex ?? 0);
     setPickerOpen(true);
@@ -307,73 +319,19 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
   const headerTitle = mode === "edit" ? "Editar rutina" : isWeekly ? "Plan Semanal" : "Nueva Rutina";
   const transition = reducedMotion ? undefined : `transform ${MOTION.fast} ${MOTION.easeOut}, opacity ${MOTION.fast} ${MOTION.easeOut}`;
 
-  const nameInput = (
-    <input
-      type="text"
-      value={draft.title}
-      onChange={setTitle}
-      placeholder={isWeekly ? "Nombre del programa…" : CRONOS_LABELS.namePlaceholder}
-      aria-label="Nombre de la rutina"
-      style={{
-        width: "100%",
-        border: "none",
-        background: "transparent",
-        color: TEXT.primary,
-        fontSize: TYPE.hero.size,
-        lineHeight: TYPE.hero.lineHeight,
-        fontWeight: 900,
-        letterSpacing: TYPE.hero.tracking,
-        padding: `${SPACE.xs}px 0 0`,
-        marginBottom: SPACE.lg,
-        outline: "none",
-      }}
-    />
-  );
+  // Weekly progress calculations
+  const trainingDaysCount = draft.days.filter((d) => d.kind === "training" && d.exercises.length > 0).length;
+  const restDaysCount = draft.days.filter((d) => d.kind === "rest").length;
 
-  const addRow = (label: string, onClick: () => void) => (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100%",
-        minHeight: 56,
-        padding: `0 ${SPACE.md}px`,
-        borderRadius: RADIUS.card,
-        border: `1px solid ${GLASS.border}`,
-        background: SOLID.card,
-        color: ACCENT.text,
-        cursor: "pointer",
-        textAlign: "left",
-        transition,
-      }}
-    >
-      <span style={{ display: "inline-flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
-        <span
-          aria-hidden="true"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 32,
-            height: 32,
-            borderRadius: RADIUS.pill,
-            background: ACCENT.subtle,
-            color: ACCENT.text,
-            flexShrink: 0,
-          }}
-        >
-          <Plus size={16} aria-hidden="true" />
-        </span>
-        <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600, color: ACCENT.text }}>{label}</span>
-      </span>
-      <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" />
-    </button>
-  );
+  // Quick-fill chips handler
+  const handleQuickChip = useCallback((chipLabel: string) => {
+    setTitleInputValue(chipLabel);
+    setDraft((d) => ({ ...d, title: chipLabel }));
+  }, []);
 
+  const quickChips = isWeekly ? WEEKLY_QUICK_CHIPS : SINGLE_QUICK_CHIPS;
+
+  // Day detail view reference
   const detailDay = dayDetailIndex != null ? draft.days[dayDetailIndex] : null;
 
   return (
@@ -388,18 +346,22 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
         color: TEXT.primary,
       }}
     >
+      {/* iOS 18 Top Navigation Bar */}
       <header
         style={{
           position: "sticky",
           top: 0,
-          zIndex: 2,
+          zIndex: 10,
+          height: 52,
           display: "grid",
           gridTemplateColumns: "1fr auto 1fr",
           alignItems: "center",
           gap: SPACE.xs,
-          padding: `${SPACE.sm}px ${SPACE.md}px`,
+          padding: `0 ${SPACE.md}px`,
           borderBottom: `1px solid ${GLASS.border}`,
-          background: SOLID.card,
+          background: "rgba(9,9,11,0.9)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
         }}
       >
         <button
@@ -412,7 +374,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
             alignItems: "center",
             gap: 2,
             minHeight: MOTION.minTouchTarget,
-            padding: 0,
+            padding: `0 ${SPACE.xs}px`,
             border: "none",
             background: "transparent",
             color: TEXT.secondary,
@@ -421,7 +383,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
             cursor: "pointer",
           }}
         >
-          {dayDetailIndex != null ? <ChevronLeft size={18} aria-hidden="true" /> : null}
+          {dayDetailIndex != null && <ChevronLeft size={18} aria-hidden="true" />}
           {dayDetailIndex != null ? ROUTINES_UI_LABELS.back : ROUTINES_UI_LABELS.cancel}
         </button>
         <h2 style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary, textAlign: "center" }}>
@@ -429,112 +391,329 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
         </h2>
         <button
           type="button"
-          onClick={dayDetailIndex != null ? () => setDayDetailIndex(null) : () => void handleSave()}
+          onClick={dayDetailIndex != null ? () => setDayDetailIndex(null) : handleSave}
           disabled={dayDetailIndex != null ? false : saving || !canSave}
           aria-label={dayDetailIndex != null ? "Listo" : "Guardar rutina"}
           style={{
             justifySelf: "end",
-            minHeight: MOTION.minTouchTarget,
-            padding: 0,
+            minHeight: 32,
+            padding: `0 ${SPACE.md}px`,
+            borderRadius: 9999,
             border: "none",
-            background: "transparent",
-            color: ACCENT.text,
-            fontSize: TYPE.subhead.size,
+            background: dayDetailIndex == null && (saving || !canSave) ? "rgba(255,255,255,0.05)" : ACCENT.base,
+            color: dayDetailIndex == null && (saving || !canSave) ? TEXT.disabled : TEXT.onAccent,
+            fontSize: 12,
             fontWeight: 700,
+            letterSpacing: 0.5,
             cursor: dayDetailIndex == null && (saving || !canSave) ? "not-allowed" : "pointer",
             opacity: dayDetailIndex == null && (saving || !canSave) ? 0.4 : 1,
+            boxShadow: dayDetailIndex == null && canSave && !saving ? `0 2px 8px rgba(255,59,48,0.3)` : "none",
+            transition: reducedMotion ? "none" : "all 150ms ease",
           }}
         >
           {dayDetailIndex != null ? "Listo" : saving ? CRONOS_LABELS.saving : "Guardar"}
         </button>
       </header>
 
-      <div style={{ flex: 1, overflowY: "auto", padding: `${SPACE.xs}px ${SPACE.md}px ${SPACE.xl}px` }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: SPACE.md }}>
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={{ maxWidth: 520, margin: "0 auto", padding: `${SPACE.md}px ${SPACE.md}px ${SPACE.xl}px`, display: "flex", flexDirection: "column", gap: SPACE.md }}>
           {dayDetailIndex == null ? (
             <>
-              {nameInput}
-
-              {isWeekly ? (
-                <section aria-label="Plan semanal" style={{ display: "flex", flexDirection: "column" }}>
-                  <div
+              {/* Identity Card + Quick-Fill Chips */}
+              <div
+                style={{
+                  borderRadius: RADIUS.card,
+                  border: `1px solid ${GLASS.border}`,
+                  background: "#1C1C1E",
+                  padding: SPACE.md,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: SPACE.md,
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+                  <span
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: SPACE.xs,
+                      fontSize: 11,
+                      lineHeight: 14,
+                      fontWeight: 600,
+                      letterSpacing: 0.8,
+                      color: TEXT.tertiary,
+                      textTransform: "uppercase",
                     }}
                   >
-                    <span
+                    {isWeekly ? "NOMBRE DEL PROGRAMA" : "NOMBRE DE LA SESIÓN"}
+                  </span>
+                  <input
+                    type="text"
+                    value={titleInputValue}
+                    onChange={setTitle}
+                    placeholder={isWeekly ? "Nombre del programa…" : CRONOS_LABELS.namePlaceholder}
+                    aria-label="Nombre de la rutina"
+                    style={{
+                      width: "100%",
+                      border: "none",
+                      background: "transparent",
+                      color: TEXT.primary,
+                      fontSize: TYPE.hero.size,
+                      lineHeight: TYPE.hero.lineHeight,
+                      fontWeight: 700,
+                      letterSpacing: TYPE.hero.tracking,
+                      padding: 0,
+                      outline: "none",
+                    }}
+                  />
+                </div>
+
+                {/* Quick-Fill Chips */}
+                <div
+                  style={{
+                    display: "flex",
+                    gap: SPACE.xs,
+                    overflowX: "auto",
+                    paddingBottom: SPACE.xs,
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                  }}
+                >
+                  {quickChips.map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => handleQuickChip(chip)}
                       style={{
-                        fontSize: TYPE.label.size,
-                        lineHeight: TYPE.label.lineHeight,
-                        fontWeight: TYPE.label.weight,
-                        letterSpacing: TYPE.label.tracking,
-                        color: TEXT.tertiary,
-                        textTransform: "uppercase",
-                        fontFamily: TYPE.mono.font,
-                        fontVariantNumeric: "tabular-nums",
+                        flexShrink: 0,
+                        minHeight: 32,
+                        padding: `0 ${SPACE.md}px`,
+                        borderRadius: 9999,
+                        border: `1px solid ${GLASS.border}`,
+                        background: "rgba(255,255,255,0.04)",
+                        color: TEXT.secondary,
+                        fontSize: 13,
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                        transition: reducedMotion ? "none" : "all 150ms ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!reducedMotion) {
+                          e.currentTarget.style.background = "rgba(255,59,48,0.12)";
+                          e.currentTarget.style.borderColor = ACCENT.border;
+                          e.currentTarget.style.color = ACCENT.text;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!reducedMotion) {
+                          e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                          e.currentTarget.style.borderColor = GLASS.border;
+                          e.currentTarget.style.color = TEXT.secondary;
+                        }
                       }}
                     >
-                      Progreso semanal • {draft.days.filter((d) => d.exercises.length > 0 || d.kind === "rest").length} de 7 días
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-                      gap: 6,
-                      marginBottom: SPACE.lg,
-                    }}
-                    aria-hidden="true"
-                  >
-                    {draft.days.map((day) => {
-                      const planned = day.exercises.length > 0 || day.kind === "rest";
-                      return (
-                        <span
-                          key={day.id}
-                          style={{
-                            height: 8,
-                            borderRadius: RADIUS.pill,
-                            background: planned ? ACCENT.base : GLASS.fillSubtle,
-                            boxShadow: day.exercises.length > 0 ? ACCENT.glow : "none",
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
+              {isWeekly ? (
+                /* Weekly Mode: Microciclo Bento + 7-Day List */
+                <>
+                  {/* Microciclo Bento */}
                   <div
                     style={{
                       borderRadius: RADIUS.card,
-                      border: `1px solid ${GLASS.borderStrong}`,
-                      background: SOLID.card,
+                      border: `1px solid ${GLASS.border}`,
+                      background: "#1C1C1E",
+                      padding: SPACE.md,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: SPACE.md,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          lineHeight: 14,
+                          fontWeight: 600,
+                          letterSpacing: 0.8,
+                          color: TEXT.tertiary,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        ESTRUCTURA SEMANAL
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: TYPE.mono.font,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          fontVariantNumeric: "tabular-nums",
+                          color: TEXT.tertiary,
+                        }}
+                      >
+                        {trainingDaysCount} entrenos • {restDaysCount} descansos
+                      </span>
+                    </div>
+
+                    {/* 7 Capsule Tracker */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: SPACE.xs }}>
+                      {draft.days.map((day, index) => {
+                        const hasExercises = day.exercises.length > 0;
+                        const isRest = day.kind === "rest";
+
+                        let capsuleStyle: React.CSSProperties = {
+                          height: 3,
+                          borderRadius: 9999,
+                          transition: reducedMotion ? "none" : "all 200ms ease",
+                          background: "#2C2C2E",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                        };
+
+                        let labelColor: string = TEXT.tertiary;
+                        if (isRest) {
+                          capsuleStyle.background = "rgba(255,255,255,0.06)";
+                          capsuleStyle.border = "1px solid rgba(255,255,255,0.08)";
+                          labelColor = TEXT.disabled;
+                        } else if (hasExercises) {
+                          capsuleStyle.background = ACCENT.base;
+                          capsuleStyle.boxShadow = "0 0 8px rgba(255,59,48,0.4)";
+                          labelColor = ACCENT.text;
+                        }
+
+                        return (
+                          <button
+                            key={day.id}
+                            type="button"
+                            onClick={() => setDayDetailIndex(index)}
+                            aria-label={`${weekdayName(day.weekday ?? index)}: ${hasExercises ? `${day.exercises.length} ej.` : isRest ? "Descanso" : "Toca para asignar"}`}
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: SPACE.xs,
+                              padding: 0,
+                              border: "none",
+                              background: "transparent",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <div style={{ width: "100%", ...capsuleStyle }} />
+                            <span
+                              style={{
+                                fontFamily: TYPE.mono.font,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                fontVariantNumeric: "tabular-nums",
+                                color: labelColor,
+                              }}
+                            >
+                              {weekdayInitial(day.weekday ?? index)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 7-Day List - Apple Fitness+ Style */}
+                  <div
+                    style={{
+                      borderRadius: "24px",
+                      border: `1px solid ${GLASS.border}`,
+                      background: "#1C1C1E",
                       overflow: "hidden",
-                      boxShadow: GLASS.shadow,
+                      display: "flex",
+                      flexDirection: "column",
                     }}
                   >
                     {draft.days.map((day, index) => {
                       const count = day.exercises.length;
-                      const configured = count > 0;
+                      const hasExercises = count > 0;
+                      const isRest = day.kind === "rest";
                       const muscles = dayMuscleSummary(day);
-                      const metrics = dayMetrics(day);
-                      const subtitle = configured
-                        ? muscles ?? metrics ?? `${count} ej.`
-                        : day.kind === "rest"
-                          ? "Descanso"
-                          : "Sin ejercicios";
+
+                      let indicatorBg: string = "#2C2C2E";
+                      let indicatorBorder: string = "rgba(255,255,255,0.08)";
+                      let indicatorColor: string = TEXT.tertiary;
+                      let dayNameColor: string = TEXT.primary;
+                      let subtitleText = "";
+                      let subtitleColor: string = TEXT.tertiary;
+                      let rightAction: React.ReactNode = null;
+
+                      if (isRest) {
+                        indicatorBg = "rgba(255,255,255,0.03)";
+                        indicatorBorder = "rgba(255,255,255,0.05)";
+                        indicatorColor = TEXT.disabled;
+                        dayNameColor = TEXT.tertiary;
+                        subtitleText = "Recuperación muscular";
+                        subtitleColor = TEXT.disabled;
+                        rightAction = (
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 500,
+                              padding: `2px ${SPACE.md}px`,
+                              borderRadius: 9999,
+                              background: "rgba(255,255,255,0.04)",
+                              color: TEXT.tertiary,
+                            }}
+                          >
+                            Descanso
+                          </span>
+                        );
+                      } else if (hasExercises) {
+                        indicatorBg = "rgba(255,59,48,0.15)";
+                        indicatorBorder = "rgba(255,59,48,0.4)";
+                        indicatorColor = ACCENT.text;
+                        subtitleText = muscles ? `${muscles} • ${count} ej.` : `${count} ej.`;
+                        subtitleColor = TEXT.tertiary;
+                        rightAction = (
+                          <span
+                            style={{
+                              fontFamily: TYPE.mono.font,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              fontVariantNumeric: "tabular-nums",
+                              padding: `2px ${SPACE.md}px`,
+                              borderRadius: 9999,
+                              background: "rgba(255,59,48,0.15)",
+                              color: ACCENT.text,
+                            }}
+                          >
+                            {count} ej.
+                          </span>
+                        );
+                      } else {
+                        subtitleText = "Toca para asignar ejercicios";
+                        rightAction = (
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 500,
+                              padding: `4px ${SPACE.md}px`,
+                              borderRadius: 9999,
+                              background: "rgba(255,255,255,0.05)",
+                              color: TEXT.tertiary,
+                            }}
+                          >
+                            + Configurar
+                          </span>
+                        );
+                      }
+
                       return (
                         <button
                           key={day.id}
                           type="button"
                           onClick={() => setDayDetailIndex(index)}
-                          aria-label={`${weekdayName(day.weekday ?? index)}: ${configured ? `${count} ej.` : day.kind === "rest" ? "Descanso" : "Sin ejercicios"}`}
+                          aria-label={`${weekdayName(day.weekday ?? index)}: ${hasExercises ? `${count} ejercicios` : isRest ? "Descanso" : "Sin ejercicios"}`}
                           style={{
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "space-between",
-                            gap: SPACE.sm,
+                            gap: SPACE.md,
                             width: "100%",
                             minHeight: 64,
                             padding: `0 ${SPACE.md}px`,
@@ -547,74 +726,71 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             transition,
                           }}
                         >
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-                            <span
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                            <div
                               aria-hidden="true"
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                width: 36,
-                                height: 36,
-                                borderRadius: RADIUS.pill,
+                                width: 40,
+                                height: 40,
+                                borderRadius: "16px",
                                 flexShrink: 0,
                                 fontFamily: TYPE.mono.font,
-                                fontSize: TYPE.caption.size,
+                                fontSize: 12,
                                 fontWeight: 700,
                                 fontVariantNumeric: "tabular-nums",
-                                background: configured ? ACCENT.subtle : GLASS.fillSubtle,
-                                border: `1px solid ${configured ? ACCENT.border : GLASS.border}`,
-                                color: configured ? ACCENT.text : TEXT.tertiary,
-                                boxShadow: configured ? ACCENT.glow : "none",
+                                background: indicatorBg,
+                                border: `1px solid ${indicatorBorder}`,
+                                color: indicatorColor,
                               }}
                             >
                               {weekdayInitial(day.weekday ?? index)}
-                            </span>
-                            <span style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: 2 }}>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: 2 }}>
                               <span
                                 style={{
                                   fontSize: TYPE.subhead.size,
                                   lineHeight: TYPE.subhead.lineHeight,
                                   fontWeight: 700,
                                   letterSpacing: TYPE.subhead.tracking,
-                                  color: TEXT.primary,
+                                  color: dayNameColor,
                                 }}
                               >
                                 {weekdayName(day.weekday ?? index)}
                               </span>
                               <span
                                 style={{
-                                  fontFamily: TYPE.mono.font,
-                                  fontSize: TYPE.caption.size,
-                                  lineHeight: TYPE.caption.lineHeight,
-                                  fontWeight: configured ? 500 : 400,
-                                  fontVariantNumeric: "tabular-nums",
-                                  color: day.kind === "rest" && !configured ? TEXT.tertiary : configured ? TEXT.secondary : TEXT.tertiary,
-                                  textTransform: day.kind === "rest" && !configured ? "uppercase" : undefined,
-                                  letterSpacing: day.kind === "rest" && !configured ? TYPE.label.tracking : undefined,
+                                  fontSize: 13,
+                                  lineHeight: 18,
+                                  fontWeight: 400,
+                                  color: subtitleColor,
                                 }}
                               >
-                                {subtitle}
+                                {subtitleText}
                               </span>
-                            </span>
-                          </span>
-                          <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" style={{ flexShrink: 0 }} />
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
+                            {rightAction}
+                            <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" style={{ flexShrink: 0 }} />
+                          </div>
                         </button>
                       );
                     })}
                   </div>
 
+                  {/* Adaptation period note */}
                   <div
                     style={{
                       display: "flex",
                       alignItems: "flex-start",
                       gap: SPACE.sm,
-                      marginTop: SPACE.md,
-                      marginBottom: SPACE.lg,
                       padding: SPACE.md,
                       borderRadius: RADIUS.card,
                       border: `1px solid ${GLASS.border}`,
-                      background: GLASS.fillSubtle,
+                      background: "rgba(28,28,30,0.6)",
                     }}
                   >
                     <Flame size={16} color={ACCENT.text} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
@@ -638,8 +814,9 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       </p>
                     </div>
                   </div>
-                </section>
+                </>
               ) : (
+                /* Single Mode: Exercise List with Editorial Empty State */
                 <section aria-label="Ejercicios" style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
                   <p
                     style={{
@@ -712,8 +889,110 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                           </button>
                         </div>
                       ))
-                    : null}
-                  {addRow("Añadir ejercicio", () => onOpenExercisePicker(0))}
+                    : (
+                      /* Editorial Empty State Hero Card */
+                      <div
+                        style={{
+                          borderRadius: "24px",
+                          border: `1px solid ${GLASS.border}`,
+                          background: "#1C1C1E",
+                          padding: `${SPACE.xl}px ${SPACE.md}px`,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          textAlign: "center",
+                          gap: SPACE.md,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 48,
+                            height: 48,
+                            borderRadius: "20px",
+                            background: "rgba(255,59,48,0.1)",
+                            border: `1px solid ${ACCENT.border}`,
+                            color: ACCENT.text,
+                          }}
+                        >
+                          <Dumbbell size={24} aria-hidden="true" />
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs, maxWidth: 260 }}>
+                          <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: TEXT.primary }}>
+                            Estructura tu sesión
+                          </p>
+                          <p style={{ margin: 0, fontSize: 13, lineHeight: 20, color: TEXT.tertiary }}>
+                            Añade movimientos del catálogo para calcular series, músculos trabajados y duración.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onOpenExercisePicker(0)}
+                          style={{
+                            width: "100%",
+                            height: 44,
+                            borderRadius: "16px",
+                            background: ACCENT.base,
+                            color: TEXT.onAccent,
+                            fontSize: 15,
+                            fontWeight: 600,
+                            border: "none",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: SPACE.xs,
+                            boxShadow: "0 4px 16px rgba(255,59,48,0.25)",
+                          }}
+                        >
+                          <Plus size={18} aria-hidden="true" />
+                          Añadir ejercicios
+                        </button>
+                      </div>
+                    )}
+                  <button
+                    type="button"
+                    onClick={() => onOpenExercisePicker(0)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: SPACE.sm,
+                      width: "100%",
+                      minHeight: 56,
+                      padding: `0 ${SPACE.md}px`,
+                      borderRadius: RADIUS.card,
+                      border: `1px solid ${GLASS.border}`,
+                      background: SOLID.card,
+                      color: ACCENT.text,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      transition,
+                    }}
+                  >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 32,
+                          height: 32,
+                          borderRadius: RADIUS.pill,
+                          background: ACCENT.subtle,
+                          color: ACCENT.text,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Plus size={16} aria-hidden="true" />
+                      </span>
+                      <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600, color: ACCENT.text }}>Añadir ejercicio</span>
+                    </span>
+                    <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" />
+                  </button>
                 </section>
               )}
 
@@ -724,22 +1003,24 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
               ) : null}
             </>
           ) : detailDay ? (
-            <section aria-label={`Ejercicios de ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`} style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
+            /* Day Detail View */
+            <section aria-label={`Ejercicios de ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`} style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
+              {/* Native iOS Toggle for Rest Day */}
               <button
                 type="button"
                 onClick={() => setDayRest(dayDetailIndex, detailDay.kind !== "rest" || detailDay.exercises.length > 0)}
                 aria-pressed={detailDay.kind === "rest" && detailDay.exercises.length === 0}
                 aria-label="Marcar como día de descanso"
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  gap: SPACE.sm,
+                  gap: SPACE.md,
                   minHeight: MOTION.minTouchTarget,
                   padding: `0 ${SPACE.md}px`,
                   borderRadius: RADIUS.control,
                   border: `1px solid ${detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.border : GLASS.border}`,
-                  background: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.subtle : GLASS.fillSubtle,
+                  background: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? "rgba(255,59,48,0.12)" : "rgba(28,28,30,0.6)",
                   color: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.text : TEXT.secondary,
                   fontSize: TYPE.subhead.size,
                   fontWeight: 600,
@@ -747,22 +1028,36 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                 }}
               >
                 <span>Día de descanso</span>
-                <span
-                  aria-hidden="true"
+                <div
                   style={{
-                    fontFamily: TYPE.mono.font,
-                    fontSize: TYPE.label.size,
-                    fontWeight: TYPE.label.weight,
-                    letterSpacing: TYPE.label.tracking,
-                    textTransform: "uppercase",
-                    color: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.text : TEXT.tertiary,
+                    position: "relative",
+                    width: 48,
+                    height: 28,
+                    borderRadius: 9999,
+                    background: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? ACCENT.base : "#2C2C2E",
+                    border: "none",
+                    transition: reducedMotion ? "none" : "background 200ms ease",
+                    flexShrink: 0,
                   }}
+                  aria-hidden="true"
                 >
-                  {detailDay.kind === "rest" && detailDay.exercises.length === 0 ? "Activo" : "No"}
-                </span>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 2,
+                      left: detailDay.kind === "rest" && detailDay.exercises.length === 0 ? 24 : 2,
+                      width: 24,
+                      height: 24,
+                      borderRadius: 9999,
+                      background: "white",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                      transition: reducedMotion ? "none" : "left 200ms ease",
+                    }}
+                  />
+                </div>
               </button>
 
-              {detailDay.exercises.map((ex, exIndex) => (
+              {detailDay.exercises.map((ex: DraftExercise, exIndex: number) => (
                 <div
                   key={ex.rowId ?? `${ex.exercise.id}-${exIndex}`}
                   style={{
@@ -817,16 +1112,121 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                   </button>
                 </div>
               ))}
-              {addRow(
-                `Añadir ejercicios a ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`,
-                () => onOpenExercisePicker(dayDetailIndex),
+
+              {/* Editorial Empty State for Day Detail */}
+              {detailDay.exercises.length === 0 && (
+                <div
+                  style={{
+                    borderRadius: "24px",
+                    border: `1px solid ${GLASS.border}`,
+                    background: "#1C1C1E",
+                    padding: `${SPACE.xl}px ${SPACE.md}px`,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                    gap: SPACE.md,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 48,
+                      height: 48,
+                      borderRadius: "20px",
+                      background: "rgba(255,59,48,0.1)",
+                      border: `1px solid ${ACCENT.border}`,
+                      color: ACCENT.text,
+                    }}
+                  >
+                    <Dumbbell size={24} aria-hidden="true" />
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs, maxWidth: 260 }}>
+                    <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: TEXT.primary }}>
+                      Estructura tu sesión
+                    </p>
+                    <p style={{ margin: 0, fontSize: 13, lineHeight: 20, color: TEXT.tertiary }}>
+                      Añade movimientos del catálogo para calcular series, músculos trabajados y duración.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onOpenExercisePicker(dayDetailIndex)}
+                    style={{
+                      width: "100%",
+                      height: 44,
+                      borderRadius: "16px",
+                      background: ACCENT.base,
+                      color: TEXT.onAccent,
+                      fontSize: 15,
+                      fontWeight: 600,
+                      border: "none",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: SPACE.xs,
+                      boxShadow: "0 4px 16px rgba(255,59,48,0.25)",
+                    }}
+                  >
+                    <Plus size={18} aria-hidden="true" />
+                    Añadir ejercicios
+                  </button>
+                </div>
               )}
+
+              <button
+                type="button"
+                onClick={() => onOpenExercisePicker(dayDetailIndex)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: SPACE.sm,
+                  width: "100%",
+                  minHeight: 56,
+                  padding: `0 ${SPACE.md}px`,
+                  borderRadius: RADIUS.card,
+                  border: `1px solid ${GLASS.border}`,
+                  background: SOLID.card,
+                  color: ACCENT.text,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition,
+                }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: SPACE.sm, minWidth: 0 }}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 32,
+                      height: 32,
+                      borderRadius: RADIUS.pill,
+                      background: ACCENT.subtle,
+                      color: ACCENT.text,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Plus size={16} aria-hidden="true" />
+                  </span>
+                  <span style={{ fontSize: TYPE.subhead.size, fontWeight: 600, color: ACCENT.text }}>
+                    {`Añadir ejercicios a ${weekdayName(detailDay.weekday ?? dayDetailIndex)}`}
+                  </span>
+                </span>
+                <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" />
+              </button>
             </section>
           ) : null}
         </div>
       </div>
 
       <UnifiedExerciseSelectorSheet
+        key={`picker-${targetDayIndex}-${pickerOpen}`}
         isOpen={pickerOpen}
         mode="multiple"
         onClose={closePicker}

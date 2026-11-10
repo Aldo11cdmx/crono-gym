@@ -419,7 +419,7 @@ export function RoutinesPage() {
               padding: SPACE.card,
               display: "flex",
               flexDirection: "column",
-              gap: SPACE.sm,
+              gap: SPACE.md,
               ...(reducedMotion
                 ? {}
                 : { animation: `cronos-sheet-up ${MOTION.fast} ${MOTION.easeOut} both` }),
@@ -437,36 +437,44 @@ export function RoutinesPage() {
               {ROUTINES_UI_LABELS.createTitle}
             </h2>
 
-            <CreateOption
-              icon={<Dumbbell size={20} aria-hidden="true" />}
-              title={ROUTINES_UI_LABELS.createSingle}
-              description={ROUTINES_UI_LABELS.createSingleDesc}
-              onClick={openCreateSingle}
-            />
-            <CreateOption
-              icon={<CalendarDays size={20} aria-hidden="true" />}
-              title={ROUTINES_UI_LABELS.createWeekly}
-              description={ROUTINES_UI_LABELS.createWeeklyDesc}
-              onClick={openCreateWeekly}
-            />
+            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
+              <GlassButton
+                variant="secondary"
+                block
+                icon={<Dumbbell size={20} aria-hidden="true" />}
+                onClick={openCreateSingle}
+                style={{ justifyContent: "flex-start", textAlign: "left", gap: SPACE.md, padding: `${SPACE.md}px ${SPACE.md}px` }}
+              >
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary }}>
+                    {ROUTINES_UI_LABELS.createSingle}
+                  </span>
+                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary }}>
+                    {ROUTINES_UI_LABELS.createSingleDesc}
+                  </span>
+                </span>
+              </GlassButton>
+              <GlassButton
+                variant="secondary"
+                block
+                icon={<CalendarDays size={20} aria-hidden="true" />}
+                onClick={openCreateWeekly}
+                style={{ justifyContent: "flex-start", textAlign: "left", gap: SPACE.md, padding: `${SPACE.md}px ${SPACE.md}px` }}
+              >
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary }}>
+                    {ROUTINES_UI_LABELS.createWeekly}
+                  </span>
+                  <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary }}>
+                    {ROUTINES_UI_LABELS.createWeeklyDesc}
+                  </span>
+                </span>
+              </GlassButton>
+            </div>
 
-            <button
-              type="button"
-              onClick={closeCreate}
-              style={{
-                minHeight: MOTION.minTouchTarget,
-                borderRadius: RADIUS.control,
-                border: `1px solid ${GLASS.border}`,
-                background: "transparent",
-                color: TEXT.secondary,
-                fontSize: TYPE.subhead.size,
-                fontWeight: 600,
-                cursor: "pointer",
-                marginTop: SPACE.xs,
-              }}
-            >
+            <GlassButton variant="ghost" block onClick={closeCreate} style={{ marginTop: SPACE.xs }}>
               {ROUTINES_UI_LABELS.cancel}
-            </button>
+            </GlassButton>
           </div>
         </div>
       ) : null}
@@ -571,59 +579,5 @@ export function RoutinesPage() {
         </div>
       ) : null}
     </div>
-  );
-}
-
-function CreateOption({
-  icon,
-  title,
-  description,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: SPACE.md,
-        width: "100%",
-        minHeight: 56,
-        padding: `${SPACE.sm}px ${SPACE.md}px`,
-        borderRadius: RADIUS.control,
-        border: `1px solid ${GLASS.border}`,
-        background: GLASS.fillSubtle,
-        color: TEXT.primary,
-        textAlign: "left",
-        cursor: "pointer",
-      }}
-    >
-      <span
-        aria-hidden="true"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 40,
-          height: 40,
-          borderRadius: RADIUS.sm,
-          background: ACCENT.subtle,
-          color: ACCENT.text,
-          flexShrink: 0,
-        }}
-      >
-        {icon}
-      </span>
-      <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-        <span style={{ fontSize: TYPE.subhead.size, fontWeight: 700, color: TEXT.primary }}>{title}</span>
-        <span style={{ fontSize: TYPE.caption.size, color: TEXT.secondary }}>{description}</span>
-      </span>
-    </button>
   );
 }

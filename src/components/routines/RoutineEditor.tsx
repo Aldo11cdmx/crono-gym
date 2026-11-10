@@ -621,7 +621,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                     </div>
                   </div>
 
-                  {/* 7-Day List - iOS Inset Grouped List */}
+                  {/* 7-Day Inset Grouped List (single unified container) */}
                   <div
                     style={{
                       borderRadius: "24px",
@@ -707,10 +707,17 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       }
 
                       return (
-                        <button
+                        <div
                           key={day.id}
-                          type="button"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setDayDetailIndex(index)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setDayDetailIndex(index);
+                            }
+                          }}
                           aria-label={`${weekdayName(day.weekday ?? index)}: ${hasExercises ? `${count} ejercicios` : isRest ? "Descanso" : "Sin ejercicios"}`}
                           style={{
                             display: "flex",
@@ -779,7 +786,7 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                             {rightAction}
                             <ChevronRight size={16} color={TEXT.tertiary} aria-hidden="true" style={{ flexShrink: 0 }} />
                           </div>
-                        </button>
+                        </div>
                       );
                     })}
                   </div>

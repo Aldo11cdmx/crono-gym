@@ -419,118 +419,217 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
         <div style={{ maxWidth: 520, margin: "0 auto", padding: "16px 16px 128px", display: "flex", flexDirection: "column", gap: 16 }}>
           {dayDetailIndex == null ? (
             <>
-              {/* Identity Card + Quick-Fill Chips */}
-              <div
-                style={{
-                  borderRadius: "24px",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "#1C1C1E",
-                  padding: "20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 16,
-                }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      lineHeight: 14,
-                      fontWeight: 600,
-                      letterSpacing: 0.8,
-                      color: TEXT.tertiary,
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {isWeekly ? "NOMBRE DEL PROGRAMA" : "NOMBRE DE LA SESIÓN"}
-                  </span>
-                  <input
-                    type="text"
-                    value={titleInputValue}
-                    onChange={setTitle}
-                    placeholder={isWeekly ? "Nombre del programa…" : CRONOS_LABELS.namePlaceholder}
-                    aria-label="Nombre de la rutina"
-                    style={{
-                      width: "100%",
-                      border: "none",
-                      background: "transparent",
-                      color: TEXT.primary,
-                      fontSize: "20px",
-                      fontWeight: 700,
-                      lineHeight: "28px",
-                      letterSpacing: "-0.005em",
-                      padding: 0,
-                      outline: "none",
-                    }}
-                  />
-                </div>
-
-                {/* Quick-Fill Chips */}
+              {!isWeekly ? (
+                /* Single Mode: Identity Card + Quick-Fill Chips */
                 <div
                   style={{
+                    borderRadius: "24px",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "#1C1C1E",
+                    padding: "20px",
                     display: "flex",
-                    gap: 8,
-                    overflowX: "auto",
-                    paddingBottom: 8,
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
+                    flexDirection: "column",
+                    gap: 16,
                   }}
                 >
-                  {quickChips.map((chip) => (
-                    <button
-                      key={chip}
-                      type="button"
-                      onClick={() => handleQuickChip(chip)}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <span
                       style={{
-                        flexShrink: 0,
-                        minHeight: 32,
-                        padding: `0 16px`,
-                        borderRadius: 9999,
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        background: "rgba(255,255,255,0.04)",
-                        color: TEXT.secondary,
-                        fontSize: 13,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                        transition: reducedMotion ? "none" : "all 150ms ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!reducedMotion) {
-                          e.currentTarget.style.background = "rgba(255,59,48,0.12)";
-                          e.currentTarget.style.borderColor = ACCENT.border;
-                          e.currentTarget.style.color = ACCENT.text;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!reducedMotion) {
-                          e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                          e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                          e.currentTarget.style.color = TEXT.secondary;
-                        }
+                        fontSize: 11,
+                        lineHeight: 14,
+                        fontWeight: 600,
+                        letterSpacing: 0.8,
+                        color: TEXT.tertiary,
+                        textTransform: "uppercase",
                       }}
                     >
-                      {chip}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      NOMBRE DE LA SESIÓN
+                    </span>
+                    <input
+                      type="text"
+                      value={titleInputValue}
+                      onChange={setTitle}
+                      placeholder={CRONOS_LABELS.namePlaceholder}
+                      aria-label="Nombre de la rutina"
+                      style={{
+                        width: "100%",
+                        border: "none",
+                        background: "transparent",
+                        color: TEXT.primary,
+                        fontSize: "20px",
+                        fontWeight: 700,
+                        lineHeight: "28px",
+                        letterSpacing: "-0.005em",
+                        padding: 0,
+                        outline: "none",
+                      }}
+                    />
+                  </div>
 
-              {isWeekly ? (
-                /* Weekly Mode: Microciclo Bento + 7-Day List */
-                <>
-                  {/* Microciclo Bento */}
+                  {/* Quick-Fill Chips */}
                   <div
                     style={{
-                      borderRadius: "24px",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      background: "#1C1C1E",
-                      padding: "20px",
                       display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
+                      gap: 8,
+                      overflowX: "auto",
+                      paddingBottom: 8,
+                      scrollbarWidth: "none",
+                      msOverflowStyle: "none",
                     }}
                   >
+                    {quickChips.map((chip) => (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => handleQuickChip(chip)}
+                        style={{
+                          flexShrink: 0,
+                          minHeight: 32,
+                          padding: `0 16px`,
+                          borderRadius: 9999,
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          background: "rgba(255,255,255,0.04)",
+                          color: TEXT.secondary,
+                          fontSize: 13,
+                          fontWeight: 500,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                          transition: reducedMotion ? "none" : "all 150ms ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!reducedMotion) {
+                            e.currentTarget.style.background = "rgba(255,59,48,0.12)";
+                            e.currentTarget.style.borderColor = ACCENT.border;
+                            e.currentTarget.style.color = ACCENT.text;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!reducedMotion) {
+                            e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                            e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                            e.currentTarget.style.color = TEXT.secondary;
+                          }
+                        }}
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {isWeekly ? (
+                <>
+                  {/* Weekly Mode: Unified Header Card (Title + Chips + Weekly Structure) */}
+                  <div
+                  style={{
+                    borderRadius: "24px",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "#1C1C1E",
+                    padding: "20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 16,
+                  }}
+                >
+                  {/* Top section: Program name + quick-fill chips */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          lineHeight: 14,
+                          fontWeight: 600,
+                          letterSpacing: 0.8,
+                          color: TEXT.tertiary,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        NOMBRE DEL PROGRAMA
+                      </span>
+                      <input
+                        type="text"
+                        value={titleInputValue}
+                        onChange={setTitle}
+                        placeholder="Nombre del programa…"
+                        aria-label="Nombre de la rutina"
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          background: "transparent",
+                          color: TEXT.primary,
+                          fontSize: TYPE.title2.size,
+                          fontWeight: TYPE.title2.weight,
+                          lineHeight: TYPE.title2.lineHeight,
+                          letterSpacing: "-0.005em",
+                          padding: 0,
+                          outline: "none",
+                        }}
+                      />
+                    </div>
+
+                    {/* Quick-Fill Chips */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        overflowX: "auto",
+                        paddingBottom: 8,
+                        scrollbarWidth: "none",
+                        msOverflowStyle: "none",
+                      }}
+                    >
+                      {quickChips.map((chip) => (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => handleQuickChip(chip)}
+                          style={{
+                            flexShrink: 0,
+                            minHeight: 32,
+                            padding: `0 16px`,
+                            borderRadius: 9999,
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "rgba(255,255,255,0.04)",
+                            color: TEXT.secondary,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            whiteSpace: "nowrap",
+                            transition: reducedMotion ? "none" : "all 150ms ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!reducedMotion) {
+                              e.currentTarget.style.background = "rgba(255,59,48,0.12)";
+                              e.currentTarget.style.borderColor = ACCENT.border;
+                              e.currentTarget.style.color = ACCENT.text;
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!reducedMotion) {
+                              e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                              e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                              e.currentTarget.style.color = TEXT.secondary;
+                            }
+                          }}
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Internal divider */}
+                  <div
+                    style={{
+                      height: 1,
+                      background: "rgba(255,255,255,0.06)",
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  {/* Bottom section: Weekly structure summary + 7 capsules */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span
                         style={{
@@ -620,17 +719,18 @@ export function RoutineEditor({ mode, routine, initialPlanMode, onSave, onClose 
                       })}
                     </div>
                   </div>
+                </div>
 
-                  {/* 7-Day Inset Grouped List (single unified container) */}
-                  <div
-                    style={{
-                      borderRadius: "24px",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      background: "#1C1C1E",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {draft.days.map((day, index) => {
+                {/* 7-Day Inset Grouped List (single unified container) */}
+                <div
+                  style={{
+                    borderRadius: "24px",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "#1C1C1E",
+                    overflow: "hidden",
+                  }}
+                >
+                  {draft.days.map((day, index) => {
                       const count = day.exercises.length;
                       const hasExercises = count > 0;
                       const isRest = day.kind === "rest";

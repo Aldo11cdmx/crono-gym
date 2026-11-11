@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Trash2, Moon, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Moon, ChevronLeft, ChevronRight, Dumbbell } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
@@ -25,7 +25,9 @@ import { MuscleReadonlyMap } from "@/components/MuscleReadonlyMap";
 import type { Slug } from "react-muscle-highlighter";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
-import { translateMuscle } from "@/lib/i18n";
+import { translateBodyPart } from "@/lib/i18n";
+import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 
 const WEEKDAYS_SHORT = ["L", "M", "X", "J", "V", "S", "D"];
 const WEEKDAYS_FULL = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -226,6 +228,30 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
       : [emptyDay(0, null, "training")];
   });
 
+  // Load catalog and build exercise media map for GIF rendering
+  const [exerciseMediaMap, setExerciseMediaMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    loadCatalog().then((catalog) => {
+      if (cancelled) return;
+      const map = new Map<string, string>();
+      for (const ex of catalog) {
+        const gifUrl = resolveMediaUrl(ex.gif_url) || resolveMediaUrl(ex.image);
+        if (gifUrl) {
+          map.set(ex.id, gifUrl);
+          // Also index by normalized name as fallback
+          const nameKey = ex.name.trim().toLowerCase().replace(/\s+/g, " ");
+          if (!map.has(nameKey)) map.set(nameKey, gifUrl);
+        }
+      }
+      setExerciseMediaMap(map);
+    }).catch(() => {
+      // Ignore errors, catalog is optional for GIF rendering
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   const safeDays = useMemo<RoutineDay[]>(() => {
     if (mode === "weekly") {
       return Array.from({ length: 7 }, (_, i) => {
@@ -255,7 +281,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
   }, [activeDay, activeDayExercises]);
 
   const hasAnyExercise = safeDays.some((d) => Array.isArray(d.exercises) && d.exercises.length > 0);
-  const canSave = title.trim().length >= 3 && hasAnyExercise;
+  const canSave = hasAnyExercise;
 
   const isWeeklyMode = mode === "weekly";
 
@@ -264,10 +290,11 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
   const handleSave = useCallback(async () => {
     if (!userId) return;
     if (!canSave) return;
+    const finalTitle = title.trim() || "Nueva Rutina";
     const draft: RoutineDraftV2 = {
       draftKey: draftKeyRef.current,
       id: routine?.id ?? null,
-      title: title.trim(),
+      title: finalTitle,
       description: "",
       mode: mode === "weekly" ? "weekly" : "single",
       days: safeDays.map((d) => ({ ...d, exercises: Array.isArray(d.exercises) ? d.exercises.map((e) => ({ ...e })) : [] })),
@@ -610,40 +637,60 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
 
       {activeDayExercises.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {activeDayExercises.map((ex, idx) => (
-            <div
-              key={ex.rowId ?? ex.exercise.id}
-              style={{
-                ...cardStyle,
-                padding: "12px 16px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "10px",
-                      overflow: "hidden",
-                      background: "rgba(255,255,255,0.03)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Play size={18} style={{ color: "#FFFFFF", margin: "auto", display: "block" }} aria-hidden="true" />
+          {activeDayExercises.map((ex, idx) => {
+            const exerciseId = ex.exercise.id;
+            const exerciseNameKey = ex.exercise.name.trim().toLowerCase().replace(/\s+/g, " ");
+            const gifUrl = exerciseMediaMap.get(exerciseId) || exerciseMediaMap.get(exerciseNameKey) || ex.exercise.gif_url;
+            return (
+              <div
+                key={ex.rowId ?? ex.exercise.id}
+                style={{
+                  ...cardStyle,
+                  padding: "12px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "10px",
+                        overflow: "hidden",
+                        background: "#000000",
+                        flexShrink: 0,
+                        border: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      {gifUrl ? (
+                        <img
+                          src={gifUrl}
+                          alt={ex.exercise.name}
+                          loading="lazy"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                          onError={(e) => { e.currentTarget.style.display = "none"; }}
+                        />
+                      ) : (
+                        <Dumbbell size={18} style={{ color: "#FFFFFF", margin: "auto", display: "block" }} aria-hidden="true" />
+                      )}
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {getExerciseName(ex.exercise as Exercise)}
+                      </p>
+                      <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#71717A" }}>
+                        {translateBodyPart(ex.exercise.body_part)} • {getRepLabel(ex as unknown as DraftExercise)}
+                      </p>
+                    </div>
                   </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {getExerciseName(ex.exercise as Exercise)}
-                    </p>
-                    <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#71717A" }}>
-                      {translateMuscle(ex.exercise.body_part)} • {getRepLabel(ex as unknown as DraftExercise)}
-                    </p>
-                  </div>
-                </div>
                 <button
                   type="button"
                   onClick={() => removeExerciseFromDay(isWeeklyMode ? activeDayIndex : 0, idx)}
@@ -685,7 +732,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
                 </div>
               </div>
             </div>
-          ))}
+          );})}
         </div>
       )}
 
@@ -837,7 +884,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
           type="button"
           onClick={handleSave}
           disabled={!canSave || saveStatus === "saving"}
-          aria-label={canSave ? "Guardar rutina" : "Guardar rutina (requiere título y al menos un ejercicio)"}
+          aria-label={canSave ? "Guardar rutina" : "Guardar rutina (requiere al menos un ejercicio)"}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -852,7 +899,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
             textTransform: "uppercase",
             letterSpacing: "0.5px",
             cursor: canSave ? "pointer" : "not-allowed",
-            boxShadow: canSave ? "0 2px 8px rgba(255,59,48,0.3)" : "none",
+            boxShadow: canSave ? "0 2px 10px rgba(255,59,48,0.35)" : "none",
             transition: reducedMotion ? "none" : "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
             minWidth: 72,
           }}

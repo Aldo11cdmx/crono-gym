@@ -12,7 +12,7 @@ import type { WorkspaceOutletContext } from "@/App";
 import type { RoutineWithExercises } from "@/hooks/useGymData";
 import type { Exercise } from "@/types/supabase";
 import type { RoutineDraftV2, RoutineDay, DraftExercise } from "@/lib/routines/routineDayModel";
-import { draftFromRoutine, validateDraft } from "@/lib/routines/routineDayModel";
+import { draftFromRoutine, validateDraft, normalizeDays } from "@/lib/routines/routineDayModel";
 import { saveRoutine, flushSave, subscribeSave, type SaveResult } from "@/lib/routines/saveRoutine";
 import {
   estimateMinutes,
@@ -206,6 +206,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "dirty" | "error">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [days, setDays] = useState<RoutineDay[]>(() => {
     if (routine) {
@@ -224,7 +225,7 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         : [emptyDay(0, null, "training")];
     }
     return mode === "weekly"
-      ? WEEKDAYS_SHORT.map((_, i) => emptyDay(i, i, "training"))
+      ? WEEKDAYS_SHORT.map((_, i) => emptyDay(i, i, "empty"))
       : [emptyDay(0, null, "training")];
   });
 
@@ -257,9 +258,9 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
       return Array.from({ length: 7 }, (_, i) => {
         const day = days[i];
         if (day && Array.isArray(day.exercises)) {
-          return { ...day, exercises: day.exercises };
+          return { ...day, weekday: i, exercises: day.exercises };
         }
-        return emptyDay(i, i, "training");
+        return emptyDay(i, i, "empty");
       });
     }
     return days.length > 0
@@ -289,27 +290,45 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
 
   const handleSave = useCallback(async () => {
     if (!userId) return;
-    if (!canSave) return;
-    const finalTitle = title.trim() || "Nueva Rutina";
+    // Normalizar título: vacío → fallback por modo.
+    const finalTitle = title.trim() || (mode === "weekly" ? "Plan Semanal" : "Nueva Rutina");
+    // Normalizar días: garantir kind consistente con exercises.length.
+    const normalizedDays = normalizeDays(safeDays);
     const draft: RoutineDraftV2 = {
       draftKey: draftKeyRef.current,
       id: routine?.id ?? null,
       title: finalTitle,
       description: "",
       mode: mode === "weekly" ? "weekly" : "single",
-      days: safeDays.map((d) => ({ ...d, exercises: Array.isArray(d.exercises) ? d.exercises.map((e) => ({ ...e })) : [] })),
+      days: normalizedDays.map((d) => ({ ...d, exercises: Array.isArray(d.exercises) ? d.exercises.map((e) => ({ ...e })) : [] })),
       snapshot: null,
     };
     const problems = validateDraft(draft);
-    if (problems.length > 0) return;
+    if (problems.length > 0) {
+      const msg = "No se puede guardar: " + problems.join(", ");
+      setSaveError(msg);
+      console.warn("[RoutineEditor] handleSave validation failed", problems);
+      return;
+    }
+    setSaveError(null);
     setSaveStatus("saving");
     try {
       const result = await saveRoutine(userId, draft, "editor");
+      if (!result.ok) {
+        const msg = "Error al guardar: " + result.error;
+        setSaveError(msg);
+        console.warn("[RoutineEditor] handleSave saveRoutine failed", result.error);
+        setSaveStatus("error");
+        return;
+      }
       await flushSave(draft.draftKey);
       setSaveStatus("idle");
       onSave?.(result);
       hapticSuccess();
     } catch {
+      const msg = "Error inesperado al guardar la rutina.";
+      setSaveError(msg);
+      console.warn("[RoutineEditor] handleSave threw an exception");
       setSaveStatus("error");
     }
   }, [userId, canSave, title, mode, safeDays, routine?.id, onSave]);
@@ -318,6 +337,19 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
     const unsub = subscribeSave(draftKeyRef.current, setSaveStatus);
     return () => unsub();
   }, []);
+
+  // Garantizar exactamente 7 días en modo semanal (índices 0-6, Lunes a Domingo),
+  // corrigiendo los weekdays de días existentes que hereden weekday: null del modo individual.
+  useEffect(() => {
+    if (mode !== "weekly") return;
+    let next: RoutineDay[] = days.map((d, i) => ({ ...d, weekday: i }));
+    let needsFix = next.some((d, i) => d.weekday !== i);
+    while (next.length < 7) {
+      const i = next.length;
+      next = [...next, emptyDay(i, i, "empty")];
+    }
+    if (needsFix || next.length !== days.length) setDays(next);
+  }, [days, mode]);
 
   const setDayLabel = useCallback((index: number, label: string) => {
     setDays((prev) =>
@@ -340,6 +372,13 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
   }, []);
 
   const addExercisesToDay = useCallback((exercises: Exercise[]) => {
+    // Garantizar que `days` cubra al menos hasta activeDayIndex (crítico al alternar
+    // de individual a semanal: el arreglo puede venir con 1 solo elemento).
+    const nextDays = [...days];
+    while (nextDays.length <= activeDayIndex) {
+      const i = nextDays.length;
+      nextDays.push(emptyDay(i, mode === "weekly" ? i : null, "empty"));
+    }
     const next = exercises.map((ex) => ({
       rowId: crypto.randomUUID(),
       exercise: ex,
@@ -347,18 +386,18 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
       target_reps_min: null,
       target_reps_max: null,
       rest_seconds: 90,
-      order_index: activeDayExercises.length,
+      order_index: nextDays[activeDayIndex].exercises.length,
     }));
-    setDays((prev) =>
-      prev.map((d, i) =>
-        i === activeDayIndex
-          ? { ...d, exercises: [...(Array.isArray(d.exercises) ? d.exercises : []), ...next] }
-          : d,
-      ),
-    );
+    const dayExercises = [...(Array.isArray(nextDays[activeDayIndex].exercises) ? nextDays[activeDayIndex].exercises : []), ...next];
+    nextDays[activeDayIndex] = {
+      ...nextDays[activeDayIndex],
+      kind: "training", // un día con ejercicios es un día de entrenamiento
+      exercises: dayExercises,
+    };
+    setDays(nextDays);
     setSelectorOpen(false);
     hapticSuccess();
-  }, [activeDayIndex, activeDayExercises.length]);
+  }, [activeDayIndex, days, mode]);
 
   const removeExerciseFromDay = useCallback((dayIndex: number, exerciseIndex: number) => {
     setDays((prev) =>
@@ -366,7 +405,8 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         if (i !== dayIndex) return d;
         const exercises = Array.isArray(d.exercises) ? [...d.exercises] : [];
         exercises.splice(exerciseIndex, 1);
-        return { ...d, exercises: exercises.map((ex, idx) => ({ ...ex, order_index: idx })) };
+        const nextKind = exercises.length === 0 && d.kind === "training" ? "empty" : d.kind;
+        return { ...d, kind: nextKind, exercises: exercises.map((ex, idx) => ({ ...ex, order_index: idx })) };
       }),
     );
     hapticLight();
@@ -789,6 +829,23 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         paddingBottom: 128,
       }}
     >
+      {saveError && (
+        <div
+          style={{
+            padding: "8px 16px",
+            background: "rgba(255,59,48,0.15)",
+            border: "1px solid rgba(255,59,48,0.4)",
+            color: "#FFFFFF",
+            fontSize: "13px",
+            fontWeight: 500,
+            textAlign: "center",
+          }}
+          role="alert"
+          aria-live="assertive"
+        >
+          {saveError}
+        </div>
+      )}
       <header
         style={{
           position: "sticky",
@@ -913,48 +970,18 @@ export function RoutineEditor({ routine, onSave, onClose }: RoutineEditorProps) 
         {heroCard}
         {exerciseList}
 
-        {isWeeklyMode ? (
-          <UnifiedExerciseSelectorSheet
-            isOpen={selectorOpen}
-            onClose={() => setSelectorOpen(false)}
-            mode="multiple"
-            onSelectMultiple={addExercisesToDay}
-            title="Seleccionar ejercicios"
-            dayContext={{
-              dayIndex: activeDayIndex,
-              dayLabel: activeDay?.label ?? "",
-              dayExercises: Array.isArray(activeDay?.exercises) ? (activeDay.exercises.map((ex) => ex.exercise as Exercise)) : [],
-            }}
-          />
-        ) : (
-          <UnifiedExerciseSelectorSheet
-            isOpen={selectorOpen}
-            onClose={() => setSelectorOpen(false)}
-            mode="single"
-            onSelectSingle={(exercise: Exercise) => {
-              const next: DraftExercise = {
-                rowId: crypto.randomUUID(),
-                exercise,
-                target_sets: 3,
-                target_reps_min: 8,
-                target_reps_max: 8,
-                rest_seconds: 90,
-                order_index: (safeDays[0]?.exercises ?? []).length,
-              };
-              setDays((prev) =>
-                prev.map((d, i) => (i === 0 ? { ...d, exercises: [...(Array.isArray(d.exercises) ? d.exercises : []), next] } : d)),
-              );
-              setSelectorOpen(false);
-              hapticLight();
-            }}
-            title="Seleccionar ejercicio"
-            dayContext={{
-              dayIndex: 0,
-              dayLabel: "",
-              dayExercises: Array.isArray(safeDays[0]?.exercises) ? (safeDays[0].exercises.map((ex) => ex.exercise as Exercise)) : [],
-            }}
-          />
-        )}
+        <UnifiedExerciseSelectorSheet
+          isOpen={selectorOpen}
+          onClose={() => setSelectorOpen(false)}
+          mode="multiple"
+          onSelectMultiple={addExercisesToDay}
+          title="Seleccionar ejercicios"
+          dayContext={{
+            dayIndex: activeDayIndex,
+            dayLabel: isWeeklyMode ? (activeDay?.label ?? WEEKDAYS_FULL[activeDayIndex]) : title,
+            dayExercises: Array.isArray(activeDay?.exercises) ? (activeDay.exercises.map((ex) => ex.exercise as Exercise)) : [],
+          }}
+        />
       </main>
     </div>
   );

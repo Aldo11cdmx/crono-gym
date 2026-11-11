@@ -5,6 +5,7 @@ import {
   displayDayLabel,
   exercisesForDay,
   newDraftKey,
+  normalizeDays,
   swapDayContents,
   type RoutineDay,
   type RoutineDraftV2,
@@ -138,12 +139,13 @@ describe("validateDraft", () => {
     expect(validateDraft(makeDraft())).toEqual([]);
   });
 
-  it("rejects a blank title", () => {
-    expect(validateDraft(makeDraft({ title: "   " }))).toContain("noTitle");
+  it("acepta un título corto (1-2 caracteres)", () => {
+    expect(validateDraft(makeDraft({ title: "ab" }))).toEqual([]);
+    expect(validateDraft(makeDraft({ title: "ff" }))).toEqual([]);
   });
 
-  it("rejects a title that is too short", () => {
-    expect(validateDraft(makeDraft({ title: "ab" }))).toContain("titleTooShort");
+  it("rechaza un título en blanco", () => {
+    expect(validateDraft(makeDraft({ title: "   " }))).toContain("noTitle");
   });
 
   it("rejects a draft with no days", () => {
@@ -505,6 +507,41 @@ describe("exercisesForDay (A4)", () => {
     const before = draft.days[0].exercises.length;
     exercisesForDay(draft, 0);
     expect(draft.days[0].exercises.length).toBe(before);
+  });
+});
+
+describe("normalizeDays", () => {
+  const ex = { exercise: EXERCISE, rowId: crypto.randomUUID(), target_sets: 3, rest_seconds: 90, order_index: 0, target_reps_min: null, target_reps_max: null };
+
+  it("mantiene un día de descanso tal cual", () => {
+    const day = { id: "d1", order: 1, weekday: null, label: "", kind: "rest" as const, exercises: [] };
+    const result = normalizeDays([day]);
+    expect(result[0].kind).toBe("rest");
+  });
+
+  it("mantiene un día de movilidad tal cual", () => {
+    const day = { id: "d1", order: 1, weekday: null, label: "", kind: "mobility" as const, exercises: [] };
+    const result = normalizeDays([day]);
+    expect(result[0].kind).toBe("mobility");
+  });
+
+  it("normaliza a 'training' un día vacío que tiene ejercicios", () => {
+    const day = { id: "d1", order: 1, weekday: null, label: "", kind: "empty" as const, exercises: [ex] };
+    const result = normalizeDays([day]);
+    expect(result[0].kind).toBe("training");
+  });
+
+  it("normaliza a 'empty' un día de entrenamiento sin ejercicios", () => {
+    const day = { id: "d1", order: 1, weekday: null, label: "", kind: "training" as const, exercises: [] };
+    const result = normalizeDays([day]);
+    expect(result[0].kind).toBe("empty");
+  });
+
+  it("no muta el arreglo original", () => {
+    const day = { id: "d1", order: 1, weekday: null, label: "", kind: "training" as const, exercises: [] };
+    const originalKind = day.kind;
+    normalizeDays([day]);
+    expect(day.kind).toBe(originalKind);
   });
 });
 });

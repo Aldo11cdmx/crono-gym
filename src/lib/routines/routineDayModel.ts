@@ -100,8 +100,8 @@ export function exercisesForDay(draft: RoutineDraftV2, weekday: number): DraftEx
 
 export function validateDraft(draft: RoutineDraftV2): string[] {
   const problems: string[] = [];
-  if (draft.title.trim().length < 3) {
-    problems.push(draft.title.trim() === "" ? "noTitle" : "titleTooShort");
+  if (draft.title.trim().length === 0) {
+    problems.push("noTitle");
   }
   if (draft.days.length === 0) problems.push("noExercises");
   if (draft.mode === "weekly" && draft.days.length !== 7) problems.push("weekdayConflict");
@@ -144,6 +144,26 @@ export function validateDraft(draft: RoutineDraftV2): string[] {
   if (draft.id !== null && draft.snapshot === null) problems.push("missingSnapshot");
   if (draft.days.length > 14 && draft.mode === "single") problems.push("tooManyDays");
   return problems;
+}
+
+/**
+ * Normaliza defensivamente el `kind` de cada día para que nunca haya
+ * desincronización entre `day.kind` y `day.exercises.length`.
+ *
+ * - Día con ejercicios y kind distinto de "rest" → "training"
+ * - Día sin ejercicios y kind "training" → "empty"
+ * - Día "rest" o "mobility" se respetan tal cual
+ *
+ * Devuelve un nuevo arreglo (no muta el original).
+ */
+export function normalizeDays(days: RoutineDay[]): RoutineDay[] {
+  return days.map((day) => {
+    if (day.kind === "rest" || day.kind === "mobility") return day;
+    const hasExercises = Array.isArray(day.exercises) && day.exercises.length > 0;
+    const kind = hasExercises ? "training" : "empty";
+    if (day.kind === kind) return day;
+    return { ...day, kind };
+  });
 }
 
 export function newDraftKey(): string {

@@ -28,11 +28,6 @@ import { supabase } from "@/lib/supabase";
 import { CoachBanner } from "@/components/coach/portal/CoachBanner";
 import { WeeklyProgressSection } from "@/components/dashboard/sections/WeeklyProgressSection";
 import { TipSection } from "@/components/dashboard/sections/TipSection";
-
-// Cache a nivel de módulo: la consulta de coaches dispara 403 (RLS) para atletas
-// y no debe repetirse en cada render ni dejar rastro en consola.
-let coachesChecked = false;
-let coachIdCached: string | null = null;
 import { TrainingHeroSection } from "@/components/dashboard/sections/TrainingHeroSection";
 import { PRSection } from "@/components/dashboard/sections/PRSection";
 import { HistorySection } from "@/components/dashboard/sections/HistorySection";
@@ -180,45 +175,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
   const [tipIndex, setTipIndex] = useState(0);
-  const [coachId, setCoachId] = useState<string | null>(null);
+  const coachId: string | null = null;
   const [requestOpen, setRequestOpen] = useState(false);
-
-  useEffect(() => {
-    if (coachesChecked) {
-      setCoachId(coachIdCached);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await (supabase as any)
-          .from("coaches")
-          .select("id")
-          .eq("is_active", true)
-          .order("created_at", { ascending: true })
-          .limit(1)
-          .maybeSingle();
-        if (cancelled) return;
-        // 403 (RLS) es esperado para no-coaches: silenciar por completo, sin reintentar.
-        if (error) {
-          coachesChecked = true;
-          coachIdCached = null;
-          setCoachId(null);
-          return;
-        }
-        coachesChecked = true;
-        coachIdCached = data?.id ?? null;
-        if (data) setCoachId(data.id);
-      } catch {
-        coachesChecked = true;
-        coachIdCached = null;
-        if (!cancelled) setCoachId(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;

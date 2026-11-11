@@ -45,6 +45,8 @@ export const SURFACE = {
   base: "#000000",
   /** Cards, panels, list rows. */
   raised: "#0d0d10",
+  /** L1 card surface: solid obsidian-grey for bento cards and list rows. */
+  l1: "#1C1C1E",
   /** Elevated surfaces: popovers, modals, dropdowns. */
   overlay: "#16161a",
   /** Pressed or selected rows, inset wells. */
@@ -1175,6 +1177,7 @@ export const Z_INDEX = {
 export const COLOR_TOKENS = {
   "surface-base": SURFACE.base,
   "surface-raised": SURFACE.raised,
+  "surface-l1": SURFACE.l1,
   "surface-overlay": SURFACE.overlay,
   "surface-sunken": SURFACE.sunken,
   "surface-border": SURFACE.border,

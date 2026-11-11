@@ -447,6 +447,30 @@ export function RoutinesPage() {
               onDelete={handleDeleteRoutine}
             />
           ))}
+          <button
+            type="button"
+            onClick={openNew}
+            aria-label={ROUTINES_UI_LABELS.newRoutine}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: SPACE.xs,
+              padding: `${SPACE.lg}px`,
+              borderRadius: RADIUS.card,
+              border: `1px dashed ${GLASS.border}`,
+              background: GLASS.fillFaint,
+              color: TEXT.secondary,
+              cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            <Plus size={22} aria-hidden="true" />
+            <span style={{ fontSize: TYPE.caption.size, fontWeight: 600, color: TEXT.primary }}>
+              Nueva rutina
+            </span>
+          </button>
         </div>
       )}
 

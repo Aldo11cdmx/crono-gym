@@ -6,6 +6,7 @@ import { AuthModal } from "./components/AuthModal";
 import { BrandLockup } from "./components/shell/BrandLockup";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { Onboarding } from "./components/Onboarding";
+import { SegmentedControl } from "./components/ui/SegmentedControl";
 import { ProgressCharts } from "./components/progress/ProgressCharts";
 import { ConsistencyTracker } from "./components/progress/ConsistencyTracker";
 import { WorkoutHistory } from "./components/progress/WorkoutHistory";
@@ -22,7 +23,7 @@ import { useProfile } from "./hooks/useProfile";
 import { useOfflineSync } from "./hooks/useOfflineSync";
 import { AuthModalProvider } from "./context/AuthModalContext";
 import { TEXT, TYPE } from "@/design/tokens";
-import { PROGRESS_LABELS } from "@/lib/i18n";
+import { PROGRESS_LABELS, RANK_LABELS } from "@/lib/i18n";
 
 /**
  * Exact-path comparison, so `/` does not claim to be active on every route.
@@ -484,6 +485,14 @@ const [libraryLoaded, setLibraryLoaded] = useState(false);
 export function ProgressView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const { stats, loading, error } = useProgress(userId);
+  const navigate = useNavigate();
+
+  const [tab, setTab] = useState<"progreso" | "rangos">("progreso");
+
+  const tabs = [
+    { value: "progreso", label: PROGRESS_LABELS.title },
+    { value: "rangos", label: "Anatomía y Rangos" },
+  ] as const;
 
   return (
     <>
@@ -495,11 +504,20 @@ export function ProgressView() {
       {loading ? (
         <p className="text-sm text-neutral-500">{PROGRESS_LABELS.loading}</p>
       ) : (
-        <div className="space-y-6">
+        <div className="pb-36 space-y-6">
           <div>
             <h2 style={pageTitleStyle}>{PROGRESS_LABELS.title}</h2>
             <p style={pageSubtitleStyle}>{PROGRESS_LABELS.subtitle(stats.recent.length)}</p>
           </div>
+          <SegmentedControl
+            value={tab}
+            options={tabs}
+            onChange={(value) => {
+              setTab(value as "progreso" | "rangos");
+              if (value === "rangos") navigate("/rangos", { replace: true });
+            }}
+            ariaLabel="Vista de progreso"
+          />
           <ProgressCharts stats={stats} />
           <div className="grid gap-5 lg:grid-cols-[1fr_360px] lg:items-start">
             <ConsistencyTracker week={stats.week} />
@@ -536,19 +554,15 @@ const pageSubtitleStyle: React.CSSProperties = {
 export function RangosView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  /**
-   * Hands the muscle filter to the exercise catalog.
-   *
-   * Written through the router rather than `window.history.replaceState`, because
-   * `ExerciseBrowser` -- the thing that reads it -- also writes it. Two writers
-   * that bypass each other leave the router's copy of the URL disagreeing with
-   * `window.location`, and the symptom is a filter that silently stops applying
-   * on the next navigation.
-   *
-   * `replace` rather than `push`: applying a filter is not a place the user wants
-   * a Back button to undo.
-   */
+  const [tab, setTab] = useState<"progreso" | "rangos">("rangos");
+
+  const tabs = [
+    { value: "progreso", label: PROGRESS_LABELS.title },
+    { value: "rangos", label: RANK_LABELS.title },
+  ] as const;
+
   const browseMuscle = useCallback(
     (slug: string) => {
       setSearchParams(
@@ -564,7 +578,20 @@ export function RangosView() {
   );
 
   return (
-    <>
+    <div className="pb-36 space-y-6">
+      <div>
+        <h2 style={pageTitleStyle}>{RANK_LABELS.title}</h2>
+        <p style={pageSubtitleStyle}>{RANK_LABELS.subtitle}</p>
+      </div>
+      <SegmentedControl
+        value={tab}
+        options={tabs}
+        onChange={(value) => {
+          setTab(value as "progreso" | "rangos");
+          if (value === "progreso") navigate("/progreso", { replace: true });
+        }}
+        ariaLabel="Vista de rangos"
+      />
       {searchParams.get(MUSCLE_PARAM) && (
         <p
           role="status"
@@ -575,7 +602,7 @@ export function RangosView() {
         </p>
       )}
       <AnatomicalRanksPage userId={userId} onBrowseMuscle={browseMuscle} />
-    </>
+    </div>
   );
 }
 

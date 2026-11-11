@@ -96,25 +96,25 @@ export function RoutineCard({
     ? undefined
     : { transition: `transform ${MOTION.fast} ${MOTION.easeOut}` };
 
-  const trainButtonStyle = {
+  const trainButtonStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
     width: "100%",
-    height: "44px",
-    borderRadius: "12px",
+    height: MOTION.minTouchTarget,
+    borderRadius: RADIUS.control,
     border: "none",
-    background: "#FF3B30",
-    color: "#FFFFFF",
-    fontSize: TYPE.body.size,
-    fontWeight: 600,
+    background: ACCENT.base,
+    color: TEXT.onAccent,
+    fontSize: TYPE.subhead.size,
+    fontWeight: 700,
     cursor: incomplete ? "not-allowed" : "pointer",
     opacity: incomplete ? 0.5 : 1,
-    boxShadow: "0 4px 16px rgba(255,59,48,0.25)",
-    transition: reducedMotion ? "none" : "transform 150ms ease, box-shadow 150ms ease",
+    boxShadow: ACCENT.ring,
+    transition: reducedMotion ? "none" : `transform ${MOTION.fast} ${MOTION.easeOut}`,
     ...pressStyle,
-  } as React.CSSProperties;
+  };
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
@@ -153,24 +153,64 @@ export function RoutineCard({
     action();
   }, []);
 
+  // 7-day schedule indicator for weekly plans
+  const weekdayShort = ROUTINES_UI_LABELS.weekdaysShort;
+  const todayWeekday = (new Date().getDay() + 6) % 7;
+  const activeWeekdays = useMemo(
+    () =>
+      metrics.dayLabels
+        .map((label) => {
+          const weekday = (weekdayShort as readonly string[]).indexOf(label);
+          return weekday >= 0 ? weekday : null;
+        })
+        .filter((w): w is number => w !== null),
+    [metrics.dayLabels],
+  );
+
   return (
     <GlassCard as="article" raised style={{ borderRadius: RADIUS.card, borderColor: GLASS.borderStrong, boxShadow: GLASS.shadow }}>
       <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, padding: SPACE.md }}>
         <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.sm }}>
-            <h3
-              style={{
-                margin: 0,
-                minWidth: 0,
-                fontSize: TYPE.title2.size,
-                lineHeight: TYPE.title2.lineHeight,
-                fontWeight: TYPE.title2.weight,
-                letterSpacing: TYPE.title2.tracking,
-                color: TEXT.primary,
-              }}
-            >
-              {routine.title}
-            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs, minWidth: 0 }}>
+              {isWeekly && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: "auto",
+                    padding: "2px 8px",
+                    borderRadius: RADIUS.sm,
+                    background: ACCENT.subtle,
+                    color: ACCENT.base,
+                    fontSize: TYPE.caption.size,
+                    fontWeight: 600,
+                    letterSpacing: TYPE.label.tracking,
+                    textTransform: "uppercase",
+                    flexShrink: 0,
+                  }}
+                >
+                  {ROUTINES_UI_LABELS.weeklyPlanner}
+                </span>
+              )}
+              <h3
+                style={{
+                  margin: 0,
+                  minWidth: 0,
+                  fontSize: TYPE.title2.size,
+                  lineHeight: TYPE.title2.lineHeight,
+                  fontWeight: TYPE.title2.weight,
+                  letterSpacing: TYPE.title2.tracking,
+                  color: TEXT.primary,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {routine.title}
+              </h3>
+            </div>
             <button
               ref={triggerRef}
               type="button"
@@ -207,13 +247,13 @@ export function RoutineCard({
                     alignItems: "center",
                     padding: "4px 10px",
                     borderRadius: "9999px",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    background: "rgba(255,255,255,0.05)",
-                    fontSize: "11px",
+                    border: `1px solid ${GLASS.border}`,
+                    background: GLASS.fillFaint,
+                    fontSize: TYPE.label.size,
                     fontWeight: 600,
-                    letterSpacing: "0.08em",
+                    letterSpacing: TYPE.label.tracking,
                     textTransform: "uppercase",
-                    color: "#D4D4D4",
+                    color: TEXT.secondary,
                   }}
                 >
                   {m}
@@ -223,31 +263,70 @@ export function RoutineCard({
           )}
 
           {metrics.dayLabels.length > 0 && (
-            <p
-              style={{
-                margin: 0,
-                fontSize: TYPE.caption.size,
-                lineHeight: TYPE.caption.lineHeight,
-                fontWeight: TYPE.caption.weight,
-                color: TEXT.tertiary,
-              }}
-            >
-              {metrics.dayLabels.join(" • ")}
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
+              {["L", "M", "X", "J", "V", "S", "D"].map((letter, i) => {
+                const isActive = activeWeekdays.includes(i);
+                const isToday = i === todayWeekday;
+                return (
+                  <span
+                    key={i}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 20,
+                      height: 20,
+                      borderRadius: RADIUS.pill,
+                      fontSize: TYPE.caption.size,
+                      fontWeight: 600,
+                      color: isActive ? ACCENT.base : TEXT.tertiary,
+                      background: isToday ? "rgba(255, 59, 48, 0.12)" : "transparent",
+                      ...(isActive && { border: `1px solid ${ACCENT.base}` }),
+                    }}
+                    title={weekdayShort[i]}
+                  >
+                    {isToday ? "•" : letter}
+                  </span>
+                );
+              })}
+            </div>
           )}
 
           <p
             style={{
               margin: 0,
               fontFamily: TYPE.mono.font,
-              fontSize: TYPE.subhead.size,
-              lineHeight: TYPE.subhead.lineHeight,
-              fontWeight: TYPE.subhead.weight,
+              fontSize: TYPE.caption.size,
+              fontWeight: 600,
+              letterSpacing: TYPE.mono.tracking,
+              color: TEXT.tertiary,
               fontVariantNumeric: "tabular-nums",
-              color: TEXT.secondary,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            {metrics.exerciseCount} {ROUTINES_UI_LABELS.exercises} • ~{metrics.minutes} {ROUTINES_UI_LABELS.minApprox}
+            {routine.exercises.slice(0, 3).map((ex, i) => (
+              <span key={i} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {ex.exercise.name}
+                {i < routine.exercises.length - 1 && i < 2 ? ", " : ""}
+              </span>
+            ))}
+            {routine.exercises.length > 3 && ` +${routine.exercises.length - 3} más`}
+          </p>
+
+          <p
+            style={{
+              margin: 0,
+              fontFamily: TYPE.mono.font,
+              fontSize: TYPE.caption.size,
+              fontWeight: 600,
+              letterSpacing: TYPE.mono.tracking,
+              color: TEXT.tertiary,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {metrics.exerciseCount} {ROUTINES_UI_LABELS.exercises} • {metrics.trainingDays > 0 ? `${metrics.trainingDays} días` : "0 días"} • ~{metrics.minutes} {ROUTINES_UI_LABELS.minApprox}
           </p>
 
           {incomplete && (
@@ -268,19 +347,19 @@ export function RoutineCard({
           }}
           aria-label={ROUTINES_UI_LABELS.startWorkout}
           style={trainButtonStyle}
-          onMouseDown={() => {
+          onMouseDown={(e: React.MouseEvent) => {
             if (!incomplete && !reducedMotion) {
-              document.activeElement?.setAttribute("style", "transform: scale(0.98)");
+              e.currentTarget.setAttribute("style", "transform: scale(0.98)");
             }
           }}
-          onMouseUp={() => {
+          onMouseUp={(e: React.MouseEvent) => {
             if (!incomplete && !reducedMotion) {
-              document.activeElement?.removeAttribute("style");
+              e.currentTarget.removeAttribute("style");
             }
           }}
-          onMouseLeave={() => {
+          onMouseLeave={(e: React.MouseEvent) => {
             if (!incomplete && !reducedMotion) {
-              document.activeElement?.removeAttribute("style");
+              e.currentTarget.removeAttribute("style");
             }
           }}
         >

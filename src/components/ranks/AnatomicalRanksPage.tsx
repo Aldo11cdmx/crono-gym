@@ -19,7 +19,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Award, ChevronRight, Flame, Search, Sparkles, TrendingUp } from "lucide-react";
+import { Award, ChevronRight, Flame, Sparkles, TrendingUp } from "lucide-react";
 import type { Slug } from "react-muscle-highlighter";
 import { MuscleSelector } from "../MuscleSelector";
 import { MuscleRankDetail } from "../MuscleRankDetail";
@@ -287,38 +287,35 @@ function HeroHeader({
   const weakest = map.weakest;
 
   return (
-    <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <HeroMetric
-        icon={<Award />}
-        label={T.globalRank}
-      >
+    <section className="grid gap-4">
+      <HeroMetric icon={<Award />} label={T.globalRank}>
         <GlobalRankDisplay rank={rank} score={map.globalScore} />
       </HeroMetric>
 
-      <RankMetric
-        icon={<Flame />}
-        label={T.strongest}
-        entry={strongest}
-        empty={!strongest}
-        hint={T.strongestHint}
-        onSelectMuscle={onSelectMuscle}
-      />
-
-      <RankMetric
-        icon={<TrendingUp />}
-        label={T.weakest}
-        entry={weakest}
-        empty={!weakest}
-        hint={weakest ? T.focusHint : "Entrena un segundo músculo para comparar."}
-        onSelectMuscle={onSelectMuscle}
-      />
-
-      <CoverageMetric
-        label="Músculos"
-        classified={map.classifiedCount}
-        total={map.muscles.size}
-        subtitle={T.classifiedOf(map.classifiedCount, map.muscles.size)}
-      />
+      <section className="grid gap-3 grid-cols-3">
+        <RankMetric
+          icon={<Flame />}
+          label={T.strongest}
+          entry={strongest}
+          empty={!strongest}
+          hint={T.strongestHint}
+          onSelectMuscle={onSelectMuscle}
+        />
+        <RankMetric
+          icon={<TrendingUp />}
+          label={T.weakest}
+          entry={weakest}
+          empty={!weakest}
+          hint={weakest ? T.focusHint : "Entrena un segundo músculo para comparar."}
+          onSelectMuscle={onSelectMuscle}
+        />
+        <CoverageMetric
+          label="Músculos"
+          classified={map.classifiedCount}
+          total={map.muscles.size}
+          subtitle={T.classifiedOf(map.classifiedCount, map.muscles.size)}
+        />
+      </section>
     </section>
   );
 }
@@ -559,46 +556,7 @@ function Smartbar({
           onChange={(v) => onModeChange(v as MapMode)}
           ariaLabel={T.setMapMode}
         />
-
-        <div className="relative flex-1 min-w-48">
-          <Search
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
-            style={{ color: TEXT.tertiary }}
-          />
-          <input
-            type="search"
-            placeholder={T.searchPlaceholder}
-            className="w-full rounded-lg border bg-neutral-900/60 pl-10 pr-3 py-2 text-sm outline-none transition-colors"
-            style={{
-              borderColor: GLASS.border,
-              backgroundColor: SOLID.card,
-              color: TEXT.primary,
-            }}
-          />
-        </div>
-
-        <select
-          className="rounded-lg border bg-neutral-900/60 px-3 py-2 text-sm outline-none transition-colors"
-          style={{
-            borderColor: GLASS.border,
-            backgroundColor: SOLID.card,
-            color: TEXT.primary,
-          }}
-          defaultValue=""
-          aria-label={T.sortBy}
-        >
-          <option value="" disabled>
-            {T.sortBy}
-          </option>
-          <option value="score-desc">{T.sortScoreDesc}</option>
-          <option value="score-asc">{T.sortScoreAsc}</option>
-          <option value="name">{T.sortName}</option>
-          <option value="sessions">{T.sortSessions}</option>
-          <option value="last">{T.sortLastActivity}</option>
-          <option value="change">{T.sortChange}</option>
-        </select>
       </div>
-
     </section>
   );
 }

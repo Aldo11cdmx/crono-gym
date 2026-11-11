@@ -377,8 +377,8 @@ export function useProgress(userId: string | null) {
         );
       for (const row of (setData ?? []) as {
         log_id: string;
-        weight: number | null;
-        reps: number | null;
+        weight: number | null | string;
+        reps: number | null | string;
         is_warmup: boolean | null;
       }[]) {
         // Warm-up sets are logged for reference but must never count toward
@@ -387,9 +387,14 @@ export function useProgress(userId: string | null) {
         if (row.is_warmup) continue;
         const bucket = byLog.get(row.log_id) ?? { sets: 0, volume: 0, best: null };
         bucket.sets += 1;
-        bucket.volume += (row.weight ?? 0) * (row.reps ?? 0);
-        bucket.best =
-          row.weight === null ? bucket.best : Math.max(bucket.best ?? 0, row.weight);
+        // Postgres `numeric` arrives as a string; coerce defensively so an empty
+        // or non-numeric value degrades to 0 instead of poisoning the sum.
+        const weight = Number(row.weight) || 0;
+        const reps = Number(row.reps) || 0;
+        bucket.volume += weight * reps;
+        if (weight > 0) {
+          bucket.best = bucket.best === null ? weight : Math.max(bucket.best, weight);
+        }
         byLog.set(row.log_id, bucket);
       }
     }
@@ -430,9 +435,15 @@ function summarize(
 
   let bestWeight: number | null = null;
   let monthlyVolume = 0;
+  // Peso máximo sobre TODAS las sesiones completadas, no sólo las 6 recientes.
+  for (const log of done) {
+    const bucket = byLog.get(log.id);
+    if (bucket && bucket.best !== null) {
+      bestWeight = bestWeight === null ? bucket.best : Math.max(bestWeight, bucket.best);
+    }
+  }
   const recent: RecentSession[] = logs.slice(0, 6).map((l) => {
     const bucket = byLog.get(l.id) ?? { sets: 0, volume: 0, best: null };
-    if (bucket.best !== null) bestWeight = Math.max(bestWeight ?? 0, bucket.best);
     return {
       id: l.id,
       started_at: l.started_at,

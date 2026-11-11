@@ -80,7 +80,7 @@ describe("ConsistencyTracker", () => {
 describe("WorkoutHistory", () => {
   it("oculta las sesiones vacías (0 series y 0 kg)", () => {
     render(<WorkoutHistory recent={RECENT} />);
-    const rows = document.querySelectorAll("li");
+    const rows = document.querySelectorAll("div.flex.items-center.justify-between.gap-3");
     expect(rows).toHaveLength(2);
     expect(screen.getByText("Fuerza superior")).toBeTruthy();
     expect(screen.queryByText("xd")).toBeNull();

@@ -34,3 +34,6 @@ supabase/.branches/
 
 # Vercel local configuration
 .vercel/
+
+# Playwright MCP artifacts
+.playwright-mcp/

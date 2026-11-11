@@ -327,7 +327,7 @@ export const RANK_LABELS = {
 
    // ---- anatomical map modes ----------------------------------------------
   setMapMode: "Cambiar vista del mapa",
-  mapModeRank: "Rango atómico",
+  mapModeRank: "Rango anatómico",
   mapModeHeatmap: "Volumen semanal",
   heatmapMaintenance: "Mantenimiento",
   heatmapOptimal: "Hipertrofia óptima",

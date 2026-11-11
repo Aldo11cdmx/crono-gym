@@ -29,7 +29,7 @@ import {
   type ReactNode,
 } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { ArrowRight, Check, LogOut, Sparkles, Upload } from "lucide-react";
+import { ArrowRight, Check, LogOut, Settings, Sparkles, Upload } from "lucide-react";
 import { supabase } from "@lib/supabase";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { GymSettingsTrigger } from "@/components/workout/GymSettingsTrigger";
@@ -47,6 +47,7 @@ import {
   EXPERIENCE_LABELS,
   GYM_LABELS,
   GOAL_LABELS,
+  NAV_LABELS,
   PROFILE_LABELS,
   SEX_LABELS,
 } from "@/lib/i18n";
@@ -189,6 +190,24 @@ export function ProfilePage() {
               <span style={badgeProStyle}>
                 {PROFILE_LABELS.badgePro}
               </span>
+              <button
+                type="button"
+                aria-label={NAV_LABELS.settings}
+                style={{
+                  minHeight: MOTION.minTouchTarget,
+                  minWidth: MOTION.minTouchTarget,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: RADIUS.control,
+                  border: `1px solid ${GLASS.border}`,
+                  background: "transparent",
+                  color: TEXT.secondary,
+                  cursor: "pointer",
+                }}
+              >
+                <Settings size={20} aria-hidden="true" />
+              </button>
             </div>
           </div>
         </div>

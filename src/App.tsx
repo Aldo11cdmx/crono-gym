@@ -579,10 +579,6 @@ export function RangosView() {
 
   return (
     <div className="pb-36 space-y-6">
-      <div>
-        <h2 style={pageTitleStyle}>{RANK_LABELS.title}</h2>
-        <p style={pageSubtitleStyle}>{RANK_LABELS.subtitle}</p>
-      </div>
       <SegmentedControl
         value={tab}
         options={tabs}

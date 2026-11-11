@@ -292,7 +292,7 @@ function HeroHeader({
         <GlobalRankDisplay rank={rank} score={map.globalScore} />
       </HeroMetric>
 
-      <section className="grid gap-3 grid-cols-3">
+      <section className="grid gap-3 grid-cols-1 sm:grid-cols-3">
         <RankMetric
           icon={<Flame />}
           label={T.strongest}

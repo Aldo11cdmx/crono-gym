@@ -284,7 +284,7 @@ describe("AnatomicalRanksPage", () => {
     await renderView();
 
     const modeGroup = screen.getByRole("radiogroup", { name: /Cambiar vista del mapa/ });
-    expect(within(modeGroup).getByRole("radio", { name: "Rango atómico" }).getAttribute("aria-checked")).toBe("true");
+    expect(within(modeGroup).getByRole("radio", { name: "Rango anatómico" }).getAttribute("aria-checked")).toBe("true");
 
     fireEvent.click(within(modeGroup).getByRole("radio", { name: "Volumen semanal" }));
     expect(within(modeGroup).getByRole("radio", { name: "Volumen semanal" }).getAttribute("aria-checked")).toBe("true");

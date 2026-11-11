@@ -149,8 +149,8 @@ export function WorkoutPreStartView({
           }}
         >
           {/* Compact Header Row: badge + title + metrics left, DualMiniMuscleMap right */}
-          <div style={{ display: "flex", alignItems: "flex-start", gap: SPACE.lg, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: SPACE.lg, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, minWidth: 0, flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, flexWrap: "wrap" }}>
                 <span
                   style={{
@@ -412,7 +412,7 @@ export function WorkoutPreStartView({
             marginTop: SPACE.md,
             boxShadow: `inset 0 1px 0 ${ACCENT.text}, 0 8px 24px ${ACCENT.glow}`,
             background: ACCENT.base,
-            color: TEXT.onAccent,
+            color: "#FFFFFF",
             border: "none",
             height: 52,
             fontSize: TYPE.subhead.size,

@@ -28,6 +28,11 @@ import { supabase } from "@/lib/supabase";
 import { CoachBanner } from "@/components/coach/portal/CoachBanner";
 import { WeeklyProgressSection } from "@/components/dashboard/sections/WeeklyProgressSection";
 import { TipSection } from "@/components/dashboard/sections/TipSection";
+
+// Cache a nivel de módulo: la consulta de coaches dispara 403 (RLS) para atletas
+// y no debe repetirse en cada render ni dejar rastro en consola.
+let coachesChecked = false;
+let coachIdCached: string | null = null;
 import { TrainingHeroSection } from "@/components/dashboard/sections/TrainingHeroSection";
 import { PRSection } from "@/components/dashboard/sections/PRSection";
 import { HistorySection } from "@/components/dashboard/sections/HistorySection";
@@ -179,6 +184,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [requestOpen, setRequestOpen] = useState(false);
 
   useEffect(() => {
+    if (coachesChecked) {
+      setCoachId(coachIdCached);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -190,16 +199,20 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           .limit(1)
           .maybeSingle();
         if (cancelled) return;
-        // 403 is expected for non-coach users due to RLS - handle silently
-        if (error && error.code !== "PGRST116") {
-          // 403 is expected for non-coach users due to RLS - handle silently
+        // 403 (RLS) es esperado para no-coaches: silenciar por completo, sin reintentar.
+        if (error) {
+          coachesChecked = true;
+          coachIdCached = null;
+          setCoachId(null);
+          return;
         }
+        coachesChecked = true;
+        coachIdCached = data?.id ?? null;
         if (data) setCoachId(data.id);
-      } catch (err) {
-        // Network or unexpected errors - fail silently, banner won't show
-        if (import.meta.env.DEV && err instanceof Error) {
-          console.warn("[Dashboard] coaches query failed:", err.message);
-        }
+      } catch {
+        coachesChecked = true;
+        coachIdCached = null;
+        if (!cancelled) setCoachId(null);
       }
     })();
     return () => {

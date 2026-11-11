@@ -40,7 +40,7 @@ export function RecoverableDraftSection({
         Tienes un entrenamiento sin finalizar: <strong>{title}</strong>. ¿Deseas continuar o descartar?
       </p>
       <div className="flex gap-2">
-        <GlassButton variant="primary" onClick={onContinue}>
+        <GlassButton variant="primary" onClick={onContinue} style={{ color: "#FFFFFF" }}>
           Recuperar entrenamiento
         </GlassButton>
         <GlassButton variant="destructive" onClick={() => setConfirm(true)}>

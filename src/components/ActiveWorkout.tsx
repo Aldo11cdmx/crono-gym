@@ -1,30 +1,32 @@
 /**
- * ActiveWorkout.tsx — rediseño desde cero, presentación Apple minimalista.
+ * ActiveWorkout.tsx — Rediseño Apple HIG / Apple Fitness+ para la pantalla de entrenamiento activo.
  *
- * Estética: modo oscuro, fondo negro puro, acento cian/teal (#6EE7F7), tipografía
- * del sistema, cards elevadas, bordes de pelo, micro-header fijo arriba y scroll
- * vertical nativo. Toda la lógica de sesión, borrador, sobrecarga y sincronía se
- * conserva; solo cambia la piel.
+ * Principios:
+ *   - Fondo OLED puro (#000000) para que los GIFs se integren sin bordes.
+ *   - Header telemetría: sticky, blur, timer con indicador verde pulsante (#30D158), botón "Terminar" iOS-style.
+ *   - Carrusel de ejercicios: indicadores circulares pulidos, anillo Crimson (#FF3B30) en activo.
+ *   - Área de identidad del ejercicio: GIF grande sobre negro, títulos limpios (regex strip IDs), jerarquía editorial Apple.
+ *   - Toolbar unificada: grid único "Demo | Avance | Cambiar | Ajustar" en contenedor GlassCard.
+ *   - Tabla de series Apple HIG: columnas SERIE | ANTERIOR | KG/LB | REPS | RPE | ✓ con styling Graphite L1/L2.
+ *   - Padding inferior (pb-36) para evitar solapamiento con BottomNav y botón flotante Cronos IA.
  *
- * Los nombres accesibles y roles que ejercitan los tests se preservan tal cual:
- * "Empezar", "Finalizar", grupos "Serie n", chips "Serie n de tipo X",
- * spinbutton /Peso:/, botón de gear, "Última sesión: ...", undo banner, etc.
+ * Se preserva toda la lógica de negocio: borrador, sincronía, supersets, recuperación, timer deadline-based.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   X,
   Play,
   Target,
-   MapPin,
-   ArrowRight,
+  MapPin,
+  ArrowRight,
   RefreshCw,
   Check,
   Dumbbell,
   Settings,
-  Timer,
 } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
 import { GYM_LABELS } from "../lib/i18n";
@@ -35,9 +37,9 @@ import {
   MOTION,
   RADIUS,
   SCRIM,
-  SURFACE,
-  SOLID,
   SPACE,
+  SOLID,
+  SURFACE,
   TEXT,
   TYPE,
   Z_INDEX,
@@ -65,7 +67,7 @@ import {
 import { queueAndSync } from "../lib/sessionSync";
 import { useActiveSession } from "../context/ActiveSessionContext";
 import { useGymSettings } from "../context/GymSettingsContext";
-import { useElapsedMs, formatElapsed } from "../hooks/useElapsedMs";
+import { useElapsedMs } from "../hooks/useElapsedMs";
 import { RestTimer } from "./RestTimer";
 import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
 import { toWarmupColumn } from "../lib/workout/setKind";
@@ -95,17 +97,9 @@ const DEFAULT_REST = 90;
 const PERSIST_DEBOUNCE_MS = 400;
 export const UNDO_WINDOW_MS = 5000;
 
-/**
- * Strips the catalog's equipment prefix ("Barbell Bench Press - Neutral Grip")
- * so the header label stays short.
- *
- * The label is the Spanish display name, where the equipment already sits at
- * the end ("Press de banca con barra"), so there is no prefix left to strip.
- */
-function shortName(name: string): string {
-  const cleaned = name.replace(/^(barbell|dumbbell|cable|kettlebell|weighted)\s+/i, "");
-  const withoutSuffix = cleaned.replace(/\s+-\s+.*$/, "");
-  return withoutSuffix.length > 0 ? withoutSuffix : cleaned;
+/** Strips catalog ID suffixes like " • 0028", " - 0123", "· 0045" from exercise names. */
+function cleanExerciseName(name: string): string {
+  return name.replace(/\s*[•·-]\s*\d{3,5}$/, "");
 }
 
 function toNumber(value: string): number | null {
@@ -113,17 +107,14 @@ function toNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-/** ------------------------------------------------------------------ headers */
+function spaceValue(key: keyof typeof SPACE): number {
+  return parseInt(SPACE[key], 10);
+}
+
+/** ------------------------------------------------------------------ Session Header (Fitness+ Telemetry) */
 
 interface SessionHeaderProps {
   exerciseLabel: string;
-  /**
-   * The group the exercise on screen belongs to, when it is in one.
-   *
-   * The strip at the top of the session says the same thing, but the strip is
-   * a strip: the athlete's eyes are on the set table, and the header is the
-   * one line of chrome that is always on screen.
-   */
   superset?: SupersetInfo | null;
   startedAt: string | null;
   onGear: () => void;
@@ -138,8 +129,7 @@ function SessionHeader({
   onTerminate,
 }: SessionHeaderProps) {
   const GEAR = GYM_LABELS.triggerAriaLabel(GYM_LABELS.defaultTriggerContext);
-  const elapsed = useElapsedMs(startedAt);
-  const time = formatElapsed(elapsed);
+  useElapsedMs(startedAt);
 
   return (
     <header
@@ -152,40 +142,61 @@ function SessionHeader({
         alignItems: "center",
         justifyContent: "space-between",
         gap: SPACE.md,
-        padding: `calc(12px + env(safe-area-inset-top, 0px)) 16px 12px 16px`,
-        background: "rgba(0, 0, 0, 0.7)",
-        backdropFilter: GLASS.blurPlain20,
-        WebkitBackdropFilter: GLASS.blurPlain20,
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        transition: "all 200ms ease",
+        padding: `calc(10px + env(safe-area-inset-top, 0px)) 16px 10px 16px`,
+        background: "rgba(0, 0, 0, 0.85)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
       }}
     >
+      {/* Left: Live Timer Capsule + Progress Text */}
       <div style={{ display: "flex", alignItems: "center", gap: SPACE.md, minWidth: 0 }}>
         {startedAt && (
           <div
             style={{
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
-              gap: SPACE.xs,
-              fontFamily: TYPE.mono.font,
-              fontSize: TYPE.body.size,
-              fontWeight: 600,
-              color: TEXT.primary,
-              fontVariantNumeric: "tabular-nums",
+              gap: 6,
+              padding: "6px 12px",
+              borderRadius: 9999,
+              background: "rgba(48, 209, 88, 0.15)",
+              border: "1px solid rgba(48, 209, 88, 0.3)",
             }}
           >
-            <Timer size={14} strokeWidth={1.5} aria-hidden="true" />
-            {time}
+            <span
+              className="cronos-pulse-green"
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#30D158",
+              }}
+              aria-hidden="true"
+            />
+            <span
+              style={{
+                fontFamily: TYPE.mono.font,
+                fontSize: TYPE.caption.size,
+                fontWeight: 600,
+                fontVariantNumeric: "tabular-nums",
+                color: "#30D158",
+              }}
+            >
+              EN VIVO
+            </span>
           </div>
         )}
         {exerciseLabel && (
           <div
             style={{
               fontSize: TYPE.caption.size,
-              color: TEXT.tertiary,
+              fontWeight: 600,
+              fontVariantNumeric: "tabular-nums",
+              color: TEXT.secondary,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              maxWidth: 200,
             }}
           >
             {exerciseLabel}
@@ -200,6 +211,8 @@ function SessionHeader({
           />
         )}
       </div>
+
+      {/* Right: Settings + Terminar Button */}
       <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
         <button
           type="button"
@@ -208,28 +221,33 @@ function SessionHeader({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            minWidth: MOTION.minTouchTarget,
-            minHeight: MOTION.minTouchTarget,
-            borderRadius: RADIUS.control,
+            width: 40,
+            height: 40,
+            borderRadius: RADIUS.round,
             border: `1px solid ${GLASS.border}`,
-            background: "transparent",
+            background: "rgba(255, 255, 255, 0.05)",
             color: TEXT.secondary,
             cursor: "pointer",
-            padding: `0 ${SPACE.sm}`,
           }}
           onClick={onGear}
         >
-          <Settings size={18} strokeWidth={1.5} aria-hidden="true" />
+          <Settings size={20} strokeWidth={1.5} aria-hidden="true" />
         </button>
         {onTerminate && (
           <GlassButton
-            variant="primary"
+            variant="ghost"
             onClick={onTerminate}
             aria-label="Terminar entrenamiento"
             style={{
-              background: "rgba(239, 68, 68, 0.2)",
-              color: "rgb(248, 113, 113)",
-              border: "1px solid rgba(239, 68, 68, 0.4)",
+              height: 40,
+              minWidth: 40,
+              padding: "0 14px",
+              borderRadius: 9999,
+              background: "rgba(255, 59, 48, 0.12)",
+              color: ACCENT.text,
+              border: `1px solid ${ACCENT.border}`,
+              fontSize: TYPE.subhead.size,
+              fontWeight: 600,
             }}
           >
             Terminar
@@ -240,7 +258,7 @@ function SessionHeader({
   );
 }
 
-/** ------------------------------------------------------------------ set tracker table */
+/** ------------------------------------------------------------------ Set Tracker Table (Apple HIG) */
 
 interface SetTrackerTableProps {
   index: number;
@@ -257,11 +275,11 @@ interface SetTrackerTableProps {
 
 const SET_TYPE_OPTIONS: Array<{ kind: SetEntry["kind"]; label: string; fullLabel: string; color: string; bg: string }> = [
   { kind: "normal", label: "1", fullLabel: "Normal / Efectiva", color: TEXT.primary, bg: "rgba(255, 255, 255, 0.08)" },
-  { kind: "warmup", label: "C", fullLabel: "Calentamiento", color: "rgb(251, 191, 36)", bg: "rgba(251, 191, 36, 0.2)" },
-  { kind: "normal", label: "A", fullLabel: "Aproximación", color: "rgb(96, 165, 250)", bg: "rgba(96, 165, 250, 0.2)" }, // Using normal kind as approximation
-  { kind: "failure", label: "F", fullLabel: "Al Fallo", color: "rgb(248, 113, 113)", bg: "rgba(239, 68, 68, 0.25)" },
-  { kind: "drop", label: "D", fullLabel: "Drop Set", color: "rgb(168, 85, 247)", bg: "rgba(168, 85, 247, 0.25)" },
-  { kind: "normal", label: "RP", fullLabel: "Rest-Pause", color: "rgb(251, 146, 60)", bg: "rgba(251, 146, 60, 0.25)" },
+  { kind: "warmup", label: "C", fullLabel: "Calentamiento", color: "#FBBF24", bg: "rgba(251, 191, 36, 0.2)" },
+  { kind: "normal", label: "A", fullLabel: "Aproximación", color: "#60A5FA", bg: "rgba(96, 165, 250, 0.2)" },
+  { kind: "failure", label: "F", fullLabel: "Al Fallo", color: "#F87171", bg: "rgba(239, 68, 68, 0.25)" },
+  { kind: "drop", label: "D", fullLabel: "Drop Set", color: "#A855F7", bg: "rgba(168, 85, 247, 0.25)" },
+  { kind: "normal", label: "RP", fullLabel: "Rest-Pause", color: "#FB923C", bg: "rgba(251, 146, 60, 0.25)" },
 ];
 
 function SetTrackerTable({
@@ -282,23 +300,31 @@ function SetTrackerTable({
     return SET_TYPE_OPTIONS[0];
   }, [entry.kind]);
 
-  const previousText = previousKg != null && previousReps != null 
-    ? formatWeight 
-      ? `${formatWeight(previousKg)} × ${previousReps}` 
+  const previousText = previousKg != null && previousReps != null
+    ? formatWeight
+      ? `${formatWeight(previousKg)} × ${previousReps}`
       : `${previousKg}kg × ${previousReps}`
-    : "-";
+    : "—";
+
+  const isCompleted = entry.completed;
 
   return (
     <div
+      role="group"
+      aria-label={`Serie ${setNumber}`}
       style={{
-        display: "flex",
+        display: "grid",
+        gridTemplateColumns: "44px 1fr 88px 72px 64px 44px",
         alignItems: "center",
-        gap: "12px",
-        padding: "8px 0",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-        position: "relative",
+        gap: 8,
+        padding: "10px 0",
+        borderBottom: index > 0 ? "1px solid rgba(255, 255, 255, 0.04)" : "none",
+        background: isCompleted ? "rgba(48, 209, 88, 0.06)" : "transparent",
+        borderRadius: index === 0 ? "12px 12px 0 0" : index === 2 ? "0 0 12px 12px" : 0,
+        transition: "background 200ms ease",
       }}
     >
+      {/* Serie Badge */}
       <div style={{ position: "relative" }}>
         <button
           type="button"
@@ -308,16 +334,17 @@ function SetTrackerTable({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            width: "28px",
-            height: "28px",
-            borderRadius: "50%",
+            width: 32,
+            height: 32,
+            borderRadius: 9999,
             background: currentOption.bg,
             border: "1px solid rgba(255, 255, 255, 0.1)",
             color: currentOption.color,
-            fontSize: currentOption.label === "RP" ? "8px" : "11px",
-            fontWeight: 600,
+            fontSize: currentOption.label === "RP" ? "9px" : "11px",
+            fontWeight: 700,
             cursor: "pointer",
             flexShrink: 0,
+            transition: "transform 150ms ease, box-shadow 150ms ease",
           }}
         >
           {currentOption.label === "1" ? setNumber : currentOption.label}
@@ -336,13 +363,13 @@ function SetTrackerTable({
             <div
               style={{
                 position: "absolute",
-                top: "36px",
+                top: "40px",
                 left: 0,
                 zIndex: 51,
-                background: "rgba(0, 0, 0, 0.85)",
-                backdropFilter: GLASS.blurPlain20,
+                background: "rgba(22, 22, 26, 0.95)",
+                backdropFilter: "blur(20px)",
                 border: "1px solid rgba(255, 255, 255, 0.15)",
-                borderRadius: "16px",
+                borderRadius: 16,
                 padding: "8px",
                 minWidth: "200px",
                 boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.9)",
@@ -359,19 +386,19 @@ function SetTrackerTable({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "12px",
+                    gap: 12,
                     width: "100%",
                     padding: "10px 12px",
                     background: "transparent",
                     border: "none",
-                    borderRadius: "12px",
+                    borderRadius: 12,
                     color: TEXT.primary,
                     fontSize: "14px",
                     cursor: "pointer",
                     textAlign: "left",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";
@@ -382,13 +409,13 @@ function SetTrackerTable({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      width: "24px",
-                      height: "24px",
+                      width: 24,
+                      height: 24,
                       borderRadius: "50%",
                       background: option.bg,
                       color: option.color,
-                      fontSize: option.label === "RP" ? "7px" : "10px",
-                      fontWeight: 600,
+                      fontSize: option.label === "RP" ? "8px" : "10px",
+                      fontWeight: 700,
                       flexShrink: 0,
                     }}
                   >
@@ -402,53 +429,70 @@ function SetTrackerTable({
         )}
       </div>
 
+      {/* Anterior */}
       <div
         style={{
-          flex: 1,
           minWidth: 0,
           fontSize: "12px",
-          color: "rgba(255, 255, 255, 0.4)",
+          fontFamily: TYPE.mono.font,
+          fontVariantNumeric: "tabular-nums",
+          color: TEXT.tertiary,
         }}
       >
         {previousText}
       </div>
 
+      {/* KG/LB */}
       <input
         type="number"
         inputMode="decimal"
         aria-label={`Peso serie ${setNumber}`}
         value={entry.weight}
         onChange={(e) => onChange(index, { ...entry, weight: e.target.value })}
+        onFocus={(e) => { e.target.select(); }}
+        className="cronos-set-input"
         style={{
-          background: GLASS.fillFaint,
+          width: "100%",
+          background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: "12px",
-          padding: "6px 8px",
+          borderRadius: 10,
+          padding: "8px 10px",
           textAlign: "center",
           color: TEXT.primary,
-          width: "80px",
-          fontSize: "14px",
+          fontSize: "15px",
+          fontFamily: TYPE.mono.font,
+          fontVariantNumeric: "tabular-nums",
+          fontWeight: 600,
+          outline: "none",
         }}
       />
 
+      {/* REPS */}
       <input
         type="number"
         inputMode="numeric"
         aria-label={`Repeticiones serie ${setNumber}`}
         value={entry.reps}
         onChange={(e) => onChange(index, { ...entry, reps: e.target.value })}
+        onFocus={(e) => { e.target.select(); }}
+        className="cronos-set-input"
         style={{
-          background: GLASS.fillFaint,
+          width: "100%",
+          background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: "12px",
-          padding: "6px 8px",
+          borderRadius: 10,
+          padding: "8px 10px",
           textAlign: "center",
           color: TEXT.primary,
-          width: "64px",
-          fontSize: "14px",
+          fontSize: "15px",
+          fontFamily: TYPE.mono.font,
+          fontVariantNumeric: "tabular-nums",
+          fontWeight: 600,
+          outline: "none",
         }}
       />
 
+      {/* RPE */}
       <input
         type="number"
         inputMode="numeric"
@@ -456,49 +500,57 @@ function SetTrackerTable({
         placeholder="RPE"
         value={entry.rpe || ""}
         onChange={(e) => onChange(index, { ...entry, rpe: e.target.value })}
+        onFocus={(e) => { e.target.select(); }}
+        className="cronos-set-input"
         style={{
-          background: GLASS.fillFaint,
+          width: "100%",
+          background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: "12px",
-          padding: "6px 8px",
+          borderRadius: 10,
+          padding: "8px 10px",
           textAlign: "center",
           color: TEXT.primary,
-          width: "56px",
-          fontSize: "14px",
+          fontSize: "15px",
+          fontFamily: TYPE.mono.font,
+          fontVariantNumeric: "tabular-nums",
+          fontWeight: 600,
+          outline: "none",
         }}
       />
 
+      {/* Check Button */}
       <button
         type="button"
-        aria-label={`Marcar serie ${setNumber} completada`}
+        aria-label={isCompleted ? `Marcar la serie ${setNumber} como no completada` : `Marcar la serie ${setNumber} como completada`}
         onClick={() => {
-            if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-              navigator.vibrate([40, 60, 80]);
-            }
-            onChange(index, { ...entry, completed: !entry.completed });
-          }}
+          if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+            navigator.vibrate(isCompleted ? [15] : [40, 60, 80]);
+          }
+          onChange(index, { ...entry, completed: !entry.completed });
+        }}
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: "32px",
-          height: "32px",
-          borderRadius: "12px",
-          background: entry.completed ? "rgb(16, 185, 129)" : "rgba(255, 255, 255, 0.1)",
-          color: entry.completed ? "#000" : "rgba(255, 255, 255, 0.4)",
-          border: entry.completed ? "1px solid rgb(16, 185, 129)" : "1px solid rgba(255, 255, 255, 0.1)",
+          width: 36,
+          height: 36,
+          borderRadius: 9999,
+          background: isCompleted ? "#30D158" : "rgba(255, 255, 255, 0.08)",
+          color: isCompleted ? "#000" : "rgba(255, 255, 255, 0.4)",
+          border: isCompleted ? "1px solid #30D158" : "1px solid rgba(255, 255, 255, 0.1)",
           cursor: "pointer",
           flexShrink: 0,
-          transition: MOTION.transitionStandard,
+          transition: "all 150ms ease",
+          boxShadow: isCompleted ? "0 0 0 4px rgba(48, 209, 88, 0.3), 0 4px 12px rgba(48, 209, 88, 0.4)" : "none",
         }}
       >
-        <Check size={16} strokeWidth={3} />
+        <Check size={18} strokeWidth={3} />
       </button>
     </div>
   );
 }
 
-/** ------------------------------------------------------------------ exercise stage */
+/** ------------------------------------------------------------------ Exercise Stage (Identity Area) */
 
 interface ExerciseStageProps {
   exercise: Exercise;
@@ -506,13 +558,11 @@ interface ExerciseStageProps {
   totalSets: number;
   lastSessionLabel: string | null;
   equipment: EquipmentEntry | null;
-   onDemo?: () => void;
-   onAdvance?: () => void;
-   onChangeExercise: () => void;
-   onAdjustEquipment: () => void;
+  onDemo?: () => void;
+  onAdvance?: () => void;
+  onChangeExercise: () => void;
+  onAdjustEquipment: () => void;
 }
-
-/** ------------------------------------------------------------------ exercise stage */
 
 function ExerciseStage({
   exercise,
@@ -520,11 +570,11 @@ function ExerciseStage({
   totalSets,
   lastSessionLabel,
   equipment,
-   onDemo,
-   onAdvance,
-   onChangeExercise,
-   onAdjustEquipment,
-  }: ExerciseStageProps) {
+  onDemo,
+  onAdvance,
+  onChangeExercise,
+  onAdjustEquipment,
+}: ExerciseStageProps) {
   const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
   const { src, failed, onLoad, onError } = useMediaSrc(media);
 
@@ -539,35 +589,38 @@ function ExerciseStage({
         alignItems: "center",
       }}
     >
-      {/* Escenario principal: GIF del ejercicio sobre negro puro */}
-<div
+      {/* Main GIF on Pure Black */}
+      <div
         style={{
           position: "relative",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
-          maxWidth: 320,
-          margin: "2px auto",
-          height: 130,
+          maxWidth: 360,
+          margin: "0 auto",
+          aspectRatio: "16 / 9",
+          borderRadius: 16,
           overflow: "hidden",
+          background: SURFACE.base,
         }}
       >
         {media.url && !failed ? (
           <img
             src={src}
-            alt={`Demo de ${getExerciseDisplayName(exercise)}`}
+            alt={`Demo de ${cleanExerciseName(getExerciseDisplayName(exercise))}`}
             onLoad={onLoad}
             onError={onError}
             style={{
-              height: "100%",
               width: "100%",
+              height: "100%",
               objectFit: "contain",
-              margin: "0 auto",
               background: "transparent",
               filter: "invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)",
               imageRendering: "-webkit-optimize-contrast",
             }}
+            width={640}
+            height={360}
           />
         ) : (
           <div
@@ -579,131 +632,135 @@ function ExerciseStage({
               height: "100%",
               color: TEXT.tertiary,
               fontSize: TYPE.caption.size,
+              padding: SPACE.md,
+              textAlign: "center",
             }}
           >
+            <Dumbbell size={32} strokeWidth={1.5} aria-hidden="true" style={{ marginBottom: 8 }} />
             Sin demo disponible
           </div>
         )}
-        {/* Botón flotante de equipamiento (siempre visible) */}
+        {/* Floating Equipment Button */}
         <button
           type="button"
           aria-label={`Ver foto del equipo: ${equipment?.name ?? "Sin equipo"}`}
           onClick={onAdjustEquipment}
           style={{
             position: "absolute",
-            bottom: 8,
-            right: 8,
-            width: 40,
-            height: 40,
-            minWidth: 40,
-            minHeight: 40,
+            bottom: 12,
+            right: 12,
+            width: 44,
+            height: 44,
             borderRadius: "50%",
             border: `1px solid ${GLASS.border}`,
-            background: SURFACE.overlay,
+            background: "rgba(22, 22, 26, 0.9)",
+            backdropFilter: "blur(12px)",
             color: TEXT.primary,
             cursor: "pointer",
             boxShadow: GLASS.shadow,
-            transition: `all ${MOTION.fast} ${MOTION.standard}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <MapPin size={16} aria-hidden="true" />
+          <MapPin size={18} aria-hidden="true" />
         </button>
       </div>
 
-      {/* Chip de equipamiento (siempre visible) */}
-      <button
-        type="button"
-        onClick={onAdjustEquipment}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: SPACE.xs,
-          padding: `${SPACE.xs} ${SPACE.sm}`,
-          borderRadius: RADIUS.control,
-          border: `1px solid ${GLASS.border}`,
-          background: SOLID.popover,
-          cursor: "pointer",
-          transition: `all ${MOTION.fast} ${MOTION.standard}`,
-        }}
-      >
-        {equipment?.views?.[0] ? (
-          <img
-            src={resolveMediaUrl(equipment.views[0].src)}
-            alt={`Miniatura ${equipment.name}`}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: `1px solid ${GLASS.border}`,
-              background: SURFACE.base,
-              flexShrink: 0,
-            }}
-          />
-        ) : (
-          <Dumbbell size={20} strokeWidth={2} aria-hidden="true" />
-        )}
-        <span
+      {/* Exercise Identity: Clean Title + Subtle Progress Pill */}
+      <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
+        <h2
           style={{
-            fontSize: TYPE.caption.size,
-            fontWeight: 600,
+            margin: 0,
+            fontSize: TYPE.headline.size,
+            lineHeight: TYPE.headline.lineHeight,
+            fontWeight: TYPE.headline.weight,
             color: TEXT.primary,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            letterSpacing: "0",
           }}
         >
-          {equipment?.name ?? "Sin equipo"} •{" "}
-          {equipment?.id.replace("CG-EQP-", "") ?? "—"}
-        </span>
-      </button>
+          {cleanExerciseName(getExerciseDisplayName(exercise))}
+        </h2>
+        <div
+          style={{
+            marginTop: 6,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 12px",
+            borderRadius: 9999,
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: TYPE.mono.font,
+              fontSize: TYPE.caption.size,
+              fontWeight: 600,
+              fontVariantNumeric: "tabular-nums",
+              color: TEXT.secondary,
+            }}
+          >
+            {completedSets} / {totalSets}
+          </span>
+          <div
+            style={{
+              width: 60,
+              height: 4,
+              borderRadius: 9999,
+              background: "rgba(255, 255, 255, 0.1)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%`,
+                height: "100%",
+                background: ACCENT.base,
+                borderRadius: 9999,
+                transition: "width 300ms ease-out",
+              }}
+            />
+          </div>
+        </div>
+        {lastSessionLabel && (
+          <p
+            style={{
+              margin: "8px 0 0",
+              fontSize: TYPE.caption.size,
+              color: TEXT.tertiary,
+            }}
+          >
+            {lastSessionLabel}
+          </p>
+        )}
+      </div>
 
-      {/* Meta de serie y progreso */}
-      <div
+      {/* Unified Toolbar: Demo | Avance | Cambiar | Ajustar */}
+      <GlassCard
         style={{
           width: "100%",
-          fontSize: TYPE.caption.size,
-          color: TEXT.tertiary,
-          textAlign: "center",
+          maxWidth: 360,
+          padding: 8,
+          borderRadius: 20,
+          background: "rgba(28, 28, 30, 0.9)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "none",
         }}
       >
-        {lastSessionLabel ?? ""}
-      </div>
-      <div
-        style={{
-          width: "100%",
-          fontSize: TYPE.body.size,
-          fontWeight: 600,
-          color: TEXT.primary,
-          textAlign: "center",
-        }}
-      >
-        {completedSets} de {totalSets} series
-      </div>
-
-<div
-         style={{
-           display: "flex",
-           gap: SPACE.xs,
-           justifyContent: "center",
-           width: "100%",
-           background: GLASS.fillFaint,
-           padding: SPACE.xs,
-           borderRadius: RADIUS.control,
-           border: `1px solid ${GLASS.border}`,
-           backdropFilter: GLASS.blurPlain12,
-         }}
-       >
-         <ActionChip label="Demo" icon={<Play size={16} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
-         <ActionChip label="Avance" icon={<Target size={16} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
-         <ActionChip label="Cambiar" icon={<ArrowRight size={16} aria-hidden="true" />} onClick={onChangeExercise} />
-         <ActionChip label="Ajustar" icon={<RefreshCw size={16} aria-hidden="true" />} onClick={onAdjustEquipment} />
-       </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 }}>
+          <ToolbarButton label="Demo" icon={<Play size={16} strokeWidth={2} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
+          <ToolbarButton label="Avance" icon={<Target size={16} strokeWidth={2} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
+          <ToolbarButton label="Cambiar" icon={<ArrowRight size={16} strokeWidth={2} aria-hidden="true" />} onClick={onChangeExercise} />
+          <ToolbarButton label="Ajustar" icon={<RefreshCw size={16} strokeWidth={2} aria-hidden="true" />} onClick={onAdjustEquipment} />
+        </div>
+      </GlassCard>
     </section>
   );
 }
 
-function ActionChip({
+function ToolbarButton({
   label,
   icon,
   onClick,
@@ -718,28 +775,40 @@ function ActionChip({
       aria-label={label}
       onClick={onClick}
       style={{
-        display: "inline-flex",
+        display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: SPACE.xs,
-        minHeight: MOTION.minTouchTarget,
-        padding: `8px 14px`,
-        borderRadius: RADIUS.control,
-        border: `1px solid ${GLASS.border}`,
-        background: SOLID.popover,
-        color: TEXT.primary,
-        fontSize: TYPE.caption.size,
+        gap: 4,
+        padding: "10px 8px",
+        borderRadius: 14,
+        border: "none",
+        background: "transparent",
+        color: TEXT.secondary,
+        fontSize: TYPE.label.size,
         fontWeight: 600,
+        letterSpacing: TYPE.label.tracking,
+        textTransform: "uppercase",
         cursor: "pointer",
+        minHeight: 44,
+        transition: "background 150ms ease, color 150ms ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
+        e.currentTarget.style.color = TEXT.primary;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.color = TEXT.secondary;
       }}
     >
-      {icon}
-      <span style={{ fontSize: TYPE.caption.size }}>{label}</span>
+      <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>{icon}</span>
+      <span>{label}</span>
     </button>
   );
 }
 
-/** ------------------------------------------------------------------ undo */
+/** ------------------------------------------------------------------ Undo Banner */
 
 interface UndoBannerProps {
   setNumber: number;
@@ -761,35 +830,32 @@ function UndoBanner({ setNumber, onUndo, onDismiss }: UndoBannerProps) {
         justifyContent: "space-between",
         gap: SPACE.sm,
         overflow: "hidden",
-        padding: "10px 14px",
-        borderRadius: RADIUS.control,
+        padding: "12px 16px",
+        borderRadius: 14,
         border: `1px solid ${GLASS.borderStrong}`,
-        background: SOLID.popover,
+        background: "rgba(22, 22, 26, 0.95)",
+        backdropFilter: "blur(20px)",
         boxShadow: GLASS.shadow,
       }}
     >
       <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>
         Serie {setNumber} eliminada
       </span>
-      <span style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
-        <button
-          type="button"
+      <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
+        <GlassButton
+          variant="secondary"
           onClick={onUndo}
           aria-label={`Deshacer la eliminación de la serie ${setNumber}`}
           style={{
-            minHeight: MOTION.minTouchTarget,
+            minHeight: 36,
             padding: "0 14px",
-            borderRadius: RADIUS.control,
-            border: `1px solid ${ACCENT.border}`,
-            background: ACCENT.muted,
-            color: ACCENT.text,
+            borderRadius: 9999,
             fontSize: TYPE.body.size,
             fontWeight: 600,
-            cursor: "pointer",
           }}
         >
           {UNDO_LABELS.undo}
-        </button>
+        </GlassButton>
         <button
           type="button"
           onClick={onDismiss}
@@ -798,9 +864,9 @@ function UndoBanner({ setNumber, onUndo, onDismiss }: UndoBannerProps) {
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            minWidth: MOTION.minTouchTarget,
-            minHeight: MOTION.minTouchTarget,
-            borderRadius: RADIUS.control,
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
             border: `1px solid ${GLASS.border}`,
             background: "transparent",
             color: TEXT.tertiary,
@@ -809,7 +875,7 @@ function UndoBanner({ setNumber, onUndo, onDismiss }: UndoBannerProps) {
         >
           <X size={16} aria-hidden="true" />
         </button>
-      </span>
+      </div>
       <span
         aria-hidden="true"
         className="cronos-undo--drain"
@@ -817,18 +883,18 @@ function UndoBanner({ setNumber, onUndo, onDismiss }: UndoBannerProps) {
           position: "absolute",
           left: 0,
           bottom: 0,
-          height: "2px",
+          height: 2,
           width: "100%",
           transformOrigin: "left center",
           background: ACCENT.base,
-          animation: `cronos-undo-drain ${UNDO_WINDOW_MS}ms ${MOTION.easeLinear} forwards`,
+          animation: `cronos-undo-drain ${UNDO_WINDOW_MS}ms linear forwards`,
         }}
       />
     </div>
   );
 }
 
-/** ------------------------------------------------------------------ equipment inspection sheet */
+/** ------------------------------------------------------------------ Equipment Inspection Sheet */
 
 interface EquipmentInspectionSheetProps {
   equipment: EquipmentEntry;
@@ -906,9 +972,9 @@ function EquipmentInspectionSheet({
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              minWidth: MOTION.minTouchTarget,
-              minHeight: MOTION.minTouchTarget,
-              borderRadius: RADIUS.control,
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
               border: `1px solid ${GLASS.border}`,
               background: "transparent",
               color: TEXT.secondary,
@@ -1056,8 +1122,8 @@ function EquipmentInspectionSheet({
                 {[equipment, ...alternatives]
                   .filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i)
                   .map((e) => (
-       <button
-                       key={e.id}
+                    <button
+                      key={e.id}
                       type="button"
                       onClick={() => {
                         setSelected(e);
@@ -1070,9 +1136,7 @@ function EquipmentInspectionSheet({
                         gap: 4,
                         padding: `${SPACE.xs} ${SPACE.sm}`,
                         borderRadius: RADIUS.control,
-                        border: `1px solid ${
-                          e.id === selected.id ? ACCENT.base : GLASS.border
-                        }`,
+                        border: `1px solid ${e.id === selected.id ? ACCENT.base : GLASS.border}`,
                         background: e.id === selected.id ? ACCENT.subtle : SOLID.card,
                         cursor: "pointer",
                         minWidth: 80,
@@ -1147,7 +1211,7 @@ function EquipmentInspectionSheet({
   );
 }
 
-/** ------------------------------------------------------------------ main */
+/** ------------------------------------------------------------------ Main ActiveWorkout Component */
 
 interface ActiveWorkoutProps {
   userId: string;
@@ -1184,44 +1248,12 @@ export function ActiveWorkout({
     pendingRestEndsAt,
   } = useActiveSession();
 
-  /**
-   * The id this session writes under.
-   *
-   * A recovered session keeps the id it had: the row on the server and the
-   * record on the device are the same session, and a second id would leave
-   * the first one behind as an orphan that gets offered again after the
-   * workout ends. Until the recovery happens, the id is a fresh one.
-   */
   const activeLogId = recoveredLogId ?? logId;
 
-  /**
-   * The start time, frozen.
-   *
-   * It used to be read as `session?.startedAt ?? new Date().toISOString()`
-   * *during render*: with no session in the context that produced a brand
-   * new string on every render, and `persist` -- which depends on it --
-   * changed identity with it. The debounce that writes the draft to
-   * IndexedDB is keyed on that identity, so every render cleared the timer
-   * and started it again and the 400 ms was never reached: the draft was
-   * never written.
-   *
-   * The fallback is captured once, when the workout mounts, and the
-   * session's own start time wins whenever there is one.
-   */
   const [fallbackStartedAt] = useState(() => new Date().toISOString());
   const startedAt = session?.startedAt ?? fallbackStartedAt;
 
   const [items, setItems] = useState<DraftExercise[]>(() =>
-    /*
-     * The session is a run of the routine, not the routine itself.
-     *
-     * Cloning it here means the sets the athlete logs belong to this run and
-     * to nothing else: the routine keeps being a prescription, and running it
-     * again starts from the prescription rather than from the last run's
-     * guesses. Every item and every set also comes with an identity of its
-     * own, which is what lets the tracker tell this attempt from the same
-     * attempt in another run.
-     */
     cloneRoutineToSession(
       templateFromPlanned(planned, { id: routineId, title: routineTitle }),
     ).items,
@@ -1230,13 +1262,12 @@ export function ActiveWorkout({
   const [rest, setRest] = useState<{ id: number; seconds: number; endsAt: number } | null>(
     null,
   );
-  /** Identifies one rest, so each one mounts its own clock. */
   const restIdRef = useRef(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
   const [gearOpen, setGearOpen] = useState(false);
-   const [pickerOpen, setPickerOpen] = useState(false);
-   const [pickerMode, setPickerMode] = useState<"add" | "replace">("add");
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerMode, setPickerMode] = useState<"add" | "replace">("add");
   const [notice, setNotice] = useState<string | null>(null);
   const [pendingRemoval, setPendingRemoval] = useState<{
     itemKey: string;
@@ -1270,12 +1301,6 @@ export function ActiveWorkout({
 
   const equipmentForSelected = equipmentSuggestion.primary;
 
-  /**
-   * Where the exercise on screen sits inside its superset, if it is in one.
-   *
-   * Null for an exercise that stands alone, which is the answer that keeps the
-   * header ordinary for the exercise that has no partner.
-   */
   const selectedSuperset = useMemo(() => {
     if (!selected) return null;
     return getSupersetInfo(
@@ -1291,9 +1316,6 @@ export function ActiveWorkout({
         exercise: item.exercise,
         done: item.sets.filter((s) => s.completed).length,
         total: item.sets.length,
-        // The grouping travels with the exercise into the strip, so the bubbles
-        // of a superset are drawn as one group rather than as two exercises
-        // that happen to sit next to each other.
         groupId: item.groupId ?? null,
       })),
     [items],
@@ -1313,10 +1335,10 @@ export function ActiveWorkout({
     });
   }
 
-   function handleAddExercise() {
-     setPickerMode("add");
-     setPickerOpen(true);
-   }
+  function handleAddExercise() {
+    setPickerMode("add");
+    setPickerOpen(true);
+  }
 
   function handleExerciseSelected(exercise: Exercise) {
     const existingIndex = items.findIndex((i) => i.exercise.id === exercise.id);
@@ -1346,11 +1368,6 @@ export function ActiveWorkout({
       }
       return [
         ...prev,
-        /*
-         * An exercise added mid-session is a new execution of a movement, so
-         * it arrives with its own identity and its own sets -- never a copy of
-         * the exercise it was added next to.
-         */
         newSessionExercise({
           exercise: loggerExercise,
           restSeconds: DEFAULT_REST,
@@ -1362,24 +1379,10 @@ export function ActiveWorkout({
     setSelectedKey(exercise.id);
   }
 
-  /**
-   * Continues the session that was interrupted.
-   *
-   * The draft's items replace the planned ones, and the provider adopts the
-   * draft's id: the session continues as the one that was interrupted rather
-   * than as a new one that looks like it. The draft on the device is then
-   * overwritten by the next write, under the same id, so nothing is left
-   * behind as an orphan.
-   *
-   * The rest that was running is resumed where it was. It is the same
-   * deadline the timer had before the reload, so the athlete comes back to
-   * the countdown they were in and not to a fresh one.
-   */
   function restoreRecovered() {
     if (!recoverableDraft) return;
     setItems(recoverableDraft.items);
     setNotes(recoverableDraft.notes);
-    // The exercise that was on screen goes back on screen.
     if (recoverableDraft.selectedKey) setSelectedKey(recoverableDraft.selectedKey);
     restoreDraft();
     setStarted(true);
@@ -1387,12 +1390,6 @@ export function ActiveWorkout({
     if (pendingRestEndsAt) startRestUntil(pendingRestEndsAt);
   }
 
-  /**
-   * Throws the interrupted session away.
-   *
-   * The provider deletes the draft, because a draft nobody wants is a draft
-   * that would be offered again after the next reload.
-   */
   function discardRecovered() {
     if (!recoverableDraft) return;
     discardDraft();
@@ -1410,10 +1407,6 @@ export function ActiveWorkout({
         notes: nextNotes,
         finalized,
         updatedAt: Date.now(),
-        // The v2 fields: where the athlete was, so a reload puts them back
-        // there. Read through refs, never through state: `persist` has to
-        // keep the same identity across renders, or the debounce that
-        // writes the draft restarts with it and never fires.
         restEndsAt: restRef.current?.endsAt,
         selectedKey: selectedKeyRef.current,
         routineDayId: session?.routineDayId ?? null,
@@ -1427,33 +1420,13 @@ export function ActiveWorkout({
   const notesRef = useRef(notes);
   itemsRef.current = items;
   notesRef.current = notes;
-  /** The rest that is running, if any. Read by `persist` without subscribing to it. */
   const restRef = useRef(rest);
   restRef.current = rest;
-  /**
-   * The exercise that is on screen.
-   *
-   * The *effective* selection rather than the raw state: `selectedKey` is
-   * null until the athlete taps the carousel, but the first exercise of the
-   * plan is on screen all the same. What the draft has to remember is what
-   * the athlete was looking at.
-   */
   const selectedKeyRef = useRef<string | null>(null);
   selectedKeyRef.current = selected?.key ?? null;
-
-  /**
-   * True once the session has been sent to the server.
-   *
-   * After that no draft is written again: a debounce still in flight would
-   * otherwise overwrite the finalized draft with an unfinished one, and the
-   * session would be offered for recovery after it had already been saved.
-   */
   const finalizedRef = useRef(false);
 
   useEffect(() => {
-    // While a draft is waiting to be recovered, the workout is not the owner
-    // of the session yet: writing now would leave a second record on the
-    // device, under an id nobody will ever read.
     if (recoverableDraft || finalizedRef.current) return;
     const timer = window.setTimeout(() => {
       if (finalizedRef.current) return;
@@ -1476,35 +1449,14 @@ export function ActiveWorkout({
     return map;
   }, [items, performance]);
 
-  /**
-   * Starts a rest that ends at a given moment.
-   *
-   * The deadline is captured here, once, and handed to `RestTimer`: the clock
-   * then reads the wall clock instead of counting down, so a background tab
-   * whose timers are throttled cannot make the rest last longer than the
-   * athlete asked for.
-   */
   function startRestUntil(endsAt: number) {
     const remainingMs = endsAt - Date.now();
-    // A rest that has already ended is not a rest to start. The countdown it
-    // would show is zero, and a timer that starts at zero is a timer that
-    // never had a chance to be a timer.
     if (remainingMs <= 0) return;
     const total = Math.max(Math.ceil(remainingMs / 1000), 1);
-    // A counter rather than the clock: two rests started in the same
-    // millisecond would otherwise share a key, and the second one would
-    // reuse the first one's deadline.
     restIdRef.current += 1;
     setRest({ id: restIdRef.current, seconds: total, endsAt });
   }
 
-  /**
-   * Starts a rest of a given length.
-   *
-   * The length is turned into a deadline on the spot, so that both a rest
-   * started now and a rest resumed from a draft are the same thing: a moment
-   * the clock reads.
-   */
   function startRest(seconds: number) {
     const total = Math.max(seconds, 15);
     startRestUntil(Date.now() + total * 1000);
@@ -1572,23 +1524,6 @@ export function ActiveWorkout({
     advanceToSupersetPartner(itemKey);
   }
 
-  /**
-   * Moves the session on to the next exercise of the same superset.
-   *
-   * A superset is performed back to back -- A, then B, then A again -- so the
-   * set the athlete has just finished is not the end of their work; it is the
-   * moment the strip moves on by itself. Without this the athlete has to look
-   * up, find the partner and tap it, in the middle of the rest that is already
-   * running, which is exactly the moment they are least likely to.
-   *
-   * Two conditions, and both matter:
-   *
-   * - The partner has to be in the same group. An exercise that stands alone
-   *   has no partner, and the session stays where it is.
-   * - The partner has to have work left. A group whose exercises are all
-   *   finished is a group that is over, and moving to it would send the athlete
-   *   back to an exercise they have already done.
-   */
   function advanceToSupersetPartner(itemKey: string) {
     const current = itemsRef.current;
     const index = current.findIndex((item) => item.key === itemKey);
@@ -1609,9 +1544,7 @@ export function ActiveWorkout({
       prev.map((item) =>
         item.key !== itemKey
           ? item
-          : // A set the athlete adds is a new attempt, so it gets its own
-            // identity rather than inheriting the one above it.
-            { ...item, sets: [...item.sets, newSessionSet({ kind: "normal" }, item.sets.length)] },
+          : { ...item, sets: [...item.sets, newSessionSet({ kind: "normal" }, item.sets.length)] },
       ),
     );
   }
@@ -1676,11 +1609,6 @@ export function ActiveWorkout({
         const source = item.sets[setIndex];
         if (!source) return item;
         const sets = [...item.sets];
-        /*
-         * The copy is a different attempt, so it gets a different identity.
-         * Copying the source's id would leave two rows in the tracker with
-         * the same name, and the second would look like the first.
-         */
         sets.splice(setIndex + 1, 0, {
           ...source,
           completed: false,
@@ -1696,8 +1624,6 @@ export function ActiveWorkout({
     const currentItems = itemsRef.current;
     const currentNotes = notesRef.current;
 
-    // The session is over the moment the athlete says so: from here on, no
-    // debounce may write an unfinished draft over the finalized one.
     finalizedRef.current = true;
 
     const payload: FinalizePayload = {
@@ -1744,19 +1670,30 @@ export function ActiveWorkout({
   const showSummary = !started && !recoverableDraft && items.length > 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SPACE.lg, paddingTop: SPACE.xl, flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+        flex: 1,
+        overflowY: "auto",
+        background: SURFACE.base,
+        paddingBottom: 144, // pb-36 = 144px for BottomNav + Cronos IA clearance
+      }}
+    >
       {recoverableDraft && (
         <div
           style={{
+            margin: SPACE.md,
+            padding: SPACE.md,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${ACCENT.border}`,
+            background: ACCENT.subtle,
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
             justifyContent: "space-between",
             gap: SPACE.md,
-            padding: SPACE.md,
-            borderRadius: RADIUS.control,
-            border: `1px solid ${ACCENT.border}`,
-            background: ACCENT.subtle,
           }}
         >
           <div>
@@ -1773,16 +1710,12 @@ export function ActiveWorkout({
             </p>
           </div>
           <div style={{ display: "flex", gap: SPACE.sm }}>
-            <button type="button" onClick={discardRecovered} style={quietButtonStyle}>
+            <GlassButton variant="ghost" onClick={discardRecovered} style={{ minHeight: 36 }}>
               Descartar
-            </button>
-            <button
-              type="button"
-              onClick={restoreRecovered}
-              style={primaryButtonStyle}
-            >
+            </GlassButton>
+            <GlassButton variant="primary" onClick={restoreRecovered} style={{ minHeight: 36 }}>
               Recuperar
-            </button>
+            </GlassButton>
           </div>
         </div>
       )}
@@ -1792,14 +1725,15 @@ export function ActiveWorkout({
           role="status"
           aria-live="polite"
           style={{
+            margin: `0 ${SPACE.md}px ${SPACE.md}px`,
+            padding: `${SPACE.sm}px ${SPACE.md}px`,
+            borderRadius: RADIUS.control,
+            border: `1px solid ${GLASS.border}`,
+            background: SOLID.popover,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: SPACE.md,
-            padding: `${SPACE.sm} ${SPACE.md}`,
-            borderRadius: RADIUS.control,
-            border: `1px solid ${GLASS.border}`,
-            background: SOLID.popover,
           }}
         >
           <span style={{ fontSize: TYPE.body.size, color: TEXT.primary }}>{notice}</span>
@@ -1807,7 +1741,18 @@ export function ActiveWorkout({
             type="button"
             onClick={() => setNotice(null)}
             aria-label="Cerrar aviso"
-            style={{ ...quietButtonStyle, minWidth: MOTION.minTouchTarget }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              border: "none",
+              background: "transparent",
+              color: TEXT.tertiary,
+              cursor: "pointer",
+            }}
           >
             <X size={14} aria-hidden="true" />
           </button>
@@ -1823,9 +1768,8 @@ export function ActiveWorkout({
       )}
 
       {sync.error && !sync.online && (
-        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-          Sin conexión: tu sesión está segura en este dispositivo y se sincronizará
-          automáticamente.
+        <p style={{ margin: `0 ${SPACE.md}px ${SPACE.md}px`, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
+          Sin conexión: tu sesión está segura en este dispositivo y se sincronizará automáticamente.
         </p>
       )}
 
@@ -1842,15 +1786,17 @@ export function ActiveWorkout({
             alignItems: "center",
             justifyContent: "center",
             background: SCRIM.modal,
-            backdropFilter: GLASS.blurPlain12,
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
           }}
         >
           <div
             style={{
               padding: "24px",
-              borderRadius: "24px",
+              borderRadius: 24,
               background: SCRIM.overlay,
               backdropFilter: GLASS.blurPlain20,
+              WebkitBackdropFilter: GLASS.blurPlain20,
               border: "1px solid rgba(255, 255, 255, 0.1)",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
               maxWidth: 480,
@@ -1888,9 +1834,9 @@ export function ActiveWorkout({
                   minHeight: MOTION.minTouchTarget,
                   padding: `8px 16px`,
                   borderRadius: RADIUS.control,
-                  border: gym.weightUnit === "kg" ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid transparent",
-                  background: gym.weightUnit === "kg" ? "rgba(239, 68, 68, 0.2)" : "transparent",
-                  color: gym.weightUnit === "kg" ? "rgb(248, 113, 113)" : TEXT.primary,
+                  border: gym.weightUnit === "kg" ? `1px solid ${ACCENT.border}` : "1px solid transparent",
+                  background: gym.weightUnit === "kg" ? ACCENT.subtle : "transparent",
+                  color: gym.weightUnit === "kg" ? ACCENT.text : TEXT.primary,
                   fontSize: TYPE.body.size,
                   fontWeight: gym.weightUnit === "kg" ? 600 : 500,
                   cursor: "pointer",
@@ -1910,9 +1856,9 @@ export function ActiveWorkout({
                   minHeight: MOTION.minTouchTarget,
                   padding: `8px 16px`,
                   borderRadius: RADIUS.control,
-                  border: gym.weightUnit === "lb" ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid transparent",
-                  background: gym.weightUnit === "lb" ? "rgba(239, 68, 68, 0.2)" : "transparent",
-                  color: gym.weightUnit === "lb" ? "rgb(248, 113, 113)" : TEXT.primary,
+                  border: gym.weightUnit === "lb" ? `1px solid ${ACCENT.border}` : "1px solid transparent",
+                  background: gym.weightUnit === "lb" ? ACCENT.subtle : "transparent",
+                  color: gym.weightUnit === "lb" ? ACCENT.text : TEXT.primary,
                   fontSize: TYPE.body.size,
                   fontWeight: gym.weightUnit === "lb" ? 600 : 500,
                   cursor: "pointer",
@@ -1931,15 +1877,6 @@ export function ActiveWorkout({
           routineTitle={routineTitle}
           planned={planned}
           onStart={() => setStarted(true)}
-          /*
-           * Leaving the pre-workout screen ends the session.
-           *
-           * The session was opened when the routine was chosen, so the clock is already
-           * running and the pill is already counting it. An athlete who backs out of
-           * the preview has not trained anything, and a session that keeps counting
-           * behind the dashboard is the zombie session the recovery flow keeps having
-           * to clean up.
-           */
           onExit={end}
         />
       ) : items.length === 0 ? (
@@ -1957,21 +1894,11 @@ export function ActiveWorkout({
             background: SOLID.card,
             textAlign: "center",
             maxWidth: "560px",
-            margin: "0 auto",
+            margin: `${SPACE.xl}px auto`,
           }}
         >
-          <X
-            aria-hidden="true"
-            size={32}
-            style={{ color: TEXT.disabled }}
-          />
-          <p
-            style={{
-              margin: 0,
-              fontSize: TYPE.body.size,
-              color: TEXT.tertiary,
-            }}
-          >
+          <X aria-hidden="true" size={32} style={{ color: TEXT.disabled }} />
+          <p style={{ margin: 0, fontSize: TYPE.body.size, color: TEXT.tertiary }}>
             Esta sesión todavía no tiene ejercicios.
           </p>
           <button
@@ -1983,17 +1910,8 @@ export function ActiveWorkout({
               justifyContent: "center",
               gap: SPACE.sm,
               minHeight: MOTION.minTouchTarget,
-              padding: `${SPACE.sm} ${SPACE.lg}`,
+              padding: `${SPACE.sm}px ${SPACE.lg}px`,
               borderRadius: RADIUS.control,
-              /*
-               * The accent, not a status colour.
-               *
-               * `STATUS.progression` is the "the load went up" signal and is painted
-               * in cyan for exactly that reason; using it as the fill of an action
-               * button made a second colour mean "do this" on the same screen as the
-               * red that means it everywhere else. This is the only action on the empty
-               * state, so it is the one primary, and the primary is the accent.
-               */
               border: `1px solid ${ACCENT.base}`,
               background: ACCENT.base,
               color: TEXT.onAccent,
@@ -2008,18 +1926,18 @@ export function ActiveWorkout({
       ) : (
         <>
           <SessionHeader
-              exerciseLabel={
-                selected
-                  ? `${items.findIndex((i) => i.key === selected.key) + 1}/${items.length} ${shortName(
-                      getExerciseDisplayName(selected.exercise),
-                    )}`
-                  : ""
-              }
+            exerciseLabel={
+              selected
+                ? `${items.findIndex((i) => i.key === selected.key) + 1}/${items.length} ${cleanExerciseName(
+                    getExerciseDisplayName(selected.exercise),
+                  )}`
+                : ""
+            }
             superset={selectedSuperset}
-             startedAt={session?.startedAt ?? null}
-             onGear={() => setGearOpen(true)}
-             onTerminate={onFinished}
-           />
+            startedAt={session?.startedAt ?? null}
+            onGear={() => setGearOpen(true)}
+            onTerminate={onFinished}
+          />
 
           {carouselItems.length > 0 && (
             <div
@@ -2044,15 +1962,15 @@ export function ActiveWorkout({
 
           {selected && (
             <>
-            <ExerciseStage
-              exercise={selected.exercise}
-              completedSets={selected.sets.filter((s) => s.completed).length}
+              <ExerciseStage
+                exercise={selected.exercise}
+                completedSets={selected.sets.filter((s) => s.completed).length}
                 totalSets={selected.sets.length}
                 lastSessionLabel={lastSessionFor(selected.exercise.id)}
                 equipment={equipmentForSelected}
-onDemo={() => setIsDemoOpen(true)}
-                  onAdvance={() => setIsAvanceOpen(true)}
-                 onChangeExercise={() => {
+                onDemo={() => setIsDemoOpen(true)}
+                onAdvance={() => setIsAvanceOpen(true)}
+                onChangeExercise={() => {
                   setPickerMode("replace");
                   setPickerOpen(true);
                   findExerciseReplacements({
@@ -2061,7 +1979,7 @@ onDemo={() => setIsDemoOpen(true)}
                     exerciseCatalog: catalog || [],
                   });
                 }}
-                 onAdjustEquipment={() => {
+                onAdjustEquipment={() => {
                   setSelectedEquipment(
                     equipmentSuggestion.primary ?? {
                       id: "default",
@@ -2087,83 +2005,91 @@ onDemo={() => setIsDemoOpen(true)}
               )}
 
               {selected.sets.length > 0 && (
-                <div
-                  style={{
-                    background: GLASS.fillFaint,
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    borderRadius: "16px",
-                    padding: "16px",
-                    backdropFilter: GLASS.blurPlain12,
-                  }}
-                >
-                  <div
+                <div style={{ padding: `0 ${SPACE.md}px ${SPACE.lg}px`, maxWidth: "560px", margin: "0 auto", width: "100%" }}>
+                  <GlassCard
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      padding: "0 0 12px 0",
-                      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                      marginBottom: "4px",
+                      borderRadius: 24,
+                      padding: 20,
+                      background: "rgba(28, 28, 30, 0.9)",
+                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                      boxShadow: "none",
                     }}
                   >
-                    <div style={{ width: "28px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500 }}>SERIE</div>
-                    <div style={{ flex: 1, fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500 }}>ANTERIOR</div>
-                    <div style={{ width: "80px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500, textAlign: "center" }}>KG/LB</div>
-                    <div style={{ width: "64px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500, textAlign: "center" }}>REPS</div>
-                    <div style={{ width: "56px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 500, textAlign: "center" }}>RPE</div>
-                    <div style={{ width: "32px" }}></div>
-                  </div>
-
-            {selected.sets.map((entry, index) => (
-              <SetTrackerTable
-                key={index}
-                index={index}
-                entry={entry}
-                previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
-                previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
-                formatWeight={displayKg}
-                overloadTarget={overload[selected.key] ?? null}
-                previousLabel={
-                  performance[selected.exercise.id]?.bestSet?.weight != null &&
-                  performance[selected.exercise.id]?.bestSet?.reps != null
-                    ? `Repetir la última vez: ${displayKg(
-                        performance[selected.exercise.id]?.bestSet?.weight ?? 0,
-                      )} kilos por ${performance[selected.exercise.id]?.bestSet?.reps ?? 0} repeticiones`
-                    : undefined
-                }
-                onChange={(i, e) => updateSet(selected.key, i, e)}
-                onRemove={(i) => removeSet(selected.key, i)}
-                onDuplicate={(i) => duplicateSet(selected.key, i)}
-              />
-            ))}
-
-                  <div style={{ display: "flex", justifyContent: "center", marginTop: "12px" }}>
-                    <GlassButton
-                      variant="secondary"
-                      onClick={() => addSet(selected.key)}
-                      aria-label="+ Agregar serie"
-                      style={{ minHeight: "36px", padding: "6px 16px" }}
+                    {/* Table Header */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "44px 1fr 88px 72px 64px 44px",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "0 0 10px 0",
+                        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+                        marginBottom: 8,
+                      }}
                     >
-                      + Agregar serie
-                    </GlassButton>
-                  </div>
+                      <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em" }}>SERIE</div>
+                      <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em" }}>ANTERIOR</div>
+                      <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}>KG/LB</div>
+                      <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}>REPS</div>
+                      <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}>RPE</div>
+                      <div></div>
+                    </div>
+
+                    {selected.sets.map((entry, index) => (
+                      <SetTrackerTable
+                        key={index}
+                        index={index}
+                        entry={entry}
+                        previousKg={performance[selected.exercise.id]?.bestSet?.weight ?? null}
+                        previousReps={performance[selected.exercise.id]?.bestSet?.reps ?? null}
+                        formatWeight={displayKg}
+                        overloadTarget={overload[selected.key] ?? null}
+                        previousLabel={
+                          performance[selected.exercise.id]?.bestSet?.weight != null &&
+                          performance[selected.exercise.id]?.bestSet?.reps != null
+                            ? `Repetir la última vez: ${displayKg(
+                                performance[selected.exercise.id]?.bestSet?.weight ?? 0,
+                              )} kilos por ${performance[selected.exercise.id]?.bestSet?.reps ?? 0} repeticiones`
+                            : undefined
+                        }
+                        onChange={(i, e) => updateSet(selected.key, i, e)}
+                        onRemove={(i) => removeSet(selected.key, i)}
+                        onDuplicate={(i) => duplicateSet(selected.key, i)}
+                      />
+                    ))}
+
+                    <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                      <GlassButton
+                        variant="secondary"
+                        onClick={() => addSet(selected.key)}
+                        aria-label="+ Agregar serie"
+                        style={{ minHeight: 40, padding: "8px 20px", fontSize: TYPE.subhead.size }}
+                      >
+                        + Agregar serie
+                      </GlassButton>
+                    </div>
+                  </GlassCard>
                 </div>
               )}
             </>
           )}
 
-           <button
+          <button
             type="button"
             onClick={finish}
             style={{
-              marginTop: SPACE.md,
-              display: "inline-flex",
+              margin: `${spaceValue("md")}px ${spaceValue("md")}px ${spaceValue("xl")}px`,
+              display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: SPACE.xs,
-              minHeight: MOTION.minTouchTarget,
-              padding: `${SPACE.sm} ${SPACE.lg}`,
-              borderRadius: RADIUS.control,
+              gap: spaceValue("xs"),
+              width: `calc(100% - ${spaceValue("md") * 2}px)`,
+              maxWidth: 560,
+              marginLeft: "auto",
+              marginRight: "auto",
+              minHeight: 52,
+              padding: `${spaceValue("sm")}px ${spaceValue("lg")}px`,
+              borderRadius: 16,
               border: `1px solid ${DANGER.base}`,
               background: DANGER.base,
               color: TEXT.onAccent,
@@ -2178,12 +2104,6 @@ onDemo={() => setIsDemoOpen(true)}
       )}
 
       {rest && (
-        /*
-         * The canonical rest clock, the same component the design system
-         * ships. `key` is the rest's own id: each rest mounts a fresh clock
-         * that reads its own deadline, so a second rest never inherits the
-         * first one's time.
-         */
         <RestTimer
           key={rest.id}
           seconds={rest.seconds}
@@ -2210,7 +2130,7 @@ onDemo={() => setIsDemoOpen(true)}
           history={[]}
         />
       )}
-{isCambiarOpen && (
+      {isCambiarOpen && (
         <CambiarSheet
           isOpen={isCambiarOpen}
           onClose={() => setIsCambiarOpen(false)}
@@ -2250,36 +2170,3 @@ onDemo={() => setIsDemoOpen(true)}
     </div>
   );
 }
-
-const quietButtonStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: "6px",
-  minHeight: 36,
-  padding: "0 12px",
-  borderRadius: RADIUS.control,
-  border: `1px solid ${GLASS.border}`,
-  background: "transparent",
-  color: TEXT.secondary,
-  fontSize: TYPE.label.size,
-  fontWeight: 600,
-  cursor: "pointer",
-};
-
-const primaryButtonStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: "6px",
-  minHeight: 36,
-  padding: "0 14px",
-  borderRadius: RADIUS.control,
-  border: `1px solid ${ACCENT.base}`,
-  background: ACCENT.base,
-  color: TEXT.onAccent,
-  fontSize: TYPE.label.size,
-  fontWeight: 700,
-   cursor: "pointer",
- };
-

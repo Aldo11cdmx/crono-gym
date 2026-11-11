@@ -280,6 +280,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       const activeTitle = data.activeSession?.title?.trim();
       return activeTitle ? `Continuar: ${activeTitle}` : "Continuar entrenamiento";
     }
+    if (routine?.exerciseCount && routine.exerciseCount > 0) return "Comenzar entrenamiento";
     if (!todayPlan) return "Sin sesión programada";
     return "Comenzar entrenamiento";
   }, [
@@ -288,6 +289,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     data.recoverableDraft,
     data.activeSession?.title,
     todayPlan,
+    routine?.exerciseCount,
   ]);
 
   const weeklyCompleted = data.weeklyProgress.completed;

@@ -41,6 +41,7 @@ export function TrainingHeroSection({
   const reduce = useReducedMotion();
   const isCompact = compact;
   const meta = hasRoutine ? formatSessionMeta(exerciseCount, estimatedDurationMin) : null;
+  const ctaInverse = exerciseCount > 0;
   const ctaIcon = isCompleted ? (
     <ArrowRight size={18} aria-hidden="true" />
   ) : isRecoverable ? (
@@ -176,6 +177,7 @@ export function TrainingHeroSection({
                 fontSize: TYPE.subhead.size,
                 fontWeight: 700,
                 paddingInline: SPACE.xl,
+                color: ctaInverse ? TEXT.primary : undefined,
                 boxShadow: ctaDisabled ? "none" : `0 12px 30px ${ACCENT.glow}`,
               }}
             >

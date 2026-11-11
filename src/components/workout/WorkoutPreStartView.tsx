@@ -15,10 +15,11 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, Play } from "lucide-react";
-import { MuscleReadonlyMap, countMuscleSets } from "../MuscleReadonlyMap";
+import { countMuscleSets } from "../MuscleReadonlyMap";
 import type { PlannedExercise } from "../../hooks/useGymData";
 import { estimateMinutes } from "../../lib/routines/routineDraftModel";
 import { GlassButton, GlassCard } from "@/components/ui";
+import { DualMiniMuscleMap } from "@/components/routines/RoutineEditor";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { resolveMedia } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
@@ -110,7 +111,6 @@ export function WorkoutPreStartView({
               fontSize: TYPE.subhead.size,
               fontWeight: 500,
               color: TEXT.secondary,
-              background: "rgba(28, 28, 30, 0.8)",
               border: "1px solid rgba(255, 255, 255, 0.1)",
             }}
             aria-label="Volver"
@@ -148,87 +148,61 @@ export function WorkoutPreStartView({
             border: "1px solid rgba(255, 255, 255, 0.1)",
           }}
         >
-          {/* Header Row: Badge + Title + Metric Pills */}
-          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
-            <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, flexWrap: "wrap" }}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "4px 10px",
-                  borderRadius: 9999,
-                  background: CRIMSON.subtle,
-                  border: `1px solid ${CRIMSON.border}`,
-                  fontFamily: TYPE.mono.font,
-                  fontSize: TYPE.label.size,
-                  fontWeight: TYPE.label.weight,
-                  letterSpacing: TYPE.label.tracking,
-                  textTransform: "uppercase",
-                  color: CRIMSON.text,
-                }}
-              >
-                SESIÓN LISTA
-              </span>
-              <h1
-                style={{
-                  margin: 0,
-                  fontSize: TYPE.title2.size,
-                  lineHeight: TYPE.title2.lineHeight,
-                  fontWeight: TYPE.title2.weight,
-                  letterSpacing: TYPE.title2.tracking,
-                  color: TEXT.primary,
-                }}
-              >
-                {routineTitle}
-              </h1>
+          {/* Compact Header Row: badge + title + metrics left, DualMiniMuscleMap right */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: SPACE.lg, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: SPACE.sm, flexWrap: "wrap" }}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "4px 10px",
+                    borderRadius: 9999,
+                    background: CRIMSON.subtle,
+                    border: `1px solid ${CRIMSON.border}`,
+                    fontFamily: TYPE.mono.font,
+                    fontSize: TYPE.label.size,
+                    fontWeight: TYPE.label.weight,
+                    letterSpacing: TYPE.label.tracking,
+                    textTransform: "uppercase",
+                    color: CRIMSON.text,
+                  }}
+                >
+                  SESIÓN LISTA
+                </span>
+                <h1
+                  style={{
+                    margin: 0,
+                    fontSize: TYPE.title2.size,
+                    lineHeight: TYPE.title2.lineHeight,
+                    fontWeight: TYPE.title2.weight,
+                    letterSpacing: TYPE.title2.tracking,
+                    color: TEXT.primary,
+                    minWidth: 0,
+                  }}
+                >
+                  {routineTitle}
+                </h1>
+              </div>
+
+              {/* Metric Pills */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: SPACE.xs }}>
+                <MetricPill
+                  label={exerciseCount === 1 ? "1 ejercicio" : `${exerciseCount} ejercicios`}
+                  icon={<span style={{fontSize:12}}>•</span>}
+                />
+                <MetricPill
+                  label={totalSets === 1 ? "1 serie" : `${totalSets} series`}
+                  icon={<span style={{fontSize:12}}>•</span>}
+                />
+                <MetricPill
+                  label={`${minutes} min`}
+                  icon={<span style={{fontSize:12}}>•</span>}
+                />
+              </div>
             </div>
 
-            {/* Metric Pills */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: SPACE.xs }}>
-              <MetricPill
-                label={exerciseCount === 1 ? "1 ejercicio" : `${exerciseCount} ejercicios`}
-                icon={<span style={{fontSize:12}}>•</span>}
-              />
-              <MetricPill
-                label={totalSets === 1 ? "1 serie" : `${totalSets} series`}
-                icon={<span style={{fontSize:12}}>•</span>}
-              />
-              <MetricPill
-                label={`${minutes} min`}
-                icon={<span style={{fontSize:12}}>•</span>}
-              />
-            </div>
-          </div>
-
-          {/* Scaled Anatomy Map */}
-          <div
-            style={{
-              width: 72,
-              height: 136,
-              overflow: "hidden",
-              borderRadius: RADIUS.card,
-              border: `1px solid ${GLASS.border}`,
-              background: "rgba(0, 0, 0, 0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transform: "scale(0.44)",
-              transformOrigin: "top center",
-              margin: "0 auto",
-            }}
-          >
-            <MuscleReadonlyMap
-              counts={counts}
-              side="front"
-              label={`Mapa muscular de ${routineTitle}`}
-              aspectRatio={1}
-              backgroundColor="transparent"
-              inertFill="transparent"
-              litFill={CRIMSON.base}
-              mostLitFill={CRIMSON.muted}
-              caption={null}
-              overflow="visible"
-            />
+            <DualMiniMuscleMap counts={counts} />
           </div>
 
           {/* Integrated Muscle Distribution */}

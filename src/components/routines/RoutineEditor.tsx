@@ -75,7 +75,7 @@ interface RoutineEditorProps {
  * DualMiniMuscleMap — Capsula contenedora con dos mapas anatómicos escalados
  * FRENTE (anterior) y ESPALDA (posterior) en un contenedor fijo de 144x136px.
  */
-function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
+export function DualMiniMuscleMap({ counts }: { counts: Map<Slug, number> }) {
   return (
     <div
       style={{

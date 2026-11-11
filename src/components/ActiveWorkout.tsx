@@ -106,10 +106,6 @@ function toNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function spaceValue(key: keyof typeof SPACE): number {
-  return parseInt(SPACE[key], 10);
-}
-
 /** ------------------------------------------------------------------ Session Header (Fitness+ Telemetry) */
 
 interface SessionHeaderProps {
@@ -1935,52 +1931,8 @@ export function ActiveWorkout({
             superset={selectedSuperset}
             startedAt={session?.startedAt ?? null}
             onGear={() => setGearOpen(true)}
-            onTerminate={onFinished}
+            onTerminate={finish}
           />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: SPACE.xs,
-              marginTop: SPACE.md,
-              paddingBottom: SPACE.sm,
-              width: "100%",
-            }}
-          >
-            <GlassButton
-              variant="ghost"
-              onClick={() => { setPickerMode("replace"); setPickerOpen(true); findExerciseReplacements({ currentExercise: selected.exercise as any, availableEquipment: availableEquipmentList, exerciseCatalog: catalog || [] }); }}
-              aria-label="Editar ejercicio"
-              style={{ flex: 1, minHeight: 40 }}
-            >
-              Editar
-            </GlassButton>
-            <GlassButton
-              variant="ghost"
-              onClick={() => { setSelectedEquipment(equipmentSuggestion.primary ?? { id: "default", name: "Sin equipo", category: "Accesorio", views: [], exerciseTypes: [] }); setEquipmentSheetOpen(true); }}
-              aria-label="Cambiar equipo"
-              style={{ flex: 1, minHeight: 40 }}
-            >
-              Equipo
-            </GlassButton>
-            <GlassButton
-              variant="ghost"
-              onClick={() => setIsDemoOpen(true)}
-              aria-label="Ver demostración"
-              style={{ flex: 1, minHeight: 40 }}
-            >
-              Demo
-            </GlassButton>
-            <GlassButton
-              variant="ghost"
-              onClick={() => setIsAvanceOpen(true)}
-              aria-label="Ver historial"
-              style={{ flex: 1, minHeight: 40 }}
-            >
-              Historial
-            </GlassButton>
-          </div>
 
           {carouselItems.length > 0 && (
             <div
@@ -2047,7 +1999,7 @@ export function ActiveWorkout({
                 />
               )}
 
-              {selected.sets.length > 0 && (
+          {selected.sets.length > 0 && (
                 <div style={{ padding: `0 ${SPACE.md}px ${SPACE.lg}px`, maxWidth: "560px", margin: "0 auto", width: "100%" }}>
                   <GlassCard
                     style={{
@@ -2116,20 +2068,6 @@ export function ActiveWorkout({
               )}
             </>
           )}
-
-          <GlassButton
-            variant="destructive"
-            onClick={finish}
-            style={{
-              margin: `${spaceValue("md")}px ${spaceValue("md")}px ${spaceValue("xl")}px`,
-              width: `calc(100% - ${spaceValue("md") * 2}px)`,
-              maxWidth: 560,
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-          >
-            Finalizar
-          </GlassButton>
         </>
       )}
 

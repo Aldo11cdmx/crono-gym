@@ -285,14 +285,24 @@ function HeroHeader({
   const rank = map.globalRank;
   const strongest = map.strongest;
   const weakest = map.weakest;
+  const classifiedCount = map.classifiedCount;
+  const totalMuscles = map.muscles.size;
 
   return (
     <section className="grid gap-4">
-      <HeroMetric icon={<Award />} label={T.globalRank}>
+      <HeroMetric
+        icon={<Award />}
+        label={T.globalRank}
+        badge={
+          <span className="tabular-nums">
+            {classifiedCount} / {totalMuscles} clasificados
+          </span>
+        }
+      >
         <GlobalRankDisplay rank={rank} score={map.globalScore} />
       </HeroMetric>
 
-      <section className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+      <section className="grid gap-3 grid-cols-2">
         <RankMetric
           icon={<Flame />}
           label={T.strongest}
@@ -309,12 +319,6 @@ function HeroHeader({
           hint={weakest ? T.focusHint : "Entrena un segundo músculo para comparar."}
           onSelectMuscle={onSelectMuscle}
         />
-        <CoverageMetric
-          label="Músculos"
-          classified={map.classifiedCount}
-          total={map.muscles.size}
-          subtitle={T.classifiedOf(map.classifiedCount, map.muscles.size)}
-        />
       </section>
     </section>
   );
@@ -324,27 +328,54 @@ function HeroMetric({
   icon,
   label,
   children,
+  badge,
 }: {
   icon: React.ReactNode;
   label: string;
   children: React.ReactNode;
+  badge?: React.ReactNode;
 }) {
   return (
     <GlassCard>
-      <div className="flex items-center gap-2" style={{ color: ACCENT.text }}>
-        {icon}
-        <p
-          className="uppercase tracking-wide"
-          style={{
-            color: TEXT.tertiary,
-            fontSize: TYPE.label.size,
-            lineHeight: TYPE.label.lineHeight,
-            fontWeight: TYPE.label.weight,
-            letterSpacing: TYPE.label.tracking,
-          }}
-        >
-          {label}
-        </p>
+      <div
+        className="flex items-center justify-between"
+        style={{
+          color: ACCENT.text,
+        }}
+      >
+        <div className="flex items-center gap-2">
+          {icon}
+          <p
+            className="uppercase tracking-wide"
+            style={{
+              color: TEXT.tertiary,
+              fontSize: TYPE.label.size,
+              lineHeight: TYPE.label.lineHeight,
+              fontWeight: TYPE.label.weight,
+              letterSpacing: TYPE.label.tracking,
+            }}
+          >
+            {label}
+          </p>
+        </div>
+        {badge && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: SPACE.xs,
+              borderRadius: RADIUS.pill,
+              border: `1px solid ${ACCENT.border}`,
+              backgroundColor: ACCENT.subtle,
+              color: ACCENT.text,
+              fontSize: TYPE.caption.size,
+              fontWeight: TYPE.caption.weight,
+              padding: `${SPACE.xs} ${SPACE.sm}`,
+            }}
+          >
+            {badge}
+          </span>
+        )}
       </div>
       <div className="mt-3">{children}</div>
     </GlassCard>
@@ -472,66 +503,6 @@ function RankMetric({
           </p>
         </>
       )}
-    </GlassCard>
-  );
-}
-
-function CoverageMetric({
-  label,
-  classified,
-  total,
-  subtitle,
-}: {
-  label: string;
-  classified: number;
-  total: number;
-  subtitle: string;
-}) {
-  return (
-    <GlassCard>
-      <p
-        className="uppercase tracking-wide"
-        style={{
-          color: TEXT.tertiary,
-          fontSize: TYPE.label.size,
-          lineHeight: TYPE.label.lineHeight,
-          fontWeight: TYPE.label.weight,
-          letterSpacing: TYPE.label.tracking,
-        }}
-      >
-        {label}
-      </p>
-      <p
-        className="mt-3 tabular-nums"
-        style={{
-          fontSize: TYPE.display.size,
-          lineHeight: TYPE.display.lineHeight,
-          fontWeight: TYPE.display.weight,
-          letterSpacing: TYPE.display.tracking,
-          color: TEXT.primary,
-        }}
-      >
-        {classified}
-        <span
-          className="font-normal"
-          style={{
-            fontSize: TYPE.title2.size,
-            color: TEXT.tertiary,
-          }}
-        >
-          /{total}
-        </span>
-      </p>
-      <p
-        className="mt-1"
-        style={{
-          color: TEXT.tertiary,
-          fontSize: TYPE.caption.size,
-          lineHeight: TYPE.caption.lineHeight,
-        }}
-      >
-        {subtitle}
-      </p>
     </GlassCard>
   );
 }

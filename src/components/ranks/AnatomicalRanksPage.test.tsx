@@ -106,7 +106,7 @@ describe("AnatomicalRanksPage", () => {
     expect(screen.getByRole("heading", { name: "Rangos anatómicos" })).toBeTruthy();
     expect(screen.getByText("Rango global")).toBeTruthy();
     expect(screen.getByText(/de 100/)).toBeTruthy();
-    expect(screen.getByText(/músculos clasificados/)).toBeTruthy();
+    expect(screen.getByText(/\d+ \/ \d+ clasificados/)).toBeTruthy();
   });
 
   it("names the strongest and the focus muscle, and both are clickable", async () => {

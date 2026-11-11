@@ -486,13 +486,7 @@ export function ProgressView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const { stats, loading, error } = useProgress(userId);
   const navigate = useNavigate();
-
   const [tab, setTab] = useState<"progreso" | "rangos">("progreso");
-
-  const tabs = [
-    { value: "progreso", label: PROGRESS_LABELS.title },
-    { value: "rangos", label: "Anatomía y Rangos" },
-  ] as const;
 
   return (
     <>
@@ -511,7 +505,10 @@ export function ProgressView() {
           </div>
           <SegmentedControl
             value={tab}
-            options={tabs}
+            options={[
+              { value: "progreso", label: "Progreso" },
+              { value: "rangos", label: "Rangos" },
+            ]}
             onChange={(value) => {
               setTab(value as "progreso" | "rangos");
               if (value === "rangos") navigate("/rangos", { replace: true });
@@ -555,13 +552,7 @@ export function RangosView() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-
   const [tab, setTab] = useState<"progreso" | "rangos">("rangos");
-
-  const tabs = [
-    { value: "progreso", label: PROGRESS_LABELS.title },
-    { value: "rangos", label: RANK_LABELS.title },
-  ] as const;
 
   const browseMuscle = useCallback(
     (slug: string) => {
@@ -579,9 +570,16 @@ export function RangosView() {
 
   return (
     <div className="pb-36 space-y-6">
+      <div>
+        <h2 style={pageTitleStyle}>{PROGRESS_LABELS.title}</h2>
+        <p style={pageSubtitleStyle}>{RANK_LABELS.subtitle}</p>
+      </div>
       <SegmentedControl
         value={tab}
-        options={tabs}
+        options={[
+          { value: "progreso", label: "Progreso" },
+          { value: "rangos", label: "Rangos" },
+        ]}
         onChange={(value) => {
           setTab(value as "progreso" | "rangos");
           if (value === "progreso") navigate("/progreso", { replace: true });

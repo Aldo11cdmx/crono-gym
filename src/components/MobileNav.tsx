@@ -24,6 +24,7 @@ import {
   TRAIN_PATH,
   PROFILE_PATH,
   PROGRESS_PATH,
+  RANGES_PATH,
 } from "@/components/shell/navItems";
 
 type NavItem = {
@@ -96,7 +97,12 @@ export function MobileNav() {
           }}
         >
           {NAV_ITEMS.map((item) => {
-            const active = isActivePath(pathname, item.path);
+            const active =
+              item.path === PROGRESS_PATH
+                ? pathname === PROGRESS_PATH ||
+                  pathname === RANGES_PATH ||
+                  pathname.startsWith(RANGES_PATH + "/")
+                : isActivePath(pathname, item.path);
             const Icon = item.icon;
             if (item.primary) {
               return (

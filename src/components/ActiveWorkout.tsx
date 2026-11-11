@@ -32,7 +32,6 @@ import type { SetEntry } from "../lib/workout/types";
 import { GYM_LABELS } from "../lib/i18n";
 import {
   ACCENT,
-  DANGER,
   GLASS,
   MOTION,
   RADIUS,
@@ -1939,6 +1938,50 @@ export function ActiveWorkout({
             onTerminate={onFinished}
           />
 
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: SPACE.xs,
+              marginTop: SPACE.md,
+              paddingBottom: SPACE.sm,
+              width: "100%",
+            }}
+          >
+            <GlassButton
+              variant="ghost"
+              onClick={() => { setPickerMode("replace"); setPickerOpen(true); findExerciseReplacements({ currentExercise: selected.exercise as any, availableEquipment: availableEquipmentList, exerciseCatalog: catalog || [] }); }}
+              aria-label="Editar ejercicio"
+              style={{ flex: 1, minHeight: 40 }}
+            >
+              Editar
+            </GlassButton>
+            <GlassButton
+              variant="ghost"
+              onClick={() => { setSelectedEquipment(equipmentSuggestion.primary ?? { id: "default", name: "Sin equipo", category: "Accesorio", views: [], exerciseTypes: [] }); setEquipmentSheetOpen(true); }}
+              aria-label="Cambiar equipo"
+              style={{ flex: 1, minHeight: 40 }}
+            >
+              Equipo
+            </GlassButton>
+            <GlassButton
+              variant="ghost"
+              onClick={() => setIsDemoOpen(true)}
+              aria-label="Ver demostración"
+              style={{ flex: 1, minHeight: 40 }}
+            >
+              Demo
+            </GlassButton>
+            <GlassButton
+              variant="ghost"
+              onClick={() => setIsAvanceOpen(true)}
+              aria-label="Ver historial"
+              style={{ flex: 1, minHeight: 40 }}
+            >
+              Historial
+            </GlassButton>
+          </div>
+
           {carouselItems.length > 0 && (
             <div
               style={{
@@ -2019,7 +2062,7 @@ export function ActiveWorkout({
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "44px 1fr 88px 72px 64px 44px",
+                        gridTemplateColumns: "36px 1fr 76px 68px 52px 38px",
                         alignItems: "center",
                         gap: 8,
                         padding: "0 0 10px 0",
@@ -2074,32 +2117,19 @@ export function ActiveWorkout({
             </>
           )}
 
-          <button
-            type="button"
+          <GlassButton
+            variant="destructive"
             onClick={finish}
             style={{
               margin: `${spaceValue("md")}px ${spaceValue("md")}px ${spaceValue("xl")}px`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: spaceValue("xs"),
               width: `calc(100% - ${spaceValue("md") * 2}px)`,
               maxWidth: 560,
               marginLeft: "auto",
               marginRight: "auto",
-              minHeight: 52,
-              padding: `${spaceValue("sm")}px ${spaceValue("lg")}px`,
-              borderRadius: 16,
-              border: `1px solid ${DANGER.base}`,
-              background: DANGER.base,
-              color: TEXT.onAccent,
-              fontSize: TYPE.subhead.size,
-              fontWeight: 600,
-              cursor: "pointer",
             }}
           >
             Finalizar
-          </button>
+          </GlassButton>
         </>
       )}
 

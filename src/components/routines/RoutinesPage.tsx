@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Plus, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, AlertCircle, Loader2, ChevronRight } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -17,7 +17,7 @@ import { draftFromRoutine, displayDayLabel } from "@/lib/routines/routineDayMode
 import type { SaveResult } from "@/lib/routines/saveRoutine";
 import { ACCENT, DANGER, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { hapticLight } from "@/lib/haptics";
-import { ROUTINES_UI_LABELS } from "@/lib/i18n";
+import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
 
 type RoutineTab = "mine" | "catalog";
 type RoutineWithMode = RoutineWithExercises & {
@@ -489,9 +489,10 @@ export function RoutinesPage() {
                 <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
                   {ROUTINES_UI_LABELS.chooseDayHint}
                 </p>
-                <div style={{ display: "grid", gap: SPACE.xs }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs }}>
                   {(() => {
                     const draft = draftFromRoutine(dayPickerRoutine);
+                    const todayWeekday = (new Date().getDay() + 6) % 7;
                     return draft.days
                       .filter((d) => d.kind === "training")
                       .map((day) => {
@@ -499,11 +500,23 @@ export function RoutinesPage() {
                           day,
                           dayPickerRoutine.routineMode === "legacy" ? "single" : dayPickerRoutine.routineMode,
                         );
+                        const isToday = day.weekday != null && day.weekday === todayWeekday;
+                        const dayExercises = day.exercises;
+                        const exerciseCount = dayExercises.length;
+                        const muscleLabels = dayExercises
+                          .map((e) => {
+                            const ex = e.exercise;
+                            const raw = ex.body_part?.trim() || ex.target?.trim() || "";
+                            if (!raw) return null;
+                            return ex.body_part ? translateBodyPart(raw) : translateTarget(raw);
+                          })
+                          .filter(Boolean);
+                        const muscleFocus = [...new Set(muscleLabels)].slice(0, 2).join(" · ");
+
                         return (
-                          <GlassButton
+                          <button
                             key={day.id}
-                            variant="secondary"
-                            block
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               const dayObj = draft.days.find((d) => d.id === day.id);
@@ -532,9 +545,88 @@ export function RoutinesPage() {
                               }
                             }}
                             aria-label={`${ROUTINES_UI_LABELS.startWorkout}: ${label}`}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: SPACE.sm,
+                              padding: `${SPACE.sm}px ${SPACE.md}px`,
+                              borderRadius: RADIUS.control,
+                              border: "none",
+                              background: "transparent",
+                              color: TEXT.primary,
+                              fontSize: TYPE.subhead.size,
+                              fontWeight: 500,
+                              cursor: "pointer",
+                              width: "100%",
+                              minHeight: MOTION.minTouchTarget,
+                            }}
                           >
-                            {label}
-                          </GlassButton>
+                            <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs, flex: 1, minWidth: 0 }}>
+                              <span
+                                style={{
+                                  minWidth: 0,
+                                  fontSize: TYPE.subhead.size,
+                                  fontWeight: 600,
+                                  color: TEXT.primary,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {label}
+                              </span>
+                              {isToday && (
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    minWidth: 24,
+                                    height: 20,
+                                    padding: "0 6px",
+                                    borderRadius: RADIUS.pill,
+                                    background: ACCENT.subtle,
+                                    color: ACCENT.text,
+                                    fontSize: TYPE.caption.size,
+                                    fontWeight: 600,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  HOY
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs, flexShrink: 0 }}>
+                              {muscleFocus && (
+                                <span
+                                  style={{
+                                    fontSize: TYPE.caption.size,
+                                    color: TEXT.secondary,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {muscleFocus}
+                                </span>
+                              )}
+                              <span
+                                style={{
+                                  fontFamily: TYPE.mono.font,
+                                  fontSize: TYPE.caption.size,
+                                  fontWeight: 600,
+                                  color: TEXT.tertiary,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {exerciseCount} {exerciseCount === 1 ? "ejercicio" : "ejercicios"}
+                              </span>
+                              <ChevronRight
+                                size={16}
+                                aria-hidden="true"
+                                style={{ color: TEXT.tertiary, flexShrink: 0 }}
+                              />
+                            </div>
+                          </button>
                         );
                       });
                   })()}

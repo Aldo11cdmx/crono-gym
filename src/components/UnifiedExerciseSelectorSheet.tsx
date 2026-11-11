@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import { Activity, Check, ChevronDown, Dumbbell, Minus, Search, Sparkles, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { Slug } from "react-muscle-highlighter";
+import { translateMuscle, translateEquipment } from "@/lib/i18n";
 import type { Exercise } from "@/types/supabase";
 import { useExerciseCatalog, normaliseExerciseName } from "@/hooks/useExerciseCatalog";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -62,7 +63,6 @@ export type UnifiedExerciseSelectorSheetProps =
     });
 
 type Tab = "all" | "frequent";
-type AnatomicalView = "frontal" | "posterior";
 
 function normaliseTokens(value: string): string[] {
   return normaliseExerciseName(value).split(/\s+/).filter(Boolean);
@@ -149,7 +149,6 @@ export function UnifiedExerciseSelectorSheet({
   const [localExercises, setLocalExercises] = useState<Exercise[]>([]);
   const [opError, setOpError] = useState<string | null>(null);
   const [previouslyFocused, setPreviouslyFocused] = useState<HTMLElement | null>(null);
-  const [anatomicalView, setAnatomicalView] = useState<AnatomicalView>("frontal");
   const scrollContainer = useRef<HTMLDivElement>(null);
   const focusIndexRef = useRef<number>(-1);
   const searchIndexRef = useRef<Map<string, Set<string>> | null>(null);
@@ -824,118 +823,6 @@ export function UnifiedExerciseSelectorSheet({
             </div>
           </div>
         )}
-
-        {mode === "multiple" && selectedIds.size > 0 && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: Z_INDEX.toast - 1,
-              pointerEvents: "none",
-              padding: `${SPACE.md}px ${SPACE.md}px ${SPACE.lg}px`,
-            }}
-          >
-            <div
-              style={{
-                position: "relative",
-                height: 320,
-                maxHeight: "40vh",
-                borderRadius: `${RADIUS.card} ${RADIUS.card} 0 0`,
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "rgba(9,9,11,0.95)",
-                backdropFilter: "blur(40px)",
-                WebkitBackdropFilter: "blur(40px)",
-                boxShadow: "0 -8px 32px rgba(0,0,0,0.5)",
-                overflow: "hidden",
-                maxWidth: "920px",
-                margin: "0 auto",
-              }}
-            >
-              <div style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                flexDirection: "column",
-              }}>
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: SPACE.xs,
-                  padding: `${SPACE.xs}px ${SPACE.md}px`,
-                  borderBottom: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(9,9,11,0.9)",
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                }}>
-                  {(["frontal", "posterior"] as const).map((view) => (
-                    <button
-                      key={view}
-                      type="button"
-                      onClick={() => setAnatomicalView(view)}
-                      aria-pressed={anatomicalView === view}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: SPACE.xs,
-                        minHeight: 32,
-                        padding: `0 ${SPACE.md}px`,
-                        borderRadius: RADIUS.pill,
-                        border: "none",
-                        background: anatomicalView === view ? "rgba(255,59,48,0.15)" : "transparent",
-                        color: anatomicalView === view ? ACCENT.base : TEXT.secondary,
-                        fontSize: TYPE.label.size,
-                        fontWeight: anatomicalView === view ? 600 : 500,
-                        letterSpacing: TYPE.label.tracking,
-                        textTransform: "uppercase",
-                        cursor: "pointer",
-                        transition: "all 150ms ease",
-                      }}
-                    >
-                      {view === "frontal" ? "Frontal" : "Posterior"}
-                    </button>
-                  ))}
-                </div>
-                <div style={{
-                  flex: 1,
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}>
-                  {anatomicalView === "frontal" ? (
-                    <svg viewBox="0 0 200 320" preserveAspectRatio="xMidYMid meet" style={{ width: "100%", height: "100%", maxWidth: "200px" }} aria-hidden="true">
-                      <path d="M100 10 Q80 40 60 80 Q40 120 40 160 Q40 200 60 240 Q80 280 100 310 Q120 280 140 240 Q160 200 160 160 Q160 120 140 80 Q120 40 100 10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
-                      <circle cx="100" cy="60" r="20" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <circle cx="70" cy="100" r="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <circle cx="130" cy="100" r="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="100" cy="160" rx="30" ry="25" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="60" cy="220" rx="18" ry="22" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="140" cy="220" rx="18" ry="22" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="80" cy="280" rx="14" ry="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="120" cy="280" rx="14" ry="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 200 320" preserveAspectRatio="xMidYMid meet" style={{ width: "100%", height: "100%", maxWidth: "200px" }} aria-hidden="true">
-                      <path d="M100 10 Q80 40 60 80 Q40 120 40 160 Q40 200 60 240 Q80 280 100 310 Q120 280 140 240 Q160 200 160 160 Q160 120 140 80 Q120 40 100 10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
-                      <ellipse cx="100" cy="70" rx="25" ry="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="70" cy="130" rx="20" ry="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="130" cy="130" rx="20" ry="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="100" cy="190" rx="28" ry="22" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="60" cy="250" rx="18" ry="22" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="140" cy="250" rx="18" ry="22" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="80" cy="300" rx="14" ry="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                      <ellipse cx="120" cy="300" rx="14" ry="18" fill="rgba(255,59,48,0.1)" stroke="rgba(255,59,48,0.3)" strokeWidth="1"/>
-                    </svg>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>,
     document.body,
@@ -966,8 +853,8 @@ function SelectorCard({ exercise, order, selected, multiSelect, expanded, alread
   const active = selected && !alreadyInDay;
   const reducedMotion = useReducedMotion();
 
-  const muscleLabel = primaryMuscle.toUpperCase();
-  const equipmentLabel = equipment.toUpperCase();
+  const muscleLabel = translateMuscle(primaryMuscle).toUpperCase();
+  const equipmentLabel = translateEquipment(equipment).toUpperCase();
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!alreadyInDay && !reducedMotion) e.currentTarget.style.transform = "scale(0.99)";

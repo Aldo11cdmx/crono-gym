@@ -13,16 +13,19 @@
  * All exercise names stripped of catalog IDs via regex: .replace(/\s*[•·-]\s*\d{3,5}$/, '')
  */
 
+import { useMemo, useState } from "react";
 import { ChevronLeft, Play } from "lucide-react";
 import { MuscleReadonlyMap, countMuscleSets } from "../MuscleReadonlyMap";
 import type { PlannedExercise } from "../../hooks/useGymData";
 import { estimateMinutes } from "../../lib/routines/routineDraftModel";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import { resolveMedia } from "@/lib/media/mediaResolver";
+import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import { ACCENT, CRIMSON, GLASS, RADIUS, SPACE, SURFACE, TEXT, TYPE } from "@/design/tokens";
+import { translateMuscle } from "@/lib/i18n";
 
 const COLUMN_MAX_WIDTH = 520;
-const DUAL_MAP_SIZE = 144; // capsule height for dual frontal/posterior maps
 
 /** Strips catalog ID suffixes like " • 0028", " - 0123", "· 0045" from exercise names. */
 function cleanExerciseName(name: string): string {
@@ -197,98 +200,35 @@ export function WorkoutPreStartView({
             </div>
           </div>
 
-          {/* Dual Anatomy Map Capsule */}
+          {/* Scaled Anatomy Map */}
           <div
             style={{
-              width: "100%",
-              height: DUAL_MAP_SIZE,
-              borderRadius: 24,
+              width: 72,
+              height: 136,
+              overflow: "hidden",
+              borderRadius: RADIUS.card,
+              border: `1px solid ${GLASS.border}`,
               background: "rgba(0, 0, 0, 0.5)",
-              border: "1px solid rgba(255, 255, 255, 0.06)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 0,
-              overflow: "hidden",
-              position: "relative",
+              transform: "scale(0.44)",
+              transformOrigin: "top center",
+              margin: "0 auto",
             }}
           >
-            <div style={{ width: "50%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <MuscleReadonlyMap
-                counts={counts}
-                side="front"
-                label={`Mapa frontal de ${routineTitle}`}
-                aspectRatio={1}
-                backgroundColor="transparent"
-                inertFill="transparent"
-                litFill={CRIMSON.base}
-                mostLitFill={CRIMSON.muted}
-                caption={null}
-                overflow="visible"
-              />
-            </div>
-            <div
-              style={{
-                width: 1,
-                height: "60%",
-                background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent)",
-              }}
-              aria-hidden="true"
+            <MuscleReadonlyMap
+              counts={counts}
+              side="front"
+              label={`Mapa muscular de ${routineTitle}`}
+              aspectRatio={1}
+              backgroundColor="transparent"
+              inertFill="transparent"
+              litFill={CRIMSON.base}
+              mostLitFill={CRIMSON.muted}
+              caption={null}
+              overflow="visible"
             />
-            <div style={{ width: "50%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <MuscleReadonlyMap
-                counts={counts}
-                side="back"
-                label={`Mapa posterior de ${routineTitle}`}
-                aspectRatio={1}
-                backgroundColor="transparent"
-                inertFill="transparent"
-                litFill={CRIMSON.base}
-                mostLitFill={CRIMSON.muted}
-                caption={null}
-                overflow="visible"
-              />
-            </div>
-            {/* FRENTE / ESPALDA labels */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 8,
-                left: 0,
-                right: 0,
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "0 16px",
-                pointerEvents: "none",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: TYPE.mono.font,
-                  fontSize: TYPE.label.size,
-                  fontWeight: TYPE.label.weight,
-                  letterSpacing: TYPE.label.tracking,
-                  textTransform: "uppercase",
-                  color: TEXT.tertiary,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.8)",
-                }}
-              >
-                FRENTE
-              </span>
-              <span
-                style={{
-                  fontFamily: TYPE.mono.font,
-                  fontSize: TYPE.label.size,
-                  fontWeight: TYPE.label.weight,
-                  letterSpacing: TYPE.label.tracking,
-                  textTransform: "uppercase",
-                  color: TEXT.tertiary,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.8)",
-                }}
-              >
-                ESPALDA
-              </span>
-            </div>
           </div>
 
           {/* Integrated Muscle Distribution */}
@@ -328,7 +268,7 @@ export function WorkoutPreStartView({
               >
                 {muscleRows.slice(0, 6).map(([slug, count]) => {
                   const pct = Math.round((count / totalSets) * 100);
-                  const label = slug; // MUSCLE_LABELS_ES would be imported but we use slug for now
+                  const label = translateMuscle(slug);
                   return (
                     <li key={slug} style={{ display: "flex", alignItems: "center", gap: SPACE.sm }}>
                       <span style={{ flex: 1, minWidth: 0, color: TEXT.primary, fontSize: TYPE.caption.size }}>
@@ -402,47 +342,54 @@ export function WorkoutPreStartView({
                 flexDirection: "column",
               }}
             >
-              {planned.map((exercise, idx) => (
-                <li
-                  key={exercise.exercise.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: SPACE.md,
-                    padding: `${SPACE.md}px ${SPACE.lg}px`,
-                    borderBottom: idx < planned.length - 1 ? "1px solid rgba(255, 255, 255, 0.06)" : "none",
-                  }}
-                >
-                  <div
+              {planned.map((exercise, idx) => {
+                const media = useMemo(() => resolveMedia("exercise-gif", exercise.exercise.id, exercise.exercise.gif_url), [exercise.exercise.id, exercise.exercise.gif_url]);
+                const { src, failed, onLoad, onError } = useMediaSrc(media);
+                const [thumbFailed, setThumbFailed] = useState(false);
+                return (
+                  <li
+                    key={exercise.exercise.id}
                     style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 12,
-                      background: SURFACE.base,
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      overflow: "hidden",
-                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      gap: SPACE.md,
+                      padding: `${SPACE.md}px ${SPACE.lg}px`,
+                      borderBottom: idx < planned.length - 1 ? "1px solid rgba(255, 255, 255, 0.06)" : "none",
                     }}
                   >
-                    {/* Exercise thumbnail placeholder - could be replaced with actual media */}
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      style={{ color: TEXT.tertiary }}
-                      aria-hidden="true"
+                    <div
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 12,
+                        background: SURFACE.base,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        overflow: "hidden",
+                        border: "1px solid rgba(255, 255, 255, 0.06)",
+                      }}
                     >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                  </div>
+                      {failed || thumbFailed ? (
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          style={{ color: TEXT.tertiary }}
+                          aria-hidden="true"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                      ) : (
+                        <img src={src} alt="" width={48} height={48} decoding="async" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onLoad={onLoad} onError={() => { setThumbFailed(true); onError(); }} />
+                      )}
+                    </div>
                   <span
                     style={{
                       flex: 1,
@@ -472,7 +419,8 @@ export function WorkoutPreStartView({
                     {exercise.target_sets} {exercise.target_sets === 1 ? "serie" : "series"}
                   </span>
                 </li>
-              ))}
+              );
+            })}
             </ul>
           </GlassCard>
         )}

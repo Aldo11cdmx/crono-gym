@@ -310,9 +310,9 @@ describe("DashboardPage", () => {
 
     expect(screen.getByText(/Buenas tardes, Test/)).toBeTruthy();
     expect(screen.getByText("1 ejercicio • 15 min")).toBeTruthy();
-    expect(screen.getByText("Comenzar entrenamiento")).toBeTruthy();
+    expect(screen.getByText("Iniciar entreno →")).toBeTruthy();
     // Un solo CTA prominente primario.
-    expect(screen.getAllByText("Comenzar entrenamiento").length).toBe(1);
+    expect(screen.getAllByText("Iniciar entreno →").length).toBe(1);
     expect(screen.queryByText("Crear rutina")).toBeFalsy();
     // El monito anatomico va a la derecha en su contenedor recortado.
     expect(screen.getByTestId("muscle-readonly-map")).toBeTruthy();
@@ -328,7 +328,7 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByText("Comenzar entrenamiento"));
+    fireEvent.click(screen.getByText("Iniciar entreno →"));
     expect(mockStart).toHaveBeenCalledWith({
       routine: { id: "r-1", title: "Full Body" },
       routineDayId: expect.any(String),
@@ -379,7 +379,7 @@ describe("DashboardPage", () => {
 
     // Hoy es Lunes (FIXED_NOW): todos los días son descanso, así que
     // el CTA principal no inicia sesión.
-    const cta = screen.getByRole("button", { name: /Comenzar|Sin sesión|programada/i });
+    const cta = screen.getByRole("button", { name: /Iniciar|Sin sesión|programada/i });
     fireEvent.click(cta);
     expect(mockStart).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
@@ -406,7 +406,7 @@ describe("DashboardPage", () => {
     expect(screen.queryByText("Comenzar entrenamiento")).toBeFalsy();
   });
 
-  it("shows Ver historial when today's session is completed and navigates to progreso", () => {
+  it("shows Ver progreso when today's session is completed and navigates to progreso", () => {
     mockState.sessions = [
       {
         id: "s-today",
@@ -434,8 +434,8 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Ver historial")).toBeTruthy();
-    fireEvent.click(screen.getByText("Ver historial"));
+    expect(screen.getByText("Ver progreso →")).toBeTruthy();
+    fireEvent.click(screen.getByText("Ver progreso →"));
     expect(mockNavigate).toHaveBeenCalledWith("/progreso");
     expect(mockStart).not.toHaveBeenCalled();
   });
@@ -464,7 +464,7 @@ describe("DashboardPage", () => {
     );
 
     expect(screen.getByText("Esta semana")).toBeTruthy();
-    expect(screen.getByText("0/3 completados")).toBeTruthy();
+    expect(screen.getByText("0/3 días activos")).toBeTruthy();
     ["L", "M", "X", "J", "V", "S", "D"].forEach((letter) =>
       expect(screen.getByText(letter)).toBeTruthy(),
     );
@@ -504,8 +504,8 @@ describe("DashboardPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByText("0/3 completados")).toBeFalsy();
-    expect(screen.getByText("1/3 completados")).toBeTruthy();
+    expect(screen.queryByText("0/3 días activos")).toBeFalsy();
+    expect(screen.getByText("1/3 días activos")).toBeTruthy();
   });
 
   it("renders the fatigue alert card and the active announcements feed", async () => {
@@ -536,12 +536,13 @@ describe("DashboardPage", () => {
 
     expect(screen.getByText("Mantenimiento del gimnasio")).toBeTruthy();
     expect(screen.getByText("El gimnasio cierra a las 22 h.")).toBeTruthy();
-    expect(screen.getByText("Aviso")).toBeTruthy();
+    expect(screen.getByText("📢 AVISO OFICIAL")).toBeTruthy();
     // NingÃºn anuncio vÃ­a de mojibake.
     expect(document.body.textContent).not.toMatch(/Ã|\uFFFD/);
   });
 
   it("shows the daily tip card when there are no announcements", async () => {
+    window.localStorage.setItem("cronos-announcements", "[]");
     mockSelect.mockReturnValue({
       order: () => Promise.resolve({ data: [], error: null }),
     });
@@ -597,6 +598,7 @@ describe("DashboardPage", () => {
   });
 
   it("cycles to a different tip when clicking Siguiente tip", async () => {
+    window.localStorage.setItem("cronos-announcements", "[]");
     mockSelect.mockReturnValue({
       order: () => Promise.resolve({ data: [], error: null }),
     });

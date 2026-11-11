@@ -11,7 +11,7 @@
  *   Récords, Historial, Cronos IA, Navegación inferior.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { RefreshCw, AlertTriangle } from "lucide-react";
 
@@ -24,7 +24,7 @@ import type { RoutineDay } from "@/lib/routines/routineDayModel";
 import { PROFILE_PATH, PROGRESS_PATH, TRAIN_PATH } from "@/components/shell/navItems";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { supabase } from "@/lib/supabase";
+import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { CoachBanner } from "@/components/coach/portal/CoachBanner";
 import { WeeklyProgressSection } from "@/components/dashboard/sections/WeeklyProgressSection";
 import { TipSection } from "@/components/dashboard/sections/TipSection";
@@ -49,21 +49,6 @@ import {
  * Se apoya en negro profundo + glass existente para integrarse con AppShell/body.
  */
 const TODAY_CANVAS = "#000000";
-
-interface Announcement {
-  id: string;
-  title: string;
-  message: string;
-  kind: "promo" | "notice" | "event";
-  starts_at: string;
-  expires_at: string;
-}
-
-const KIND_LABELS: Record<Announcement["kind"], string> = {
-  promo: "Promoci&oacute;n",
-  notice: "Aviso",
-  event: "Evento",
-};
 
 /** Videogame-loading-screen style tips for the empty feed state. */
 interface Tip {
@@ -171,42 +156,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const data = useDashboardHome(userId);
   const isMobile = useMediaQuery("(max-width: 639px)");
 
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
-  const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
+  const { announcements, save: publishAnnouncement, remove: deleteAnnouncement } = useAnnouncements();
   const [tipIndex, setTipIndex] = useState(0);
   const coachId: string | null = null;
   const [requestOpen, setRequestOpen] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setAnnouncementsLoading(true);
-    (async () => {
-      try {
-        const { data: rows, error } = await (supabase as any)
-          .from("announcements")
-          .select("id, title, message, kind, starts_at, expires_at")
-          .order("starts_at", { ascending: false });
-        if (cancelled) return;
-        if (error) {
-          setAnnouncementsError(error.message);
-          setAnnouncements([]);
-        } else {
-          setAnnouncements((rows ?? []) as Announcement[]);
-          setAnnouncementsError(null);
-        }
-      } catch {
-        if (cancelled) return;
-        setAnnouncementsError("No se pudieron cargar los anuncios.");
-        setAnnouncements([]);
-      } finally {
-        if (!cancelled) setAnnouncementsLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const sessionState = useMemo<SessionState>(() => {
     if (data.isSessionActive) return "in-progress";
@@ -243,14 +196,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     if (data.recoverableDraft) {
       return `Recuperar entrenamiento: ${data.recoverableDraft.routineTitle ?? "Entrenamiento"}`;
     }
-    if (sessionState === "completed") return "Ver historial";
+    if (sessionState === "completed") return "Ver progreso →";
     if (sessionState === "in-progress") {
       const activeTitle = data.activeSession?.title?.trim();
       return activeTitle ? `Continuar: ${activeTitle}` : "Continuar entrenamiento";
     }
-    if (routine?.exerciseCount && routine.exerciseCount > 0) return "Comenzar entrenamiento";
+    if (routine?.exerciseCount && routine.exerciseCount > 0) return "Iniciar entreno →";
     if (!todayPlan) return "Sin sesión programada";
-    return "Comenzar entrenamiento";
+    return "Iniciar entreno →";
   }, [
     sessionState,
     data.rehydrating,
@@ -498,6 +451,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             onPrimary={handlePrimary}
             focusLabel={hasRoutine ? data.dailyFocus.dayLabel : null}
             isCompleted={sessionState === "completed"}
+            completedSummary={data.completedToday}
+            onExtra={() => navigate(TRAIN_PATH)}
             isRecoverable={!!data.recoverableDraft}
             compact={isMobile}
           />
@@ -557,68 +512,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
              En escritorio: Récords primero, Cronos IA después; xl:col-span-4 xl:row-start-1. */}
         <div className="flex flex-col gap-5 md:gap-6 min-w-0 xl:col-span-4 xl:row-start-1 order-4 sm:order-auto">
           {/* Cronos IA: primera en móvil, segunda en escritorio. */}
-          <div className="flex flex-col gap-4 order-1 sm:order-2">
-            <div className="flex items-end justify-between gap-3 flex-wrap">
-              <div className="min-w-0">
-                <p style={{ ...TYPE.label, color: ACCENT.text, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Cronos IA
-                </p>
-                <p style={{ ...TYPE.title2, color: TEXT.primary, margin: `${SPACE.xs} 0 0`, letterSpacing: "-0.02em" }}>
-                  Tips y anuncios
-                </p>
-              </div>
-            </div>
-
-            {announcements.map((announcement) => (
-              <div
-                key={announcement.id}
-                style={{
-                  padding: `${SPACE.sm} 0`,
-                  borderTop: `1px solid ${GLASS.border}`,
-                }}
-              >
-                <span
-                  style={{
-                    ...TYPE.caption,
-                    color: ACCENT.text,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  {KIND_LABELS[announcement.kind]}
-                </span>
-                <h3
-                  style={{
-                    ...TYPE.subhead,
-                    color: TEXT.primary,
-                    margin: `${SPACE.xs} 0 0`,
-                  }}
-                >
-                  {announcement.title}
-                </h3>
-                <p
-                  style={{
-                    ...TYPE.body,
-                    color: TEXT.secondary,
-                    margin: `${SPACE.xs} 0 0`,
-                  }}
-                >
-                  {announcement.message}
-                </p>
-              </div>
-            ))}
-
-            {announcements.length === 0 &&
-              !announcementsLoading &&
-              !announcementsError && (
-                <TipSection tip={TIP_CATALOG[tipIndex]} onNext={nextTip} embedded />
-              )}
-            {announcementsLoading ? (
-              <p style={{ ...TYPE.body, color: TEXT.tertiary, margin: 0 }}>Cargando anuncios...</p>
-            ) : null}
-            {announcementsError ? (
-              <p style={{ ...TYPE.caption, color: STATUS.error.text, margin: 0 }}>{announcementsError}</p>
-            ) : null}
+          <div className="order-1 sm:order-2">
+            <TipSection tip={TIP_CATALOG[tipIndex]} onNext={nextTip} announcements={announcements} onPublish={publishAnnouncement} onDelete={deleteAnnouncement} />
           </div>
 
           {/* Récords personales: segunda en móvil, primera en escritorio. */}

@@ -1,10 +1,11 @@
-import { ArrowRight, Play, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowRight, Play, RotateCcw, Sparkles, Plus } from "lucide-react";
 
 import { GlassButton } from "@/components/ui/GlassButton";
 import { MuscleReadonlyMap } from "@/components/MuscleReadonlyMap";
 import { formatSessionMeta } from "@/lib/dashboard/heroCardModel";
 import { ACCENT, GLASS, MOTION, NUMERIC, RADIUS, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import type { CompletedSessionSummary } from "@/lib/dashboard/dashboardMetrics";
 
 export interface TrainingHeroSectionProps {
   greeting: string;
@@ -19,6 +20,8 @@ export interface TrainingHeroSectionProps {
   focusLabel?: string | null;
   isCompleted?: boolean;
   isRecoverable?: boolean;
+  completedSummary?: CompletedSessionSummary | null;
+  onExtra?: () => void;
   /** Reduce altura y tamaño del mapa muscular en pantallas estrechas. */
   compact?: boolean;
 }
@@ -36,6 +39,8 @@ export function TrainingHeroSection({
   focusLabel,
   isCompleted = false,
   isRecoverable = false,
+  completedSummary = null,
+  onExtra,
   compact = false,
 }: TrainingHeroSectionProps) {
   const reduce = useReducedMotion();
@@ -80,7 +85,7 @@ export function TrainingHeroSection({
       <div className="relative grid grid-cols-[1fr_auto] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-8 lg:items-end">
         <div className="min-w-0 p-3 px-4 md:p-4 lg:p-6">
           <div className="flex items-center gap-2 flex-wrap">
-            <span
+            {!isCompleted ? <span
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -96,8 +101,8 @@ export function TrainingHeroSection({
               }}
             >
               <Sparkles size={12} aria-hidden="true" />
-              Hoy
-            </span>
+              {isCompleted ? "✓ COMPLETADO HOY" : "⚡ HOY"}
+            </span> : null}
             {focusLabel && hasRoutine && focusLabel.trim() !== routineTitle.trim() ? (
               <span style={{ ...TYPE.caption, color: TEXT.tertiary }}>
                 Enfoque: <span style={{ color: TEXT.secondary, fontWeight: 600 }}>{focusLabel}</span>
@@ -107,7 +112,19 @@ export function TrainingHeroSection({
 
           <p style={{ ...TYPE.callout, color: TEXT.secondary, margin: `${SPACE.md} 0 0` }}>{greeting}</p>
 
-          {hasRoutine ? (
+          {isCompleted && completedSummary ? (
+            <>
+              <span className="mt-4 inline-flex rounded-full border border-[#30D158]/30 bg-[#30D158]/15 px-3 py-1 text-xs font-semibold text-[#30D158]">
+                ✓ COMPLETADO HOY
+              </span>
+              <h1 className="mt-3 max-w-[14ch] text-[clamp(1.9rem,6vw,2.6rem)] font-bold leading-tight tracking-tight text-white">
+                {completedSummary.title}
+              </h1>
+              <p className="mt-3 font-mono text-xs text-zinc-400">
+                {completedSummary.durationMin} min · {completedSummary.exerciseCount} ejercicios
+              </p>
+            </>
+          ) : hasRoutine ? (
             <>
               <h1
                 style={{
@@ -166,12 +183,13 @@ export function TrainingHeroSection({
               transition: reduce ? undefined : "transform 150ms ease",
             }}
           >
-            <GlassButton
-              variant="primary"
-              icon={ctaIcon}
-              onClick={onPrimary}
-              disabled={ctaDisabled}
-              className="w-full lg:w-auto"
+            <div className={isCompleted ? "flex items-center gap-2" : ""}>
+              <GlassButton
+                variant="primary"
+                icon={ctaIcon}
+                onClick={onPrimary}
+                disabled={ctaDisabled}
+                className="h-11 whitespace-nowrap rounded-xl px-5 font-semibold active:scale-[0.98] transition-transform w-full lg:w-auto"
               style={{
                 minHeight: 52,
                 fontSize: TYPE.subhead.size,
@@ -180,9 +198,17 @@ export function TrainingHeroSection({
                 color: ctaInverse ? TEXT.primary : undefined,
                 boxShadow: ctaDisabled ? "none" : `0 12px 30px ${ACCENT.glow}`,
               }}
-            >
-              {resolvedLabel}
-            </GlassButton>
+              >
+                {isCompleted ? "Ver progreso →" : resolvedLabel}
+              </GlassButton>
+              {isCompleted && onExtra ? (
+                <button type="button" aria-label="Iniciar sesión extra" onClick={onExtra}
+                  className="inline-flex h-11 min-w-11 items-center justify-center rounded-xl bg-[#2C2C2E] px-3 text-white active:scale-[0.98] transition-transform">
+                  <Plus size={18} aria-hidden="true" />
+                  <span className="sr-only">Extra</span>
+                </button>
+              ) : null}
+            </div>
             {ctaDisabled && (
               <p
                 style={{

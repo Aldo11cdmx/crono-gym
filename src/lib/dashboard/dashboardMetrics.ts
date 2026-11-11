@@ -49,6 +49,8 @@ export interface DashboardSession {
  */
 export interface RecentPR {
   exerciseName: string;
+  weight: number;
+  reps: number;
   estimated1RM: number;
   achievedAt: string;
 }
@@ -125,6 +127,8 @@ export interface WeeklyPlanDay {
   isToday: boolean;
   /** True when the athlete completed at least one session this day. */
   trained: boolean;
+  sessionCount: number;
+  durationMin: number;
 }
 
 /** Full Spanish weekday names, Monday (index 0) through Sunday (index 6). */
@@ -208,6 +212,14 @@ export function getWeeklyPlan(
     const trained = sessions.some(
       (s) => s.completedAt && localDateKey(new Date(s.startedAt)) === dateKey,
     );
+    const daySessions = sessions.filter(
+      (s) => s.completedAt && localDateKey(new Date(s.startedAt)) === dateKey,
+    );
+    const durationMin = daySessions.reduce((total, session) => {
+      if (!session.completedAt) return total;
+      const duration = Math.round((Date.parse(session.completedAt) - Date.parse(session.startedAt)) / 60000);
+      return total + (Number.isFinite(duration) && duration > 0 ? duration : 0);
+    }, 0);
 
     const dayLabel =
       planLabels.length > 0 ? planLabels[i % planLabels.length] ?? null : null;
@@ -218,6 +230,8 @@ export function getWeeklyPlan(
       dayLabel: dayLabel && dayLabel.trim() !== "" ? dayLabel : null,
       isToday: i === todayIdx,
       trained,
+      sessionCount: daySessions.length,
+      durationMin,
     });
   }
 
@@ -369,11 +383,13 @@ export function getRecentPRs(
 
     for (const set of session.sets) {
       if (set.isWarmup) continue;
-      if (set.reps === null || set.reps <= 0) continue;
-      if (set.reps > EXERCISE_METRICS.MAX_ESTIMATABLE_REPS) continue;
-      if (set.weight === null || set.weight <= 0) continue;
+      const reps = Number(set.reps);
+      const weight = Number(set.weight);
+      if (!Number.isFinite(reps) || reps <= 0) continue;
+      if (reps > EXERCISE_METRICS.MAX_ESTIMATABLE_REPS) continue;
+      if (!Number.isFinite(weight) || weight <= 0) continue;
 
-      const estimate = estimateOneRepMax(set.weight, set.reps);
+      const estimate = estimateOneRepMax(weight, reps);
       if (estimate === null) continue;
 
       const current = best.get(set.exerciseId);
@@ -381,6 +397,8 @@ export function getRecentPRs(
         if (current !== undefined && inWindow) {
           found.push({
             exerciseName: set.exerciseName,
+            weight,
+            reps,
             estimated1RM: estimate,
             achievedAt: session.startedAt,
           });

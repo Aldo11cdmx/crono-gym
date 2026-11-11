@@ -121,6 +121,21 @@ describe("getRecentPRs", () => {
     expect(prs).toHaveLength(0);
   });
 
+  it("coerces numeric strings from Postgres before extracting a PR", () => {
+    const sessions = [
+      makeSession({
+        startedAt: "2026-09-30T10:00:00",
+        sets: [{ weight: "100" as unknown as number, reps: "5" as unknown as number, exerciseName: "Squat" }],
+      }),
+      makeSession({
+        startedAt: "2026-10-02T10:00:00",
+        sets: [{ weight: "110" as unknown as number, reps: "5" as unknown as number, exerciseName: "Squat" }],
+      }),
+    ];
+    const prs = getRecentPRs(sessions, Date.parse("2026-10-03T10:00:00"));
+    expect(prs[0]).toMatchObject({ weight: 110, reps: 5 });
+  });
+
   it("ignores sets with too many reps (> MAX_ESTIMATABLE_REPS)", () => {
     const sessions = [
       makeSession({

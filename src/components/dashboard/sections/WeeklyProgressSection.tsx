@@ -1,4 +1,5 @@
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { Check, Flame } from "lucide-react";
 
 import { WEEKDAY_SHORT_ES } from "@/lib/dashboard/heroCardModel";
 import { ACCENT, GLASS, RADIUS, SPACE, TEXT, TYPE, NUMERIC } from "@/design/tokens";
@@ -21,11 +22,13 @@ export function WeeklyProgressSection({
   className,
 }: WeeklyProgressSectionProps) {
   const reduce = useReducedMotion();
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const safeGoal = weeklyGoal > 0 ? weeklyGoal : 7;
-  const progressLabel = `${weeklyCompleted}/${safeGoal} completados`;
+  const activeDays = weeklyPlan?.filter((day) => day.trained).length ?? 0;
+  const progressLabel = `${activeDays}/${safeGoal} días activos`;
   const streakLabel =
     streakStats && streakStats.currentDays > 0
-      ? `Racha: ${streakStats.currentDays} día${streakStats.currentDays === 1 ? "" : "s"}`
+      ? `Racha: ${streakStats.currentDays}d`
       : null;
 
   return (
@@ -46,14 +49,15 @@ export function WeeklyProgressSection({
           <p style={{ ...TYPE.subhead, color: TEXT.primary, margin: `${SPACE.xs} 0 0`, fontVariantNumeric: NUMERIC.transform }}>
             {progressLabel}
           </p>
-          {streakLabel ? (
-            <p style={{ ...TYPE.caption, color: ACCENT.text, margin: `${SPACE.xs} 0 0` }}>{streakLabel}</p>
-          ) : null}
+          <span className="mt-1 inline-flex rounded-full bg-[#2C2C2E] px-2 py-1 font-mono text-xs text-zinc-400">
+            {weeklyCompleted} sesiones
+          </span>
         </div>
+        {streakLabel ? <span className="inline-flex items-center gap-1 rounded-full bg-[#2C2C2E] px-3 py-1 font-mono text-xs text-[#FF3B30]"><Flame size={13} /> {streakLabel}</span> : null}
       </div>
 
       <div
-        role="img"
+        role="group"
         aria-label={`Progreso semanal: ${weeklyCompleted} de ${weeklyGoal} entrenamientos completados`}
         className="flex w-full"
         style={{
@@ -69,8 +73,10 @@ export function WeeklyProgressSection({
           const trained = day?.trained ?? false;
           const isLast = index === WEEKDAY_SHORT_ES.length - 1;
           return (
-            <div
+            <button
+              type="button"
               key={short}
+              onClick={() => setSelectedDay((current) => current === index ? null : index)}
               title={day?.dayName}
               aria-label={`${short}: ${trained ? "completado" : isToday ? "hoy, pendiente" : "pendiente"}`}
               className="flex-1 min-w-0 flex items-stretch justify-center"
@@ -96,10 +102,21 @@ export function WeeklyProgressSection({
                 {trained ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : null}
                 <span>{short}</span>
               </span>
-            </div>
+            </button>
           );
         })}
       </div>
+      {weeklyPlan && selectedDay !== null ? (
+        <p className="mt-2 font-mono text-xs text-zinc-400" aria-live="polite">
+          {(() => {
+            const day = weeklyPlan[selectedDay];
+            if (!day || day.sessionCount === 0) return `${day?.dayName ?? "Hoy"} · Sin registros`;
+            const date = new Date(`${day.date}T12:00:00`);
+            const dateLabel = Number.isNaN(date.getTime()) ? day.date : date.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+            return `${day.dayName} ${dateLabel} · ${day.sessionCount} ${day.sessionCount === 1 ? "sesión" : "sesiones"} · ${day.durationMin} min`;
+          })()}
+        </p>
+      ) : null}
     </section>
   );
 }

@@ -84,45 +84,55 @@ export function HistorySection({
         const duration = sessionDurationLabel(s.startedAt, s.completedAt);
         const workingSets = s.sets.filter((set) => !set.isWarmup).length;
         return (
-          <div
-            key={s.id}
-            className="flex items-start justify-between gap-3"
-            style={{
-              padding: `${SPACE.xs} 0`,
-              borderTop: `1px solid ${GLASS.border}`,
-            }}
-          >
-            <div className="min-w-0">
-              <p style={{ ...TYPE.body, color: TEXT.primary, margin: 0, wordBreak: "break-word" }}>
-                {s.routineTitle?.trim() || "Sesión"}
-              </p>
-              <p style={{ ...TYPE.caption, color: TEXT.tertiary, margin: 0 }}>
-                {formatSessionDate(s.startedAt)}
-                {duration ? ` · ` : null}
-                {duration ? (
-                  <span
-                    style={{
-                      ...TYPE.mono,
-                      fontVariantNumeric: "tabular-nums",
-                      color: TEXT.secondary,
-                    }}
-                  >
-                    {duration}
-                  </span>
-                ) : null}
-                {workingSets > 0 ? ` · ${workingSets} series` : ""}
-              </p>
-            </div>
-            <span
+            <div
+              key={s.id}
+              className="flex items-center justify-between gap-3"
               style={{
-                ...TYPE.caption,
-                color: s.completedAt ? TEXT.secondary : TEXT.tertiary,
-                whiteSpace: "nowrap",
+                padding: "4px 0",
+                borderTop: `1px solid ${GLASS.border}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              {s.completedAt ? "Completada" : "Incompleta"}
-            </span>
-          </div>
+              <div className="min-w-0" style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+                <p style={{ ...TYPE.body, color: TEXT.primary, margin: 0, wordBreak: "break-word" }}>
+                  {s.routineTitle?.trim() || "Sesión"}
+                </p>
+                <span
+                  style={{
+                    ...TYPE.caption,
+                    color: TEXT.tertiary,
+                    margin: 0,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {formatSessionDate(s.startedAt)}
+                  {duration ? ` · ` : null}
+                  {duration ? (
+                    <span
+                      style={{
+                        ...TYPE.mono,
+                        fontVariantNumeric: "tabular-nums",
+                        color: TEXT.secondary,
+                      }}
+                    >
+                      {duration}
+                    </span>
+                  ) : null}
+                  {workingSets > 0 ? ` · ${workingSets} series` : ""}
+                </span>
+              </div>
+              <span
+                style={{
+                  ...TYPE.caption,
+                  color: s.completedAt ? TEXT.secondary : TEXT.tertiary,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {s.completedAt ? "Completada" : "Incompleta"}
+              </span>
+            </div>
         );
       })}
     </div>

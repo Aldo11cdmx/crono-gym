@@ -68,7 +68,7 @@ import { useActiveSession } from "../context/ActiveSessionContext";
 import { useGymSettings } from "../context/GymSettingsContext";
 import { useElapsedMs } from "../hooks/useElapsedMs";
 import { RestTimer } from "./RestTimer";
-import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
+import { UNDO_LABELS } from "../lib/i18n";
 import { toWarmupColumn } from "../lib/workout/setKind";
 import { newInstanceId } from "../lib/workout/instanceId";
 import {
@@ -83,7 +83,7 @@ import { getNextSupersetTargetIndex, getSupersetInfo } from "../lib/workout/supe
 import type { SupersetInfo } from "../lib/workout/supersetUtils";
 import { SupersetBadge } from "./workout/SupersetBadge";
 import { WorkoutPreStartView } from "./workout/WorkoutPreStartView";
-import { formatRepRange, suggestNextTarget, type OverloadTarget } from "../lib/overload";
+import { suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import { findExerciseReplacements } from "@/lib/engines/exerciseReplacementEngine";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
@@ -175,6 +175,7 @@ function SessionHeader({
                 fontWeight: 600,
                 fontVariantNumeric: "tabular-nums",
                 color: "#30D158",
+                whiteSpace: "nowrap",
               }}
             >
               EN VIVO
@@ -309,10 +310,10 @@ function SetTrackerTable({
       aria-label={`Serie ${setNumber}`}
       style={{
         display: "grid",
-        gridTemplateColumns: "44px 1fr 88px 72px 64px 44px",
+        gridTemplateColumns: "28px 54px 1fr 1fr 44px 34px",
         alignItems: "center",
-        gap: 8,
-        padding: "10px 0",
+        gap: 1.5,
+        padding: "6px 0",
         borderBottom: index > 0 ? "1px solid rgba(255, 255, 255, 0.04)" : "none",
         background: isCompleted ? "rgba(48, 209, 88, 0.06)" : "transparent",
         borderRadius: index === 0 ? "12px 12px 0 0" : index === 2 ? "0 0 12px 12px" : 0,
@@ -428,10 +429,14 @@ function SetTrackerTable({
       <div
         style={{
           minWidth: 0,
-          fontSize: "12px",
+          fontSize: "11px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
           color: TEXT.tertiary,
+          whiteSpace: "nowrap",
+          textAlign: "center",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
         {previousText}
@@ -451,10 +456,10 @@ function SetTrackerTable({
           background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: 10,
-          padding: "8px 10px",
+          padding: "6px 8px",
           textAlign: "center",
           color: TEXT.primary,
-          fontSize: "15px",
+          fontSize: "13px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
           fontWeight: 600,
@@ -476,10 +481,10 @@ function SetTrackerTable({
           background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: 10,
-          padding: "8px 10px",
+          padding: "6px 8px",
           textAlign: "center",
           color: TEXT.primary,
-          fontSize: "15px",
+          fontSize: "13px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
           fontWeight: 600,
@@ -502,10 +507,10 @@ function SetTrackerTable({
           background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: 10,
-          padding: "8px 10px",
+          padding: "6px 8px",
           textAlign: "center",
           color: TEXT.primary,
-          fontSize: "15px",
+          fontSize: "13px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
           fontWeight: 600,
@@ -551,7 +556,7 @@ interface ExerciseStageProps {
   exercise: Exercise;
   completedSets: number;
   totalSets: number;
-  lastSessionLabel: string | null;
+  lastSessionShort: string | null;
   equipment: EquipmentEntry | null;
   onDemo?: () => void;
   onAdvance?: () => void;
@@ -563,7 +568,7 @@ function ExerciseStage({
   exercise,
   completedSets,
   totalSets,
-  lastSessionLabel,
+  lastSessionShort,
   equipment,
   onDemo,
   onAdvance,
@@ -594,7 +599,7 @@ function ExerciseStage({
           width: "100%",
           maxWidth: 360,
           margin: "0 auto",
-          aspectRatio: "16 / 9",
+          height: 120,
           borderRadius: 16,
           overflow: "hidden",
           background: SURFACE.base,
@@ -662,74 +667,90 @@ function ExerciseStage({
         </button>
       </div>
 
-      {/* Exercise Identity: Clean Title + Subtle Progress Pill */}
-      <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
-        <h2
-          style={{
-            margin: 0,
-            fontSize: TYPE.headline.size,
-            lineHeight: TYPE.headline.lineHeight,
-            fontWeight: TYPE.headline.weight,
-            color: TEXT.primary,
-            letterSpacing: "0",
-          }}
-        >
-          {cleanExerciseName(getExerciseDisplayName(exercise))}
-        </h2>
+      {/* Exercise Identity: Clean Title + Subtle Progress Pill (single compact row) */}
+      <div style={{ width: "100%", maxWidth: 360, display: "flex", flexDirection: "column", gap: 4 }}>
         <div
           style={{
-            marginTop: 6,
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            gap: 6,
-            padding: "4px 12px",
-            borderRadius: 9999,
-            background: "rgba(255, 255, 255, 0.06)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            justifyContent: "space-between",
+            gap: 8,
+            minWidth: 0,
           }}
         >
-          <span
-            style={{
-              fontFamily: TYPE.mono.font,
-              fontSize: TYPE.caption.size,
-              fontWeight: 600,
-              fontVariantNumeric: "tabular-nums",
-              color: TEXT.secondary,
-            }}
-          >
-            {completedSets} / {totalSets}
-          </span>
+          <div style={{ minWidth: 0 }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: TYPE.headline.size,
+                lineHeight: TYPE.headline.lineHeight,
+                fontWeight: TYPE.headline.weight,
+                color: TEXT.primary,
+                letterSpacing: "0",
+              }}
+            >
+              {cleanExerciseName(getExerciseDisplayName(exercise))}
+            </h2>
+            {lastSessionShort && (
+              <p
+                style={{
+                  margin: "2px 0 0",
+                  fontSize: "11px",
+                  fontFamily: TYPE.mono.font,
+                  fontVariantNumeric: "tabular-nums",
+                  color: TEXT.tertiary,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {lastSessionShort}
+              </p>
+            )}
+          </div>
           <div
             style={{
-              width: 60,
-              height: 4,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 12px",
               borderRadius: 9999,
-              background: "rgba(255, 255, 255, 0.1)",
-              overflow: "hidden",
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
             }}
           >
+            <span
+              style={{
+                fontFamily: TYPE.mono.font,
+                fontSize: TYPE.caption.size,
+                fontWeight: 600,
+                fontVariantNumeric: "tabular-nums",
+                color: TEXT.secondary,
+              }}
+            >
+              {completedSets} / {totalSets}
+            </span>
             <div
               style={{
-                width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%`,
-                height: "100%",
-                background: ACCENT.base,
+                width: 60,
+                height: 4,
                 borderRadius: 9999,
-                transition: "width 300ms ease-out",
+                background: "rgba(255, 255, 255, 0.1)",
+                overflow: "hidden",
               }}
-            />
+            >
+              <div
+                style={{
+                  width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%`,
+                  height: "100%",
+                  background: ACCENT.base,
+                  borderRadius: 9999,
+                  transition: "width 300ms ease-out",
+                }}
+              />
+            </div>
           </div>
         </div>
-        {lastSessionLabel && (
-          <p
-            style={{
-              margin: "8px 0 0",
-              fontSize: TYPE.caption.size,
-              color: TEXT.tertiary,
-            }}
-          >
-            {lastSessionLabel}
-          </p>
-        )}
       </div>
 
       {/* Unified Toolbar: Demo | Avance | Cambiar | Ajustar */}
@@ -737,18 +758,19 @@ function ExerciseStage({
         style={{
           width: "100%",
           maxWidth: 360,
-          padding: 8,
-          borderRadius: 20,
+          padding: "4px 6px",
+          margin: "6px 0",
+          borderRadius: 16,
           background: "rgba(28, 28, 30, 0.9)",
           border: "1px solid rgba(255, 255, 255, 0.08)",
           boxShadow: "none",
         }}
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 }}>
-          <ToolbarButton label="Demo" icon={<Play size={16} strokeWidth={2} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
-          <ToolbarButton label="Avance" icon={<Target size={16} strokeWidth={2} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
-          <ToolbarButton label="Cambiar" icon={<ArrowRight size={16} strokeWidth={2} aria-hidden="true" />} onClick={onChangeExercise} />
-          <ToolbarButton label="Ajustar" icon={<RefreshCw size={16} strokeWidth={2} aria-hidden="true" />} onClick={onAdjustEquipment} />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1.5 }}>
+          <ToolbarButton label="Demo" icon={<Play size={12} strokeWidth={2} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
+          <ToolbarButton label="Avance" icon={<Target size={12} strokeWidth={2} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
+          <ToolbarButton label="Cambiar" icon={<ArrowRight size={12} strokeWidth={2} aria-hidden="true" />} onClick={onChangeExercise} />
+          <ToolbarButton label="Ajustar" icon={<RefreshCw size={12} strokeWidth={2} aria-hidden="true" />} onClick={onAdjustEquipment} />
         </div>
       </GlassCard>
     </section>
@@ -771,29 +793,31 @@ function ToolbarButton({
       onClick={onClick}
       style={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        gap: 4,
-        padding: "10px 8px",
-        borderRadius: 14,
-        border: "none",
-        background: "transparent",
+        gap: 1,
+        padding: "4px 6px",
+        borderRadius: RADIUS.control,
+        border: `1px solid ${GLASS.border}`,
+        background: "#1C1C1E",
         color: TEXT.secondary,
-        fontSize: TYPE.label.size,
+        fontSize: "11px",
         fontWeight: 600,
-        letterSpacing: TYPE.label.tracking,
-        textTransform: "uppercase",
+        letterSpacing: "0",
+        textTransform: "none",
         cursor: "pointer",
-        minHeight: 44,
+        height: 32,
+        minHeight: 32,
         transition: "background 150ms ease, color 150ms ease",
+        whiteSpace: "nowrap",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
         e.currentTarget.style.color = TEXT.primary;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.background = "#1C1C1E";
         e.currentTarget.style.color = TEXT.secondary;
       }}
     >
@@ -1473,23 +1497,12 @@ export function ActiveWorkout({
     [gym.weightUnit],
   );
 
-  const lastSessionFor = useCallback(
-    (exerciseId: string): string | null => {
-      const previous = performance[exerciseId];
-      const target = overload[selectedKey ?? ""];
-      const range = target?.repRange ? formatRepRange(target.repRange) : null;
-
-      if (previous?.bestSet?.weight == null) return range;
-
-      const sentence = SET_LOGGER_LABELS.lastSession(
-        displayKg(previous.bestSet.weight),
-        gym.weightUnit,
-        String(previous.bestSet.reps ?? "—"),
-      );
-      return range ? `${sentence} · ${range}` : sentence;
-    },
-    [performance, overload, selectedKey, displayKg, gym.weightUnit],
-  );
+  const lastSessionShort = useMemo(() => {
+    if (!selected) return null;
+    const prev = performance[selected.exercise.id]?.bestSet;
+    if (!prev?.weight) return null;
+    return `Ant: ${displayKg(prev.weight)}×${prev.reps}`;
+  }, [selected, performance, displayKg]);
 
   function patchEntry(
     itemKey: string,
@@ -1961,7 +1974,7 @@ export function ActiveWorkout({
                 exercise={selected.exercise}
                 completedSets={selected.sets.filter((s) => s.completed).length}
                 totalSets={selected.sets.length}
-                lastSessionLabel={lastSessionFor(selected.exercise.id)}
+                lastSessionShort={lastSessionShort}
                 equipment={equipmentForSelected}
                 onDemo={() => setIsDemoOpen(true)}
                 onAdvance={() => setIsAvanceOpen(true)}
@@ -2014,12 +2027,12 @@ export function ActiveWorkout({
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "36px 1fr 76px 68px 52px 38px",
+                        gridTemplateColumns: "28px 54px 1fr 1fr 44px 34px",
                         alignItems: "center",
-                        gap: 8,
-                        padding: "0 0 10px 0",
+                        gap: 1.5,
+                        padding: "0 0 6px 0",
                         borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
-                        marginBottom: 8,
+                        marginBottom: 4,
                       }}
                     >
                       <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em" }}>SERIE</div>
@@ -2058,7 +2071,7 @@ export function ActiveWorkout({
                         variant="secondary"
                         onClick={() => addSet(selected.key)}
                         aria-label="+ Agregar serie"
-                        style={{ minHeight: 40, padding: "8px 20px", fontSize: TYPE.subhead.size }}
+                        style={{ minHeight: 32, padding: "6px 16px", fontSize: TYPE.subhead.size }}
                       >
                         + Agregar serie
                       </GlassButton>

@@ -192,10 +192,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         if (cancelled) return;
         // 403 is expected for non-coach users due to RLS - handle silently
         if (error && error.code !== "PGRST116") {
-          // PGRST116 = "The result contains 0 rows" (not an error for maybeSingle)
-          if (import.meta.env.DEV) {
-            console.warn("[Dashboard] coaches query error:", error.message);
-          }
+          // 403 is expected for non-coach users due to RLS - handle silently
         }
         if (data) setCoachId(data.id);
       } catch (err) {

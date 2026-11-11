@@ -119,7 +119,7 @@ export function ExerciseCarousel({
           justifyContent: "center",
           scrollSnapType: "x mandatory",
           scrollbarWidth: "none",
-          padding: "4px 2px 8px",
+          padding: "6px 2px 4px",
         }}
         className="cronos-carousel"
       >
@@ -171,7 +171,7 @@ export function ExerciseCarousel({
               style={{
                 scrollSnapAlign: "center",
                 flex: "0 0 auto",
-                width: 68,
+                width: 48,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -189,8 +189,8 @@ export function ExerciseCarousel({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 56,
-                  height: 56,
+                  width: 40,
+                  height: 40,
                   overflow: "hidden",
                   borderRadius: RADIUS.round,
                   border: `2px solid ${borderFor(selected, complete)}`,
@@ -207,8 +207,8 @@ export function ExerciseCarousel({
                     src={exerciseGif(item.exercise)}
                     alt=""
                     loading="lazy"
-                    width={56}
-                    height={56}
+                    width={40}
+                    height={40}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -337,7 +337,7 @@ export function ExerciseCarousel({
             style={{
               scrollSnapAlign: "center",
               flex: "0 0 auto",
-              width: 68,
+              width: 48,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -355,8 +355,8 @@ export function ExerciseCarousel({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 56,
-                height: 56,
+                width: 40,
+                height: 40,
                 overflow: "hidden",
                 borderRadius: RADIUS.round,
                 border: `2px solid ${ACCENT.border}`,

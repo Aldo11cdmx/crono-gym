@@ -78,7 +78,7 @@ export function TrainingHeroSection({
       />
 
       <div className="relative grid grid-cols-[1fr_auto] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-8 lg:items-end">
-        <div className="min-w-0 p-4 md:p-6 lg:p-8">
+        <div className="min-w-0 p-3 px-4 md:p-4 lg:p-6">
           <div className="flex items-center gap-2 flex-wrap">
             <span
               style={{
@@ -219,10 +219,10 @@ export function TrainingHeroSection({
           >
             <div
               style={{
-                width: isCompact ? 100 : 168,
+                width: "100%",
                 margin: "0 auto",
                 backgroundColor: "transparent",
-                aspectRatio: isCompact ? 10 / 13 : 168 / 236,
+                height: 160,
               }}
             >
               <MuscleReadonlyMap

@@ -802,7 +802,7 @@ describe("ActiveWorkout previous session", () => {
     renderWorkout();
     // A metric standing on its own, not a chip: it is the exercise's caption,
     // and it stays visible when the lifter has scrolled past series 1.
-    expect(screen.getByText(/^Última sesión: 95 kg × 5/)).toBeTruthy();
+    expect(screen.getByText(/^Ant: 95×5/)).toBeTruthy();
   });
 
   it("shows no reference for a movement never trained", () => {
@@ -816,7 +816,7 @@ describe("ActiveWorkout previous session", () => {
     // The header is a caption and the stepper chip is an action. Two identical
     // sentences on one screen would read as a mistake, and only one of them
     // would be clickable.
-    expect(screen.getAllByText(/Última sesión: 95 kg × 5/)).toHaveLength(1);
+    expect(screen.getAllByText(/Ant: 95×5/)).toHaveLength(1);
   });
 
   it("converts the header reference to the user's unit", () => {
@@ -828,7 +828,7 @@ describe("ActiveWorkout previous session", () => {
       squat: { ...EMPTY_PERFORMANCE, bestSet: { weight: 100, reps: 5, rpe: 8, is_warmup: false } },
     };
     renderWorkout();
-    expect(screen.getByText(/^Última sesión: 220\.5 lb × 5/)).toBeTruthy();
+    expect(screen.getByText(/^Ant: 220\.5×5/)).toBeTruthy();
   });
 
   it("feeds the previous weight to the opening set's stepper only", () => {

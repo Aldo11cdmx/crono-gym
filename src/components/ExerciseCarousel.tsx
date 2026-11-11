@@ -2,13 +2,14 @@
  * ExerciseCarousel.tsx — the session's exercises as a snapping strip.
  *
  * Redesigned to Apple HIG / Apple Fitness+ standards:
- *   - Polished circular indicators (68px) with subtle glass surface
- *   - Active exercise: Crimson (#FF3B30) ring + scale(1.12) + glow
+ *   - Polished circular indicators (60px) with 52px inner thumbnail
+ *   - Active exercise: Crimson (#FF3B30) ring + glow effect
  *   - Complete exercise: STATUS.success blue ring + checkmark badge
  *   - Pending: inert hairline + partial progress ring in Crimson
  *   - Superset grouping: vertical strip on left edge + chip badge
  *   - Exercise GIF thumbnails with inverted filter for OLED blending
  *   - Scroll-snap mandatory, center-aligned for thumb-zone accessibility
+ *   - Text labels: w-[72px] text-[11px] font-semibold
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -18,11 +19,10 @@ import {
   ACCENT,
   CRIMSON,
   DIAGRAM,
-  GLASS,
   MOTION,
   RADIUS,
-  STATUS,
   SURFACE,
+  STATUS,
   TEXT,
   TYPE,
 } from "@/design/tokens";
@@ -69,12 +69,6 @@ function shortName(name: string): string {
   return cleanExerciseName(withoutSuffix.length > 0 ? withoutSuffix : cleaned);
 }
 
-function borderFor(selected: boolean, complete: boolean): string {
-  if (selected) return CRIMSON.base;
-  if (complete) return STATUS.success.border;
-  return GLASS.border;
-}
-
 export function ExerciseCarousel({
   items,
   selectedKey,
@@ -114,14 +108,14 @@ export function ExerciseCarousel({
         data-testid="exercise-carousel"
         style={{
           display: "flex",
-          gap: 10,
+          gap: 12,
           overflowX: "auto",
-          justifyContent: "center",
+          justifyContent: "flex-start",
           scrollSnapType: "x mandatory",
           scrollbarWidth: "none",
-          padding: "6px 2px 4px",
+          padding: "12px 16px",
         }}
-        className="cronos-carousel"
+        className="cronos-carousel px-4 py-3"
       >
         {items.map((item, index) => {
           const selected = item.key === selectedKey;
@@ -168,10 +162,12 @@ export function ExerciseCarousel({
                 setDragIndex(null);
               }}
               onDragEnd={() => setDragIndex(null)}
+              className="shrink-0"
               style={{
                 scrollSnapAlign: "center",
                 flex: "0 0 auto",
-                width: 48,
+                flexShrink: 0,
+                width: 72,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -189,17 +185,30 @@ export function ExerciseCarousel({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 40,
-                  height: 40,
+                  width: 60,
+                  height: 60,
                   overflow: "hidden",
                   borderRadius: RADIUS.round,
-                  border: `2px solid ${borderFor(selected, complete)}`,
-                  background: selected ? CRIMSON.subtle : SURFACE.raised,
-                  boxShadow: selected ? CRIMSON.ring : "none",
-                  transform: selected ? "scale(1.12)" : "scale(1)",
+                  border: selected
+                    ? `3px solid ${CRIMSON.base}`
+                    : complete
+                    ? `3px solid ${STATUS.success.base}`
+                    : `2px solid ${DIAGRAM.inert}`,
+                  background: selected
+                    ? CRIMSON.subtle
+                    : complete
+                    ? "rgba(48, 209, 88, 0.10)"
+                    : "rgba(255, 255, 255, 0.04)",
+                  boxShadow: selected
+                    ? `0 0 20px ${CRIMSON.glow}, 0 0 0 1px ${CRIMSON.base}`
+                    : complete
+                    ? `0 0 12px ${STATUS.success.muted}`
+                    : "none",
+                  transform: selected ? "scale(1.08)" : "scale(1)",
+                  opacity: selected || complete ? 1 : 0.6,
                   transition: reducedMotion
                     ? undefined
-                    : `transform ${MOTION.fast} ${MOTION.spring}, border-color ${MOTION.fast} ${MOTION.standard}, box-shadow ${MOTION.fast} ${MOTION.standard}`,
+                    : `transform ${MOTION.fast} ${MOTION.spring}, border-color ${MOTION.fast} ${MOTION.standard}, box-shadow ${MOTION.fast} ${MOTION.standard}, opacity ${MOTION.fast} ${MOTION.standard}`,
                 }}
               >
                 {exerciseGif(item.exercise) ? (
@@ -207,11 +216,11 @@ export function ExerciseCarousel({
                     src={exerciseGif(item.exercise)}
                     alt=""
                     loading="lazy"
-                    width={40}
-                    height={40}
+                    width={52}
+                    height={52}
                     style={{
-                      width: "100%",
-                      height: "100%",
+                      width: 52,
+                      height: 52,
                       objectFit: "cover",
                       display: "block",
                       backgroundColor: "transparent",
@@ -225,7 +234,7 @@ export function ExerciseCarousel({
                       fontFamily: TYPE.mono.font,
                       fontSize: TYPE.headline.size,
                       fontWeight: 700,
-                      color: selected ? CRIMSON.text : TEXT.disabled,
+                      color: selected ? CRIMSON.text : complete ? STATUS.success.text : TEXT.disabled,
                     }}
                   >
                     {index + 1}
@@ -233,9 +242,9 @@ export function ExerciseCarousel({
                 )}
 
                 {/* Progress ring */}
-                {ratio > 0 && (
+                {ratio > 0 && !complete && (
                   <svg
-                    viewBox="0 0 36 36"
+                    viewBox="0 0 60 60"
                     aria-hidden="true"
                     style={{
                       position: "absolute",
@@ -247,22 +256,22 @@ export function ExerciseCarousel({
                     }}
                   >
                     <circle
-                      cx="18"
-                      cy="18"
-                      r="16"
+                      cx="30"
+                      cy="30"
+                      r="27"
                       fill="none"
                       stroke={DIAGRAM.inert}
-                      strokeWidth="2.5"
+                      strokeWidth="3"
                     />
                     <circle
-                      cx="18"
-                      cy="18"
-                      r="16"
+                      cx="30"
+                      cy="30"
+                      r="27"
                       fill="none"
                       stroke={complete ? STATUS.success.base : CRIMSON.base}
-                      strokeWidth="2.5"
+                      strokeWidth="3"
                       strokeLinecap="round"
-                      strokeDasharray={`${ratio * 100.5} 100.5`}
+                      strokeDasharray={`${ratio * 169.6} 169.6`}
                     />
                   </svg>
                 )}
@@ -272,19 +281,20 @@ export function ExerciseCarousel({
                     aria-hidden="true"
                     style={{
                       position: "absolute",
-                      right: -2,
-                      bottom: -2,
+                      right: -4,
+                      bottom: -4,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      width: 20,
-                      height: 20,
+                      width: 24,
+                      height: 24,
                       borderRadius: RADIUS.round,
-                      background: SURFACE.base,
-                      color: STATUS.success.base,
+                      background: STATUS.success.base,
+                      color: "#000",
+                      border: "2px solid #000",
                     }}
                   >
-                    <Check size={13} strokeWidth={3} />
+                    <Check size={15} strokeWidth={3} />
                   </span>
                 )}
               </span>
@@ -301,14 +311,14 @@ export function ExerciseCarousel({
 
               <span
                 style={{
-                  width: "100%",
+                  width: 72,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                   textAlign: "center",
-                  fontSize: TYPE.label.size,
-                  lineHeight: TYPE.label.lineHeight,
-                  fontWeight: selected ? 600 : TYPE.label.weight,
+                  fontSize: "11px",
+                  lineHeight: "14px",
+                  fontWeight: 600,
                   color: selected ? CRIMSON.text : complete ? STATUS.success.text : TEXT.tertiary,
                 }}
               >
@@ -334,10 +344,12 @@ export function ExerciseCarousel({
             role="tab"
             aria-label="Agregar ejercicio"
             onClick={onAdd}
+            className="shrink-0"
             style={{
               scrollSnapAlign: "center",
               flex: "0 0 auto",
-              width: 48,
+              flexShrink: 0,
+              width: 72,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -355,15 +367,30 @@ export function ExerciseCarousel({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 40,
-                height: 40,
+                width: 60,
+                height: 60,
                 overflow: "hidden",
                 borderRadius: RADIUS.round,
                 border: `2px solid ${ACCENT.border}`,
                 background: SURFACE.raised,
               }}
             >
-              <Plus size={20} strokeWidth={2.5} aria-hidden="true" />
+              <Plus size={22} strokeWidth={2.5} aria-hidden="true" />
+            </span>
+            <span
+              style={{
+                width: 72,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                textAlign: "center",
+                fontSize: "11px",
+                lineHeight: "14px",
+                fontWeight: 600,
+                color: TEXT.tertiary,
+              }}
+            >
+              Nuevo
             </span>
           </button>
         )}

@@ -24,9 +24,9 @@ import {
   Check,
   Dumbbell,
   Settings,
+  Plus,
 } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
 import type { SetEntry } from "../lib/workout/types";
 import { GYM_LABELS } from "../lib/i18n";
@@ -66,11 +66,10 @@ import {
 import { queueAndSync } from "../lib/sessionSync";
 import { useActiveSession } from "../context/ActiveSessionContext";
 import { useGymSettings } from "../context/GymSettingsContext";
-import { useElapsedMs } from "../hooks/useElapsedMs";
+import { useElapsedMs, formatElapsed } from "../hooks/useElapsedMs";
 import { RestTimer } from "./RestTimer";
 import { UNDO_LABELS } from "../lib/i18n";
 import { toWarmupColumn } from "../lib/workout/setKind";
-import { newInstanceId } from "../lib/workout/instanceId";
 import {
   cloneRoutineToSession,
   newSessionExercise,
@@ -124,7 +123,8 @@ function SessionHeader({
   onTerminate,
 }: SessionHeaderProps) {
   const GEAR = GYM_LABELS.triggerAriaLabel(GYM_LABELS.defaultTriggerContext);
-  useElapsedMs(startedAt);
+  const elapsedMs = useElapsedMs(startedAt);
+  const elapsedStr = formatElapsed(elapsedMs);
 
   return (
     <header
@@ -178,7 +178,7 @@ function SessionHeader({
                 whiteSpace: "nowrap",
               }}
             >
-              EN VIVO
+              {elapsedStr}
             </span>
           </div>
         )}
@@ -266,16 +266,71 @@ interface SetTrackerTableProps {
   overloadTarget?: OverloadTarget | null;
   onChange: (index: number, entry: SetEntry) => void;
   onRemove: (index: number) => void;
-  onDuplicate: (index: number) => void;
+  onFillFromPrevious?: (index: number) => void;
+  canRemove?: boolean;
+  totalSets?: number;
 }
 
-const SET_TYPE_OPTIONS: Array<{ kind: SetEntry["kind"]; label: string; fullLabel: string; color: string; bg: string }> = [
-  { kind: "normal", label: "1", fullLabel: "Normal / Efectiva", color: TEXT.primary, bg: "rgba(255, 255, 255, 0.08)" },
-  { kind: "warmup", label: "C", fullLabel: "Calentamiento", color: "#FBBF24", bg: "rgba(251, 191, 36, 0.2)" },
-  { kind: "normal", label: "A", fullLabel: "Aproximación", color: "#60A5FA", bg: "rgba(96, 165, 250, 0.2)" },
-  { kind: "failure", label: "F", fullLabel: "Al Fallo", color: "#F87171", bg: "rgba(239, 68, 68, 0.25)" },
-  { kind: "drop", label: "D", fullLabel: "Drop Set", color: "#A855F7", bg: "rgba(168, 85, 247, 0.25)" },
-  { kind: "normal", label: "RP", fullLabel: "Rest-Pause", color: "#FB923C", bg: "rgba(251, 146, 60, 0.25)" },
+const SET_TYPE_OPTIONS: Array<{
+  kind: NonNullable<SetEntry["kind"]>;
+  badge: string;
+  title: string;
+  color: string;
+  bg: string;
+  border: string;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  help: string;
+}> = [
+  {
+    kind: "normal",
+    badge: "1",
+    title: "Serie Normal (Working Set)",
+    color: TEXT.primary,
+    bg: "rgba(44, 44, 46, 1)",
+    border: "rgba(255, 255, 255, 0.10)",
+    badgeBg: "#3F3F46",
+    badgeText: "#FFFFFF",
+    badgeBorder: "transparent",
+    help: "Serie efectiva de trabajo con tu peso objetivo manteniendo entre 1 y 3 repeticiones en reserva (RIR 1–3).",
+  },
+  {
+    kind: "warmup",
+    badge: "W",
+    title: "Calentamiento (Warm-up)",
+    color: "#FF9F0A",
+    bg: "rgba(255, 159, 10, 0.15)",
+    border: "rgba(255, 159, 10, 0.40)",
+    badgeBg: "rgba(255, 159, 10, 0.20)",
+    badgeText: "#FF9F0A",
+    badgeBorder: "rgba(255, 159, 10, 0.40)",
+    help: "Serie de aproximación con menor peso (40%–70%) para lubricar articulaciones y activar el sistema nervioso sin generar fatiga. No cuenta como serie efectiva.",
+  },
+  {
+    kind: "failure",
+    badge: "F",
+    title: "Al Fallo Muscular (Failure)",
+    color: "#FF3B30",
+    bg: "rgba(255, 59, 48, 0.15)",
+    border: "rgba(255, 59, 48, 0.40)",
+    badgeBg: "rgba(255, 59, 48, 0.20)",
+    badgeText: "#FF3B30",
+    badgeBorder: "rgba(255, 59, 48, 0.40)",
+    help: "Serie llevada al límite donde no puedes completar ni una repetición más con buena técnica (RIR 0 / RPE 10). Úsala preferiblemente en la última serie del ejercicio.",
+  },
+  {
+    kind: "drop",
+    badge: "D",
+    title: "Serie Descendente (Drop Set)",
+    color: "#BF5AF2",
+    bg: "rgba(191, 90, 242, 0.15)",
+    border: "rgba(191, 90, 242, 0.40)",
+    badgeBg: "rgba(191, 90, 242, 0.20)",
+    badgeText: "#BF5AF2",
+    badgeBorder: "rgba(191, 90, 242, 0.40)",
+    help: "Al terminar tus repeticiones cerca del fallo, reduces el peso inmediatamente entre un 20% y 30% y continúas sin descanso para maximizar el estrés metabólico.",
+  },
 ];
 
 function SetTrackerTable({
@@ -285,15 +340,18 @@ function SetTrackerTable({
   previousReps,
   formatWeight,
   onChange,
+  onRemove,
+  onFillFromPrevious,
+  canRemove = false,
+  totalSets = 1,
 }: SetTrackerTableProps) {
   const setNumber = index + 1;
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [typeMenuOpen, setTypeMenuOpen] = useState(false);
+  const [helpKind, setHelpKind] = useState<SetEntry["kind"] | null>(null);
 
   const currentOption = useMemo(() => {
-    if (entry.kind === "warmup") return SET_TYPE_OPTIONS[1];
-    if (entry.kind === "failure") return SET_TYPE_OPTIONS[3];
-    if (entry.kind === "drop") return SET_TYPE_OPTIONS[4];
-    return SET_TYPE_OPTIONS[0];
+    const kind = entry.kind ?? "normal";
+    return SET_TYPE_OPTIONS.find((o) => o.kind === kind) ?? SET_TYPE_OPTIONS[0];
   }, [entry.kind]);
 
   const previousText = previousKg != null && previousReps != null
@@ -302,7 +360,39 @@ function SetTrackerTable({
       : `${previousKg}kg × ${previousReps}`
     : "—";
 
+  const hasPrevious = previousKg != null && previousReps != null;
   const isCompleted = entry.completed;
+
+  const openTypeMenu = () => {
+    setTypeMenuOpen(true);
+    setHelpKind(null);
+  };
+
+  const selectKind = (kind: NonNullable<SetEntry["kind"]>) => {
+    onChange(index, { ...entry, kind });
+    setTypeMenuOpen(false);
+    setHelpKind(null);
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate([15]);
+    }
+  };
+
+  const badgeLabel = (entry.kind ?? "normal") === "normal" ? String(setNumber) : currentOption.badge;
+
+  const handleFillFromPrevious = () => {
+    if (hasPrevious && onFillFromPrevious) {
+      onFillFromPrevious(index);
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        navigator.vibrate([15]);
+      }
+    }
+  };
+
+  const handleRemove = () => {
+    if (canRemove) {
+      onRemove(index);
+    }
+  };
 
   return (
     <div
@@ -310,213 +400,324 @@ function SetTrackerTable({
       aria-label={`Serie ${setNumber}`}
       style={{
         display: "grid",
-        gridTemplateColumns: "28px 54px 1fr 1fr 44px 34px",
+        gridTemplateColumns: "36px 54px 1fr 1fr 44px 36px 36px",
         alignItems: "center",
-        gap: 1.5,
-        padding: "6px 0",
+        gap: 2,
+        padding: "4px 0",
         borderBottom: index > 0 ? "1px solid rgba(255, 255, 255, 0.04)" : "none",
         background: isCompleted ? "rgba(48, 209, 88, 0.06)" : "transparent",
-        borderRadius: index === 0 ? "12px 12px 0 0" : index === 2 ? "0 0 12px 12px" : 0,
+        borderRadius: 10,
         transition: "background 200ms ease",
+        minHeight: 42,
       }}
     >
-      {/* Serie Badge */}
-      <div style={{ position: "relative" }}>
-        <button
-          type="button"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={`Serie ${setNumber} tipo`}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 32,
-            height: 32,
-            borderRadius: 9999,
-            background: currentOption.bg,
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            color: currentOption.color,
-            fontSize: currentOption.label === "RP" ? "9px" : "11px",
-            fontWeight: 700,
-            cursor: "pointer",
-            flexShrink: 0,
-            transition: "transform 150ms ease, box-shadow 150ms ease",
-          }}
-        >
-          {currentOption.label === "1" ? setNumber : currentOption.label}
-        </button>
+      {/* Serie Badge - Tap to open type selector */}
+      <button
+        type="button"
+        onClick={openTypeMenu}
+        aria-label={`Serie ${setNumber} tipo: ${currentOption.title}. Toca para cambiar.`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 32,
+          height: 32,
+          borderRadius: 10,
+          background: currentOption.bg,
+          border: `1px solid ${currentOption.border}`,
+          color: currentOption.color,
+          fontSize: "12px",
+          fontWeight: 700,
+          fontFamily: TYPE.mono.font,
+          fontVariantNumeric: "tabular-nums",
+          cursor: "pointer",
+          flexShrink: 0,
+          transition: "transform 150ms ease, box-shadow 150ms ease, background 150ms ease, border-color 150ms ease",
+        }}
+        className="active:scale-[0.95]"
+        onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+        onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      >
+        {badgeLabel}
+      </button>
 
-        {menuOpen && (
-          <>
-            <div
-              style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 50,
-              }}
-              onClick={() => setMenuOpen(false)}
-            />
-            <div
-              style={{
-                position: "absolute",
-                top: "40px",
-                left: 0,
-                zIndex: 51,
-                background: "rgba(22, 22, 26, 0.95)",
-                backdropFilter: "blur(20px)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                borderRadius: 16,
-                padding: "8px",
-                minWidth: "200px",
-                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.9)",
-              }}
-            >
-              {SET_TYPE_OPTIONS.map((option, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    onChange(index, { ...entry, kind: option.kind });
-                    setMenuOpen(false);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "transparent",
-                    border: "none",
-                    borderRadius: 12,
-                    color: TEXT.primary,
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
-                  }}
-                >
+      {typeMenuOpen && (
+        <div
+          role="dialog"
+          aria-label="Selector de tipo de serie"
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: Z_INDEX.modal,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            background: SCRIM.modal,
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            padding: "16px",
+          }}
+          onClick={() => { setTypeMenuOpen(false); setHelpKind(null); }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#1C1C1E] border border-white/12 rounded-3xl p-4 shadow-2xl"
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+              <div style={{ minWidth: 0 }}>
+                <h3 className="text-base font-bold text-white" style={{ margin: 0 }}>Tipo de serie</h3>
+                <p className="text-xs text-zinc-400" style={{ margin: "4px 0 0" }}>
+                  Selecciona el estímulo de la serie #{setNumber}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Cerrar selector de tipo de serie"
+                onClick={() => { setTypeMenuOpen(false); setHelpKind(null); }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 9999,
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#D4D4D8",
+                  fontSize: 18,
+                  lineHeight: 1,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {SET_TYPE_OPTIONS.map((opt) => {
+                const selected = (entry.kind ?? "normal") === opt.kind;
+                const optionBadge = opt.kind === "normal" ? String(setNumber) : opt.badge;
+                const helpOpen = helpKind === opt.kind;
+                return (
                   <div
+                    key={opt.kind}
+                    className="rounded-2xl bg-[#2C2C2E] border border-white/8 p-3 transition-all"
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      background: option.bg,
-                      color: option.color,
-                      fontSize: option.label === "RP" ? "8px" : "10px",
-                      fontWeight: 700,
-                      flexShrink: 0,
+                      borderColor: selected ? opt.border : "rgba(255,255,255,0.08)",
+                      background: selected ? "rgba(44,44,46,0.95)" : "#2C2C2E",
                     }}
                   >
-                    {option.label === "1" ? setNumber : option.label}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <button
+                        type="button"
+                        onClick={() => selectKind(opt.kind)}
+                        aria-label={`Seleccionar ${opt.title}`}
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          background: "transparent",
+                          border: "none",
+                          padding: 0,
+                          color: "inherit",
+                          cursor: "pointer",
+                          textAlign: "left",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 8,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: opt.badgeBg,
+                            color: opt.badgeText,
+                            border: `1px solid ${opt.badgeBorder}`,
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            fontFamily: TYPE.mono.font,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {optionBadge}
+                        </span>
+                        <span style={{ fontSize: "14px", fontWeight: 600, color: TEXT.primary }}>
+                          {opt.title}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Ayuda: ${opt.title}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setHelpKind((prev) => (prev === opt.kind ? null : opt.kind));
+                        }}
+                        className="w-7 h-7 rounded-full bg-white/8 hover:bg-white/15 border border-white/15 font-mono text-xs font-bold text-zinc-300 flex items-center justify-center"
+                        style={{ cursor: "pointer", flexShrink: 0 }}
+                      >
+                        ?
+                      </button>
+                    </div>
+                    {helpOpen && (
+                      <div className="mt-2 pt-2 border-t border-white/8 text-xs text-zinc-300 leading-relaxed">
+                        {opt.help}
+                      </div>
+                    )}
                   </div>
-                  <span>{option.fullLabel}</span>
-                </button>
-              ))}
+                );
+              })}
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
 
-      {/* Anterior */}
-      <div
+      {/* Anterior - Tap to fill from previous */}
+      <button
+        type="button"
+        onClick={handleFillFromPrevious}
+        disabled={!hasPrevious}
+        aria-label={hasPrevious ? `Rellenar con valores anteriores: ${previousText}` : "Sin datos anteriores"}
         style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           minWidth: 0,
+          width: "100%",
+          height: "100%",
+          minHeight: 34,
           fontSize: "11px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
-          color: TEXT.tertiary,
-          whiteSpace: "nowrap",
+          color: hasPrevious ? TEXT.secondary : TEXT.disabled,
+          background: "transparent",
+          border: "none",
+          padding: "0 4px",
           textAlign: "center",
+          whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
+          cursor: hasPrevious ? "pointer" : "not-allowed",
+          opacity: hasPrevious ? 1 : 0.4,
+          transition: "color 150ms ease, background 150ms ease",
+          borderRadius: 8,
+        }}
+        onMouseEnter={(e) => {
+          if (hasPrevious) e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
         }}
       >
         {previousText}
-      </div>
+      </button>
 
-      {/* KG/LB */}
+      {/* KG/LB Input */}
       <input
         type="number"
         inputMode="decimal"
         aria-label={`Peso serie ${setNumber}`}
         value={entry.weight}
+        placeholder="0"
         onChange={(e) => onChange(index, { ...entry, weight: e.target.value })}
         onFocus={(e) => { e.target.select(); }}
         className="cronos-set-input"
         style={{
           width: "100%",
+          height: 42,
           background: "#2C2C2E",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: 10,
-          padding: "6px 8px",
+          border: "1px solid rgba(255, 255, 255, 0.10)",
+          borderRadius: 12,
+          padding: "0 8px",
           textAlign: "center",
           color: TEXT.primary,
-          fontSize: "13px",
+          fontSize: "16px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
-          fontWeight: 600,
+          fontWeight: 700,
           outline: "none",
+          transition: "border-color 150ms ease, background 150ms ease",
+        }}
+        onFocusCapture={(e) => {
+          e.currentTarget.style.borderColor = "rgba(255, 59, 48, 0.6)";
+        }}
+        onBlurCapture={(e) => {
+          e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.10)";
         }}
       />
 
-      {/* REPS */}
+      {/* REPS Input */}
       <input
         type="number"
         inputMode="numeric"
         aria-label={`Repeticiones serie ${setNumber}`}
         value={entry.reps}
+        placeholder="10"
         onChange={(e) => onChange(index, { ...entry, reps: e.target.value })}
         onFocus={(e) => { e.target.select(); }}
         className="cronos-set-input"
         style={{
           width: "100%",
+          height: 42,
           background: "#2C2C2E",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: 10,
-          padding: "6px 8px",
+          border: "1px solid rgba(255, 255, 255, 0.10)",
+          borderRadius: 12,
+          padding: "0 8px",
           textAlign: "center",
           color: TEXT.primary,
-          fontSize: "13px",
+          fontSize: "16px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
-          fontWeight: 600,
+          fontWeight: 700,
           outline: "none",
+          transition: "border-color 150ms ease, background 150ms ease",
+        }}
+        onFocusCapture={(e) => {
+          e.currentTarget.style.borderColor = "rgba(255, 59, 48, 0.6)";
+        }}
+        onBlurCapture={(e) => {
+          e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.10)";
         }}
       />
 
-      {/* RPE */}
-      <input
-        type="number"
-        inputMode="numeric"
-        aria-label={`RPE serie ${setNumber}`}
-        placeholder="RPE"
-        value={entry.rpe || ""}
-        onChange={(e) => onChange(index, { ...entry, rpe: e.target.value })}
-        onFocus={(e) => { e.target.select(); }}
-        className="cronos-set-input"
+      {/* RPE Button (static display) */}
+      <button
+        type="button"
+        aria-label={`RPE serie ${setNumber}: ${entry.rpe || "—"}`}
         style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           width: "100%",
+          height: 42,
+          borderRadius: 12,
           background: "#2C2C2E",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: 10,
-          padding: "6px 8px",
-          textAlign: "center",
-          color: TEXT.primary,
-          fontSize: "13px",
+          border: "1px solid rgba(255, 255, 255, 0.10)",
+          color: TEXT.tertiary,
+          fontSize: "16px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
-          fontWeight: 600,
-          outline: "none",
+          fontWeight: 700,
+          cursor: "pointer",
+          flexShrink: 0,
+          transition: "transform 150ms ease",
         }}
-      />
+        className="active:scale-[0.95]"
+        onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.95)"; }}
+        onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      >
+        {entry.rpe || "—"}
+      </button>
 
       {/* Check Button */}
       <button
@@ -534,18 +735,51 @@ function SetTrackerTable({
           justifyContent: "center",
           width: 36,
           height: 36,
-          borderRadius: 9999,
-          background: isCompleted ? "#30D158" : "rgba(255, 255, 255, 0.08)",
+          borderRadius: 12,
+          background: isCompleted ? "#30D158" : "#2C2C2E",
           color: isCompleted ? "#000" : "rgba(255, 255, 255, 0.4)",
-          border: isCompleted ? "1px solid #30D158" : "1px solid rgba(255, 255, 255, 0.1)",
+          border: isCompleted ? "1px solid #30D158" : "1px solid rgba(255, 255, 255, 0.10)",
           cursor: "pointer",
           flexShrink: 0,
           transition: "all 150ms ease",
-          boxShadow: isCompleted ? "0 0 0 4px rgba(48, 209, 88, 0.3), 0 4px 12px rgba(48, 209, 88, 0.4)" : "none",
+          boxShadow: isCompleted ? "0 0 14px rgba(48, 209, 88, 0.45)" : "none",
         }}
       >
-        <Check size={18} strokeWidth={3} />
+        <Check size={16} strokeWidth={3} />
       </button>
+
+      {/* Remove/Duplicate Button - only show if canRemove and totalSets > 1 */}
+      {(canRemove && totalSets > 1) && (
+        <button
+          type="button"
+          onClick={handleRemove}
+          aria-label={`Eliminar serie ${setNumber}`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 36,
+            height: 36,
+            borderRadius: 12,
+            background: "rgba(122, 47, 61, 0.15)",
+            border: "1px solid rgba(224, 141, 156, 0.3)",
+            color: "#E08D9C",
+            cursor: "pointer",
+            flexShrink: 0,
+            transition: "all 150ms ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(122, 47, 61, 0.3)";
+            e.currentTarget.style.borderColor = "rgba(224, 141, 156, 0.6)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(122, 47, 61, 0.15)";
+            e.currentTarget.style.borderColor = "rgba(224, 141, 156, 0.3)";
+          }}
+        >
+          <X size={14} strokeWidth={2} aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 }
@@ -589,7 +823,7 @@ function ExerciseStage({
         alignItems: "center",
       }}
     >
-      {/* Main GIF on Pure Black */}
+      {/* Main GIF on Pure Black - Fixed 190px height */}
       <div
         style={{
           position: "relative",
@@ -597,9 +831,9 @@ function ExerciseStage({
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
-          maxWidth: 360,
+          maxWidth: 240,
+          height: 180,
           margin: "0 auto",
-          height: 120,
           borderRadius: 16,
           overflow: "hidden",
           background: SURFACE.base,
@@ -612,8 +846,8 @@ function ExerciseStage({
             onLoad={onLoad}
             onError={onError}
             style={{
-              width: "100%",
-              height: "100%",
+              maxWidth: "240px",
+              height: "180px",
               objectFit: "contain",
               background: "transparent",
               filter: "invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)",
@@ -640,139 +874,137 @@ function ExerciseStage({
             Sin demo disponible
           </div>
         )}
-        {/* Floating Equipment Button */}
-        <button
-          type="button"
-          aria-label={`Ver foto del equipo: ${equipment?.name ?? "Sin equipo"}`}
-          onClick={onAdjustEquipment}
-          style={{
-            position: "absolute",
-            bottom: 12,
-            right: 12,
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            border: `1px solid ${GLASS.border}`,
-            background: "rgba(22, 22, 26, 0.9)",
-            backdropFilter: "blur(12px)",
-            color: TEXT.primary,
-            cursor: "pointer",
-            boxShadow: GLASS.shadow,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <MapPin size={18} aria-hidden="true" />
-        </button>
-      </div>
-
-      {/* Exercise Identity: Clean Title + Subtle Progress Pill (single compact row) */}
-      <div style={{ width: "100%", maxWidth: 360, display: "flex", flexDirection: "column", gap: 4 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-            minWidth: 0,
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <h2
-              style={{
-                margin: 0,
-                fontSize: TYPE.headline.size,
-                lineHeight: TYPE.headline.lineHeight,
-                fontWeight: TYPE.headline.weight,
-                color: TEXT.primary,
-                letterSpacing: "0",
-              }}
-            >
-              {cleanExerciseName(getExerciseDisplayName(exercise))}
-            </h2>
-            {lastSessionShort && (
-              <p
-                style={{
-                  margin: "2px 0 0",
-                  fontSize: "11px",
-                  fontFamily: TYPE.mono.font,
-                  fontVariantNumeric: "tabular-nums",
-                  color: TEXT.tertiary,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {lastSessionShort}
-              </p>
-            )}
-          </div>
-          <div
+        {/* Compact "Machine" pill in bottom-right corner of GIF */}
+        {equipment && (
+          <button
+            type="button"
+            aria-label={`Ver foto del equipo: ${equipment.name}`}
+            onClick={onAdjustEquipment}
             style={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
               display: "inline-flex",
               alignItems: "center",
-              gap: 6,
-              padding: "4px 12px",
+              gap: 4,
+              padding: "4px 10px",
               borderRadius: 9999,
-              background: "rgba(255, 255, 255, 0.06)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
+              background: "rgba(28, 28, 30, 0.9)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              color: "#D4D4D8",
+              fontSize: "11px",
+              fontWeight: 500,
+              cursor: "pointer",
+              backdropFilter: "blur(12px)",
             }}
           >
-            <span
-              style={{
-                fontFamily: TYPE.mono.font,
-                fontSize: TYPE.caption.size,
-                fontWeight: 600,
-                fontVariantNumeric: "tabular-nums",
-                color: TEXT.secondary,
-              }}
-            >
-              {completedSets} / {totalSets}
-            </span>
+            <MapPin size={10} aria-hidden="true" />
+            <span>{equipment.name}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Exercise Identity: Title + Series Counter Pill */}
+      <div style={{ width: "100%", maxWidth: 360, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "20px",
+            fontWeight: 700,
+            color: TEXT.primary,
+            letterSpacing: "0",
+            textAlign: "center",
+            width: "100%",
+          }}
+        >
+          {cleanExerciseName(getExerciseDisplayName(exercise))}
+        </h2>
+        {lastSessionShort && (
+          <p
+            style={{
+              margin: 0,
+              fontSize: "11px",
+              fontFamily: TYPE.mono.font,
+              fontVariantNumeric: "tabular-nums",
+              color: TEXT.tertiary,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {lastSessionShort}
+          </p>
+        )}
+        {/* Series Counter Pill */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 12px",
+            borderRadius: 9999,
+            background: "rgba(28, 28, 30, 0.9)",
+            border: "1px solid rgba(255, 255, 255, 0.10)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: TYPE.mono.font,
+              fontSize: "12px",
+              fontWeight: 600,
+              fontVariantNumeric: "tabular-nums",
+              color: ACCENT.base,
+            }}
+          >
+            {completedSets}
+          </span>
+          <span
+            style={{
+              fontFamily: TYPE.mono.font,
+              fontSize: "12px",
+              color: TEXT.tertiary,
+            }}
+          >
+            /
+          </span>
+          <span
+            style={{
+              fontFamily: TYPE.mono.font,
+              fontSize: "12px",
+              color: TEXT.secondary,
+            }}
+          >
+            {totalSets} series
+          </span>
+          <div
+            style={{
+              width: 48,
+              height: 4,
+              borderRadius: 9999,
+              background: "rgba(255, 255, 255, 0.1)",
+              overflow: "hidden",
+            }}
+          >
             <div
               style={{
-                width: 60,
-                height: 4,
+                width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%`,
+                height: "100%",
+                background: ACCENT.base,
                 borderRadius: 9999,
-                background: "rgba(255, 255, 255, 0.1)",
-                overflow: "hidden",
+                transition: "width 300ms ease-out",
               }}
-            >
-              <div
-                style={{
-                  width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%`,
-                  height: "100%",
-                  background: ACCENT.base,
-                  borderRadius: 9999,
-                  transition: "width 300ms ease-out",
-                }}
-              />
-            </div>
+            />
           </div>
         </div>
       </div>
 
-      {/* Unified Toolbar: Demo | Avance | Cambiar | Ajustar */}
-      <GlassCard
-        style={{
-          width: "100%",
-          maxWidth: 360,
-          padding: "4px 6px",
-          margin: "6px 0",
-          borderRadius: 16,
-          background: "rgba(28, 28, 30, 0.9)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          boxShadow: "none",
-        }}
-      >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1.5 }}>
-          <ToolbarButton label="Demo" icon={<Play size={12} strokeWidth={2} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
-          <ToolbarButton label="Avance" icon={<Target size={12} strokeWidth={2} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
-          <ToolbarButton label="Cambiar" icon={<ArrowRight size={12} strokeWidth={2} aria-hidden="true" />} onClick={onChangeExercise} />
-          <ToolbarButton label="Ajustar" icon={<RefreshCw size={12} strokeWidth={2} aria-hidden="true" />} onClick={onAdjustEquipment} />
-        </div>
-      </GlassCard>
+      {/* Unified Toolbar: Demo | Avance | Cambiar | Ajustar — h-10, rounded-2xl, bg-[#1C1C1E], border border-white/10, text-xs font-semibold */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, width: "100%", maxWidth: 360, margin: "2px 0" }}>
+        <ToolbarButton label="Demo" icon={<Play size={13} strokeWidth={2} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
+        <ToolbarButton label="Avance" icon={<Target size={13} strokeWidth={2} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
+        <ToolbarButton label="Cambiar" icon={<ArrowRight size={13} strokeWidth={2} aria-hidden="true" />} onClick={onChangeExercise} />
+        <ToolbarButton label="Ajustar" icon={<RefreshCw size={13} strokeWidth={2} aria-hidden="true" />} onClick={onAdjustEquipment} />
+      </div>
     </section>
   );
 }
@@ -796,20 +1028,20 @@ function ToolbarButton({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        gap: 1,
-        padding: "4px 6px",
-        borderRadius: RADIUS.control,
-        border: `1px solid ${GLASS.border}`,
+        gap: 6,
+        padding: "0 8px",
+        borderRadius: 24,
+        border: "1px solid rgba(255, 255, 255, 0.10)",
         background: "#1C1C1E",
         color: TEXT.secondary,
-        fontSize: "11px",
+        fontSize: "12px",
         fontWeight: 600,
         letterSpacing: "0",
         textTransform: "none",
         cursor: "pointer",
-        height: 32,
-        minHeight: 32,
-        transition: "background 150ms ease, color 150ms ease",
+        height: 40,
+        minHeight: 40,
+        transition: "background 150ms ease, color 150ms ease, transform 150ms ease",
         whiteSpace: "nowrap",
       }}
       onMouseEnter={(e) => {
@@ -820,8 +1052,23 @@ function ToolbarButton({
         e.currentTarget.style.background = "#1C1C1E";
         e.currentTarget.style.color = TEXT.secondary;
       }}
+      onMouseDown={(e) => {
+        e.currentTarget.style.transform = "scale(0.95)";
+      }}
+      onMouseUp={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+      }}
     >
-      <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>{icon}</span>
+      <span
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: ACCENT.base,
+        }}
+      >
+        {icon}
+      </span>
       <span>{label}</span>
     </button>
   );
@@ -1610,24 +1857,6 @@ export function ActiveWorkout({
     setPendingRemoval(null);
   }
 
-  function duplicateSet(itemKey: string, setIndex: number) {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.key !== itemKey) return item;
-        const source = item.sets[setIndex];
-        if (!source) return item;
-        const sets = [...item.sets];
-        sets.splice(setIndex + 1, 0, {
-          ...source,
-          completed: false,
-          set_number: source.set_number + 1,
-          instanceId: newInstanceId(),
-        });
-        return { ...item, sets };
-      }),
-    );
-  }
-
   async function finish() {
     const currentItems = itemsRef.current;
     const currentNotes = notesRef.current;
@@ -1936,9 +2165,7 @@ export function ActiveWorkout({
           <SessionHeader
             exerciseLabel={
               selected
-                ? `${items.findIndex((i) => i.key === selected.key) + 1}/${items.length} ${cleanExerciseName(
-                    getExerciseDisplayName(selected.exercise),
-                  )}`
+                ? `Ejercicio ${items.findIndex((i) => i.key === selected.key) + 1} de ${items.length}`
                 : ""
             }
             superset={selectedSuperset}
@@ -2014,12 +2241,12 @@ export function ActiveWorkout({
 
           {selected.sets.length > 0 && (
                 <div style={{ padding: `0 ${SPACE.md}px ${SPACE.lg}px`, maxWidth: "560px", margin: "0 auto", width: "100%" }}>
-                  <GlassCard
+                  <div
                     style={{
                       borderRadius: 24,
-                      padding: 20,
-                      background: "rgba(28, 28, 30, 0.9)",
-                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                      padding: 14,
+                      background: "#1C1C1E",
+                      border: "1px solid rgba(255, 255, 255, 0.10)",
                       boxShadow: "none",
                     }}
                   >
@@ -2027,9 +2254,9 @@ export function ActiveWorkout({
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "28px 54px 1fr 1fr 44px 34px",
+                        gridTemplateColumns: "36px 54px 1fr 1fr 44px 36px 36px",
                         alignItems: "center",
-                        gap: 1.5,
+                        gap: 2,
                         padding: "0 0 6px 0",
                         borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
                         marginBottom: 4,
@@ -2040,7 +2267,8 @@ export function ActiveWorkout({
                       <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}>KG/LB</div>
                       <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}>REPS</div>
                       <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}>RPE</div>
-                      <div></div>
+                      <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}>✓</div>
+                      <div style={{ fontSize: "10px", fontWeight: 700, color: TEXT.tertiary, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "center" }}></div>
                     </div>
 
                     {selected.sets.map((entry, index) => (
@@ -2062,21 +2290,52 @@ export function ActiveWorkout({
                         }
                         onChange={(i, e) => updateSet(selected.key, i, e)}
                         onRemove={(i) => removeSet(selected.key, i)}
-                        onDuplicate={(i) => duplicateSet(selected.key, i)}
+                        onFillFromPrevious={(i: number) => {
+                          const prev = performance[selected.exercise.id]?.bestSet;
+                          if (prev?.weight != null && prev?.reps != null) {
+                            updateSet(selected.key, i, {
+                              ...entry,
+                              weight: String(prev.weight),
+                              reps: String(prev.reps),
+                            });
+                          }
+                        }}
+                        canRemove={true}
+                        totalSets={selected.sets.length}
                       />
                     ))}
 
-                    <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
-                      <GlassButton
-                        variant="secondary"
+                    <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
+                      <button
+                        type="button"
                         onClick={() => addSet(selected.key)}
                         aria-label="+ Agregar serie"
-                        style={{ minHeight: 32, padding: "6px 16px", fontSize: TYPE.subhead.size }}
+                        style={{
+                          width: "100%",
+                          height: 40,
+                          borderRadius: 24,
+                          background: "#2C2C2E",
+                          border: "1px solid rgba(255, 255, 255, 0.10)",
+                          color: TEXT.primary,
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                          transition: "background 150ms ease, transform 150ms ease",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "#3A3A3E"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "#2C2C2E"; }}
+                        onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.99)"; }}
+                        onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                       >
-                        + Agregar serie
-                      </GlassButton>
+                        <Plus size={14} strokeWidth={2} aria-hidden="true" />
+                        Agregar serie
+                      </button>
                     </div>
-                  </GlassCard>
+                  </div>
                 </div>
               )}
             </>
@@ -2148,6 +2407,286 @@ export function ActiveWorkout({
           onSelectSingle={handleExerciseSelected}
         />
       )}
+
+      {/* Smart Workout Dock - Bottom Sticky Capsule */}
+      <div
+        style={{
+          position: "sticky",
+          bottom: 0,
+          zIndex: 30,
+          marginTop: "auto",
+          padding: "8px 16px 16px",
+          background: "linear-gradient(180deg, transparent 0%, #000000 40%, #000000 100%)",
+        }}
+      >
+        <div
+          style={{
+            height: 56,
+            borderRadius: 28,
+            background: "rgba(28, 28, 30, 0.95)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 12px",
+          }}
+        >
+          {rest ? (
+            /* State A: Rest Timer Active */
+            <>
+              {/* Left: Status indicator + Timer */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    background: "#30D158",
+                    boxShadow: "0 0 8px #30D158",
+                    animation: "cronos-rest-pulse 1.5s ease-in-out infinite",
+                  }}
+                  aria-hidden="true"
+                />
+                <span
+                  style={{
+                    fontFamily: TYPE.mono.font,
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    fontVariantNumeric: "tabular-nums",
+                    color: TEXT.primary,
+                  }}
+                >
+                  {Math.max(0, Math.ceil((rest.endsAt - Date.now()) / 1000))}s
+                </span>
+              </div>
+
+              {/* Right: -15s, +15s, Skip */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={() => startRestUntil(rest.endsAt - 15000)}
+                  aria-label="Restar 15 segundos"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "6px 10px",
+                    borderRadius: 16,
+                    background: "#2C2C2E",
+                    border: "1px solid rgba(255, 255, 255, 0.10)",
+                    color: "#D4D4D8",
+                    fontSize: "11px",
+                    fontFamily: TYPE.mono.font,
+                    fontWeight: 700,
+                    fontVariantNumeric: "tabular-nums",
+                    cursor: "pointer",
+                    height: 36,
+                    transition: "background 150ms ease, transform 150ms ease",
+                  }}
+                  onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.95)"; }}
+                  onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                >
+                  -15s
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startRestUntil(rest.endsAt + 15000)}
+                  aria-label="Sumar 15 segundos"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "6px 10px",
+                    borderRadius: 16,
+                    background: "#2C2C2E",
+                    border: "1px solid rgba(255, 255, 255, 0.10)",
+                    color: "#D4D4D8",
+                    fontSize: "11px",
+                    fontFamily: TYPE.mono.font,
+                    fontWeight: 700,
+                    fontVariantNumeric: "tabular-nums",
+                    cursor: "pointer",
+                    height: 36,
+                    transition: "background 150ms ease, transform 150ms ease",
+                  }}
+                  onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.95)"; }}
+                  onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                >
+                  +15s
+                </button>
+                <button
+                  type="button"
+                  onClick={closeRest}
+                  aria-label="Saltar descanso"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "6px 12px",
+                    borderRadius: 16,
+                    background: ACCENT.base,
+                    border: "none",
+                    color: "#FFFFFF",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    height: 36,
+                    transition: "background 150ms ease, transform 150ms ease",
+                  }}
+                  onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.95)"; }}
+                  onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                >
+                  Saltar
+                </button>
+              </div>
+            </>
+          ) : (
+            /* State B: Idle (Navigation Mode) */
+            <>
+              {/* Left: ← Previous */}
+              <button
+                type="button"
+                onClick={() => {
+                  const currentIndex = items.findIndex((i) => i.key === selectedKey);
+                  if (currentIndex > 0) {
+                    focusExercise(items[currentIndex - 1].key);
+                  }
+                }}
+                disabled={!selectedKey || items.findIndex((i) => i.key === selectedKey) === 0}
+                aria-label="Ejercicio anterior"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  height: 40,
+                  padding: "0 12px",
+                  borderRadius: 16,
+                  background: "#2C2C2E",
+                  border: "none",
+                  color: TEXT.secondary,
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  opacity: !selectedKey || items.findIndex((i) => i.key === selectedKey) === 0 ? 0.35 : 1,
+                  transition: "background 150ms ease, opacity 150ms ease, transform 150ms ease",
+                }}
+                onMouseDown={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.transform = "scale(0.95)"; }}
+                onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              >
+                ← Anterior
+              </button>
+
+              {/* Center: ⏱ Rest */}
+              <button
+                type="button"
+                onClick={() => startRest(DEFAULT_REST)}
+                aria-label="Iniciar descanso de 90 segundos"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  height: 40,
+                  padding: "0 12px",
+                  borderRadius: 16,
+                  background: "#2C2C2E",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  color: "#D4D4D8",
+                  fontSize: "12px",
+                  fontFamily: TYPE.mono.font,
+                  fontWeight: 600,
+                  fontVariantNumeric: "tabular-nums",
+                  cursor: "pointer",
+                  transition: "background 150ms ease, border-color 150ms ease, transform 150ms ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#3A3A3E";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#2C2C2E";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+                onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.95)"; }}
+                onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              >
+                ⏱ 90s
+              </button>
+
+              {/* Right: Next → or Finish ✓ */}
+              {selectedKey && items.findIndex((i) => i.key === selectedKey) < items.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentIndex = items.findIndex((i) => i.key === selectedKey);
+                    if (currentIndex < items.length - 1) {
+                      focusExercise(items[currentIndex + 1].key);
+                    }
+                  }}
+                  aria-label="Siguiente ejercicio"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    height: 40,
+                    padding: "0 14px",
+                    borderRadius: 16,
+                    background: ACCENT.base,
+                    border: "none",
+                    color: "#FFFFFF",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "background 150ms ease, transform 150ms ease",
+                  }}
+                  onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.95)"; }}
+                  onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                >
+                  Siguiente →
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={finish}
+                  aria-label="Finalizar entrenamiento"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    height: 40,
+                    padding: "0 14px",
+                    borderRadius: 16,
+                    background: ACCENT.base,
+                    border: "none",
+                    color: "#FFFFFF",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "background 150ms ease, transform 150ms ease",
+                  }}
+                  onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.95)"; }}
+                  onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                >
+                  Finalizar ✓
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

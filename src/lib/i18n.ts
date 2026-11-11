@@ -801,9 +801,9 @@ export const PROFILE_LABELS = {
    */
   tabsAriaLabel: "Pestañas del perfil",
   tabs: {
-    biometric: { label: "Biometría y metas", aria: "Ver biometría y metas" },
-    gym: { label: "Mi gimnasio", aria: "Ver mi gimnasio" },
-    preferences: { label: "Preferencias y sistema", aria: "Ver preferencias y sistema" },
+    biometric: { label: "Biometría", aria: "Ver biometría" },
+    gym: { label: "Mi Gym", aria: "Ver mi Gym" },
+    preferences: { label: "Ajustes", aria: "Ver ajustes" },
   } as Record<string, { label: string; aria: string }>,
 
   identityLabel: "Tus datos",

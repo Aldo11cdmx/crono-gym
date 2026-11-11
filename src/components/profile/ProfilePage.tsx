@@ -21,7 +21,6 @@
  */
 
 import {
-  useEffect,
   useMemo,
   useState,
   type CSSProperties,
@@ -29,7 +28,7 @@ import {
   type ReactNode,
 } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { ArrowRight, Check, LogOut, Settings, Sparkles, Upload } from "lucide-react";
+import { ArrowRight, Check, LogOut, Sparkles, Upload } from "lucide-react";
 import { supabase } from "@lib/supabase";
 import { GlassButton, GlassCard, Skeleton } from "@/components/ui";
 import { GymSettingsTrigger } from "@/components/workout/GymSettingsTrigger";
@@ -47,12 +46,10 @@ import {
   EXPERIENCE_LABELS,
   GYM_LABELS,
   GOAL_LABELS,
-  NAV_LABELS,
   PROFILE_LABELS,
   SEX_LABELS,
 } from "@/lib/i18n";
-import { ACTIVITY_FACTORS, ageFrom, cmToIn, kgToLb, type EnergyReport, type Profile } from "@/lib/profile";
-import { bmiOf, configuredSizes } from "./ProfileView";
+import { ACTIVITY_FACTORS, ageFrom, kgToLb, type EnergyReport, type Profile } from "@/lib/profile";
 import type { LocalStateRow } from "@/lib/profile/localState";
 import {
   ACCENT,
@@ -60,7 +57,6 @@ import {
   MOTION,
   NUMERIC,
   RADIUS,
-  SOLID,
   SPACE,
   STATUS,
   TEXT,
@@ -75,7 +71,20 @@ import { Shield, Code, Users } from "lucide-react";
 const PROFILE_TABS = ["biometric", "gym", "preferences"] as const;
 type ProfileTabId = (typeof PROFILE_TABS)[number];
 
-export { bmiOf, configuredSizes };
+export function bmiOf(weightKg: number | null, heightCm: number | null): number | null {
+  if (!weightKg || !heightCm || weightKg <= 0 || heightCm <= 0) return null;
+  const metres = heightCm / 100;
+  return Math.round((weightKg / (metres * metres)) * 10) / 10;
+}
+
+export function configuredSizes(
+  inventory: Readonly<Record<number, number | undefined>>,
+): number[] {
+  return Object.keys(inventory)
+    .map(Number)
+    .filter((size) => (inventory[size] ?? 0) > 0)
+    .sort((a, b) => a - b);
+}
 
 const BADGE_ROLE: Record<string, string> = {
   athlete: PROFILE_LABELS.badgeAthlete,
@@ -109,7 +118,7 @@ function exportProfile(profile: Profile, row: LocalStateRow | null) {
 
 export function ProfilePage() {
   const { userId, email } = useOutletContext<WorkspaceOutletContext>();
-  const { profile, energy, loading, saving, error, update, refresh } = useProfile(userId);
+  const { profile, energy, loading, error, update, refresh } = useProfile(userId);
   const gym = useGymSettings();
   const local = useLocalState();
   const { largeText, setLargeText } = useTextScale(userId);
@@ -177,43 +186,22 @@ export function ProfilePage() {
 
   return (
     <div style={pageStyle}>
-      {/* Hero Header — elevated glass card with avatar, identity and HUD */}
-      <GlassCard
-        raised
-        style={heroCardStyle}
-      >
+      <section className="rounded-2xl border border-white/10 bg-[#1C1C1E] p-4" style={heroCardStyle}>
         <div style={heroBodyStyle}>
-          <UserAvatar name={profile.display_name || "mich"} size={64} />
+          <UserAvatar name={profile.display_name || "mich"} size={56} />
           <div style={{ minWidth: 0, flex: 1 }}>
-            <h1 style={heroTitleStyle}>{PROFILE_LABELS.title}</h1>
-            <div style={{ display: "flex", gap: SPACE.xs, marginTop: SPACE.sm, flexWrap: "wrap" }}>
-              <span style={badgeProStyle}>
-                {PROFILE_LABELS.badgePro}
-              </span>
-              <button
-                type="button"
-                aria-label={NAV_LABELS.settings}
-                style={{
-                  minHeight: MOTION.minTouchTarget,
-                  minWidth: MOTION.minTouchTarget,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: RADIUS.control,
-                  border: `1px solid ${GLASS.border}`,
-                  background: "transparent",
-                  color: TEXT.secondary,
-                  cursor: "pointer",
-                }}
-              >
-                <Settings size={20} aria-hidden="true" />
-              </button>
-            </div>
+            <input
+              aria-label={PROFILE_LABELS.nameLabel}
+              defaultValue={profile.display_name ?? ""}
+              onBlur={(event) => void update({ display_name: event.target.value })}
+              className="h-11 w-full max-w-[220px] bg-transparent text-lg font-bold text-white outline-none"
+            />
+            <p className="m-0 text-xs text-zinc-400">{email || PROFILE_LABELS.notSet}</p>
           </div>
+          <span style={badgeProStyle}>{PROFILE_LABELS.badgePro}</span>
         </div>
 
-        {/* Minipanel HUD — physiological data in crystal boxes */}
-        <div style={hudStyle}>
+        {activeTab === "biometric" && <div style={hudStyle}>
           <HudBox
             label={PROFILE_LABELS.energyHudBmi}
             value={
@@ -230,39 +218,7 @@ export function ProfilePage() {
             label={PROFILE_LABELS.energyTdee}
             value={kcal(energy?.tdee ?? null)}
           />
-        </div>
-      </GlassCard>
-
-      {/* Accessibility - Text Scale */}
-      <section style={{ marginTop: SPACE.lg }}>
-        <GlassCard>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.md }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.primary }}>Tipografía Ampliada (Modo Accesible)</h2>
-              <p style={{ margin: "4px 0 0", fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                Se activa automáticamente si tienes 45 años o más. Puedes activarlo manualmente.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => void setLargeText(!largeText)}
-              aria-pressed={largeText}
-              style={{
-                minHeight: 36,
-                padding: "0 16px",
-                borderRadius: RADIUS.pill,
-                border: `1px solid ${largeText ? ACCENT.base : GLASS.border}`,
-                background: largeText ? ACCENT.base : "transparent",
-                color: largeText ? TEXT.onAccent : TEXT.secondary,
-                fontSize: TYPE.body.size,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {largeText ? "Activado" : "Desactivado"}
-            </button>
-          </div>
-        </GlassCard>
+        </div>}
       </section>
 
       {/* Segmented Control — iOS-style tab strip */}
@@ -270,6 +226,7 @@ export function ProfilePage() {
         role="tablist"
         aria-label={PROFILE_LABELS.tabsAriaLabel}
         onKeyDown={handleTabKeyDown}
+        className="grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-[#2C2C2E] p-1"
         style={tabStripStyle}
       >
         {PROFILE_TABS.map((tabId) => {
@@ -287,6 +244,7 @@ export function ProfilePage() {
               aria-label={tab.aria}
               tabIndex={isActive ? 0 : -1}
               onClick={() => setActiveTab(tabId)}
+              className="h-11 min-w-0 truncate rounded-lg px-2 text-xs font-semibold"
               style={{
                 ...segmentedTabStyle,
                 ...(isActive ? selectedSegmentedTabStyle : idleSegmentedTabStyle),
@@ -302,11 +260,9 @@ export function ProfilePage() {
       {activeTab === "biometric" && (
         <BiometricTabContent
           profile={profile}
-          email={email}
           energy={energy}
           bodyMetrics={bodyMetrics}
           age={age}
-          saving={saving}
           update={update}
         />
       )}
@@ -327,6 +283,8 @@ export function ProfilePage() {
           onSignOut={() => void supabase.auth.signOut()}
           onExport={() => exportProfile(profile, local.row)}
           permissions={permissions}
+          largeText={largeText}
+          onLargeTextChange={() => void setLargeText(!largeText)}
         />
       )}
 
@@ -367,7 +325,7 @@ function bmiBand(bmi: number): string {
  */
 function HudBox({ label, value }: { label: string; value: string }) {
   return (
-    <div style={hudBoxStyle}>
+    <div>
       <span style={hudLabelStyle}>{label}</span>
       <span style={hudValueStyle}>{value}</span>
     </div>
@@ -433,16 +391,14 @@ function MacroCard({ energy }: { energy: EnergyReport | null }) {
   }
 
   return (
-    <GlassCard style={{ marginBottom: SPACE.lg }}>
+    <section className="rounded-2xl border border-white/10 bg-[#1C1C1E] p-4" style={{ marginBottom: SPACE.lg }}>
       <h2 style={macroCardTitleStyle}>{PROFILE_LABELS.energyLabel}</h2>
-      <p style={macroSummaryStyle}>
-        {PROFILE_LABELS.energyMacroSummary(
-          energy.target,
-          energy.proteinGrams ?? 0,
-          energy.carbsGrams ?? 0,
-          energy.fatGrams ?? 0,
-        )}
-      </p>
+      <p style={macroSummaryStyle}>{energy.target.toLocaleString("es-MX")} kcal</p>
+      <div className="mb-4 h-2 overflow-hidden rounded-full bg-[#2C2C2E]" aria-label="Proporción de macronutrientes">
+        <span className="inline-block h-full bg-[#FF3B30]" style={{ width: "30%" }} />
+        <span className="inline-block h-full bg-[#FF9F0A]" style={{ width: "50%" }} />
+        <span className="inline-block h-full bg-[#30D158]" style={{ width: "20%" }} />
+      </div>
       <div style={macroGridStyle}>
         <MacroCell label={PROFILE_LABELS.energyProtein} value={`${energy.proteinGrams ?? PROFILE_LABELS.notSet} g`} />
         <MacroCell label={PROFILE_LABELS.energyCarbs} value={`${energy.carbsGrams ?? PROFILE_LABELS.notSet} g`} />
@@ -453,7 +409,7 @@ function MacroCard({ energy }: { energy: EnergyReport | null }) {
           {PROFILE_LABELS.energyFloorNote(energy.floor)}
         </p>
       )}
-    </GlassCard>
+    </section>
   );
 }
 
@@ -470,60 +426,26 @@ function MacroCell({ label, value }: { label: string; value: string }) {
 
 function BiometricTabContent({
   profile,
-  email,
   energy,
   bodyMetrics,
   age,
-  saving,
   update,
 }: {
   profile: Profile;
-  email: string;
   energy: EnergyReport | null;
   bodyMetrics: ReturnType<typeof useBodyMetrics>;
   age: number | null;
-  saving: boolean;
   update: (patch: Partial<Profile>) => Promise<boolean>;
 }) {
-  const [displayName, setDisplayName] = useState(profile.display_name ?? "");
-  useEffect(() => {
-    setDisplayName(profile.display_name ?? "");
-  }, [profile.display_name]);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (displayName !== (profile.display_name ?? "")) {
-        void update({ display_name: displayName });
-      }
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [displayName]);
   return (
     <>
-      <GroupedSection title={PROFILE_LABELS.identityLabel}>
-        <input
-          type="text"
-          value={displayName}
-          placeholder={PROFILE_LABELS.namePlaceholder}
-          onChange={(event) => setDisplayName(event.target.value)}
-          onBlur={() => void update({ display_name: displayName })}
-          style={inputStyle}
-          disabled={saving}
-        />
-        <dl style={readoutGridStyle}>
-          <div>
-            <dt style={readoutLabelStyle}>{PROFILE_LABELS.emailLabel}</dt>
-            <dd style={readoutValueStyle}>{email || PROFILE_LABELS.notSet}</dd>
-          </div>
-        </dl>
-      </GroupedSection>
-
       <GroupedSection title={PROFILE_LABELS.bodyLabel}>
         <dl style={readoutGridStyle}>
-          <div>
+          <div className="flex items-center justify-between gap-3">
             <dt style={readoutLabelStyle}>{PROFILE_LABELS.birthDateLabel}</dt>
             <dd style={readoutValueStyle}>{profile.birth_date ?? PROFILE_LABELS.notSet}</dd>
           </div>
-          <div>
+          <div className="flex items-center justify-between gap-3">
             <dt style={readoutLabelStyle}>{PROFILE_LABELS.ageLabel}</dt>
             <dd style={readoutValueStyle}>
               {age === null
@@ -540,21 +462,33 @@ function BiometricTabContent({
           <div>
             <dt style={readoutLabelStyle}>{PROFILE_LABELS.heightLabel}</dt>
             <dd style={readoutValueStyle}>
-              {profile.height_cm === null
-                ? PROFILE_LABELS.notSet
-                : profile.unit_system === "imperial"
-                  ? `${cmToIn(profile.height_cm)} in`
-                  : `${profile.height_cm} cm`}
+              <span
+                role="textbox"
+                contentEditable
+                suppressContentEditableWarning
+                aria-label={PROFILE_LABELS.heightLabel}
+                onBlur={(event) => {
+                  const value = Number(event.currentTarget.textContent?.replace(/[^\d.]/g, ""));
+                  if (Number.isFinite(value) && value > 0) void update({ height_cm: value });
+                }}
+                className="font-mono text-base font-bold text-white outline-none"
+              >{profile.height_cm === null ? PROFILE_LABELS.notSet : `${profile.height_cm} cm`}</span>
             </dd>
           </div>
           <div>
             <dt style={readoutLabelStyle}>{PROFILE_LABELS.weightLabel}</dt>
             <dd style={readoutValueStyle}>
-              {profile.weight_kg === null
-                ? PROFILE_LABELS.notSet
-                : profile.unit_system === "imperial"
-                  ? `${kgToLb(profile.weight_kg)} lb`
-                  : `${profile.weight_kg} kg`}
+              <span
+                role="textbox"
+                contentEditable
+                suppressContentEditableWarning
+                aria-label={PROFILE_LABELS.weightLabel}
+                onBlur={(event) => {
+                  const value = Number(event.currentTarget.textContent?.replace(/[^\d.]/g, ""));
+                  if (Number.isFinite(value) && value > 0) void update({ weight_kg: value });
+                }}
+                className="font-mono text-base font-bold text-white outline-none"
+              >{profile.weight_kg === null ? PROFILE_LABELS.notSet : `${profile.weight_kg} kg`}</span>
             </dd>
           </div>
         </dl>
@@ -653,6 +587,8 @@ interface PreferencesTabContentProps {
   onSignOut: () => void;
   onExport: () => void;
   permissions: ReturnType<typeof usePermissions>;
+  largeText: boolean;
+  onLargeTextChange: () => void;
 }
 
 function PreferencesTabContent({
@@ -663,9 +599,29 @@ function PreferencesTabContent({
   onSignOut,
   onExport,
   permissions,
+  largeText,
+  onLargeTextChange,
 }: PreferencesTabContentProps) {
   return (
     <>
+      <GroupedSection title="Accesibilidad">
+        <div className="flex min-h-12 items-center justify-between gap-3">
+          <span className="text-sm text-white">Tipografía Ampliada (Modo Accesible)</span>
+          <button
+            type="button"
+            onClick={onLargeTextChange}
+            aria-pressed={largeText}
+            className="h-11 rounded-full border px-4 text-sm font-semibold"
+            style={{
+              borderColor: largeText ? ACCENT.base : GLASS.border,
+              background: largeText ? ACCENT.base : "#2C2C2E",
+              color: largeText ? TEXT.onAccent : TEXT.secondary,
+            }}
+          >
+            {largeText ? "Activado" : "Desactivado"}
+          </button>
+        </div>
+      </GroupedSection>
       <GroupedSection title="Acceso a paneles">
         <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
           {permissions.hasRole("admin") && (
@@ -987,22 +943,14 @@ const readoutValueStyle: CSSProperties = {
   fontVariantNumeric: NUMERIC.align,
 };
 
-const inputStyle: CSSProperties = {
-  width: "100%",
-  minHeight: MOTION.minTouchTarget,
-  padding: `${SPACE.sm} ${SPACE.md}`,
-  borderRadius: RADIUS.control,
-  border: `1px solid ${SOLID.borderStrong}`,
-  background: "transparent",
-  color: TEXT.primary,
-  fontSize: TYPE.body.size,
-};
-
 // Hero header -----------------------------------------------
 
 const heroCardStyle: CSSProperties = {
   marginBottom: SPACE.xl,
-  padding: SPACE.card,
+  padding: SPACE.md,
+  background: "#1C1C1E",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: 16,
 };
 
 const heroBodyStyle: CSSProperties = {
@@ -1010,13 +958,6 @@ const heroBodyStyle: CSSProperties = {
   alignItems: "center",
   gap: SPACE.md,
   marginBottom: SPACE.lg,
-};
-
-const heroTitleStyle: CSSProperties = {
-  margin: 0,
-  fontSize: TYPE.hero.size,
-  fontWeight: TYPE.hero.weight,
-  color: TEXT.primary,
 };
 
 const badgeProStyle: CSSProperties = {
@@ -1037,19 +978,12 @@ const badgeProStyle: CSSProperties = {
 // HUD --------------------------------------------------------
 
 const hudStyle: CSSProperties = {
-  display: "flex",
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr)",
   gap: SPACE.sm,
-  flexWrap: "wrap",
-};
-
-const hudBoxStyle: CSSProperties = {
-  flex: "1 1 0",
-  minHeight: MOTION.minTouchTarget,
-  padding: SPACE.md,
-  borderRadius: RADIUS.control,
-  backgroundColor: GLASS.fill,
-  border: `1px solid ${GLASS.border}`,
-  textAlign: "center",
+  marginTop: SPACE.md,
+  paddingTop: SPACE.md,
+  borderTop: "1px solid rgba(255,255,255,0.1)",
 };
 
 const hudLabelStyle: CSSProperties = {
@@ -1071,21 +1005,19 @@ const hudValueStyle: CSSProperties = {
 // Segmented control -----------------------------------------
 
 const tabStripStyle: CSSProperties = {
-  display: "flex",
-  gap: SPACE.md,
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gap: 4,
   padding: SPACE.xs,
   marginBottom: SPACE.lg,
   borderRadius: RADIUS.pill,
   backgroundColor: GLASS.fill,
   border: `1px solid ${GLASS.border}`,
-  overflowX: "auto",
-  scrollbarWidth: "none",
 };
 
 const segmentedTabStyle: CSSProperties = {
-  flex: "0 0 auto",
   minWidth: 0,
-  padding: `${SPACE.sm} ${SPACE.md}`,
+  padding: `0 ${SPACE.xs}`,
   whiteSpace: "nowrap",
   flexShrink: 0,
   minHeight: MOTION.minTouchTarget,
@@ -1093,7 +1025,7 @@ const segmentedTabStyle: CSSProperties = {
   border: `1px solid transparent`,
   background: "transparent",
   color: TEXT.tertiary,
-  fontSize: TYPE.subhead.size,
+  fontSize: TYPE.caption.size,
   cursor: "pointer",
   transition: `background-color ${MOTION.fast} ${MOTION.standard}, border-color ${MOTION.fast} ${MOTION.standard}, color ${MOTION.fast} ${MOTION.standard}`,
 };
@@ -1136,6 +1068,10 @@ const crystalPillIdleStyle: CSSProperties = {
 
 const groupedSectionStyle: CSSProperties = {
   marginBottom: SPACE.md,
+  padding: SPACE.md,
+  borderRadius: 16,
+  border: "1px solid rgba(255,255,255,0.1)",
+  background: "#1C1C1E",
 };
 
 // Macro card ------------------------------------------------
@@ -1151,7 +1087,7 @@ const macroCardTitleStyle: CSSProperties = {
 
 const macroSummaryStyle: CSSProperties = {
   margin: `0 0 ${SPACE.md}`,
-  fontSize: TYPE.body.size,
+  fontSize: "1.5rem",
   fontWeight: 700,
   lineHeight: TYPE.body.lineHeight,
   color: TEXT.primary,
@@ -1201,8 +1137,7 @@ const chartBackgroundStyle: CSSProperties = {
   height: 80,
   padding: SPACE.sm,
   borderRadius: RADIUS.control,
-  backgroundColor: GLASS.fill,
-  border: `1px solid ${GLASS.border}`,
+  backgroundColor: "#2C2C2E",
 };
 
 const barStyle: CSSProperties = {

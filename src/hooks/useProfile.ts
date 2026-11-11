@@ -64,23 +64,20 @@ export function useProfile(userId: string | null): ProfileState {
     }
     setLoading(true);
     setError(null);
+    setProfile(null);
     const cached = profileCache.get(userId);
-    let data;
-    if (cached) {
-      data = cached;
-    } else {
-      const { data: fetched, error: err } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (err) setError(err.message);
-      if (fetched) {
-        profileCache.set(userId, fetched as Record<string, unknown>);
-        data = fetched;
-      }
+    const { data: fetched, error: err } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (err) setError(err.message);
+    const data = fetched ?? (err ? cached : null);
+    if (fetched) {
+      profileCache.set(userId, fetched as Record<string, unknown>);
     }
     if (data) setProfile(toProfile(data as Record<string, unknown>));
+    else setProfile(null);
     setLoading(false);
   }, [userId]);
 

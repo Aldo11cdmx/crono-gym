@@ -105,9 +105,9 @@ export function GymSettingsPanel({ onClose }: GymSettingsPanelProps) {
         maxHeight: "100%",
         overflowY: "auto",
         padding: SPACE.lg,
-        borderRadius: RADIUS.card,
-        border: `1px solid ${SOLID.borderStrong}`,
-        background: SOLID.popover,
+        borderRadius: 16,
+        border: "1px solid rgba(255,255,255,0.1)",
+        background: "#1C1C1E",
         boxShadow: GLASS.shadow,
       }}
     >
@@ -527,7 +527,7 @@ const hintStyle: CSSProperties = {
 /** A selected chip is the accent fill; unselected ones are hairlines. */
 function chipStyle(selected: boolean): CSSProperties {
   return {
-    minHeight: 36,
+    minHeight: MOTION.minTouchTarget,
     padding: "0 14px",
     borderRadius: RADIUS.pill,
     borderWidth: "1px",
@@ -536,7 +536,7 @@ function chipStyle(selected: boolean): CSSProperties {
     fontWeight: 600,
     cursor: "pointer",
     color: selected ? TEXT.onAccent : TEXT.secondary,
-    background: selected ? ACCENT.base : "transparent",
+    background: selected ? ACCENT.base : "#2C2C2E",
     borderColor: selected ? ACCENT.base : GLASS.border,
   };
 }

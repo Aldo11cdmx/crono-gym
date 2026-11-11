@@ -1557,6 +1557,11 @@ export function ActiveWorkout({
     [items, selectedKey],
   );
 
+  const selectedIndex = useMemo(
+    () => (selected ? items.findIndex((i) => i.key === selected.key) : -1),
+    [items, selected],
+  );
+
   const equipmentSuggestion = useMemo<EquipmentSuggestion>(() => {
     if (!selected) return { primary: null, alternatives: [] };
     return getEquipmentSuggestionForExercise(
@@ -1632,17 +1637,18 @@ export function ActiveWorkout({
           item.key === selectedKey ? { ...item, exercise: loggerExercise } : item,
         );
       }
-      return [
-        ...prev,
-        newSessionExercise({
-          exercise: loggerExercise,
-          restSeconds: DEFAULT_REST,
-          groupId: null,
-          sets: workingTemplateSets(3),
-        }),
-      ];
+      const newKey = exercise.id;
+      setSelectedKey(newKey);
+      const added = newSessionExercise({
+        exercise: loggerExercise,
+        restSeconds: DEFAULT_REST,
+        groupId: null,
+        sets: workingTemplateSets(3),
+      });
+      setSelectedKey(added.key);
+      return [...prev, added];
     });
-    setSelectedKey(exercise.id);
+
   }
 
   function restoreRecovered() {
@@ -2164,9 +2170,7 @@ export function ActiveWorkout({
         <>
           <SessionHeader
             exerciseLabel={
-              selected
-                ? `Ejercicio ${items.findIndex((i) => i.key === selected.key) + 1} de ${items.length}`
-                : ""
+              selectedIndex >= 0 ? `Ejercicio ${selectedIndex + 1} de ${items.length}` : ""
             }
             superset={selectedSuperset}
             startedAt={session?.startedAt ?? null}
@@ -2553,12 +2557,11 @@ export function ActiveWorkout({
               <button
                 type="button"
                 onClick={() => {
-                  const currentIndex = items.findIndex((i) => i.key === selectedKey);
-                  if (currentIndex > 0) {
-                    focusExercise(items[currentIndex - 1].key);
+                  if (selectedIndex > 0) {
+                    focusExercise(items[selectedIndex - 1].key);
                   }
                 }}
-                disabled={!selectedKey || items.findIndex((i) => i.key === selectedKey) === 0}
+                disabled={selectedIndex <= 0}
                 aria-label="Ejercicio anterior"
                 style={{
                   display: "inline-flex",
@@ -2574,7 +2577,7 @@ export function ActiveWorkout({
                   fontSize: "12px",
                   fontWeight: 600,
                   cursor: "pointer",
-                  opacity: !selectedKey || items.findIndex((i) => i.key === selectedKey) === 0 ? 0.35 : 1,
+                  opacity: selectedIndex <= 0 ? 0.35 : 1,
                   transition: "background 150ms ease, opacity 150ms ease, transform 150ms ease",
                 }}
                 onMouseDown={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.transform = "scale(0.95)"; }}
@@ -2623,13 +2626,12 @@ export function ActiveWorkout({
               </button>
 
               {/* Right: Next → or Finish ✓ */}
-              {selectedKey && items.findIndex((i) => i.key === selectedKey) < items.length - 1 ? (
+              {selectedIndex >= 0 && selectedIndex < items.length - 1 ? (
                 <button
                   type="button"
                   onClick={() => {
-                    const currentIndex = items.findIndex((i) => i.key === selectedKey);
-                    if (currentIndex < items.length - 1) {
-                      focusExercise(items[currentIndex + 1].key);
+                    if (selectedIndex < items.length - 1) {
+                      focusExercise(items[selectedIndex + 1].key);
                     }
                   }}
                   aria-label="Siguiente ejercicio"

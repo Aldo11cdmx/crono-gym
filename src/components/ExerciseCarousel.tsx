@@ -22,7 +22,6 @@ import {
   MOTION,
   RADIUS,
   SURFACE,
-  STATUS,
   TEXT,
   TYPE,
 } from "@/design/tokens";
@@ -187,12 +186,12 @@ export function ExerciseCarousel({
                   justifyContent: "center",
                   width: 60,
                   height: 60,
-                  overflow: "hidden",
+                  overflow: "visible",
                   borderRadius: RADIUS.round,
                   border: selected
-                    ? `3px solid ${CRIMSON.base}`
+                    ? `2px solid ${CRIMSON.base}`
                     : complete
-                    ? `3px solid ${STATUS.success.base}`
+                    ? "3px solid #30D158"
                     : `2px solid ${DIAGRAM.inert}`,
                   background: selected
                     ? CRIMSON.subtle
@@ -202,7 +201,7 @@ export function ExerciseCarousel({
                   boxShadow: selected
                     ? `0 0 20px ${CRIMSON.glow}, 0 0 0 1px ${CRIMSON.base}`
                     : complete
-                    ? `0 0 12px ${STATUS.success.muted}`
+                    ? "0 0 12px rgba(48, 209, 88, 0.35)"
                     : "none",
                   transform: selected ? "scale(1.08)" : "scale(1)",
                   opacity: selected || complete ? 1 : 0.6,
@@ -211,35 +210,48 @@ export function ExerciseCarousel({
                     : `transform ${MOTION.fast} ${MOTION.spring}, border-color ${MOTION.fast} ${MOTION.standard}, box-shadow ${MOTION.fast} ${MOTION.standard}, opacity ${MOTION.fast} ${MOTION.standard}`,
                 }}
               >
-                {exerciseGif(item.exercise) ? (
-                  <img
-                    src={exerciseGif(item.exercise)}
-                    alt=""
-                    loading="lazy"
-                    width={52}
-                    height={52}
-                    style={{
-                      width: 52,
-                      height: 52,
-                      objectFit: "cover",
-                      display: "block",
-                      backgroundColor: "transparent",
-                      filter: "invert(1) hue-rotate(180deg)",
-                      WebkitFilter: "invert(1) hue-rotate(180deg)",
-                    }}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      fontFamily: TYPE.mono.font,
-                      fontSize: TYPE.headline.size,
-                      fontWeight: 700,
-                      color: selected ? CRIMSON.text : complete ? STATUS.success.text : TEXT.disabled,
-                    }}
-                  >
-                    {index + 1}
-                  </span>
-                )}
+                <span
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: RADIUS.round,
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {exerciseGif(item.exercise) ? (
+                    <img
+                      src={exerciseGif(item.exercise)}
+                      alt=""
+                      loading="lazy"
+                      width={52}
+                      height={52}
+                      style={{
+                        width: 52,
+                        height: 52,
+                        objectFit: "cover",
+                        display: "block",
+                        backgroundColor: "transparent",
+                        filter: "invert(1) hue-rotate(180deg)",
+                        WebkitFilter: "invert(1) hue-rotate(180deg)",
+                      }}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        fontFamily: TYPE.mono.font,
+                        fontSize: TYPE.headline.size,
+                        fontWeight: 700,
+                        color: selected ? CRIMSON.text : complete ? "#30D158" : TEXT.disabled,
+                      }}
+                    >
+                      {index + 1}
+                    </span>
+                  )}
+                </span>
 
                 {/* Progress ring */}
                 {ratio > 0 && !complete && (
@@ -268,7 +280,7 @@ export function ExerciseCarousel({
                       cy="30"
                       r="27"
                       fill="none"
-                      stroke={complete ? STATUS.success.base : CRIMSON.base}
+                      stroke={complete ? "#30D158" : CRIMSON.base}
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeDasharray={`${ratio * 169.6} 169.6`}
@@ -289,7 +301,7 @@ export function ExerciseCarousel({
                       width: 24,
                       height: 24,
                       borderRadius: RADIUS.round,
-                      background: STATUS.success.base,
+                      background: "#30D158",
                       color: "#000",
                       border: "2px solid #000",
                     }}
@@ -319,7 +331,7 @@ export function ExerciseCarousel({
                   fontSize: "11px",
                   lineHeight: "14px",
                   fontWeight: 600,
-                  color: selected ? CRIMSON.text : complete ? STATUS.success.text : TEXT.tertiary,
+                  color: selected ? CRIMSON.text : complete ? "#30D158" : TEXT.tertiary,
                 }}
               >
                 {shortName(displayName)}

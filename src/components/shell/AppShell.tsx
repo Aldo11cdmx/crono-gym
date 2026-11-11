@@ -70,9 +70,12 @@ export function AppShell() {
   */
   const { collapsed, toggle } = useSideNavCollapsed();
 
+  // Immersive mode: hide chrome on /entrenar (active or pre-workout) for Apple Fitness+ focus.
+  const isImmersive = pathname === "/entrenar";
+
   return (
     <div
-      className={`cronos-shell${isActive ? " cronos-dock--active" : ""}`}
+      className={`cronos-shell${isActive ? " cronos-dock--active" : ""}${isImmersive ? " cronos-shell--immersive" : ""}`}
       style={
         {
           backgroundColor: SURFACE.base,
@@ -91,24 +94,28 @@ export function AppShell() {
       */}
        <div
         key={pathname}
-        className={`cronos-route${reducedMotion ? "" : " cronos-route--animate"} pb-28 md:pb-0`}
+        className={`cronos-route${reducedMotion ? "" : " cronos-route--animate"} pb-28 md:pb-0${isImmersive ? " !pb-0" : ""}`}
       >
         <Outlet />
       </div>
 
-      <SideNav collapsed={collapsed} onToggleCollapsed={toggle} />
-      {user && (
+      {!isImmersive && (
         <>
-          <div className="hidden md:block">
-            <BottomNav />
-          </div>
-          <div className="hidden md:block">
-            <ActiveWorkoutPill />
-          </div>
+          <SideNav collapsed={collapsed} onToggleCollapsed={toggle} />
+          {user && (
+            <>
+              <div className="hidden md:block">
+                <BottomNav />
+              </div>
+              <div className="hidden md:block">
+                <ActiveWorkoutPill />
+              </div>
+            </>
+          )}
+          <CoachFloatingButton />
+          <MobileNav />
         </>
       )}
-      <CoachFloatingButton />
-      <MobileNav />
     </div>
   );
 }

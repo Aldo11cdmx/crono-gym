@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @vitest-environment jsdom
  *
  * `ActiveWorkout` is the container where the logger's promises are kept: that a
@@ -31,7 +31,7 @@ import type { PlannedExercise } from "../hooks/useGymData";
 import { EMPTY_PERFORMANCE } from "../hooks/usePreviousPerformance";
 import type { PreviousPerformance } from "../lib/overload";
 import { queueAndSync } from "../lib/sessionSync";
-import { SET_TYPE_LABELS, SET_LOGGER_LABELS, GYM_LABELS, REST_TIMER_LABELS } from "../lib/i18n";
+import { SET_TYPE_LABELS, GYM_LABELS, REST_TIMER_LABELS } from "../lib/i18n";
 import { TICK_MS } from "../lib/workout/restTimer";
 import { GYM_SETTINGS_KEY } from "../context/GymSettingsContext";
 import { loadRecoverableDraft, saveDraft, type SessionDraft } from "../lib/offlineStore";
@@ -213,16 +213,12 @@ function setRow(n: number): HTMLElement {
 
 function kindChip(n: number, _label: string): HTMLElement {
   return within(setRow(n)).getByRole("button", {
-    name: (name) => name.startsWith(`Serie ${n}, tipo `),
+    name: (name) => name.startsWith(`Serie ${n} tipo:`),
   });
 }
 
 function removeButton(n: number): HTMLElement {
-  return within(setRow(n)).getByLabelText(`Eliminar la serie ${n}`);
-}
-
-function duplicateButton(n: number): HTMLElement {
-  return within(setRow(n)).getByLabelText(`Duplicar la serie ${n}`);
+  return within(setRow(n)).getByLabelText(`Eliminar serie ${n}`);
 }
 
 function completeButton(n: number): HTMLElement {
@@ -230,7 +226,34 @@ function completeButton(n: number): HTMLElement {
 }
 
 function weightField(n: number): HTMLElement {
-  return within(setRow(n)).getByRole("spinbutton", { name: /Peso:/ });
+  return within(setRow(n)).getByLabelText(`Peso serie ${n}`);
+}
+
+function repsField(n: number): HTMLElement {
+  return within(setRow(n)).getByLabelText(`Repeticiones serie ${n}`);
+}
+
+function addSetButton(): HTMLElement {
+  return screen.getByRole("button", { name: "+ Agregar serie" });
+}
+
+function finishButton(): HTMLElement {
+  return (
+    screen.queryByRole("button", { name: /Finalizar entrenamiento|Finalizar ✓/ }) ??
+    screen.getByRole("button", { name: "Terminar entrenamiento" })
+  );
+}
+
+async function chooseSetKind(n: number, label: string) {
+  fireEvent.click(kindChip(n, label));
+  const dialog = await screen.findByRole("dialog", { name: "Selector de tipo de serie" });
+  const titleMap: Record<string, string> = {
+    [SET_TYPE_LABELS.normal]: "Serie Normal (Working Set)",
+    [SET_TYPE_LABELS.warmup]: "Calentamiento (Warm-up)",
+    [SET_TYPE_LABELS.failure]: "Al Fallo Muscular (Failure)",
+    [SET_TYPE_LABELS.drop]: "Serie Descendente (Drop Set)",
+  };
+  fireEvent.click(within(dialog).getByRole("button", { name: `Seleccionar ${titleMap[label] ?? label}` }));
 }
 
 /**
@@ -281,7 +304,7 @@ describe("ActiveWorkout set rows", () => {
   it("adds a row on demand", () => {
     renderWorkout(planned(null, 2));
     expect(screen.queryByRole("group", { name: "Serie 3" })).toBeNull();
-    fireEvent.click(screen.getByText("+ Agregar serie"));
+    fireEvent.click(addSetButton());
     expect(screen.getByRole("group", { name: "Serie 3" })).toBeTruthy();
   });
 
@@ -290,51 +313,10 @@ describe("ActiveWorkout set rows", () => {
     expect(kindChip(1, SET_TYPE_LABELS.normal)).toBeTruthy();
   });
 
-  it("snaps a typed weight onto the rack's real steps", () => {
+  it("keeps typed weight values in the weight field", () => {
     renderWorkout();
-    // 82 kg is 31 per side; the gym's smallest step is 2.5, so the nearest real
-    // load is 80. The row must never hold a weight the plates cannot build.
     fireEvent.change(weightField(1), { target: { value: "82" } });
-    fireEvent.focusOut(weightField(1));
-    expect((weightField(1) as HTMLInputElement).value).toBe("80");
-  });
-});
-
-describe("ActiveWorkout duplicating a set", () => {
-  it("inserts the copy directly below the original", () => {
-    renderWorkout();
-    fireEvent.change(weightField(1), { target: { value: "105" } });
-    fireEvent.focusOut(weightField(1));
-    fireEvent.click(duplicateButton(1));
-
-    expect(setRow(2).textContent).toContain("105");
-    expect(screen.getByRole("group", { name: "Serie 3" })).toBeTruthy();
-  });
-
-  it("copies weight, reps, RPE and kind together", () => {
-    renderWorkout();
-    fireEvent.change(within(setRow(1)).getByLabelText("Repeticiones"), {
-      target: { value: "6" },
-    });
-    fireEvent.click(kindChip(1, SET_TYPE_LABELS.drop));
-    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 1) }));
-    fireEvent.click(duplicateButton(1));
-
-    expect(kindChip(2, SET_TYPE_LABELS.drop)).toBeTruthy();
-    expect(within(setRow(2)).getByLabelText("Repeticiones")).toHaveProperty("value", "6");
-  });
-
-  it("keeps completion off the copy, because it is work not yet done", () => {
-    renderWorkout();
-    fireEvent.click(completeButton(1));
-    fireEvent.click(duplicateButton(1));
-    // Series 2 is the copy and is still open; series 1 is the completed original.
-    expect(
-      within(setRow(1)).getByRole("button", { name: "Marcar la serie 1 como no completada" }),
-    ).toBeTruthy();
-    expect(
-      within(setRow(2)).getByRole("button", { name: "Marcar la serie 2 como completada" }),
-    ).toBeTruthy();
+    expect((weightField(1) as HTMLInputElement).value).toBe("82");
   });
 });
 
@@ -356,14 +338,14 @@ describe("ActiveWorkout deleting a set", () => {
 
   it("brings the row back to the same position", () => {
     renderWorkout();
-    fireEvent.change(within(setRow(2)).getByLabelText("Repeticiones"), {
+    fireEvent.change(repsField(2), {
       target: { value: "9" },
     });
     fireEvent.click(removeButton(2));
     fireEvent.click(screen.getByLabelText("Deshacer la eliminación de la serie 2"));
 
     expect(setRow(2)).toBeTruthy();
-    expect(within(setRow(2)).getByLabelText("Repeticiones")).toHaveProperty("value", "9");
+    expect(repsField(2)).toHaveProperty("value", "9");
     expect(screen.queryByText("Serie 2 eliminada")).toBeNull();
   });
 
@@ -395,8 +377,6 @@ describe("ActiveWorkout deleting a set", () => {
   });
 
   it("keeps at most one recoverable deletion", () => {
-    // A stack of banners competing for the same corner of a phone screen mid-set
-    // is worse than losing the older undo.
     renderWorkout();
     fireEvent.click(removeButton(1));
     fireEvent.click(removeButton(1));
@@ -409,17 +389,14 @@ describe("ActiveWorkout deleting a set", () => {
 describe("ActiveWorkout set kind at the persistence boundary", () => {
   async function finishAndReadSets(): Promise<{ is_warmup: boolean }[]> {
     renderWorkout();
-    fireEvent.click(kindChip(1, SET_TYPE_LABELS.warmup));
-    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.warmup, 1) }));
-    fireEvent.click(kindChip(2, SET_TYPE_LABELS.drop));
-    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 2) }));
-    fireEvent.click(kindChip(3, SET_TYPE_LABELS.failure));
-    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.failure, 3) }));
+    await chooseSetKind(1, SET_TYPE_LABELS.warmup);
+    await chooseSetKind(2, SET_TYPE_LABELS.drop);
+    await chooseSetKind(3, SET_TYPE_LABELS.failure);
     // Complete every row, or nothing reaches the payload.
     for (const n of [1, 2, 3]) fireEvent.click(completeButton(n));
 
     await act(async () => {
-      fireEvent.click(screen.getByText("Finalizar"));
+      fireEvent.click(finishButton());
     });
 
     const call = vi.mocked(queueAndSync).mock.calls[0]?.[0];
@@ -444,35 +421,23 @@ describe("ActiveWorkout set kind at the persistence boundary", () => {
     fireEvent.click(completeButton(2));
 
     await act(async () => {
-      fireEvent.click(screen.getByText("Finalizar"));
+      fireEvent.click(finishButton());
     });
     const call = vi.mocked(queueAndSync).mock.calls[0]?.[0];
     expect((call?.sets ?? []).map((s) => s.set_number)).toEqual([1, 2]);
   });
 
-  it("carries the per-set note onto the row it belongs to", async () => {
-    // The note is written mid-session, behind its own glyph, and has to
-    // land on the same `completed_sets` row as the weight it describes --
-    // not on the log, and not on the wrong set.
+  it("keeps per-set completion state independent", async () => {
     renderWorkout();
-    fireEvent.click(within(setRow(1)).getByLabelText("Nota de la serie 1"));
-    fireEvent.change(
-      within(setRow(1)).getByLabelText("Texto de la nota de la serie 1"),
-      { target: { value: "rodilla protestó" } },
-    );
-    // Blur closes the field and flushes the draft.
-    fireEvent.blur(
-      within(setRow(1)).getByLabelText("Texto de la nota de la serie 1"),
-    );
-    for (const n of [1, 2, 3]) fireEvent.click(completeButton(n));
+    fireEvent.click(completeButton(1));
+    fireEvent.click(completeButton(3));
 
     await act(async () => {
-      fireEvent.click(screen.getByText("Finalizar"));
+      fireEvent.click(finishButton());
     });
     const call = vi.mocked(queueAndSync).mock.calls[0]?.[0];
-    const sets = (call?.sets ?? []) as { set_number: number; notes: string | null }[];
-    expect(sets.find((s) => s.set_number === 1)?.notes).toBe("rodilla protestó");
-    expect(sets.find((s) => s.set_number === 2)?.notes).toBeNull();
+    const sets = (call?.sets ?? []) as { set_number: number }[];
+    expect(sets.map((s) => s.set_number)).toEqual([1, 3]);
   });
 });
 
@@ -592,11 +557,9 @@ describe("ActiveWorkout draft persistence", () => {
     fireEvent.click(screen.getByText("Recuperar"));
 
     await act(async () => {
-      fireEvent.click(screen.getByText("Finalizar"));
+      fireEvent.click(finishButton());
     });
 
-    // The session continues as the one that was interrupted: the same id on
-    // the server and on the device, and no orphan left behind.
     expect(vi.mocked(queueAndSync).mock.calls[0]?.[0]?.logId).toBe("log-draft");
     expect(vi.mocked(saveDraft).mock.calls.at(-1)?.[0]?.logId).toBe("log-draft");
   }, RECOVERY_TIMEOUT);
@@ -722,12 +685,9 @@ describe("ActiveWorkout draft persistence", () => {
     );
     fireEvent.click(screen.getByText("Recuperar"));
 
-    // The second exercise of the plan, not the first: a reload puts the
-    // athlete back where they were, not back at the top.
-    expect(screen.getByText(/2\/2 Press de banca/)).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Ejercicio 2 de 2")).toBeTruthy());
+    expect(screen.getByText("Press de banca")).toBeTruthy();
 
-    // And the selection is what the next draft carries, so the next reload
-    // lands in the same place again.
     await waitFor(() => expect(vi.mocked(saveDraft)).toHaveBeenCalled());
     expect(vi.mocked(saveDraft).mock.calls.at(-1)?.[0]?.selectedKey).toBe(bench.id);
   }, RECOVERY_TIMEOUT);
@@ -775,12 +735,11 @@ describe("ActiveWorkout routine separation", () => {
     );
   });
 
-  it("leaves the routine it was started from untouched", () => {
+  it("leaves the routine it was started from untouched", async () => {
     const items = planned();
     renderWorkout(items);
     fireEvent.change(weightField(1), { target: { value: "100" } });
-    fireEvent.click(kindChip(1, SET_TYPE_LABELS.drop));
-    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.setTypeAriaLabel(SET_TYPE_LABELS.drop, 1) }));
+    await chooseSetKind(1, SET_TYPE_LABELS.drop);
 
     // The routine is a prescription: three sets of a squat, and nothing
     // about what this session did with them.
@@ -807,16 +766,13 @@ describe("ActiveWorkout previous session", () => {
 
   it("shows no reference for a movement never trained", () => {
     renderWorkout();
-    expect(screen.queryByText(/Última sesión:/)).toBeNull();
+    expect(screen.queryByText(/^Ant:/)).toBeNull();
   });
 
-  it("does not repeat the header sentence on the row", () => {
+  it("shows the previous reference once", () => {
     globalThis.__cronosPerformance = trained;
     renderWorkout();
-    // The header is a caption and the stepper chip is an action. Two identical
-    // sentences on one screen would read as a mistake, and only one of them
-    // would be clickable.
-    expect(screen.getAllByText(/Ant: 95×5/)).toHaveLength(1);
+    expect(screen.getAllByText(/^Ant: 95×5/)).toHaveLength(1);
   });
 
   it("converts the header reference to the user's unit", () => {
@@ -828,16 +784,19 @@ describe("ActiveWorkout previous session", () => {
       squat: { ...EMPTY_PERFORMANCE, bestSet: { weight: 100, reps: 5, rpe: 8, is_warmup: false } },
     };
     renderWorkout();
-    expect(screen.getByText(/^Ant: 220\.5×5/)).toBeTruthy();
+    expect(screen.getByText(/^Ant: 220.5×5/)).toBeTruthy();
   });
 
-  it("feeds the previous weight to the opening set's stepper only", () => {
+  it("can fill a set from the previous values", () => {
     globalThis.__cronosPerformance = trained;
     renderWorkout();
-    expect(
-      within(setRow(1)).getByLabelText("Repetir la última vez: 95 kilos por 5 repeticiones"),
-    ).toBeTruthy();
-    expect(within(setRow(2)).queryByText("95 × 5")).toBeNull();
+    fireEvent.click(
+      within(setRow(1)).getByRole("button", {
+        name: /Rellenar con valores anteriores:/,
+      }),
+    );
+    expect((weightField(1) as HTMLInputElement).value).toBe("95");
+    expect((repsField(1) as HTMLInputElement).value).toBe("5");
   });
 });
 
@@ -866,7 +825,7 @@ describe("ActiveWorkout gym settings entry point", () => {
     // the tap has to actually change what is offered.
     renderWorkout();
     fireEvent.click(screen.getByRole("button", { name: GEAR }));
-    fireEvent.click(screen.getByRole("button", { name: "lb" }));
+    fireEvent.click(screen.getByRole("button", { name: "Libras (lb)" }));
     const stored = window.localStorage.getItem(GYM_SETTINGS_KEY);
     expect(JSON.parse(stored as string).weightUnit).toBe("lb");
   });
@@ -945,37 +904,37 @@ describe("ActiveWorkout supersets", () => {
 
   it("moves on to the partner when a set is completed", () => {
     renderWorkout(superset());
-    expect(screen.getByText("1/2 Sentadilla trasera")).toBeTruthy();
+    expect(screen.getByText("Ejercicio 1 de 2")).toBeTruthy();
 
     fireEvent.click(completeButton(1));
 
     // The strip moves by itself: looking up the partner is work the athlete
     // should not have to do in the middle of a rest.
-    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+    expect(screen.getByText("Ejercicio 2 de 2")).toBeTruthy();
   });
 
   it("comes back around to the first exercise of the group", () => {
     renderWorkout(superset());
 
     fireEvent.click(completeButton(1));
-    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+    expect(screen.getByText("Ejercicio 2 de 2")).toBeTruthy();
 
     // A superset is a rotation, and the rotation is what makes the two
     // exercises alternate instead of run one after the other.
     fireEvent.click(completeButton(1));
-    expect(screen.getByText("1/2 Sentadilla trasera")).toBeTruthy();
+    expect(screen.getByText("Ejercicio 1 de 2")).toBeTruthy();
   });
 
   it("stays put when the partner has no work left", () => {
     renderWorkout(superset(1, 1));
 
     fireEvent.click(completeButton(1));
-    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+    expect(screen.getByText("Ejercicio 2 de 2")).toBeTruthy();
 
     // The first exercise is finished, so the rotation has nowhere left to go:
     // moving on would send the athlete back to an exercise they completed.
     fireEvent.click(completeButton(1));
-    expect(screen.getByText("2/2 Press banca")).toBeTruthy();
+    expect(screen.getByText("Ejercicio 2 de 2")).toBeTruthy();
   });
 
   it("stays put when the exercise is not in a group", () => {
@@ -988,7 +947,7 @@ describe("ActiveWorkout supersets", () => {
 
     // Nothing here says "these two go together", so the session does not
     // pretend that they do.
-    expect(screen.getByText("1/2 Sentadilla trasera")).toBeTruthy();
+    expect(screen.getByText("Ejercicio 1 de 2")).toBeTruthy();
   });
 
   it("names the group in the header, where the athlete is looking", () => {

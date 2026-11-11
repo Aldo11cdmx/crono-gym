@@ -14,7 +14,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { ExerciseCarousel, type CarouselItem } from "./ExerciseCarousel";
 import { borderColor, sameColor } from "../test-support/color";
-import { ACCENT, DIAGRAM, GLASS, STATUS, SUPERSET, SURFACE, TEXT } from "@/design/tokens";
+import { ACCENT, CRIMSON, DIAGRAM, GLASS, SUPERSET, SURFACE, TEXT } from "@/design/tokens";
 import { getSupersetInfo } from "@/lib/workout/supersetUtils";
 import type { Exercise } from "@/types/supabase";
 
@@ -134,7 +134,7 @@ describe("the three states", () => {
 
     // The only thing on the strip that changes size, and the reason the current exercise
     // is findable from across a room.
-    expect((active.firstElementChild as HTMLElement).style.transform).toBe("scale(1.12)");
+    expect((active.firstElementChild as HTMLElement).style.transform).toBe("scale(1.08)");
     for (const other of others) {
       expect((other.firstElementChild as HTMLElement).style.transform).toBe("scale(1)");
     }
@@ -151,35 +151,30 @@ describe("the three states", () => {
 
     // The active border is the red accent token, matching the ActiveWorkout theme.
     expect(sameColor(borderColorOf(active.firstElementChild!), ACCENT.base)).toBe(true);
-    expect(sameColor(borderColorOf(pending.firstElementChild!), GLASS.border)).toBe(true);
+    // Pending exercises are dimmed with a hairline border and reduced opacity.
+    expect(sameColor(borderColorOf(pending.firstElementChild!), DIAGRAM.inert)).toBe(true);
   });
 
-  it("marks a finished exercise with STATUS.success, and the tick with it", () => {
+  it("marks a finished exercise with green, and the tick with it", () => {
     renderStrip();
 
     const finished = bubble("Press banca");
     const tick = finished.querySelector("span[aria-hidden='true']:last-child");
 
-    // The token is a blue, not a green, and that is the whole reason to reach for it:
-    // `tokens.ts` forbids a saturated green here because a deuteranope folds green into
-    // `STATUS.warning`'s amber and the two would collapse.
-    expect(finished.innerHTML).toContain(STATUS.success.base.replace("#", "").toLowerCase());
+    // Completed exercises use the green `#30D158` ring and check badge per Apple Fitness+ design.
+    expect(sameColor(borderColorOf(finished.firstElementChild!), "#30D158")).toBe(true);
     expect(tick).toBeTruthy();
   });
 
-  it("draws a complete bubble's ring in success and a partial one in the accent", () => {
+  it("draws a partial ring in the accent and no ring for a complete bubble", () => {
     const { container } = renderStrip();
 
-    const ringOf = (name: string) =>
-      container
-        .querySelector(`[data-key='${name}']`)!
-        .querySelectorAll("circle")[1]
-        .getAttribute("stroke");
+    const circlesOf = (name: string) =>
+      container.querySelector(`[data-key='${name}']`)!.querySelectorAll("circle");
 
-    // Complete is success; in progress is the accent, because "being worked on" is not a
-    // status, it is progress.
-    expect(ringOf("bench")).toBe(STATUS.success.base);
-    expect(ringOf("row")).toBe(ACCENT.base);
+    // Complete exercises show a solid border/check instead of a progress ring.
+    expect(circlesOf("bench")).toHaveLength(0);
+    expect(circlesOf("row")[1]?.getAttribute("stroke")).toBe(ACCENT.base);
   });
 
   it("draws no ring at all for an exercise nothing has been logged against", () => {
@@ -208,7 +203,7 @@ describe("naming a bubble", () => {
     // "Barbell Bench Press - Neutral Grip" truncated at 68px is "Barbell Bench Pr",
     // which names nothing.
     expect(bubbleByLabel("Bench Press")).toBeTruthy();
-    expect(within(bubble("Barbell Bench Press - Neutral Grip")).getByText("Bench Press")).toBeTruthy();
+    expect(within(bubbleByLabel("Bench Press")).getByText("Bench Press")).toBeTruthy();
   });
 
   it("keeps the original name when stripping would leave nothing", () => {
@@ -319,7 +314,7 @@ describe("reduced motion", () => {
 
     // The scale is not the motion -- it is how the current bubble is identified. What
     // goes is the tween between the two sizes, which is what actually moves.
-    expect(active.style.transform).toBe("scale(1.12)");
+    expect(active.style.transform).toBe("scale(1.08)");
     expect(active.style.transition).toBe("");
     restore();
   });
@@ -356,21 +351,24 @@ describe("colour discipline", () => {
       ACCENT.glow,
       ACCENT.text,
       ACCENT.border,
+      CRIMSON.base,
+      CRIMSON.subtle,
+      CRIMSON.glow,
+      CRIMSON.text,
+      CRIMSON.border,
       GLASS.border,
       GLASS.fill,
-      STATUS.success.base,
-      STATUS.success.text,
-      STATUS.success.border,
-      STATUS.progression.base,
-      STATUS.progression.text,
-      STATUS.progression.border,
-      STATUS.progression.muted,
+      "rgba(255, 255, 255, 0.04)",
       TEXT.disabled,
       TEXT.secondary,
       TEXT.tertiary,
       SURFACE.raised,
       SURFACE.base,
       DIAGRAM.inert,
+      // Completed exercises use green `#30D158` per Apple Fitness+ design spec.
+      "#30D158",
+      "rgba(48, 209, 88, 0.10)",
+      "rgba(48, 209, 88, 0.35)",
       // The superset palette: the only colours on the strip that are allowed
       // to change hue, and they come from the token table like the rest.
       ...SUPERSET.palette.flatMap((tone) => [tone.base, tone.text, tone.muted, tone.border]),
@@ -384,14 +382,15 @@ describe("colour discipline", () => {
     }
   });
 
-  it("uses the success token's own tint for the finished label", () => {
+  it("uses the green success tint for the finished label", () => {
     renderStrip();
 
     // Not just the bubble: the label has to change too, or a finished exercise reads as
-    // merely inactive from across the room.
+    // merely inactive from across the room. Per Apple Fitness+ design, completed exercises
+    // use the green `#30D158` ring and label.
     const finished = bubble("Press banca");
     const label = within(finished).getAllByText(/Press banca/)[0] as HTMLElement;
-    expect(sameColor(label.style.color, STATUS.success.text)).toBe(true);
+    expect(sameColor(label.style.color, "#30D158")).toBe(true);
     expect(sameColor(label.style.color, TEXT.tertiary)).toBe(false);
   });
 

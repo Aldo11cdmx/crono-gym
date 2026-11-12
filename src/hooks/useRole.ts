@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { Role } from "@/lib/localSession";
+import { ROLE_CHANGED_EVENT, type Role } from "@/lib/localSession";
 import { AUTH_ROLE_KEY, useAuth } from "@/context/AuthContext";
 
 /**
@@ -11,6 +11,15 @@ export function useRole(): { role: Role; roles: Role[]; loading: boolean } {
   const { activeRole, user } = useAuth();
   const [serverRoles, setServerRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  // Bumped whenever the local role changes so the derivation below recomputes the
+  // same tick the selector is tapped, without waiting for a context round-trip.
+  const [, setRoleVersion] = useState(0);
+
+  useEffect(() => {
+    const onRoleChanged = () => setRoleVersion((v) => v + 1);
+    window.addEventListener(ROLE_CHANGED_EVENT, onRoleChanged);
+    return () => window.removeEventListener(ROLE_CHANGED_EVENT, onRoleChanged);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -55,15 +64,19 @@ export function useRole(): { role: Role; roles: Role[]; loading: boolean } {
     ? localRoles
     : serverRoles;
 
-  const prioritized: Role = hasLocalOverride && !elevatedByEnvironment
+  // An explicit local selection (the selector) always wins, even in a dev build or
+  // for the owner: the selector decides which chrome the user is acting in, and a
+  // tap on "Atleta" has to take effect immediately rather than fall back to the
+  // most-permitted role. Without a selection, fall back to the most capable role.
+  const prioritized: Role = hasLocalOverride
     ? activeRole
     : roles.includes("developer")
-    ? "developer"
-    : roles.includes("admin")
-      ? "admin"
-      : roles.includes("coach")
-        ? "coach"
-        : "athlete";
+      ? "developer"
+      : roles.includes("admin")
+        ? "admin"
+        : roles.includes("coach")
+          ? "coach"
+          : "athlete";
   return {
     role: loading && !elevatedByEnvironment && !hasLocalOverride ? "athlete" : prioritized,
     roles,

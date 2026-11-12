@@ -26,6 +26,13 @@ export function normalizeAnnouncement(row: Record<string, unknown>): Announcemen
     createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
     pinned: Boolean(row.pinned),
     active: row.active !== false,
-    imageUrl: typeof row.image_url === "string" ? row.image_url : typeof row.imageUrl === "string" ? row.imageUrl : undefined,
+    imageUrl:
+      typeof row.banner_path === "string"
+        ? row.banner_path
+        : typeof row.image_url === "string"
+          ? row.image_url
+          : typeof row.imageUrl === "string"
+            ? row.imageUrl
+            : undefined,
   };
 }

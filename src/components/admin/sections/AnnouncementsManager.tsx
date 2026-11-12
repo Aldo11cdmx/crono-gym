@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { compressImage } from "@/lib/image/compressImage";
 import {
   findAnnouncementMeta,
   readLocalAnnouncements,
@@ -14,6 +15,7 @@ type AnnouncementRow = {
   body?: string;
   message?: string;
   category?: string;
+  banner_path?: string;
   image_url?: string;
   imageUrl?: string;
   active?: boolean;
@@ -22,15 +24,6 @@ type AnnouncementRow = {
 };
 
 const field = "h-11 rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-sm text-white";
-
-function readImage(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
-    reader.readAsDataURL(file);
-  });
-}
 
 export function AnnouncementsManager() {
   const [items, setItems] = useState<AnnouncementRow[]>([]);
@@ -45,11 +38,12 @@ export function AnnouncementsManager() {
     const { data } = await (supabase as any).from("announcements").select("*").order("created_at", { ascending: false });
     const remoteItems = (data ?? []).map((item: AnnouncementRow) => {
       const meta = findAnnouncementMeta(item.id, item.title);
+      const banner = item.banner_path || meta?.imageUrl || item.image_url;
       return {
         ...item,
         ...meta,
-        imageUrl: meta?.imageUrl ?? item.image_url,
-        image_url: meta?.imageUrl ?? item.image_url,
+        imageUrl: banner,
+        image_url: banner,
       };
     });
     const localItems = readLocalAnnouncements<AnnouncementRow>();
@@ -81,6 +75,7 @@ export function AnnouncementsManager() {
       title: trimmedTitle,
       message: trimmedBody,
       kind: category === "event" ? "event" : "notice",
+      banner_path: imageUrl || null,
       starts_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 365 * 86_400_000).toISOString(),
       created_by: authData.user?.id,
@@ -137,7 +132,7 @@ export function AnnouncementsManager() {
           </label>
         </div>
         <input className={field} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="URL de foto del aviso (opcional)" />
-        <input className={field} type="file" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) void readImage(file).then(setImageUrl); }} />
+        <input className={field} type="file" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) void compressImage(file).then(setImageUrl); }} />
         {imageUrl ? <img src={imageUrl} alt="Vista previa del aviso" className="aspect-[16/9] w-full rounded-xl object-cover" /> : null}
         <textarea className="min-h-24 rounded-xl border border-white/10 bg-[#2C2C2E] p-3 text-sm text-white" value={body} onChange={(e) => setBody(e.target.value)} placeholder="Mensaje del aviso" />
         <button type="button" className="h-11 rounded-xl bg-[#FF3B30] px-4 text-sm font-bold text-white" onClick={() => void publish()}>Publicar Aviso en el Gym</button>

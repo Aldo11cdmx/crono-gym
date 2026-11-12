@@ -474,7 +474,7 @@ export function VipRoutineBuilder({ athleteId, isTemplate = false, onSaved }: Vi
     [substituteDayIndex, substituteExerciseIndex],
   );
 
-  if (athleteId === null) {
+  if (athleteId === null && !isTemplate) {
     return (
       <GlassCard>
         {/* Its own copy: the CRM renders above this in the portal column. See `builderSelectPrompt`. */}

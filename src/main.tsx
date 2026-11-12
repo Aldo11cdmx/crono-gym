@@ -17,6 +17,26 @@ import { registerServiceWorker } from "./lib/pwa/registerServiceWorker";
 // module is a module that does not hot-reload.
 registerServiceWorker({ enabled: !import.meta.env.DEV });
 
+// Browser extensions (and some embedded webviews) reject with this message when
+// their content script cannot reach a background page. It is external noise the
+// app cannot act on, so it is swallowed silently instead of surfacing as an
+// unhandled rejection in the console. Rejections we caused still reach the
+// error boundary and the logger untouched.
+if (typeof window !== "undefined") {
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason;
+    const message =
+      reason instanceof Error
+        ? reason.message
+        : typeof reason === "string"
+          ? reason
+          : "";
+    if (message.includes("Could not establish connection. Receiving end does not exist")) {
+      event.preventDefault();
+    }
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <GlobalErrorBoundary>

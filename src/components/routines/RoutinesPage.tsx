@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, AlertCircle, Loader2, ChevronRight } from "lucide-react";
+import { Plus, AlertCircle, Loader2, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -18,7 +18,9 @@ import type { SaveResult } from "@/lib/routines/saveRoutine";
 import { ACCENT, DANGER, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
-import { coachEcosystemService } from "@/lib/coach/coachEcosystemService";
+import { coachEcosystemService, sanitizeCoachName } from "@/lib/coach/coachEcosystemService";
+
+const VIP_BANNER_COLLAPSED_KEY = "cronos_vip_banner_collapsed_v1";
 
 type RoutineTab = "mine" | "catalog";
 type RoutineWithMode = RoutineWithExercises & {
@@ -62,6 +64,24 @@ export function RoutinesPage() {
   const [catalogLevel, setCatalogLevel] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
   const [vipOffer, setVipOffer] = useState<{ coachId: string; coachUserId: string; coachName: string; priceMxn: number; billingCycle: string; benefits: string[] } | null>(null);
   const [vipRequestStatus, setVipRequestStatus] = useState<string | null>(null);
+  const [vipCollapsed, setVipCollapsed] = useState<boolean>(() => {
+    try {
+      return window.localStorage.getItem(VIP_BANNER_COLLAPSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleVipCollapsed = useCallback(() => {
+    setVipCollapsed((current) => {
+      const next = !current;
+      try {
+        window.localStorage.setItem(VIP_BANNER_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {
+        // A full localStorage is an edge case, not a failure.
+      }
+      return next;
+    });
+  }, []);
   const { isActive, start, session, discardRecoverableDraft } = useActiveSession();
   const navigate = useNavigate();
 
@@ -96,7 +116,7 @@ export function RoutinesPage() {
       setVipOffer({
         coachId: coach.id,
         coachUserId: coach.user_id,
-        coachName: coach.display_name,
+        coachName: sanitizeCoachName(coach.display_name),
         priceMxn: offer.priceMxn,
         billingCycle: offer.billingCycle,
         benefits: offer.benefits,
@@ -313,22 +333,60 @@ export function RoutinesPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, paddingBottom: SPACE.lg }}>
       {vipOffer && (
-        <section className="rounded-2xl border border-[#FF3B30]/30 bg-[#1C1C1E] p-4">
-          <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#FF3B30]">Coach VIP</p>
-              <h2 className="mt-1 truncate text-base font-bold text-white">Entrena 1-a-1 con {vipOffer.coachName}</h2>
-              <p className="mt-1 font-mono text-sm text-zinc-300">${vipOffer.priceMxn} MXN / {vipOffer.billingCycle}</p>
-              <div className="mt-2 grid gap-1 text-xs text-zinc-400">{vipOffer.benefits.map((benefit) => <span key={benefit}>· {benefit}</span>)}</div>
+        <section className="rounded-2xl border border-[#FF3B30]/30 bg-[#1C1C1E]">
+          {vipCollapsed ? (
+            <div className="flex h-12 items-center justify-between gap-2 px-4">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="shrink-0 rounded-full bg-[#FF3B30]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#FF3B30]">Coach VIP</span>
+                <span className="truncate text-sm font-semibold text-white">{vipOffer.coachName}</span>
+                {vipRequestStatus === "active" ? (
+                  <span className="shrink-0 rounded-full bg-[#30D158]/15 px-2 py-0.5 text-[10px] font-bold text-[#30D158]">VIP Activo</span>
+                ) : vipRequestStatus === "pending_cash_payment" ? (
+                  <span className="shrink-0 rounded-full bg-[#2C2C2E] px-2 py-0.5 text-[10px] text-zinc-300">Solicitud enviada</span>
+                ) : (
+                  <span className="shrink-0 font-mono text-xs text-zinc-300">${vipOffer.priceMxn} MXN/mes</span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={toggleVipCollapsed}
+                aria-label="Ver detalles del Coach VIP"
+                aria-expanded={false}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-zinc-300 active:scale-95"
+              >
+                <ChevronDown size={18} aria-hidden="true" />
+              </button>
             </div>
-            {vipRequestStatus === "active" ? (
-              <span className="rounded-full border border-[#30D158]/30 bg-[#30D158]/15 px-3 py-2 text-xs font-bold text-[#30D158]">MIEMBRO VIP ACTIVO</span>
-            ) : vipRequestStatus === "pending_cash_payment" ? (
-              <span className="max-w-48 text-right text-xs text-zinc-300">Solicitud enviada · Paga en efectivo directamente con tu Coach en el gym.</span>
-            ) : (
-              <button type="button" onClick={() => void requestVip()} className="min-h-11 rounded-xl bg-[#FF3B30] px-4 text-xs font-bold text-white active:scale-[0.98]">Solicitar Rutina Personalizada</button>
-            )}
-          </div>
+          ) : (
+            <div className="p-4">
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#FF3B30]">Coach VIP</p>
+                  <h2 className="mt-1 truncate text-base font-bold text-white">Entrena 1-a-1 con {vipOffer.coachName}</h2>
+                  <p className="mt-1 font-mono text-sm text-zinc-300">${vipOffer.priceMxn} MXN / {vipOffer.billingCycle}</p>
+                  <div className="mt-2 grid gap-1 text-xs text-zinc-400">{vipOffer.benefits.map((benefit) => <span key={benefit}>· {benefit}</span>)}</div>
+                </div>
+                {vipRequestStatus === "active" ? (
+                  <span className="rounded-full border border-[#30D158]/30 bg-[#30D158]/15 px-3 py-2 text-xs font-bold text-[#30D158]">MIEMBRO VIP ACTIVO</span>
+                ) : vipRequestStatus === "pending_cash_payment" ? (
+                  <span className="max-w-48 text-right text-xs text-zinc-300">Solicitud enviada · Paga en efectivo directamente con tu Coach en el gym.</span>
+                ) : (
+                  <button type="button" onClick={() => void requestVip()} className="min-h-11 rounded-xl bg-[#FF3B30] px-4 text-xs font-bold text-white active:scale-[0.98]">Solicitar Rutina Personalizada</button>
+                )}
+              </div>
+              <div className="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  onClick={toggleVipCollapsed}
+                  aria-label="Minimizar Coach VIP"
+                  aria-expanded
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-300 active:scale-95"
+                >
+                  Minimizar <ChevronUp size={16} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       )}
       {toast && (

@@ -14,6 +14,7 @@ import { AthleteCRM } from "./AthleteCRM";
 import { VipRoutineBuilder } from "./VipRoutineBuilder";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { translateBodyPart, translateEquipment } from "@/lib/i18n";
+import { addCustomExercise } from "@/lib/catalog/customExercises";
 
 type CoachTab = "clients" | "expediente" | "templates" | "exercises";
 type ExerciseRow = {
@@ -179,6 +180,7 @@ function ClientsPanel({ offer, editing, setEditing, setOffer, saveOffer, request
         </div>
         {offer && (editing ? (
           <div className="mt-4 grid gap-3">
+            <input className={`${control} h-11 px-3 text-white`} value={offer.coachName ?? ""} onChange={(e) => setOffer({ ...offer, coachName: e.target.value })} aria-label="Nombre público del Coach" placeholder="Nombre público del Coach (ej. Coach Mich)" />
             <input className={`${control} h-11 px-3 text-white`} type="number" value={offer.priceMxn} onChange={(e) => setOffer({ ...offer, priceMxn: Number(e.target.value) })} aria-label="Precio MXN" />
             <input className={`${control} h-11 px-3 text-white`} value={offer.specialty} onChange={(e) => setOffer({ ...offer, specialty: e.target.value })} aria-label="Especialidad" />
             <input className={`${control} h-11 px-3 text-white`} value={offer.shift} onChange={(e) => setOffer({ ...offer, shift: e.target.value })} aria-label="Turno" />
@@ -190,7 +192,7 @@ function ClientsPanel({ offer, editing, setEditing, setOffer, saveOffer, request
             <textarea className={`${control} min-h-24 p-3 text-sm text-white`} value={offer.benefits.join("\n")} onChange={(e) => setOffer({ ...offer, benefits: e.target.value.split("\n").filter(Boolean) })} aria-label="Beneficios" />
             <GlassButton variant="primary" onClick={() => void saveOffer()}>Guardar oferta</GlassButton>
           </div>
-        ) : <div className="mt-4 grid gap-2 text-sm text-zinc-300"><strong className="font-mono text-white">${offer.priceMxn} MXN / {offer.billingCycle}</strong><span>{offer.specialty} · {offer.shift}</span>{offer.benefits.map((benefit: string) => <span key={benefit}>· {benefit}</span>)}</div>)}
+        ) : <div className="mt-4 grid gap-2 text-sm text-zinc-300"><strong className="text-white">{offer.coachName || "Coach Mich"}</strong><strong className="font-mono text-white">${offer.priceMxn} MXN / {offer.billingCycle}</strong><span>{offer.specialty} · {offer.shift}</span>{offer.benefits.map((benefit: string) => <span key={benefit}>· {benefit}</span>)}</div>)}
       </div>
       <div className={card}>
         <div className="flex flex-wrap gap-2">
@@ -206,7 +208,54 @@ function ClientsPanel({ offer, editing, setEditing, setOffer, saveOffer, request
 }
 
 function TemplatesPanel({ templates, onClone, onRefresh }: { templates: any[]; onClone: (id: string) => Promise<string>; onRefresh: () => Promise<void> }) {
-  return <section className="grid min-w-0 gap-4"><div className={card}><div className="flex items-center justify-between gap-2"><h2 className="text-base font-bold text-white">Rutinas Base Oficiales</h2><button type="button" onClick={() => void onRefresh()} className="h-11 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white">Actualizar</button></div><div className="mt-4 grid gap-2">{templates.length === 0 && <p className="text-sm text-zinc-400">No hay plantillas publicadas todavía.</p>}{templates.map((template) => <div key={template.id} className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl bg-[#2C2C2E] p-3"><div className="min-w-0"><strong className="block truncate text-white">{template.title}</strong><span className="font-mono text-xs text-zinc-400">{template.days} días · {template.exercises} ejercicios · {template.level}</span></div><button type="button" onClick={() => void onClone(template.id)} className="min-h-11 rounded-xl bg-[#FF3B30] px-3 text-xs font-bold text-white">Asignar a mi cuenta</button></div>)}</div></div></section>;
+  const [builderOpen, setBuilderOpen] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  return <section className="grid min-w-0 gap-4">
+    <div className={card}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="text-base font-bold text-white">Rutinas Base Oficiales</h2>
+          <p className="text-xs text-zinc-400">Plantillas base que puedes asignar a tus atletas.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setBuilderOpen(true)} className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#FF3B30] px-4 text-xs font-bold text-white active:scale-[0.98]"><Plus size={14} aria-hidden="true" /> Crear Rutina Base</button>
+          <button type="button" onClick={() => void onRefresh()} className="h-11 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white">Actualizar</button>
+        </div>
+      </div>
+      {note && <p role="status" className="mt-3 text-sm text-[#30D158]">{note}</p>}
+      <div className="mt-4 grid gap-2">
+        {templates.length === 0 && <p className="text-sm text-zinc-400">No hay plantillas publicadas todavía.</p>}
+        {templates.map((template) => (
+          <div key={template.id} className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl bg-[#2C2C2E] p-3">
+            <div className="min-w-0">
+              <strong className="block truncate text-white">{template.title}</strong>
+              <span className="font-mono text-xs text-zinc-400">{template.days} días · {template.exercises} ejercicios · {template.level}{template.category ? ` · ${template.category}` : ""}</span>
+            </div>
+            <button type="button" onClick={() => void onClone(template.id)} className="min-h-11 rounded-xl bg-[#FF3B30] px-3 text-xs font-bold text-white">Asignar a mi cuenta</button>
+          </div>
+        ))}
+      </div>
+    </div>
+    {builderOpen && (
+      <div role="presentation" onClick={() => setBuilderOpen(false)} className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+        <div onClick={(e) => e.stopPropagation()} className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-white/10 bg-black p-4 sm:rounded-3xl">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="text-base font-bold text-white">Crear Rutina Base</h3>
+            <button type="button" onClick={() => setBuilderOpen(false)} className="h-11 rounded-xl bg-[#2C2C2E] px-4 text-sm text-white">Cerrar</button>
+          </div>
+          <VipRoutineBuilder
+            athleteId={null}
+            isTemplate
+            onSaved={(title) => {
+              setBuilderOpen(false);
+              setNote(`«${title}» creada. Aparece en tu lista y en el catálogo del atleta.`);
+              void onRefresh();
+            }}
+          />
+        </div>
+      </div>
+    )}
+  </section>;
 }
 
 function ExercisesPanel({ coachId, requests }: { coachId: string; requests: any[] }) {
@@ -216,10 +265,48 @@ function ExercisesPanel({ coachId, requests }: { coachId: string; requests: any[
   const [rename, setRename] = useState("");
   const [requestOpen, setRequestOpen] = useState(false);
   const [request, setRequest] = useState({ name: "", bodyPart: "", equipment: "", notes: "" });
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createStatus, setCreateStatus] = useState<string | null>(null);
+  const [newExercise, setNewExercise] = useState({ name: "", muscle: "", equipment: "", notes: "" });
+  const createExercise = async () => {
+    const name = newExercise.name.trim();
+    if (!name) { setCreateStatus("Escribe el nombre del ejercicio."); return; }
+    const muscle = newExercise.muscle.trim();
+    const exercise = {
+      id: `custom-${Date.now()}`,
+      name,
+      name_es: name,
+      body_part: muscle || "other",
+      target: muscle || "other",
+      equipment: newExercise.equipment.trim() || "other",
+      gif_url: "",
+      instructions: [] as string[],
+      is_active: true,
+      is_hidden: false,
+    };
+    try {
+      await (supabase as any).from("exercises").insert(exercise);
+      setCreateStatus("Ejercicio creado y disponible en el catálogo.");
+    } catch {
+      setCreateStatus("Ejercicio guardado localmente (sin conexión).");
+    }
+    addCustomExercise(exercise);
+    setRows((current) => [exercise as ExerciseRow, ...current]);
+    setNewExercise({ name: "", muscle: "", equipment: "", notes: "" });
+    setCreateOpen(false);
+  };
   useEffect(() => { void (supabase as any).from("exercises").select("id,name,name_es,body_part,target,equipment,gif_url").eq("is_active", true).order("name").then(({ data }: any) => setRows(data ?? [])); }, []);
   const filtered = useMemo(() => rows.filter((row) => `${row.name} ${row.name_es ?? ""}`.toLowerCase().includes(query.toLowerCase())), [query, rows]);
   const renameExercise = async (id: string) => { await coachEcosystemService.renameExerciseGlobal(id, rename); setRows((current) => current.map((row) => row.id === id ? { ...row, name_es: rename } : row)); setRenameId(null); };
-  return <section className="grid min-w-0 gap-4"><div className={card}><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-base font-bold text-white">Gobernanza de ejercicios</h2><button type="button" onClick={() => setRequestOpen(!requestOpen)} className="min-h-11 rounded-xl bg-[#FF3B30] px-3 text-xs font-bold text-white"><Plus size={14} className="mr-1 inline" />Solicitar ejercicio</button></div>{requestOpen && <div className="mt-3 grid gap-2"><input className={`${control} h-11 px-3 text-white`} placeholder="Nombre del ejercicio" value={request.name} onChange={(e) => setRequest({ ...request, name: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Músculo principal" value={request.bodyPart} onChange={(e) => setRequest({ ...request, bodyPart: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Equipo" value={request.equipment} onChange={(e) => setRequest({ ...request, equipment: e.target.value })} /><textarea className={`${control} min-h-20 p-3 text-white`} placeholder="Notas biomecánicas" value={request.notes} onChange={(e) => setRequest({ ...request, notes: e.target.value })} /><button type="button" className="h-11 rounded-xl bg-[#30D158] font-semibold text-black" onClick={async () => { await coachEcosystemService.requestExercise(coachId, request); setRequest({ name: "", bodyPart: "", equipment: "", notes: "" }); setRequestOpen(false); }}>Enviar solicitud</button></div>}<label className={`${control} mt-4 flex h-11 items-center gap-2 px-3`}><Search size={16} className="text-zinc-400" /><input className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none" placeholder="Buscar ejercicio" value={query} onChange={(e) => setQuery(e.target.value)} /></label>  <div className="mt-3 grid gap-2">{filtered.slice(0, 40).map((row) => <div key={row.id} className="flex min-w-0 items-center gap-3 rounded-xl bg-[#2C2C2E] p-2"><ExerciseThumb src={row.gif_url} /><div className="min-w-0 flex-1"><strong className="block truncate text-sm text-white">{getExerciseDisplayName({ name: row.name, name_es: row.name_es })}</strong><span className="block truncate text-xs text-zinc-400">{translateBodyPart(row.body_part)} · {translateEquipment(row.equipment)}</span></div>{renameId === row.id ? <input autoFocus className={`${control} h-11 w-32 px-2 text-sm text-white`} value={rename} onChange={(e) => setRename(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void renameExercise(row.id); }} /> : <button type="button" onClick={() => { setRenameId(row.id); setRename(row.name_es || row.name); }} className="inline-flex h-11 shrink-0 items-center gap-1 rounded-xl bg-[#1C1C1E] px-3 text-xs text-white"><Pencil size={14} /> Renombrar</button>}</div>)}</div><div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Mis solicitudes enviadas</p>{requests.map((item) => <p key={item.id} className="mt-2 text-sm text-zinc-300">{item.name} · {item.status === "approved" ? "Aprobado" : "Pendiente"}</p>)}</div></div></section>;
+  return <section className="grid min-w-0 gap-4"><div className={card}><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-base font-bold text-white">Gobernanza de ejercicios</h2><button type="button" onClick={() => setRequestOpen(!requestOpen)} className="min-h-11 rounded-xl bg-[#FF3B30] px-3 text-xs font-bold text-white"><Plus size={14} className="mr-1 inline" />Solicitar ejercicio</button><button type="button" onClick={() => setCreateOpen(!createOpen)} className="min-h-11 rounded-xl bg-[#30D158] px-3 text-xs font-bold text-black"><Plus size={14} className="mr-1 inline" />Crear ejercicio</button></div>{requestOpen && <div className="mt-3 grid gap-2"><input className={`${control} h-11 px-3 text-white`} placeholder="Nombre del ejercicio" value={request.name} onChange={(e) => setRequest({ ...request, name: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Músculo principal" value={request.bodyPart} onChange={(e) => setRequest({ ...request, bodyPart: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Equipo" value={request.equipment} onChange={(e) => setRequest({ ...request, equipment: e.target.value })} /><textarea className={`${control} min-h-20 p-3 text-white`} placeholder="Notas biomecánicas" value={request.notes} onChange={(e) => setRequest({ ...request, notes: e.target.value })} /><button type="button" className="h-11 rounded-xl bg-[#30D158] font-semibold text-black" onClick={async () => { await coachEcosystemService.requestExercise(coachId, request); setRequest({ name: "", bodyPart: "", equipment: "", notes: "" }); setRequestOpen(false); }}>Enviar solicitud</button></div>}{createOpen && (
+      <div className="mt-3 grid gap-2">
+        <input className={`${control} h-11 px-3 text-white`} placeholder="Nombre del ejercicio (español)" value={newExercise.name} onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })} aria-label="Nombre del ejercicio" />
+        <input className={`${control} h-11 px-3 text-white`} placeholder="Músculo principal" value={newExercise.muscle} onChange={(e) => setNewExercise({ ...newExercise, muscle: e.target.value })} aria-label="Músculo principal" />
+        <input className={`${control} h-11 px-3 text-white`} placeholder="Equipo" value={newExercise.equipment} onChange={(e) => setNewExercise({ ...newExercise, equipment: e.target.value })} aria-label="Equipo" />
+        <textarea className={`${control} min-h-20 p-3 text-white`} placeholder="Notas (opcional)" value={newExercise.notes} onChange={(e) => setNewExercise({ ...newExercise, notes: e.target.value })} aria-label="Notas" />
+        <button type="button" className="h-11 rounded-xl bg-[#30D158] font-semibold text-black" onClick={() => void createExercise()}>Crear ejercicio</button>
+      </div>
+    )}{createStatus && <p role="status" className="mt-2 text-sm text-zinc-300">{createStatus}</p>}<label className={`${control} mt-4 flex h-11 items-center gap-2 px-3`}><Search size={16} className="text-zinc-400" /><input className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none" placeholder="Buscar ejercicio" value={query} onChange={(e) => setQuery(e.target.value)} /></label>  <div className="mt-3 grid gap-2">{filtered.slice(0, 40).map((row) => <div key={row.id} className="flex min-w-0 items-center gap-3 rounded-xl bg-[#2C2C2E] p-2"><ExerciseThumb src={row.gif_url} /><div className="min-w-0 flex-1"><strong className="block truncate text-sm text-white">{getExerciseDisplayName({ name: row.name, name_es: row.name_es })}</strong><span className="block truncate text-xs text-zinc-400">{translateBodyPart(row.body_part)} · {translateEquipment(row.equipment)}</span></div>{!row.gif_url && <span className="ml-2 rounded-full bg-[#FF9F0A]/15 px-2 py-0.5 text-[10px] font-semibold text-[#FF9F0A]">Sin GIF · Pendiente</span>}{renameId === row.id ? <input autoFocus className={`${control} h-11 w-32 px-2 text-sm text-white`} value={rename} onChange={(e) => setRename(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void renameExercise(row.id); }} /> : <button type="button" onClick={() => { setRenameId(row.id); setRename(row.name_es || row.name); }} className="inline-flex h-11 shrink-0 items-center gap-1 rounded-xl bg-[#1C1C1E] px-3 text-xs text-white"><Pencil size={14} /> Renombrar</button>}</div>)}</div><div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Mis solicitudes enviadas</p>{requests.map((item) => <p key={item.id} className="mt-2 text-sm text-zinc-300">{item.name} · {item.status === "approved" ? "Aprobado" : "Pendiente"}</p>)}</div></div></section>;
 }
 
 function ExerciseThumb({ src }: { src?: string | null }) {

@@ -21,6 +21,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import { toExercises } from "@/lib/catalog/exerciseAdapter";
+import { readCustomExercises } from "@/lib/catalog/customExercises";
 import { catalogCache } from "@/lib/cache";
 import type { Exercise } from "@/types/supabase";
 
@@ -70,7 +71,7 @@ export function useExerciseCatalog(): ExerciseCatalogState {
         // los re-lecturas dentro de la sesión. `resetCatalogCache` invalida
         // ambas cuando el catálogo se regénere.
       }
-      setExercises(toExercises(rows));
+      setExercises([...toExercises(rows), ...readCustomExercises()]);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "No se pudo cargar el catálogo de ejercicios",

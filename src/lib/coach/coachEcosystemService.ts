@@ -47,9 +47,40 @@ export type ExerciseRequest = {
 const SYNC_EVENT = "cronos:ecosystem-sync";
 const cacheKey = (key: string) => `cronos:ecosystem:${key}`;
 const breakerKey = (key: string) => `cronos:ecosystem:breaker:${key}`;
-// The remote instance may not have this optional table yet. Official templates
-// and the local cache are the supported source until that schema is deployed.
-const disabledRemotes = new Set<string>(["routine_templates"]);
+
+/** Clean fallback the athlete sees when the coach has no usable public name yet. */
+export const DEFAULT_COACH_NAME = "Coach Mich";
+
+const UUID_FRAGMENT = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+/**
+ * Resolves a coach's public display name to something safe to render.
+ *
+ * Guards against the placeholder seed (`<NOMBRE A MOSTRAR>`), partial placeholders
+ * (`<nombre …`), and raw UUID fragments, all of which have leaked into the VIP card
+ * before. Anything unusable collapses to {@link DEFAULT_COACH_NAME}.
+ */
+export function sanitizeCoachName(name?: string | null): string {
+  if (typeof name !== "string") return DEFAULT_COACH_NAME;
+  const trimmed = name.trim();
+  if (!trimmed) return DEFAULT_COACH_NAME;
+  if (trimmed.includes("<NOMBRE") || trimmed.includes("<nombre")) return DEFAULT_COACH_NAME;
+  if (UUID_FRAGMENT.test(trimmed)) return DEFAULT_COACH_NAME;
+  return trimmed;
+}
+// The remote instance may not have these optional tables/RPCs deployed yet. They
+// are disabled from the very first render so the browser console never emits a
+// `404 (Not Found)` on first load (before the circuit breaker would trip). The
+// local cache and the static catalog remain the supported source until the
+// schema is deployed; the breaker still records a disabled remote on a real
+// failure so a later deploy can be picked up in a fresh session.
+const disabledRemotes = new Set<string>([
+  "routine_templates",
+  "coach_exercise_requests",
+  "coach_offers",
+  "clone_routine_template",
+  "admin_list_users_with_roles",
+]);
 
 function remoteDisabled(key: string): boolean {
   if (disabledRemotes.has(key)) return true;
@@ -96,12 +127,83 @@ function writeCache<T>(key: string, value: T): void {
   }
 }
 
+/**
+ * Coach-authored base routines (`routines.is_template = true`), summarized for the
+ * templates list. Returns an empty array on any failure so the caller still shows the
+ * official catalog.
+ */
+async function fetchCoachTemplates(): Promise<EcosystemTemplate[]> {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("routines")
+      .select("id,title,description,is_template,routine_exercises(day_index)")
+      .eq("is_template", true)
+      .order("created_at", { ascending: false });
+    if (error || !Array.isArray(data)) return [];
+    return data.map((row: any) => {
+      const links = Array.isArray(row.routine_exercises) ? row.routine_exercises : [];
+      return {
+        id: row.id,
+        title: row.title,
+        description: row.description ?? null,
+        level: "beginner",
+        goal: null,
+        category: "Coach",
+        isPublished: true,
+        days: new Set(links.map((link: any) => link.day_index)).size,
+        exercises: links.length,
+      } as EcosystemTemplate;
+    });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Copies a coach-authored template (`routines` with `is_template = true`) into the
+ * target user's library. Mirrors the routine header and its `routine_exercises` rows.
+ */
+async function cloneCoachTemplate(templateId: string, userId: string): Promise<string> {
+  const { data: template, error: templateError } = await (supabase as any)
+    .from("routines")
+    .select("id,title,description,is_template,routine_exercises(exercise_id,target_sets,rest_seconds,order_index,day_index,day_label,target_reps_min,target_reps_max)")
+    .eq("id", templateId)
+    .eq("is_template", true)
+    .maybeSingle();
+  if (templateError || !template) throw templateError ?? new Error("Plantilla no encontrada");
+  const { data: routine, error: routineError } = await (supabase as any)
+    .from("routines")
+    .insert({ user_id: userId, title: template.title, description: template.description, source: "user" })
+    .select("id")
+    .single();
+  if (routineError || !routine) throw routineError ?? new Error("No se pudo crear la rutina");
+  const links = (template.routine_exercises ?? []).map((row: any) => ({
+    routine_id: routine.id,
+    exercise_id: row.exercise_id,
+    target_sets: row.target_sets,
+    rest_seconds: row.rest_seconds,
+    order_index: row.order_index,
+    day_index: row.day_index,
+    day_label: row.day_label,
+    target_reps_min: row.target_reps_min,
+    target_reps_max: row.target_reps_max,
+  }));
+  const { error: linksError } = await (supabase as any).from("routine_exercises").insert(links);
+  if (linksError) {
+    await (supabase as any).from("routines").delete().eq("id", routine.id);
+    throw linksError;
+  }
+  emitSync("template-cloned");
+  return routine.id as string;
+}
+
 export const coachEcosystemService = {
   syncEvent: SYNC_EVENT,
 
   async loadOffer(coachId: string): Promise<CoachOffer> {
     const fallback = readCache<CoachOffer>(`offer:${coachId}`, {
       coachId,
+      coachName: DEFAULT_COACH_NAME,
       priceMxn: 450,
       billingCycle: "mensual",
       specialty: "Hipertrofia y fuerza",
@@ -112,6 +214,7 @@ export const coachEcosystemService = {
         "Ajuste de cargas quincenal",
       ],
     });
+    fallback.coachName = sanitizeCoachName(fallback.coachName);
     if (remoteDisabled("coach_offers")) return fallback;
     let data: any = null;
     try {
@@ -143,10 +246,20 @@ export const coachEcosystemService = {
   },
 
   async saveOffer(offer: CoachOffer): Promise<CoachOffer> {
+    const coachName = sanitizeCoachName(offer.coachName);
+    const nextOffer: CoachOffer = { ...offer, coachName };
+    // The public name lives in `profiles.display_name`, which every athlete device
+    // already reads; `coach_offers` has no name column. Best-effort: a missing row or
+    // a restrictive policy must not block saving the price and benefits locally.
+    try {
+      await (supabase as any).from("profiles").update({ display_name: coachName }).eq("user_id", offer.coachId);
+    } catch {
+      // The local cache still holds the offer for this device.
+    }
     if (remoteDisabled("coach_offers")) {
-      writeCache(`offer:${offer.coachId}`, offer);
+      writeCache(`offer:${offer.coachId}`, nextOffer);
       emitSync("offer");
-      return offer;
+      return nextOffer;
     }
     const { error } = await (supabase as any).from("coach_offers").upsert({
       coach_id: offer.coachId,
@@ -158,12 +271,12 @@ export const coachEcosystemService = {
     });
     if (error) {
       disableRemote("coach_offers");
-      writeCache(`offer:${offer.coachId}`, offer);
+      writeCache(`offer:${offer.coachId}`, nextOffer);
     } else {
-      writeCache(`offer:${offer.coachId}`, offer);
+      writeCache(`offer:${offer.coachId}`, nextOffer);
     }
     emitSync("offer");
-    return offer;
+    return nextOffer;
   },
 
   async loadRequests(coachId: string): Promise<EcosystemRequest[]> {
@@ -230,9 +343,10 @@ export const coachEcosystemService = {
   },
 
   async loadTemplates(): Promise<EcosystemTemplate[]> {
+    let base: EcosystemTemplate[];
     if (remoteDisabled("routine_templates")) {
       const cached = readCache<EcosystemTemplate[]>("templates", []);
-      return cached.length > 0 ? cached : ROUTINE_TEMPLATES.map((template, index) => ({
+      base = cached.length > 0 ? cached : ROUTINE_TEMPLATES.map((template, index) => ({
         id: template.id,
         title: template.title,
         description: null,
@@ -243,63 +357,55 @@ export const coachEcosystemService = {
         days: template.days.length,
         exercises: template.days.reduce((total, day) => total + day.exercises.length, 0),
       }));
+    } else {
+      const { data, error } = await (supabase as any)
+        .from("routine_templates")
+        .select("id,title,description,level,goal,category,is_published,routine_template_exercises(day_index)")
+        .order("created_at", { ascending: false });
+      if (error || !data || data.length === 0) {
+        if (error) disableRemote("routine_templates");
+        const cached = readCache<EcosystemTemplate[]>("templates", []);
+        base = cached.length > 0 ? cached : ROUTINE_TEMPLATES.map((template, index) => ({
+          id: template.id,
+          title: template.title,
+          description: null,
+          level: index === 0 ? "beginner" : index === 1 ? "intermediate" : "advanced",
+          goal: "Hipertrofia",
+          category: "Oficial",
+          isPublished: true,
+          days: template.days.length,
+          exercises: template.days.reduce((total, day) => total + day.exercises.length, 0),
+        }));
+      } else {
+        base = data.map((row: any) => {
+          const links = Array.isArray(row.routine_template_exercises) ? row.routine_template_exercises : [];
+          return {
+            id: row.id,
+            title: row.title,
+            description: row.description ?? null,
+            level: row.level,
+            goal: row.goal ?? null,
+            category: row.category ?? null,
+            isPublished: Boolean(row.is_published),
+            days: new Set(links.map((link: any) => link.day_index)).size,
+            exercises: links.length,
+          } as EcosystemTemplate;
+        });
+        writeCache("templates", base);
+      }
     }
-    const { data, error } = await (supabase as any)
-      .from("routine_templates")
-      .select("id,title,description,level,goal,category,is_published,routine_template_exercises(day_index)")
-      .order("created_at", { ascending: false });
-    if (error) {
-      disableRemote("routine_templates");
-      const cached = readCache<EcosystemTemplate[]>("templates", []);
-      return cached.length > 0 ? cached : ROUTINE_TEMPLATES.map((template, index) => ({
-        id: template.id,
-        title: template.title,
-        description: null,
-        level: index === 0 ? "beginner" : index === 1 ? "intermediate" : "advanced",
-        goal: "Hipertrofia",
-        category: "Oficial",
-        isPublished: true,
-        days: template.days.length,
-        exercises: template.days.reduce((total, day) => total + day.exercises.length, 0),
-      }));
-    }
-    if (!data || data.length === 0) {
-      const cached = readCache<EcosystemTemplate[]>("templates", []);
-      if (cached.length > 0) return cached;
-      return ROUTINE_TEMPLATES.map((template, index) => ({
-        id: template.id,
-        title: template.title,
-        description: null,
-        level: index === 0 ? "beginner" : index === 1 ? "intermediate" : "advanced",
-        goal: "Hipertrofia",
-        category: "Oficial",
-        isPublished: true,
-        days: template.days.length,
-        exercises: template.days.reduce((total, day) => total + day.exercises.length, 0),
-      }));
-    }
-    const templates = data.map((row: any) => {
-      const links = Array.isArray(row.routine_template_exercises) ? row.routine_template_exercises : [];
-      return {
-        id: row.id,
-        title: row.title,
-        description: row.description ?? null,
-        level: row.level,
-        goal: row.goal ?? null,
-        category: row.category ?? null,
-        isPublished: Boolean(row.is_published),
-        days: new Set(links.map((link: any) => link.day_index)).size,
-        exercises: links.length,
-      } as EcosystemTemplate;
-    });
-    writeCache("templates", templates);
-    return templates;
+    // Coach-authored base routines live in `routines` with `is_template = true`.
+    // They are merged in so a template saved in this portal appears for every coach
+    // and in the athlete's catalog immediately, without a redeploy.
+    const coachTemplates = await fetchCoachTemplates();
+    const seen = new Set(base.map((template) => template.id));
+    return [...base, ...coachTemplates.filter((template) => !seen.has(template.id))];
   },
 
   async cloneTemplateForUser(templateId: string, userId: string): Promise<string> {
-    if (remoteDisabled("routine_templates")) {
-      const localTemplate = ROUTINE_TEMPLATES.find((template) => template.id === templateId);
-      if (!localTemplate) throw new Error("La plantilla no está disponible");
+    // Static official templates ship with the app; clone them first.
+    const localTemplate = ROUTINE_TEMPLATES.find((template) => template.id === templateId);
+    if (localTemplate) {
       const { data: exercises, error: exercisesError } = await (supabase as any)
         .from("exercises")
         .select("id,name,name_es");
@@ -332,39 +438,8 @@ export const coachEcosystemService = {
       emitSync("template-cloned");
       return routine.id as string;
     }
-    const { data: template, error: templateError } = await (supabase as any)
-      .from("routine_templates")
-      .select("id,title,description,routine_template_exercises(*)")
-      .eq("id", templateId)
-      .maybeSingle();
-    if (templateError || !template) {
-      disableRemote("routine_templates");
-      throw templateError ?? new Error("Plantilla no encontrada");
-    }
-    const { data: routine, error: routineError } = await (supabase as any)
-      .from("routines")
-      .insert({ user_id: userId, title: template.title, description: template.description, source: "user" })
-      .select("id")
-      .single();
-    if (routineError || !routine) throw routineError ?? new Error("No se pudo crear la rutina");
-    const links = (template.routine_template_exercises ?? []).map((row: any) => ({
-      routine_id: routine.id,
-      exercise_id: row.exercise_id,
-      target_sets: row.target_sets,
-      rest_seconds: row.rest_seconds,
-      order_index: row.order_index,
-      day_index: row.day_index,
-      day_label: row.day_label,
-      target_reps_min: row.target_reps_min,
-      target_reps_max: row.target_reps_max,
-    }));
-    const { error: linksError } = await (supabase as any).from("routine_exercises").insert(links);
-    if (linksError) {
-      await (supabase as any).from("routines").delete().eq("id", routine.id);
-      throw linksError;
-    }
-    emitSync("template-cloned");
-    return routine.id as string;
+    // Otherwise it is a coach-authored template stored in `routines` (is_template).
+    return cloneCoachTemplate(templateId, userId);
   },
 
   async loadExerciseRequests(coachId: string): Promise<ExerciseRequest[]> {

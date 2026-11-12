@@ -60,7 +60,7 @@ export function useAnnouncements() {
             return {
               ...item,
               ...meta,
-              imageUrl: meta?.imageUrl,
+              imageUrl: (row as Record<string, unknown>).banner_path as string | undefined ?? meta?.imageUrl ?? item.imageUrl,
               pinned: meta?.pinned ?? item.pinned,
               active: meta?.active ?? item.active,
             };
@@ -105,6 +105,7 @@ export function useAnnouncements() {
         title: item.title,
         message: item.body,
         kind: item.category === "event" ? "event" : item.category === "urgent" ? "notice" : "notice",
+        banner_path: item.imageUrl ?? null,
         starts_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 365 * 86_400_000).toISOString(),
         created_by: authData.user?.id,

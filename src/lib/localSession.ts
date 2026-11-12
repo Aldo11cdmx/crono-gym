@@ -33,6 +33,41 @@ export const LOCAL_STATE_KEY = "cronos-local-state-v1";
 const VALID_ROLES: readonly Role[] = ["athlete", "developer", "coach"];
 
 /**
+ * Event dispatched after the device-local role changes.
+ *
+ * `useRole`, `useLocalSession` and the profile screen listen for it so the chrome
+ * (panel buttons, "Rol local: …") updates in the same tick instead of waiting for
+ * the context round-trip or a reload.
+ */
+export const ROLE_CHANGED_EVENT = "cronos:role-changed";
+
+/**
+ * Persists a new device-local role to the `localState` row.
+ *
+ * Reads the row, merges the role in, and writes it back, so the feature flags and
+ * consent already stored are preserved. Never throws: a missing IndexedDB leaves
+ * the role in `localStorage` (AuthContext) and the in-memory context as the source
+ * of truth for this session. Dispatches {@link ROLE_CHANGED_EVENT} so every
+ * listener re-reads without a reload.
+ */
+export async function setLocalRole(role: Role): Promise<void> {
+  try {
+    const existing = await tx<Record<string, unknown>>(
+      LOCAL_STATE_STORE,
+      "readonly",
+      (store) => store.get(LOCAL_STATE_KEY),
+    );
+    const next = { ...(existing ?? {}), key: LOCAL_STATE_KEY, role };
+    await tx(LOCAL_STATE_STORE, "readwrite", (store) => store.put(next));
+  } catch {
+    // IndexedDB unavailable: the localStorage role (AuthContext) still governs.
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(ROLE_CHANGED_EVENT, { detail: role }));
+  }
+}
+
+/**
  * Reads the local role from Dexie, falling back through the chain documented
  * above. Never throws: a missing database is the same as "no role stored".
  */
@@ -104,9 +139,13 @@ export function useLocalSession() {
       load();
     });
 
+    const onRoleChanged = () => load();
+    window.addEventListener(ROLE_CHANGED_EVENT, onRoleChanged);
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      window.removeEventListener(ROLE_CHANGED_EVENT, onRoleChanged);
     };
   }, []);
 

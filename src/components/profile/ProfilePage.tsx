@@ -21,6 +21,7 @@
  */
 
 import {
+  useCallback,
   useMemo,
   useState,
   type CSSProperties,
@@ -42,6 +43,7 @@ import { useLocalState } from "@/hooks/useLocalState";
 import { useTextScale } from "@/hooks/useTextScale";
 import { useAuth } from "@/context/AuthContext";
 import { RoleSelector } from "@/components/RoleSelector";
+import { setLocalRole } from "@/lib/localSession";
 import {
   ACTIVITY_LABELS,
   EXPERIENCE_LABELS,
@@ -129,6 +131,24 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ProfileTabId>("biometric");
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [roleNotice, setRoleNotice] = useState<string | null>(null);
+
+  /**
+   * Applies a new device-local role from the "Cambiar rol local" selector.
+   *
+   * Three writes, one intent: the shared `AuthContext` role (so every screen
+   * re-renders), the `localState` row in IndexedDB (so it survives a reload), and
+   * a `cronos:role-changed` event (so `useRole`/`useLocalSession` recompute now).
+   * `setLocalRole` dispatches the event once the row is written.
+   */
+  const handleRoleChange = useCallback(
+    (role: "athlete" | "coach" | "admin" | "developer") => {
+      setActiveRole(role);
+      void setLocalRole(role);
+      setRoleNotice(`Rol local: ${BADGE_ROLE[role] ?? role}`);
+    },
+    [setActiveRole],
+  );
 
   const flags = local.row?.flags ?? {
     maintenance: false,
@@ -278,7 +298,8 @@ export function ProfilePage() {
       {activeTab === "preferences" && (
         <PreferencesTabContent
           activeRole={activeRole}
-          onRoleChange={setActiveRole}
+          onRoleChange={handleRoleChange}
+          roleNotice={roleNotice}
           local={local}
           flags={flags}
           navigate={navigate}
@@ -584,6 +605,7 @@ function GymTabContent({
 interface PreferencesTabContentProps {
   activeRole: "athlete" | "coach" | "admin" | "developer";
   onRoleChange: (role: "athlete" | "coach" | "admin" | "developer") => void;
+  roleNotice: string | null;
   local: ReturnType<typeof useLocalState>;
   flags: LocalStateRow["flags"];
   navigate: ReturnType<typeof useNavigate>;
@@ -597,6 +619,7 @@ interface PreferencesTabContentProps {
 function PreferencesTabContent({
   activeRole,
   onRoleChange,
+  roleNotice,
   local,
   flags,
   navigate,
@@ -655,6 +678,11 @@ function PreferencesTabContent({
         <p style={{ ...hintStyle, margin: `0 0 ${SPACE.md}` }}>
           {`${PROFILE_LABELS.godRoleTitle}: ${BADGE_ROLE[activeRole] ?? activeRole}`}
         </p>
+        {roleNotice && (
+          <p role="status" aria-live="polite" style={{ ...hintStyle, margin: `0 0 ${SPACE.md}`, color: ACCENT.text }}>
+            {roleNotice}
+          </p>
+        )}
         <RoleSelector
           availableRoles={["athlete", "coach", "admin", "developer"]}
           activeRole={activeRole}

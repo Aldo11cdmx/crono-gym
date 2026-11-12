@@ -203,12 +203,24 @@ export function findSmartSubstitutes(
   weightKg: number,
   catalog: readonly CatalogExercise[],
 ): SmartSubstitute[] {
-  return catalog
-    .filter((exercise) =>
-      exercise.id !== current.id &&
-      exercise.availableInCronosGym &&
-      exercise.movement_pattern === current.movement_pattern,
-    )
+  const eligible = catalog.filter((exercise) =>
+    exercise.id !== current.id &&
+    exercise.availableInCronosGym !== false &&
+    exercise.equipment_id !== current.equipment_id,
+  );
+  const primary = eligible.filter((exercise) =>
+    Boolean(current.movement_pattern) &&
+    exercise.movement_pattern === current.movement_pattern,
+  );
+  const secondary = eligible.filter((exercise) =>
+    exercise.muscle_group === current.muscle_group ||
+    exercise.target === current.target ||
+    exercise.body_part === current.body_part,
+  );
+  const candidates = [...primary, ...secondary].filter((exercise, index, list) =>
+    list.findIndex((item) => item.id === exercise.id) === index,
+  );
+  return candidates
     .slice(0, 4)
     .map((exercise) => ({
       exercise,

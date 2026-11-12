@@ -87,6 +87,7 @@ import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import { findExerciseReplacements } from "@/lib/engines/exerciseReplacementEngine";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
+import { equipmentMap } from "@/data/equipmentMap";
 import { resolveMedia, resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
@@ -1557,6 +1558,7 @@ export function ActiveWorkout({
   const [smartGuidesOpen, setSmartGuidesOpen] = useState(false);
   const [substituteOpen, setSubstituteOpen] = useState(false);
   const [calibrationSetIndex, setCalibrationSetIndex] = useState<number | null>(null);
+  const [appliedSmartLoadByExercise, setAppliedSmartLoadByExercise] = useState<Record<string, { weightKg: number; reps: number }>>({});
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentEntry | null>(
     null,
   );
@@ -1582,7 +1584,16 @@ export function ActiveWorkout({
     );
   }, [selected]);
 
-  const equipmentForSelected = equipmentSuggestion.primary;
+  const selectedCatalogExercise = useMemo(
+    () => catalog.find((exercise: any) => exercise.id === selected?.exercise.id),
+    [catalog, selected?.exercise.id],
+  );
+  const equipmentForSelected = selectedCatalogExercise?.equipment_id && equipmentMap[selectedCatalogExercise.equipment_id]
+    ? {
+      ...equipmentMap[selectedCatalogExercise.equipment_id],
+      id: equipmentMap[selectedCatalogExercise.equipment_id].id,
+    } as EquipmentEntry
+    : equipmentSuggestion.primary;
 
   const selectedSuperset = useMemo(() => {
     if (!selected) return null;
@@ -1769,7 +1780,7 @@ export function ActiveWorkout({
     return `Ant: ${displayKg(prev.weight)}×${prev.reps}`;
   }, [selected, performance, displayKg]);
 
-  const smartExercise = selected?.exercise as (Exercise & {
+  const smartExercise = (selectedCatalogExercise ?? selected?.exercise) as (Exercise & {
     equipment_id?: string;
     station_key?: Parameters<typeof getLoadBreakdownHint>[1];
     movement_pattern?: string;
@@ -1791,7 +1802,7 @@ export function ActiveWorkout({
       movementPattern: smartExercise?.movement_pattern,
       experienceLevel: "beginner",
     });
-  }, [performance, selected, smartExercise?.movement_pattern, smartExercise?.station_key]);
+  }, [performance, selected, selectedCatalogExercise, smartExercise?.movement_pattern, smartExercise?.station_key]);
 
   const smartSubstitutes = useMemo(() => {
     if (!selected || !smartExercise || !smartLoad) return [];
@@ -1840,6 +1851,10 @@ export function ActiveWorkout({
       sets: item.sets.map((set) => set.kind === "normal" && !set.completed
         ? { ...set, weight: String(smartLoad.weightKg), reps: String(smartLoad.suggestedReps) }
         : set),
+    }));
+    setAppliedSmartLoadByExercise((current) => ({
+      ...current,
+      [selected.exercise.id]: { weightKg: smartLoad.weightKg, reps: smartLoad.suggestedReps },
     }));
   }
 
@@ -2314,7 +2329,16 @@ export function ActiveWorkout({
 
           {selected && (
             <>
-              {smartLoad && (
+              {smartLoad && appliedSmartLoadByExercise[selected.exercise.id] ? (
+                <section className="mx-auto flex w-full max-w-[560px] items-center gap-2 border-y border-white/10 bg-neutral-900 px-4 py-2">
+                  <span className="min-w-0 flex-1 truncate font-mono text-xs font-semibold text-white">
+                    ✓ Carga aplicada: {appliedSmartLoadByExercise[selected.exercise.id].weightKg} kg × {appliedSmartLoadByExercise[selected.exercise.id].reps}
+                  </span>
+                  <button type="button" className="min-h-11 shrink-0 rounded-xl bg-neutral-800 px-3 text-xs font-semibold text-white" onClick={insertSmartWarmups}>+ Calentamiento (W)</button>
+                  <button type="button" className="min-h-11 shrink-0 rounded-xl bg-neutral-800 px-3 text-xs text-white" onClick={() => setSubstituteOpen(true)}>⇄ Máquina ocupada</button>
+                  <button type="button" className="min-h-11 shrink-0 rounded-xl bg-neutral-800 px-3 text-xs text-white" onClick={() => setAppliedSmartLoadByExercise((current) => { const next = { ...current }; delete next[selected.exercise.id]; return next; })}>Editar</button>
+                </section>
+              ) : smartLoad && (
                 <section className="mx-auto w-full max-w-[560px] border-y border-white/10 bg-neutral-900 px-4 py-3">
                   <div className="flex items-center gap-3">
                     {(smartExercise?.image || smartExercise?.gif_url) && (
@@ -2348,7 +2372,9 @@ export function ActiveWorkout({
                       <img src={substitute.imageUrl} alt="" className="h-11 w-11 rounded-lg object-cover" />
                       <span className="min-w-0 flex-1">
                         <strong className="block truncate text-sm text-white">{substitute.exercise.customNameEs ?? substitute.exercise.name}</strong>
-                        <span className="font-mono text-[11px] text-neutral-400">{substitute.exercise.equipment_id ?? "NONE"} · {substitute.suggestedWeightKg}kg</span>
+                        <span className="font-mono text-[11px] text-neutral-400">
+                          {substitute.exercise.equipment_id ?? "NONE"} · {substitute.exercise.equipment_id && equipmentMap[substitute.exercise.equipment_id] ? equipmentMap[substitute.exercise.equipment_id].name : "Peso libre / Piso"} · {substitute.suggestedWeightKg}kg
+                        </span>
                       </span>
                     </button>
                   ))}

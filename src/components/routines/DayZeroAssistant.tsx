@@ -22,7 +22,14 @@ export function DayZeroAssistant({ onCreated }: { onCreated: (routine: DayZeroRo
   const [catalog, setCatalog] = useState<CatalogExercise[]>([]);
   const [step, setStep] = useState(0);
 
-  useEffect(() => { void loadCatalog().then(setCatalog); }, []);
+  useEffect(() => {
+    void loadCatalog()
+      .then(setCatalog)
+      .catch((error: unknown) => {
+        console.error("[DayZeroAssistant] No se pudo cargar el catálogo", error);
+        setCatalog([]);
+      });
+  }, []);
 
   const available = useMemo(
     () => catalog.filter((exercise) => exercise.availableInCronosGym),
@@ -65,7 +72,7 @@ export function DayZeroAssistant({ onCreated }: { onCreated: (routine: DayZeroRo
   }
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-[#1C1C1E] p-4">
+    <section className="mb-4 w-full rounded-2xl border border-white/10 bg-[#1C1C1E] p-4">
       <p className="text-xs font-semibold uppercase tracking-wider text-[#FF3B30]">Cronos Smart Day 0</p>
       <h2 className="mt-1 text-base font-bold text-white">Crea tu rutina en 3 pasos</h2>
       {step === 0 && <Choice title="¿Cuántos días entrenas?" options={[2, 3, 4, 5].map((value) => `${value} días`)} value={`${frequency} días`} onChange={(value) => { setFrequency(Number(value.split(" ")[0]) as Frequency); setStep(1); }} />}
@@ -77,5 +84,5 @@ export function DayZeroAssistant({ onCreated }: { onCreated: (routine: DayZeroRo
 }
 
 function Choice({ title, options, value, onChange }: { title: string; options: string[]; value: string; onChange: (value: string) => void }) {
-  return <div className="mt-3 grid gap-2"><p className="text-sm text-zinc-300">{title}</p>{options.map((option) => <button key={option} type="button" className={`min-h-11 rounded-xl px-3 text-left text-sm ${option === value ? "bg-[#FF3B30] text-white" : "bg-[#2C2C2E] text-zinc-300"}`} onClick={() => onChange(option)}>{option}</button>)}</div>;
+  return <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4"><p className="col-span-full text-sm text-zinc-300">{title}</p>{options.map((option) => <button key={option} type="button" className={`min-h-11 rounded-xl px-3 text-left text-sm ${option === value ? "bg-[#FF3B30] text-white" : "bg-[#2C2C2E] text-zinc-300"}`} onClick={() => onChange(option)}>{option}</button>)}</div>;
 }

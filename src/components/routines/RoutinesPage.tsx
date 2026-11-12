@@ -339,7 +339,7 @@ export function RoutinesPage() {
             <div className="flex h-12 items-center justify-between gap-2 px-4">
               <div className="flex min-w-0 items-center gap-2">
                 <span className="shrink-0 rounded-full bg-[#FF3B30]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#FF3B30]">Coach VIP</span>
-                <span className="truncate text-sm font-semibold text-white">{vipOffer.coachName}</span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{vipOffer.coachName}</span>
                 {vipRequestStatus === "active" ? (
                   <span className="shrink-0 rounded-full bg-[#30D158]/15 px-2 py-0.5 text-[10px] font-bold text-[#30D158]">VIP Activo</span>
                 ) : vipRequestStatus === "pending_cash_payment" ? (
@@ -347,10 +347,6 @@ export function RoutinesPage() {
                 ) : (
                   <span className="shrink-0 font-mono text-xs text-zinc-300">${vipOffer.priceMxn} MXN/mes</span>
                 )}
-                <DayZeroAssistant onCreated={(routine: DayZeroRoutine) => {
-                  showToast(`${routine.title} creada con ${routine.exercises.length} ejercicios disponibles.`);
-                  setTab("mine");
-                }} />
               </div>
               <button
                 type="button"
@@ -394,6 +390,10 @@ export function RoutinesPage() {
           )}
         </section>
       )}
+      {!editorOpen && <DayZeroAssistant onCreated={(routine: DayZeroRoutine) => {
+        showToast(`${routine.title} creada con ${routine.exercises.length} ejercicios disponibles.`);
+        setTab("mine");
+      }} />}
       {toast && (
         <div
           style={{

@@ -493,6 +493,13 @@ export const equipmentMap: Record<string, EquipmentData> = {
             { id: 2, src: "public/images/gym-equipment/CG-EQP-0057_rack-vertical-barras_vista-02.jpg" },
         ]
     },
+    "CG-EQP-0058": {
+        id: "CG-EQP-0058",
+        name: "Equipo no documentado",
+        views: [
+            { id: 1, src: "public/images/gym-equipment/CG-EQP-0058_equipo-no-documentado_vista-01.jpg" },
+        ]
+    },
     "CG-EQP-0059": {
         id: "CG-EQP-0059",
         name: "Barra Z Olimpica",
@@ -608,6 +615,21 @@ export const equipmentMap: Record<string, EquipmentData> = {
         views: [
             { id: 1, src: "public/images/gym-equipment/CG-EQP-0074_soporte-landmine_vista-01.jpg" },
         ]
+    },
+    "CG-EQP-0075": {
+        id: "CG-EQP-0075",
+        name: "Banco Plano Individual",
+        views: [{ id: 1, src: "public/images/gym-equipment/CG-EQP-0075_banco-plano_vista-01.jpg" }]
+    },
+    "CG-EQP-0076": {
+        id: "CG-EQP-0076",
+        name: "Soportes / Rack Individual de Barra",
+        views: [{ id: 1, src: "public/images/gym-equipment/CG-EQP-0076_rack-barras-individuales_vista-01.jpg" }]
+    },
+    "CG-EQP-0077": {
+        id: "CG-EQP-0077",
+        name: "Arm Blaster",
+        views: [{ id: 1, src: "public/images/gym-equipment/CG-EQP-0077_arm-blaster_vista-01.jpg" }]
     },
 };
 

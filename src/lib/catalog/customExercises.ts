@@ -13,8 +13,41 @@
  */
 
 import type { Exercise } from "@/types/supabase";
+import type { StationKey } from "./types";
 
 const STORAGE_KEY = "cronos_custom_exercises_v1";
+export const CATALOG_OVERRIDES_KEY = "cronos_catalog_overrides_v1";
+export const CATALOG_UPDATED_EVENT = "cronos:catalog-updated";
+
+export interface CatalogOverride {
+  customNameEs?: string;
+  equipment_id?: string;
+  station_key?: StationKey;
+  availableInCronosGym?: boolean;
+}
+
+export type CatalogOverrides = Record<string, CatalogOverride>;
+
+export function loadCatalogOverrides(): CatalogOverrides {
+  if (typeof window === "undefined") return {};
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(CATALOG_OVERRIDES_KEY) ?? "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as CatalogOverrides
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveCatalogOverride(exerciseId: string, override: CatalogOverride): void {
+  if (typeof window === "undefined") return;
+  const next = { ...loadCatalogOverrides(), [exerciseId]: override };
+  window.localStorage.setItem(CATALOG_OVERRIDES_KEY, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent(CATALOG_UPDATED_EVENT, {
+    detail: { exerciseId, override },
+  }));
+}
 
 /** Reads the device-local custom exercises. Never throws. */
 export function readCustomExercises(): Exercise[] {

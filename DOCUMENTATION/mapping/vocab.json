@@ -1,0 +1,370 @@
+{
+  "version": 1,
+  "equipment_catalog": {
+    "CG-EQP-0001": {
+      "canonical_name": "Extension Cuadriceps",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0002": {
+      "canonical_name": "Femoral Sentado",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0003": {
+      "canonical_name": "Maquina Curl Femoral Acostado",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0004": {
+      "canonical_name": "Prensa 45 Grados",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0005": {
+      "canonical_name": "Maquina Abductores Aductores",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0006": {
+      "canonical_name": "Sentadilla Hack",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0007": {
+      "canonical_name": "Patada Gluteo Maquina",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0008": {
+      "canonical_name": "Maquina Sentadilla Perfecta",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0009": {
+      "canonical_name": "Maquina Peck Deck",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0010": {
+      "canonical_name": "Maquina Remo Sentado",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0011": {
+      "canonical_name": "Prensa Vertical Pierna",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0012": {
+      "canonical_name": "Remo Sentado Polea Baja",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0013": {
+      "canonical_name": "Maquina Curl Biceps Predicador",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0014": {
+      "canonical_name": "Maquina Crunch Abdominal",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0015": {
+      "canonical_name": "Banco Hiperextensiones Lumbar",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0016": {
+      "canonical_name": "Banco Inclinado Press Libre",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0017": {
+      "canonical_name": "Rack Sentadilla Libre",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0018": {
+      "canonical_name": "Jalon Pecho Polea",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0019": {
+      "canonical_name": "Maquina Smith",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0020": {
+      "canonical_name": "Maquina Fondos Y Abdominales Silla Romana",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0021": {
+      "canonical_name": "Maquina Remo T",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0022": {
+      "canonical_name": "Torre De Poleas Estacion",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0023": {
+      "canonical_name": "Banco Scott Predicador Libre",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0024": {
+      "canonical_name": "Maquina Press Hombro Sentado",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0025": {
+      "canonical_name": "Maquina Smith",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0026": {
+      "canonical_name": "Maquina Curl Biceps Predicador",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0027": {
+      "canonical_name": "Maquina Pantorrilla Sentado",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0028": {
+      "canonical_name": "Banco Declinado Abdominales",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0029": {
+      "canonical_name": "Banco Plano Press Libre",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0030": {
+      "canonical_name": "Maquina Sentadilla Sissy",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0031": {
+      "canonical_name": "Banco Declinado Press Libre",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0032": {
+      "canonical_name": "Maquina Dominadas Y Fondos Asistidos",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0033": {
+      "canonical_name": "Maquina Press De Pecho Horizontal",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0034": {
+      "canonical_name": "Maquina Smith",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0035": {
+      "canonical_name": "Pesa Rusa",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0036": {
+      "canonical_name": "Mancuernas",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0037": {
+      "canonical_name": "Maneral Barra Recta",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0038": {
+      "canonical_name": "Maneral Cuerda",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0039": {
+      "canonical_name": "Maneral Barra Z",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0040": {
+      "canonical_name": "Maneral Estribo",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0041": {
+      "canonical_name": "Maneral Barra Larga Jalon",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0042": {
+      "canonical_name": "Maneral V",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0043": {
+      "canonical_name": "Maneral Barra Larga Agarraderas",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0044": {
+      "canonical_name": "Maneral Agarre Cerrado",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0045": {
+      "canonical_name": "Tobillera Polea",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0046": {
+      "canonical_name": "Maneral V Metalico",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0047": {
+      "canonical_name": "Arnes Cuello",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0048": {
+      "canonical_name": "Cinturon Lastre Cadena",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0049": {
+      "canonical_name": "Maneral Agarre Cerrado Metalico",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0050": {
+      "canonical_name": "Rack Manerales",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0051": {
+      "canonical_name": "Barra Dominadas",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0052": {
+      "canonical_name": "Barra Z",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0053": {
+      "canonical_name": "Barra Romana",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0054": {
+      "canonical_name": "Barra Hexagonal",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0055": {
+      "canonical_name": "Barra Olimpica",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0056": {
+      "canonical_name": "Soporte Lagartijas",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0057": {
+      "canonical_name": "Rack Vertical Barras",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0058": {
+      "canonical_name": "CG-EQP-0058",
+      "availableInCronosGym": false
+    },
+    "CG-EQP-0059": {
+      "canonical_name": "Barra Z Olimpica",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0060": {
+      "canonical_name": "Plataforma Antiderrapante",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0061": {
+      "canonical_name": "Rack De Discos",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0062": {
+      "canonical_name": "Banco Multiposicion",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0063": {
+      "canonical_name": "Estante Accesorios",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0064": {
+      "canonical_name": "Pelota Pilates",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0065": {
+      "canonical_name": "Maquina Eliptica",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0066": {
+      "canonical_name": "Maquina Eliptica",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0067": {
+      "canonical_name": "Caminadora Electrica",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0068": {
+      "canonical_name": "Remadora De Aire",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0069": {
+      "canonical_name": "Bicicleta Spinning",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0070": {
+      "canonical_name": "Escaladora Infinita",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0071": {
+      "canonical_name": "Caminadora Electrica",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0072": {
+      "canonical_name": "Estante Accesorios Varios",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0073": {
+      "canonical_name": "Maquinas Elipticas",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0074": {
+      "canonical_name": "Soporte Landmine",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0075": {
+      "canonical_name": "Banco Plano Individual",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0076": {
+      "canonical_name": "Soportes / Rack Individual de Barra",
+      "availableInCronosGym": true
+    },
+    "CG-EQP-0077": {
+      "canonical_name": "Arm Blaster",
+      "availableInCronosGym": true
+    },
+    "NONE": {
+      "canonical_name": "Sin equipo / piso",
+      "availableInCronosGym": true
+    }
+  },
+  "station_keys": [
+    "cable_high_pulley",
+    "cable_low_pulley",
+    "cable_mid_pulley",
+    "cable_seated_row",
+    "cable_lat_pulldown",
+    "cable_triceps_station",
+    "smith_machine",
+    "leg_press_45",
+    "leg_extension",
+    "seated_leg_curl",
+    "lying_leg_curl",
+    "abductor_adductor",
+    "pec_deck",
+    "chest_press_machine",
+    "shoulder_press_machine",
+    "preacher_bench",
+    "roman_chair",
+    "hyperextension_bench",
+    "ab_crunch_machine",
+    "flat_bench",
+    "incline_bench",
+    "decline_bench",
+    "squat_rack",
+    "pullup_dip_station",
+    "free_weight_area",
+    "floor_mat_area",
+    "cardio_area",
+    "unavailable_station"
+  ],
+  "movement_patterns": [
+    "anti_extension",
+    "anti_rotation",
+    "carry",
+    "curl",
+    "extension",
+    "flexion",
+    "hinge",
+    "horizontal_pull",
+    "horizontal_push",
+    "isolation",
+    "locomotion",
+    "rotation",
+    "squat",
+    "vertical_pull",
+    "vertical_push",
+    "full_body"
+  ],
+  "source": [
+    "inventario-equipamiento.json",
+    "DOCUMENTATION/exercise-equipment-mapping/INVENTARIO-EQUIPAMIENTO-CONFIRMADO.md",
+    "src/data/equipmentMap.ts"
+  ]
+}

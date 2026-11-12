@@ -26,6 +26,7 @@ import {
   type CachedCatalog,
 } from "./catalogCache";
 import { isCatalogExercise, type CatalogExercise } from "./types";
+import { loadCatalogOverrides } from "./customExercises";
 
 const DEFAULT_CATALOG_URL = import.meta.env.VITE_EXERCISES_CATALOG_URL ?? catalogAssetUrl;
 
@@ -60,7 +61,7 @@ let inFlight: Promise<CatalogExercise[]> | null = null;
  * is nothing stored, so the caller can offer a retry.
  */
 export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<CatalogExercise[]> {
-  if (cache) return cache;
+  if (cache) return applyCatalogOverrides(cache);
   if (inFlight) return inFlight;
 
   const url = options.url ?? DEFAULT_CATALOG_URL;
@@ -71,7 +72,7 @@ export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<Cat
     const stored = await readStored(store);
     if (stored?.fresh) {
       cache = stored.rows;
-      return stored.rows;
+      return applyCatalogOverrides(stored.rows);
     }
 
     try {
@@ -80,11 +81,11 @@ export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<Cat
       // The write must not delay the picker: it happens in the background and
       // a failure to store is not a failure to show the catalog.
       void store.write(rows).catch(() => undefined);
-      return rows;
+      return applyCatalogOverrides(rows);
     } catch (err) {
       if (stored) {
         cache = stored.rows;
-        return stored.rows;
+        return applyCatalogOverrides(stored.rows);
       }
       throw err;
     }
@@ -126,6 +127,18 @@ async function fetchCatalog(url: string, fetchImpl: typeof fetch): Promise<Catal
 /** Drops the memory cache. Used by the tests and by an explicit refresh. */
 export function resetCatalogCache(): void {
   cache = null;
+}
+
+export function applyCatalogOverrides(rows: readonly CatalogExercise[]): CatalogExercise[] {
+  const overrides = loadCatalogOverrides();
+  return rows.map((row) => {
+    const override = overrides[row.id];
+    return override ? {
+      ...row,
+      ...override,
+      station_key: override.station_key as CatalogExercise["station_key"],
+    } : row;
+  });
 }
 
 export { isCatalogExercise };

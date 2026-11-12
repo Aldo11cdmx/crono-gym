@@ -19,6 +19,7 @@ import { ACCENT, DANGER, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE,
 import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
 import { coachEcosystemService, sanitizeCoachName } from "@/lib/coach/coachEcosystemService";
+import { DayZeroAssistant, type DayZeroRoutine } from "./DayZeroAssistant";
 
 const VIP_BANNER_COLLAPSED_KEY = "cronos_vip_banner_collapsed_v1";
 
@@ -346,6 +347,10 @@ export function RoutinesPage() {
                 ) : (
                   <span className="shrink-0 font-mono text-xs text-zinc-300">${vipOffer.priceMxn} MXN/mes</span>
                 )}
+                <DayZeroAssistant onCreated={(routine: DayZeroRoutine) => {
+                  showToast(`${routine.title} creada con ${routine.exercises.length} ejercicios disponibles.`);
+                  setTab("mine");
+                }} />
               </div>
               <button
                 type="button"

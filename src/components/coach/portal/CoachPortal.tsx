@@ -15,6 +15,9 @@ import { VipRoutineBuilder } from "./VipRoutineBuilder";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { translateBodyPart, translateEquipment } from "@/lib/i18n";
 import { addCustomExercise } from "@/lib/catalog/customExercises";
+import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { loadCatalogOverrides, saveCatalogOverride } from "@/lib/catalog/customExercises";
+import { equipmentMap } from "@/data/equipmentMap";
 
 type CoachTab = "clients" | "expediente" | "templates" | "exercises";
 type ExerciseRow = {
@@ -25,6 +28,8 @@ type ExerciseRow = {
   target: string;
   equipment: string;
   gif_url?: string | null;
+  equipment_id?: string;
+  customNameEs?: string;
 };
 
 const card = "rounded-2xl border border-white/10 bg-[#1C1C1E] p-4";
@@ -268,6 +273,7 @@ function ExercisesPanel({ coachId, requests }: { coachId: string; requests: any[
   const [createOpen, setCreateOpen] = useState(false);
   const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [newExercise, setNewExercise] = useState({ name: "", muscle: "", equipment: "", notes: "" });
+  const [equipmentOverrides, setEquipmentOverrides] = useState<Record<string, string>>({});
   const createExercise = async () => {
     const name = newExercise.name.trim();
     if (!name) { setCreateStatus("Escribe el nombre del ejercicio."); return; }
@@ -295,9 +301,40 @@ function ExercisesPanel({ coachId, requests }: { coachId: string; requests: any[
     setNewExercise({ name: "", muscle: "", equipment: "", notes: "" });
     setCreateOpen(false);
   };
-  useEffect(() => { void (supabase as any).from("exercises").select("id,name,name_es,body_part,target,equipment,gif_url").eq("is_active", true).order("name").then(({ data }: any) => setRows(data ?? [])); }, []);
+  useEffect(() => {
+    setEquipmentOverrides(Object.fromEntries(Object.entries(loadCatalogOverrides()).map(([id, value]) => [id, value.equipment_id ?? ""])));
+    void loadCatalog().then((catalog) => setRows(catalog.map((row) => ({
+      id: row.id,
+      name: row.name,
+      name_es: row.customNameEs ?? row.name_es ?? null,
+      body_part: row.body_part,
+      target: row.target,
+      equipment: row.equipment,
+      gif_url: row.image || row.gif_url,
+      equipment_id: row.equipment_id,
+      customNameEs: row.customNameEs,
+    })))).catch(() => {
+      void (supabase as any).from("exercises").select("id,name,name_es,body_part,target,equipment,gif_url").eq("is_active", true).order("name")
+        .then(({ data }: any) => setRows(data ?? []));
+    });
+  }, []);
   const filtered = useMemo(() => rows.filter((row) => `${row.name} ${row.name_es ?? ""}`.toLowerCase().includes(query.toLowerCase())), [query, rows]);
-  const renameExercise = async (id: string) => { await coachEcosystemService.renameExerciseGlobal(id, rename); setRows((current) => current.map((row) => row.id === id ? { ...row, name_es: rename } : row)); setRenameId(null); };
+  const renameExercise = async (id: string) => {
+    const nextName = rename.trim();
+    if (!nextName) return;
+    await coachEcosystemService.renameExerciseGlobal(id, nextName);
+    saveCatalogOverride(id, { customNameEs: nextName });
+    setRows((current) => current.map((row) => row.id === id ? { ...row, name_es: nextName, customNameEs: nextName } : row));
+    setRenameId(null);
+  };
+  const saveEquipment = (id: string, equipmentId: string) => {
+    saveCatalogOverride(id, {
+      equipment_id: equipmentId || undefined,
+      availableInCronosGym: Boolean(equipmentId),
+    });
+    setEquipmentOverrides((current) => ({ ...current, [id]: equipmentId }));
+    setRows((current) => current.map((row) => row.id === id ? { ...row, equipment_id: equipmentId } : row));
+  };
   return <section className="grid min-w-0 gap-4"><div className={card}><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-base font-bold text-white">Gobernanza de ejercicios</h2><button type="button" onClick={() => setRequestOpen(!requestOpen)} className="min-h-11 rounded-xl bg-[#FF3B30] px-3 text-xs font-bold text-white"><Plus size={14} className="mr-1 inline" />Solicitar ejercicio</button><button type="button" onClick={() => setCreateOpen(!createOpen)} className="min-h-11 rounded-xl bg-[#30D158] px-3 text-xs font-bold text-black"><Plus size={14} className="mr-1 inline" />Crear ejercicio</button></div>{requestOpen && <div className="mt-3 grid gap-2"><input className={`${control} h-11 px-3 text-white`} placeholder="Nombre del ejercicio" value={request.name} onChange={(e) => setRequest({ ...request, name: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Músculo principal" value={request.bodyPart} onChange={(e) => setRequest({ ...request, bodyPart: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Equipo" value={request.equipment} onChange={(e) => setRequest({ ...request, equipment: e.target.value })} /><textarea className={`${control} min-h-20 p-3 text-white`} placeholder="Notas biomecánicas" value={request.notes} onChange={(e) => setRequest({ ...request, notes: e.target.value })} /><button type="button" className="h-11 rounded-xl bg-[#30D158] font-semibold text-black" onClick={async () => { await coachEcosystemService.requestExercise(coachId, request); setRequest({ name: "", bodyPart: "", equipment: "", notes: "" }); setRequestOpen(false); }}>Enviar solicitud</button></div>}{createOpen && (
       <div className="mt-3 grid gap-2">
         <input className={`${control} h-11 px-3 text-white`} placeholder="Nombre del ejercicio (español)" value={newExercise.name} onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })} aria-label="Nombre del ejercicio" />
@@ -306,7 +343,7 @@ function ExercisesPanel({ coachId, requests }: { coachId: string; requests: any[
         <textarea className={`${control} min-h-20 p-3 text-white`} placeholder="Notas (opcional)" value={newExercise.notes} onChange={(e) => setNewExercise({ ...newExercise, notes: e.target.value })} aria-label="Notas" />
         <button type="button" className="h-11 rounded-xl bg-[#30D158] font-semibold text-black" onClick={() => void createExercise()}>Crear ejercicio</button>
       </div>
-    )}{createStatus && <p role="status" className="mt-2 text-sm text-zinc-300">{createStatus}</p>}<label className={`${control} mt-4 flex h-11 items-center gap-2 px-3`}><Search size={16} className="text-zinc-400" /><input className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none" placeholder="Buscar ejercicio" value={query} onChange={(e) => setQuery(e.target.value)} /></label>  <div className="mt-3 grid gap-2">{filtered.slice(0, 40).map((row) => <div key={row.id} className="flex min-w-0 items-center gap-3 rounded-xl bg-[#2C2C2E] p-2"><ExerciseThumb src={row.gif_url} /><div className="min-w-0 flex-1"><strong className="block truncate text-sm text-white">{getExerciseDisplayName({ name: row.name, name_es: row.name_es })}</strong><span className="block truncate text-xs text-zinc-400">{translateBodyPart(row.body_part)} · {translateEquipment(row.equipment)}</span></div>{!row.gif_url && <span className="ml-2 rounded-full bg-[#FF9F0A]/15 px-2 py-0.5 text-[10px] font-semibold text-[#FF9F0A]">Sin GIF · Pendiente</span>}{renameId === row.id ? <input autoFocus className={`${control} h-11 w-32 px-2 text-sm text-white`} value={rename} onChange={(e) => setRename(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void renameExercise(row.id); }} /> : <button type="button" onClick={() => { setRenameId(row.id); setRename(row.name_es || row.name); }} className="inline-flex h-11 shrink-0 items-center gap-1 rounded-xl bg-[#1C1C1E] px-3 text-xs text-white"><Pencil size={14} /> Renombrar</button>}</div>)}</div><div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Mis solicitudes enviadas</p>{requests.map((item) => <p key={item.id} className="mt-2 text-sm text-zinc-300">{item.name} · {item.status === "approved" ? "Aprobado" : "Pendiente"}</p>)}</div></div></section>;
+    )}{createStatus && <p role="status" className="mt-2 text-sm text-zinc-300">{createStatus}</p>}<label className={`${control} mt-4 flex h-11 items-center gap-2 px-3`}><Search size={16} className="text-zinc-400" /><input className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none" placeholder="Buscar ejercicio" value={query} onChange={(e) => setQuery(e.target.value)} /></label>  <div className="mt-3 grid gap-2">{filtered.slice(0, 40).map((row) => <div key={row.id} className="flex min-w-0 items-center gap-3 rounded-xl bg-[#2C2C2E] p-2">        <ExerciseThumb src={row.gif_url} /><div className="min-w-0 flex-1"><strong className="block truncate text-sm text-white">{getExerciseDisplayName({ name: row.name, name_es: row.name_es })}</strong><span className="block truncate text-xs text-zinc-400">{translateBodyPart(row.body_part)} · {translateEquipment(row.equipment)}</span></div><select aria-label={`Máquina para ${row.name}`} className={`${control} h-11 max-w-40 px-2 text-xs text-white`} value={equipmentOverrides[row.id] ?? row.equipment_id ?? ""} onChange={(event) => saveEquipment(row.id, event.target.value)}><option value="">Sin máquina / piso</option>{Object.entries(equipmentMap).map(([id, equipment]) => <option key={id} value={id}>{id} · {equipment.name}</option>)}</select>{equipmentOverrides[row.id] && <ExerciseThumb src={equipmentMap[equipmentOverrides[row.id]]?.views[0]?.src} />}{!row.gif_url && <span className="ml-2 rounded-full bg-[#FF9F0A]/15 px-2 py-0.5 text-[10px] font-semibold text-[#FF9F0A]">Sin GIF · Pendiente</span>}{renameId === row.id ? <input autoFocus className={`${control} h-11 w-32 px-2 text-sm text-white`} value={rename} onChange={(e) => setRename(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void renameExercise(row.id); }} /> : <button type="button" onClick={() => { setRenameId(row.id); setRename(row.name_es || row.name); }} className="inline-flex h-11 shrink-0 items-center gap-1 rounded-xl bg-[#1C1C1E] px-3 text-xs text-white"><Pencil size={14} /> Renombrar</button>}</div>)}</div><div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Mis solicitudes enviadas</p>{requests.map((item) => <p key={item.id} className="mt-2 text-sm text-zinc-300">{item.name} · {item.status === "approved" ? "Aprobado" : "Pendiente"}</p>)}</div></div></section>;
 }
 
 function ExerciseThumb({ src }: { src?: string | null }) {

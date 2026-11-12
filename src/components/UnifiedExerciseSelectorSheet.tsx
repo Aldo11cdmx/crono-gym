@@ -141,6 +141,7 @@ export function UnifiedExerciseSelectorSheet({
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState<Tab>("all");
   const [selectedEquipmentCategory, setSelectedEquipmentCategory] = useState<string | null>(null);
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [selectedMuscles, setSelectedMuscles] = useState<Slug[]>([]);
   const [isEquipmentOpen, setIsEquipmentOpen] = useState(false);
   const [isAnatomicalOpen, setIsAnatomicalOpen] = useState(false);
@@ -243,7 +244,7 @@ export function UnifiedExerciseSelectorSheet({
 
   const filtered = useMemo(() => {
     const q = normaliseExerciseName(debouncedQuery);
-    if (!q && !selectedEquipmentCategory && selectedMuscles.length === 0) return baseRows;
+    if (!q && !selectedEquipmentCategory && selectedMuscles.length === 0 && !onlyAvailable) return baseRows;
     const index = ensureIndex();
     let ids: Set<string> | null = null;
     if (q) {
@@ -259,11 +260,12 @@ export function UnifiedExerciseSelectorSheet({
     const attributeFiltered = baseRows.filter((ex) => {
       if (ids && !ids.has(ex.id)) return false;
       if (selectedEquipmentCategory && getEquipmentCategory(ex.equipment) !== selectedEquipmentCategory) return false;
+      if (onlyAvailable && !(ex as Exercise & { availableInCronosGym?: boolean }).availableInCronosGym) return false;
       return true;
     });
     if (selectedMuscles.length === 0) return attributeFiltered;
     return filterByMuscles(attributeFiltered, selectedMuscles).results;
-  }, [baseRows, debouncedQuery, selectedEquipmentCategory, selectedMuscles, ensureIndex]);
+  }, [baseRows, debouncedQuery, selectedEquipmentCategory, selectedMuscles, onlyAvailable, ensureIndex]);
 
   const visibleCount = page * PAGE_SIZE;
   const displayed = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
@@ -315,7 +317,7 @@ export function UnifiedExerciseSelectorSheet({
   const handleTogglePreview = useCallback((id: string) => setExpandedId((prev) => (prev === id ? null : id)), []);
   const handleLoadMore = useCallback(() => { if (hasMore) setPage((p) => p + 1); }, [hasMore]);
   const handleClear = useCallback(() => {
-    setQuery(""); setTab("all"); setSelectedEquipmentCategory(null); setSelectedMuscles([]); setPage(1);
+    setQuery(""); setTab("all"); setSelectedEquipmentCategory(null); setSelectedMuscles([]); setOnlyAvailable(false); setPage(1);
     setIsEquipmentOpen(false); setIsAnatomicalOpen(false);
   }, []);
   const handleMuscleSelectorChange = useCallback((next: Slug[]) => setSelectedMuscles(next), []);
@@ -347,7 +349,7 @@ export function UnifiedExerciseSelectorSheet({
   const muscleCountsBySlug = useMemo(() => muscleCounts(baseRows, ENABLED_MUSCLE_SLUGS), [baseRows]);
   const muscleSelectionLabels = selectionLabels(selectedMuscles);
 
-  const activeFilterCount = (selectedEquipmentCategory ? 1 : 0) + (query.length > 0 ? 1 : 0) + (selectedMuscles.length > 0 ? 1 : 0);
+  const activeFilterCount = (selectedEquipmentCategory ? 1 : 0) + (query.length > 0 ? 1 : 0) + (selectedMuscles.length > 0 ? 1 : 0) + (onlyAvailable ? 1 : 0);
 
   const handleRenameExercise = useCallback(async (id: string, name: string, name_es: string | null) => {
     setOpError(null);
@@ -697,11 +699,17 @@ export function UnifiedExerciseSelectorSheet({
             </div>
           )}
 
+          <label className="mb-3 flex min-h-11 items-center gap-2 rounded-xl bg-[#1C1C1E] px-3 text-xs font-semibold text-zinc-300">
+            <input type="checkbox" checked={onlyAvailable} onChange={(event) => { setOnlyAvailable(event.target.checked); setPage(1); }} />
+            🏋️ Disponibles en Cronos Gym
+          </label>
+
           {activeFilterCount > 0 && (
             <div style={{ marginBottom: SPACE.sm, display: "flex", alignItems: "center", gap: SPACE.xs, flexWrap: "wrap" }}>
               {selectedEquipmentCategory && <RemovableChip label={selectedEquipmentCategory} onRemove={() => setSelectedEquipmentCategory(null)} />}
               {query && <RemovableChip label={`"${query}"`} onRemove={() => setQuery("")} />}
               {selectedMuscles.length > 0 && <RemovableChip label={muscleSelectionLabels} onRemove={handleClearMuscles} />}
+              {onlyAvailable && <RemovableChip label="Disponibles en Cronos Gym" onRemove={() => setOnlyAvailable(false)} />}
               <button type="button" onClick={handleClear} style={{ background: "none", border: "none", color: TEXT.tertiary, fontSize: TYPE.caption.size, cursor: "pointer", padding: `0 ${SPACE.xs}px`, minHeight: MOTION.minTouchTarget }}>Limpiar filtros</button>
             </div>
           )}

@@ -31,7 +31,7 @@ export function PRSection({ topRecords, recentPRs, className }: { topRecords: re
           {topRecords.slice(0, 3).map((pr) => (
             <div key={`${pr.exerciseName}-${pr.achievedAt}`} className="flex items-center justify-between gap-3 px-4 py-3">
               <div className="min-w-0">
-                <p className="truncate font-semibold text-white">{localizedName(pr.exerciseName)}</p>
+                <p className="line-clamp-2 text-[13px] leading-snug font-semibold text-white">{localizedName(pr.exerciseName)}</p>
                 <p className="text-xs text-zinc-400">{formatDate(pr.achievedAt)}</p>
               </div>
               <div className="shrink-0 text-right">

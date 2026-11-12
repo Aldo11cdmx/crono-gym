@@ -21,7 +21,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import { toExercises } from "@/lib/catalog/exerciseAdapter";
-import { readCustomExercises } from "@/lib/catalog/customExercises";
+import { CATALOG_UPDATED_EVENT, readCustomExercises } from "@/lib/catalog/customExercises";
 import { catalogCache } from "@/lib/cache";
 import type { Exercise } from "@/types/supabase";
 
@@ -83,6 +83,12 @@ export function useExerciseCatalog(): ExerciseCatalogState {
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const handleUpdated = () => { void refresh(); };
+    window.addEventListener(CATALOG_UPDATED_EVENT, handleUpdated);
+    return () => window.removeEventListener(CATALOG_UPDATED_EVENT, handleUpdated);
   }, [refresh]);
 
   const find = useCallback(

@@ -90,6 +90,15 @@ import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalo
 import { resolveMedia, resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import {
+  calibratePendingSets,
+  estimateSmartLoad,
+  findSmartSubstitutes,
+  generateSmartWarmupSets,
+  getAdaptiveRestSeconds,
+  getLoadBreakdownHint,
+  SET_TYPE_GUIDES,
+} from "@/lib/workout/cronosSmartEngine";
 
 const DEFAULT_REST = 90;
 const PERSIST_DEBOUNCE_MS = 400;
@@ -1545,6 +1554,9 @@ export function ActiveWorkout({
   const [isAvanceOpen, setIsAvanceOpen] = useState(false);
   const [isCambiarOpen, setIsCambiarOpen] = useState(false);
   const [isAjustarOpen, setIsAjustarOpen] = useState(false);
+  const [smartGuidesOpen, setSmartGuidesOpen] = useState(false);
+  const [substituteOpen, setSubstituteOpen] = useState(false);
+  const [calibrationSetIndex, setCalibrationSetIndex] = useState<number | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentEntry | null>(
     null,
   );
@@ -1757,6 +1769,35 @@ export function ActiveWorkout({
     return `Ant: ${displayKg(prev.weight)}×${prev.reps}`;
   }, [selected, performance, displayKg]);
 
+  const smartExercise = selected?.exercise as (Exercise & {
+    equipment_id?: string;
+    station_key?: Parameters<typeof getLoadBreakdownHint>[1];
+    movement_pattern?: string;
+    image?: string;
+  }) | undefined;
+
+  const smartLoad = useMemo(() => {
+    if (!selected) return null;
+    const history = performance[selected.exercise.id]?.bestSet;
+    return estimateSmartLoad({
+      mode: history ? "overload" : "biometric_day_0",
+      weightKg: history?.weight ?? Number(selected.sets.find((set) => set.kind === "normal")?.weight ?? 0),
+      reps: history?.reps ?? undefined,
+      targetReps: Number(selected.sets.find((set) => set.kind === "normal")?.reps ?? 8) || 8,
+      weightHistory: history?.weight != null && history.reps != null
+        ? [{ weightKg: history.weight, reps: history.reps, completed: true }]
+        : [],
+      targetStation: smartExercise?.station_key,
+      movementPattern: smartExercise?.movement_pattern,
+      experienceLevel: "beginner",
+    });
+  }, [performance, selected, smartExercise?.movement_pattern, smartExercise?.station_key]);
+
+  const smartSubstitutes = useMemo(() => {
+    if (!selected || !smartExercise || !smartLoad) return [];
+    return findSmartSubstitutes(smartExercise as any, smartLoad.weightKg, catalog as any);
+  }, [catalog, selected, smartExercise, smartLoad]);
+
   function patchEntry(
     itemKey: string,
     setIndex: number,
@@ -1774,15 +1815,87 @@ export function ActiveWorkout({
   function updateSet(itemKey: string, setIndex: number, entry: SetEntry) {
     patchEntry(itemKey, setIndex, () => entry);
     if (!entry.completed) return;
+    if (entry.kind === "normal" && calibrationSetIndex === null) {
+      setCalibrationSetIndex(setIndex);
+    }
     if (typeof navigator !== "undefined" && "vibrate" in navigator) {
       navigator.vibrate([40, 60, 80]);
     }
-    const restSeconds = loadRestSeconds(
+    const configuredRest = loadRestSeconds(
       itemKey,
       items.find((i) => i.key === itemKey)?.restSeconds ?? DEFAULT_REST,
     );
+    const restSeconds = Math.max(configuredRest, getAdaptiveRestSeconds(
+      entry.kind === "drop" ? "dropset" : entry.kind,
+      smartExercise?.movement_pattern,
+    ));
     startRest(restSeconds);
     advanceToSupersetPartner(itemKey);
+  }
+
+  function applySmartLoad() {
+    if (!selected || !smartLoad) return;
+    setItems((current) => current.map((item) => item.key !== selected.key ? item : {
+      ...item,
+      sets: item.sets.map((set) => set.kind === "normal" && !set.completed
+        ? { ...set, weight: String(smartLoad.weightKg), reps: String(smartLoad.suggestedReps) }
+        : set),
+    }));
+  }
+
+  function insertSmartWarmups() {
+    if (!selected || !smartLoad) return;
+    const warmups = generateSmartWarmupSets(smartLoad.weightKg, selected.sets.some((set) => set.completed));
+    setItems((current) => current.map((item) => item.key !== selected.key ? item : {
+      ...item,
+      sets: [
+        ...warmups.map((set, index) => newSessionSet({
+          kind: "warmup",
+          weight: String(set.weightKg),
+          reps: String(set.reps),
+        }, index)),
+        ...item.sets.map((set, index) => ({ ...set, set_number: index + warmups.length + 1 })),
+      ],
+    }));
+  }
+
+  function applyCalibration(feedback: "too_light" | "perfect" | "too_heavy") {
+    if (!selected || calibrationSetIndex === null) return;
+    setItems((current) => current.map((item) => {
+      if (item.key !== selected.key) return item;
+      const calibrated = calibratePendingSets(
+        item.sets.map((set) => ({ ...set, weightKg: Number(set.weight) || 0 })),
+        calibrationSetIndex,
+        feedback,
+      );
+      return { ...item, sets: calibrated.map(({ weightKg, ...set }) => ({ ...set, weight: String(weightKg) })) };
+    }));
+    setCalibrationSetIndex(null);
+  }
+
+  function replaceWithSubstitute(substitute: (typeof smartSubstitutes)[number]) {
+    if (!selected) return;
+    const exercise = substitute.exercise;
+    const loggerExercise: Exercise = {
+      id: exercise.id,
+      name: exercise.customNameEs ?? exercise.name,
+      name_es: exercise.customNameEs ?? exercise.name_es ?? null,
+      body_part: exercise.body_part,
+      target: exercise.target,
+      equipment: exercise.equipment,
+      gif_url: exercise.gif_url,
+      instructions: [],
+      is_active: true,
+      is_hidden: false,
+    };
+    setItems((current) => current.map((item) => item.key !== selected.key ? item : {
+      ...item,
+      exercise: loggerExercise,
+      sets: item.sets.map((set) => set.kind === "normal" && !set.completed
+        ? { ...set, weight: String(substitute.suggestedWeightKg) }
+        : set),
+    }));
+    setSubstituteOpen(false);
   }
 
   function advanceToSupersetPartner(itemKey: string) {
@@ -2201,6 +2314,47 @@ export function ActiveWorkout({
 
           {selected && (
             <>
+              {smartLoad && (
+                <section className="mx-auto w-full max-w-[560px] border-y border-white/10 bg-neutral-900 px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    {(smartExercise?.image || smartExercise?.gif_url) && (
+                      <img src={smartExercise.image || smartExercise.gif_url || ""} alt="" className="h-11 w-11 rounded-xl object-cover" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-white">{smartExercise?.equipment_id ?? "Equipo Cronos Gym"}</p>
+                      <p className="font-mono text-[11px] text-neutral-500">{smartExercise?.equipment_id ?? "NONE"}</p>
+                    </div>
+                    <span className="rounded-full bg-neutral-800 px-2 py-1 text-xs font-semibold text-neutral-300" style={{ color: "#FF3B30" }}>🚀 Subir carga</span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-mono text-sm text-white">{smartLoad.weightKg} kg × {smartLoad.suggestedReps}</span>
+                    <span className="font-mono text-[11px] text-neutral-400">{getLoadBreakdownHint(smartLoad.weightKg, smartExercise?.station_key ?? "free_weight_area", smartExercise?.equipment)}</span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" className="min-h-11 flex-1 rounded-xl bg-neutral-800 px-3 text-sm font-semibold text-white" style={{ background: "#FF3B30" }} onClick={applySmartLoad}>Aplicar carga</button>
+                    <button type="button" className="min-h-11 rounded-xl bg-neutral-800 px-3 text-sm text-white" onClick={insertSmartWarmups}>+ Calentamiento (W)</button>
+                    <button type="button" className="min-h-11 rounded-xl bg-neutral-800 px-3 text-sm text-white" onClick={() => setSubstituteOpen(true)}>⇄ Máquina ocupada / Cambiar</button>
+                  </div>
+                </section>
+              )}
+              {substituteOpen && (
+                <section className="mx-auto w-full max-w-[560px] space-y-2 bg-black px-4 py-3" aria-label="Sustituciones inteligentes">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-white">Alternativas disponibles</h3>
+                    <button type="button" className="min-h-11 px-3 text-sm text-neutral-400" onClick={() => setSubstituteOpen(false)}>Cerrar</button>
+                  </div>
+                  {smartSubstitutes.map((substitute) => (
+                    <button key={substitute.exercise.id} type="button" className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-neutral-900 p-3 text-left" onClick={() => replaceWithSubstitute(substitute)}>
+                      <img src={substitute.imageUrl} alt="" className="h-11 w-11 rounded-lg object-cover" />
+                      <span className="min-w-0 flex-1">
+                        <strong className="block truncate text-sm text-white">{substitute.exercise.customNameEs ?? substitute.exercise.name}</strong>
+                        <span className="font-mono text-[11px] text-neutral-400">{substitute.exercise.equipment_id ?? "NONE"} · {substitute.suggestedWeightKg}kg</span>
+                      </span>
+                    </button>
+                  ))}
+                  {smartSubstitutes.length === 0 && <p className="text-sm text-neutral-400">No hay sustituciones disponibles.</p>}
+                </section>
+              )}
               <ExerciseStage
                 exercise={selected.exercise}
                 completedSets={selected.sets.filter((s) => s.completed).length}
@@ -2245,6 +2399,21 @@ export function ActiveWorkout({
 
           {selected.sets.length > 0 && (
                 <div style={{ padding: `0 ${SPACE.md}px ${SPACE.lg}px`, maxWidth: "560px", margin: "0 auto", width: "100%" }}>
+              <button type="button" className="mb-2 flex min-h-11 w-full items-center justify-between rounded-xl bg-neutral-900 px-3 text-left text-xs font-semibold text-neutral-300" onClick={() => setSmartGuidesOpen((open) => !open)}>
+                <span>ⓘ ¿Para qué sirve cada serie?</span><span aria-hidden="true">{smartGuidesOpen ? "−" : "+"}</span>
+              </button>
+              {smartGuidesOpen && (
+                <div className="mb-3 space-y-1 rounded-xl bg-neutral-900 p-3 text-xs text-neutral-400">
+                  <p>{SET_TYPE_GUIDES.warmup}</p><p>{SET_TYPE_GUIDES.normal}</p><p>{SET_TYPE_GUIDES.dropset}</p><p>{SET_TYPE_GUIDES.failure}</p>
+                </div>
+              )}
+              {calibrationSetIndex !== null && (
+                <div className="mb-3 flex flex-wrap gap-2 rounded-xl bg-neutral-900 p-3">
+                  <button type="button" className="min-h-11 rounded-xl bg-neutral-800 px-3 text-xs text-white" onClick={() => applyCalibration("too_light")}>Muy ligero ⬆️ +2.5kg</button>
+                  <button type="button" className="min-h-11 rounded-xl bg-neutral-800 px-3 text-xs font-semibold text-white" style={{ background: "#30D158", color: "#000" }} onClick={() => applyCalibration("perfect")}>Perfecto ✓</button>
+                  <button type="button" className="min-h-11 rounded-xl bg-neutral-800 px-3 text-xs text-white" onClick={() => applyCalibration("too_heavy")}>Muy pesado ⬇️ -2.5kg</button>
+                </div>
+              )}
                   <div
                     style={{
                       borderRadius: 24,

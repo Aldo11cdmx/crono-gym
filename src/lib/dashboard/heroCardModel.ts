@@ -15,6 +15,7 @@ export interface RoutineSummary {
   dayLabel?: string;
   /** Which day of the routine this is (0-based), or null when single-day. */
   dayIndex?: number | null;
+  assignedByCoach?: boolean;
 }
 
 /** Short Spanish day-name abbreviations, Monday (index 0) through Sunday (index 6). */

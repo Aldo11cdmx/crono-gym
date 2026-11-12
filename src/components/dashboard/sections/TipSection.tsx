@@ -16,7 +16,7 @@ export interface TipSectionProps {
   tips?: Tip[] | string[];
   onNext: () => void;
   announcements?: Announcement[];
-  onPublish?: (input: Pick<Announcement, "title" | "body" | "category">) => Promise<void>;
+  onPublish?: (input: Pick<Announcement, "title" | "body" | "category" | "imageUrl">) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
   embedded?: boolean;
 }
@@ -38,6 +38,7 @@ export function TipSection({ tip, tips, onNext, announcements = [], onPublish, o
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [category, setCategory] = useState<AnnouncementCategory>("info");
+  const [imageUrl, setImageUrl] = useState("");
   const tipItems = tips && tips.length ? tips : [tip];
   const currentAnnouncement = announcements[announcementIndex];
   useEffect(() => {
@@ -47,8 +48,8 @@ export function TipSection({ tip, tips, onNext, announcements = [], onPublish, o
 
   async function publish() {
     if (!title.trim() || !body.trim() || !onPublish) return;
-    await onPublish({ title, body, category });
-    setTitle(""); setBody(""); setComposerOpen(false);
+    await onPublish({ title, body, category, imageUrl: imageUrl || undefined });
+    setTitle(""); setBody(""); setImageUrl(""); setComposerOpen(false);
   }
 
   return (
@@ -74,6 +75,7 @@ export function TipSection({ tip, tips, onNext, announcements = [], onPublish, o
             <time className="font-mono text-[11px] text-zinc-400">{new Date(currentAnnouncement.createdAt).toLocaleDateString("es-MX")}</time>
           </div>
           <h3 className="mt-2 text-base font-bold text-white">{currentAnnouncement.title}</h3>
+          {currentAnnouncement.imageUrl ? <img src={currentAnnouncement.imageUrl} alt="" className="mt-3 aspect-[16/9] w-full rounded-xl border border-white/10 object-cover" /> : null}
           <p className="mt-1 text-sm text-zinc-300">{currentAnnouncement.body}</p>
           {announcements.length > 1 ? <div className="mt-4 flex gap-2">
             <button type="button" className="h-11 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white" onClick={() => setAnnouncementIndex((announcementIndex - 1 + announcements.length) % announcements.length)}><ChevronLeft size={14} /> Anterior</button>
@@ -93,6 +95,7 @@ export function TipSection({ tip, tips, onNext, announcements = [], onPublish, o
           <h3 className="text-base font-bold text-white">Publicar aviso</h3>
           <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Título" className="mt-4 h-11 w-full rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-white" />
           <textarea value={body} onChange={(event) => setBody(event.target.value)} placeholder="Mensaje" rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-[#2C2C2E] p-3 text-white" />
+          <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="URL de foto (opcional)" className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-white" />
           <select value={category} onChange={(event) => setCategory(event.target.value as AnnouncementCategory)} className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-white">
             <option value="info">Aviso</option><option value="event">Evento</option><option value="urgent">Urgente</option>
           </select>

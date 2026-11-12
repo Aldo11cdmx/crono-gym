@@ -42,6 +42,18 @@ export function allowedOrigin(): string | null {
   return Deno.env.get("ALLOWED_ORIGIN") ?? null;
 }
 
+function configuredOrigins(): Set<string> {
+  const configured = (allowedOrigin() ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  return new Set([
+    ...configured,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+  ]);
+}
+
 /**
  * The `Content-Type` of a JSON response, with its encoding declared.
  *
@@ -62,14 +74,14 @@ export const JSON_CONTENT_TYPE = "application/json; charset=utf-8";
  * harmless but dishonest -- it would assert an origin match that never happened.
  */
 export function corsHeaders(request: Request): Record<string, string> {
-  const origin = allowedOrigin();
-  const allow = origin && origin !== "*" ? origin : "";
   const requestOrigin = request.headers.get("Origin") ?? "";
+  const origins = configuredOrigins();
+  const allow = requestOrigin && origins.has(requestOrigin) ? requestOrigin : "";
 
   return {
     ...(allow && requestOrigin === allow ? { "Access-Control-Allow-Origin": allow } : {}),
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     "Access-Control-Max-Age": "86400",
     // Deny caching of an answer that was paid for and is user-specific.
     "Cache-Control": "no-store",
@@ -90,8 +102,7 @@ export function corsHeaders(request: Request): Record<string, string> {
 export function originAllowed(request: Request): boolean {
   const origin = request.headers.get("Origin");
   if (!origin) return true;
-  const allow = allowedOrigin();
-  return allow !== null && origin === allow;
+  return configuredOrigins().has(origin);
 }
 
 /**

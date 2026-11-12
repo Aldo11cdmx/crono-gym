@@ -22,6 +22,7 @@ export interface TrainingHeroSectionProps {
   isRecoverable?: boolean;
   completedSummary?: CompletedSessionSummary | null;
   onExtra?: () => void;
+  coachAssigned?: boolean;
   /** Reduce altura y tamaño del mapa muscular en pantallas estrechas. */
   compact?: boolean;
 }
@@ -41,6 +42,7 @@ export function TrainingHeroSection({
   isRecoverable = false,
   completedSummary = null,
   onExtra,
+  coachAssigned = false,
   compact = false,
 }: TrainingHeroSectionProps) {
   const reduce = useReducedMotion();
@@ -140,6 +142,11 @@ export function TrainingHeroSection({
               >
                 {routineTitle}
               </h1>
+              {coachAssigned ? (
+                <span className="mt-2 inline-flex rounded-full border border-[#FF3B30]/30 bg-[#FF3B30]/15 px-3 py-1 text-xs font-semibold text-[#FF3B30]">
+                  Asignada por tu Coach
+                </span>
+              ) : null}
               {meta ? (
                 <div style={{ marginTop: SPACE.md }}>
                   <span

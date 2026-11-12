@@ -1,37 +1,36 @@
 import { useState } from "react";
 import { Shield } from "lucide-react";
-import { GlassCard } from "@/components/ui";
-import { ACCENT, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { AnnouncementsManager } from "./sections/AnnouncementsManager";
 import { StoreManager } from "./sections/StoreManager";
 import { ClassesManager } from "./sections/ClassesManager";
 import { UsersRolesManager } from "./sections/UsersRolesManager";
+import { ExerciseRequestsManager } from "./sections/ExerciseRequestsManager";
 
-const TABS = ["avisos", "tienda", "clases", "usuarios"] as const;
+const TABS = [["avisos", "Avisos"], ["tienda", "Tienda"], ["clases", "Clases"], ["usuarios", "Usuarios"], ["ejercicios", "Catálogo"]] as const;
+type AdminTab = (typeof TABS)[number][0];
 
 export function AdminHub() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("avisos");
+  const [tab, setTab] = useState<AdminTab>("avisos");
   return (
-    <div style={{ minHeight: "100vh", width: "100%", display: "flex", flexDirection: "column", gap: SPACE.lg, padding: SPACE.lg }}>
-      <div style={{ display: "flex", alignItems: "center", gap: SPACE.md }}>
-        <Shield size={24} strokeWidth={2} color={ACCENT.base} />
-        <h1 style={{ fontSize: TYPE.title.size, fontWeight: TYPE.title.weight, color: TEXT.primary, margin: 0 }}>
-          Panel de Administración
-        </h1>
-      </div>
-      <div style={{ display: "flex", gap: SPACE.sm, flexWrap: "wrap" }}>
-        {TABS.map((t) => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: `${SPACE.xs} ${SPACE.md}`, borderRadius: 12, border: "1px solid transparent", background: tab === t ? "rgba(255,255,255,0.08)" : "transparent", color: tab === t ? TEXT.primary : TEXT.secondary, textTransform: "capitalize" }}>
-            {t}
-          </button>
+    <main className="min-h-screen bg-black px-4 pb-36 pt-4 text-white">
+      <div className="mx-auto grid max-w-5xl gap-4">
+      <header className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FF3B30]/15 text-[#FF3B30]"><Shield size={22} /></div>
+        <div><h1 className="text-lg font-bold">Command Center · Admin</h1><p className="text-xs text-zinc-400">Gestión del ecosistema Cronos</p></div>
+      </header>
+      <nav className="grid grid-cols-5 gap-1 rounded-xl border border-white/10 bg-[#1C1C1E] p-1" aria-label="Secciones de administración">
+        {TABS.map(([value, label]) => (
+          <button key={value} type="button" onClick={() => setTab(value)} className={`h-11 min-w-0 truncate rounded-lg px-1 text-[11px] font-semibold ${tab === value ? "bg-[#FF3B30] text-white" : "text-zinc-400"}`}>{label}</button>
         ))}
-      </div>
-      <GlassCard style={{ padding: SPACE.lg }}>
+      </nav>
+      <section>
         {tab === "avisos" && <AnnouncementsManager />}
         {tab === "tienda" && <StoreManager />}
         {tab === "clases" && <ClassesManager />}
         {tab === "usuarios" && <UsersRolesManager />}
-      </GlassCard>
-    </div>
+        {tab === "ejercicios" && <ExerciseRequestsManager />}
+      </section>
+      </div>
+    </main>
   );
 }

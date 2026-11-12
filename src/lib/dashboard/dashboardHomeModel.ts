@@ -27,6 +27,7 @@ import {
   getStreakStats,
   getVolumeTrend,
   getRecentPRs,
+  getTopRecords,
   getNextSuggestedRoutine,
   getScheduledRoutineForToday,
   getCompletedSessionSummary,
@@ -35,6 +36,7 @@ import {
   type StreakStats,
   type VolumeTrendResult,
   type RecentPR,
+  type TopRecord,
   type DashboardSession,
   type SuggestedRoutine,
   type CompletedSessionSummary,
@@ -120,6 +122,7 @@ export interface DashboardHomeData {
   // ---- Recent PRs ----
   /** Top N recent personal records (default 3) within the look-back window. */
   recentPRs: RecentPR[];
+  topRecords: TopRecord[];
   /** Recent completed sessions (first 5) for history summary. */
   recentSessions: DashboardSession[];
 }
@@ -236,6 +239,10 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     () => getRecentPRs(sessions, now, PR_LIMIT, PR_WINDOW_DAYS),
     [sessions, now],
   );
+  const topRecords = useMemo(
+    () => getTopRecords(sessions, PR_LIMIT),
+    [sessions],
+  );
 
   // ---- Suggested routine ----
   const suggestedRoutine = useMemo(
@@ -249,6 +256,32 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     [planRoutines, planSummary, now],
   );
 
+  const coachRoutine = useMemo(() => {
+    const routine = routines.find(
+      (candidate) =>
+        candidate.assignment_source === "coach" ||
+        Boolean(candidate.assigned_by) ||
+        Boolean(candidate.authored_by_coach),
+    );
+    if (!routine) return null;
+    return {
+      id: routine.id,
+      title: routine.title,
+      exerciseCount: routine.exercises.length,
+      estimatedDurationMin: Math.max(
+        15,
+        Math.round(
+          (routine.exercises.reduce((sum, ex) => sum + (ex.target_sets ?? 0), 0) * 45 +
+            routine.exercises.reduce((sum, ex) => sum + (ex.target_sets ?? 0) * (ex.rest_seconds ?? 0), 0)) /
+            60,
+        ),
+      ),
+      lastDoneAt: null,
+    };
+  }, [routines]);
+
+  const preferredRoutine = coachRoutine ?? scheduledRoutine ?? suggestedRoutine;
+
   // ---- Today's completed session (hero "completed" state) ----
   const completedToday = useMemo(
     () => getCompletedSessionSummary(sessions, now),
@@ -257,25 +290,31 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
 
   // ---- Muscle counts for the suggested routine ----
   const muscleCounts = useMemo(() => {
-    const ref = scheduledRoutine ?? suggestedRoutine;
+    const ref = preferredRoutine;
     if (!ref) return null;
     const fullRoutine = routines.find((r) => r.id === ref.id);
     if (!fullRoutine) return null;
     return countMuscleSets(fullRoutine.exercises);
-  }, [scheduledRoutine, suggestedRoutine, routines]);
+  }, [preferredRoutine, routines]);
 
   // ---- Convert SuggestedRoutine → HeroRoutineSummary for hero chips ----
   const heroRoutineSummary = useMemo((): HeroRoutineSummary | null => {
-    const ref = scheduledRoutine ?? suggestedRoutine;
+    const ref = preferredRoutine;
     if (!ref) return null;
+    const source = routines.find((candidate) => candidate.id === ref.id);
     return {
       title: ref.title,
       exerciseCount: ref.exerciseCount,
       estimatedDurationMin: ref.estimatedDurationMin,
       dayLabel: dailyFocus.dayLabel ?? undefined,
       dayIndex: null,
+      assignedByCoach: Boolean(
+        source?.assignment_source === "coach" ||
+          source?.assigned_by ||
+          source?.authored_by_coach,
+      ),
     };
-  }, [scheduledRoutine, suggestedRoutine, dailyFocus.dayLabel]);
+  }, [preferredRoutine, routines, dailyFocus.dayLabel]);
 
   // ---- Greeting ----
   const greeting = useMemo(
@@ -317,7 +356,7 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     dailyFocus,
     heroRoutineSummary,
     suggestedRoutine,
-  scheduledRoutine,
+    scheduledRoutine: coachRoutine ?? scheduledRoutine,
     muscleCounts,
     activeSession: activeSessionValue.session,
     isSessionActive: activeSessionValue.isActive,
@@ -333,6 +372,7 @@ export function useDashboardHome(userId: string | null): DashboardHomeData {
     streakStats,
     volumeTrend,
     recentPRs,
+    topRecords,
   recentSessions: sessions.slice(0, 5),
     routines,
   };

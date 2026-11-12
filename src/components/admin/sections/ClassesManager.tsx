@@ -1,52 +1,23 @@
-import { useCallback, useEffect, useState } from 'react';
-import { GlassButton, GlassCard, Skeleton } from '@/components/ui';
-import { supabase } from '@/lib/supabase';
-import { GLASS, RADIUS, SPACE, TEXT, TYPE } from '@/design/tokens';
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import {
+  findClassMeta,
+  readLocalClasses,
+  saveClassMeta,
+  saveLocalClass,
+  type LocalGymClass,
+} from "@/lib/gymClubMetadata";
 
-const DAYS=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+const DAYS = ["Dom", "Lun", "Mar", "MiÃ©", "Jue", "Vie", "SÃ¡b"];
+const field = "h-11 rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-sm text-white";
+type GymClass = { id: string; name: string; instructor?: string; capacity: number; price_cents?: number; description?: string };
+type Schedule = { id: string; class_id: string; day_of_week: number; start_time: string };
 
 export function ClassesManager() {
-  const [loading,setLoading]=useState(true);
-  const [classes,setClasses]=useState<any[]>([]);
-  const [schedules,setSchedules]=useState<any[]>([]);
-  const [name,setName]=useState('');
-  const [instructor,setInstructor]=useState('');
-  const [capacity,setCapacity]=useState('20');
-  const [classId,setClassId]=useState('');
-  const [day,setDay]=useState('1');
-  const [time,setTime]=useState('18:00');
-  const [status,setStatus]=useState<string | null>(null);
-  const [err,setErr]=useState<string | null>(null);
-
-  const load=useCallback(async()=>{
-    setLoading(true);setErr(null);
-    try{
-      const [cRes,sRes]=await Promise.all([(supabase as any).from('gym_classes').select('*').order('created_at',{ascending:false}),(supabase as any).from('gym_schedules').select('*').order('day_of_week')]);
-      if(cRes.error) throw cRes.error; if(sRes.error) throw sRes.error;
-      setClasses(cRes.data??[]);setSchedules(sRes.data??[]);
-      if(!classId && cRes.data?.[0]?.id) setClassId(cRes.data[0].id);
-    }catch(e){setErr(e instanceof Error?e.message:'Error al cargar');}finally{setLoading(false);}
-  },[classId]);
-
-  useEffect(()=>{load();},[load]);
-
-  const createClass=useCallback(async()=>{
-    if(!name.trim()) return; setErr(null);setStatus(null);
-    try{
-      const {error}=await (supabase as any).from('gym_classes').insert({name:name.trim(),instructor:instructor.trim()||null,capacity:parseInt(capacity||'20',10)||20});
-      if(error) throw error; setName('');setInstructor('');setCapacity('20');setStatus('Clase creada');load();
-    }catch(e){setErr(e instanceof Error?e.message:'Error al crear');}
-  },[name,instructor,capacity,load]);
-
-  const createSchedule=useCallback(async()=>{
-    if(!classId) return; setErr(null);setStatus(null);
-    try{
-      const {error}=await (supabase as any).from('gym_schedules').insert({class_id:classId,day_of_week:parseInt(day,10),start_time:time+':00'});
-      if(error) throw error; setStatus('Horario añadido');load();
-    }catch(e){setErr(e instanceof Error?e.message:'Error al añadir');}
-  },[classId,day,time,load]);
-
-  if(loading) return <Skeleton variant='block' height='160px' />;
-
-  return (<GlassCard style={{padding:SPACE.lg}}><h3 style={{fontSize:TYPE.subhead.size,fontWeight:TYPE.subhead.weight,color:TEXT.primary,margin:'0 0 '+SPACE.md+' 0'}}>Gestor de Clases & Horarios</h3><div style={{display:'flex',flexDirection:'column',gap:SPACE.sm}}><div style={{display:'flex',gap:SPACE.sm,flexWrap:'wrap'}}><input value={name} onChange={(e)=>setName(e.target.value)} placeholder='Nombre de la clase' style={{flex:1,minWidth:200,padding:'8px '+SPACE.md,borderRadius:RADIUS.control,border:'1px solid '+GLASS.border,background:GLASS.fill,color:TEXT.primary}} /><input value={instructor} onChange={(e)=>setInstructor(e.target.value)} placeholder='Instructor' style={{width:160,padding:'8px '+SPACE.md,borderRadius:RADIUS.control,border:'1px solid '+GLASS.border,background:GLASS.fill,color:TEXT.primary}} /><input value={capacity} onChange={(e)=>setCapacity(e.target.value)} placeholder='Cupo' style={{width:80,padding:'8px '+SPACE.md,borderRadius:RADIUS.control,border:'1px solid '+GLASS.border,background:GLASS.fill,color:TEXT.primary}} /><GlassButton variant='primary' onClick={createClass}>Crear clase</GlassButton></div><div style={{display:'flex',gap:SPACE.sm,flexWrap:'wrap',alignItems:'center'}}><select value={classId} onChange={(e)=>setClassId(e.target.value)} style={{minWidth:200,padding:'8px '+SPACE.md,borderRadius:RADIUS.control,border:'1px solid '+GLASS.border,background:GLASS.fill,color:TEXT.primary}}>{classes.map((c)=><option key={c.id} value={c.id}>{c.name}</option>)}</select><select value={day} onChange={(e)=>setDay(e.target.value)} style={{padding:'8px '+SPACE.md,borderRadius:RADIUS.control,border:'1px solid '+GLASS.border,background:GLASS.fill,color:TEXT.primary}}>{[1,2,3,4,5,6,0].map((d)=><option key={d} value={d}>{DAYS[d]}</option>)}</select><input type='time' value={time} onChange={(e)=>setTime(e.target.value)} style={{padding:'8px '+SPACE.md,borderRadius:RADIUS.control,border:'1px solid '+GLASS.border,background:GLASS.fill,color:TEXT.primary}} /><GlassButton variant='ghost' onClick={createSchedule}>Añadir horario</GlassButton></div>{status&&<p style={{color:TEXT.secondary,margin:0}}>{status}</p>}{err&&<p style={{color:TEXT.tertiary,margin:0}}>{err}</p>}</div><div style={{marginTop:SPACE.md,display:'flex',flexDirection:'column',gap:SPACE.sm}}>{classes.map((c)=>(<div key={c.id} style={{padding:SPACE.sm+' '+SPACE.md,borderRadius:RADIUS.control,border:'1px solid '+GLASS.border,background:GLASS.fill}}><strong style={{color:TEXT.primary}}>{c.name}</strong> {c.instructor&&<span style={{color:TEXT.secondary}}> · {c.instructor}</span>}<div style={{color:TEXT.tertiary,fontSize:TYPE.caption.size}}>Cupo: {c.capacity}</div></div>))}</div><div style={{marginTop:SPACE.md}}><div style={{color:TEXT.secondary,marginBottom:SPACE.sm}}>Horarios</div><div style={{display:'flex',flexDirection:'column',gap:SPACE.xs}}>{schedules.map((s)=>{const cls=classes.find((x)=>x.id===s.class_id);return <div key={s.id} style={{color:TEXT.tertiary}}>{DAYS[s.day_of_week]} {String(s.start_time).slice(0,5)} · {cls?.name||s.class_id}</div>;})}</div></div></GlassCard>);}
-
+  const [classes, setClasses] = useState<GymClass[]>([]); const [schedules, setSchedules] = useState<Schedule[]>([]); const [classId, setClassId] = useState(""); const [name, setName] = useState(""); const [instructor, setInstructor] = useState(""); const [price, setPrice] = useState("0"); const [capacity, setCapacity] = useState("20"); const [day, setDay] = useState("1"); const [time, setTime] = useState("18:00"); const [status, setStatus] = useState("");
+  const load = useCallback(async () => { const [c, s] = await Promise.all([(supabase as any).from("gym_classes").select("*").order("created_at", { ascending: false }), (supabase as any).from("gym_schedules").select("*").order("day_of_week")]); const rows = (c.data ?? []).map((item: GymClass) => { const meta = findClassMeta(item.id, item.name); return { ...item, ...meta, price_cents: meta?.priceCents ?? item.price_cents }; }); const local = readLocalClasses(); setClasses([...rows, ...local.filter((item) => !rows.some((current: GymClass) => current.id === item.id))]); setSchedules(s.data ?? []); if (!classId && (rows[0] ?? local[0])) setClassId((rows[0] ?? local[0]).id); }, [classId]);
+  useEffect(() => { void load(); }, [load]);
+  const createClass = async () => { if (!name.trim()) { setStatus("Escribe un nombre para la clase."); return; } const priceCents = Math.max(0, Math.round(Number(price || 0) * 100)); const { data, error } = await (supabase as any).from("gym_classes").insert({ name: name.trim(), instructor: instructor.trim() || null, capacity: Number(capacity) || 20 }).select("id").single(); const classItem: LocalGymClass = { id: String(data?.id ?? `local-class-${Date.now()}`), name: name.trim(), instructor: instructor.trim() || undefined, capacity: Number(capacity) || 20, price_cents: priceCents, is_active: true, created_at: new Date().toISOString() }; saveClassMeta([classItem.id, classItem.name], { priceCents }); saveLocalClass(classItem); setClasses((current) => [classItem, ...current]); setStatus(error ? "Clase guardada localmente y publicada en Clases." : "Clase creada."); setName(""); setInstructor(""); setPrice("0"); if (!error) await load(); };
+  const addSchedule = async () => { if (!classId) return; const { error } = await (supabase as any).from("gym_schedules").insert({ class_id: classId, day_of_week: Number(day), start_time: `${time}:00` }); setStatus(error ? "No se pudo aÃ±adir el horario." : "Horario aÃ±adido."); if (!error) await load(); };
+  return <section className="grid gap-4"><div className="grid gap-3"><h2 className="text-base font-bold text-white">Clases y horarios</h2><div className="grid gap-2 sm:grid-cols-2"><input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre de la clase" /><input className={field} value={instructor} onChange={(e) => setInstructor(e.target.value)} placeholder="Instructor" /><input className={field} value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Precio en MXN (0 = incluida)" /><input className={field} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="Cupo mÃ¡ximo" /></div><button type="button" className="h-11 rounded-xl bg-[#FF3B30] text-sm font-bold text-white" onClick={() => void createClass()}>Crear clase</button><div className="grid gap-2 sm:grid-cols-3"><select className={field} value={classId} onChange={(e) => setClassId(e.target.value)}>{classes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select className={field} value={day} onChange={(e) => setDay(e.target.value)}>{[1, 2, 3, 4, 5, 6, 0].map((value) => <option key={value} value={value}>{DAYS[value]}</option>)}</select><input className={field} type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div><button type="button" className="h-11 rounded-xl bg-[#2C2C2E] text-sm font-semibold text-white" onClick={() => void addSchedule()}>AÃ±adir horario</button>{status ? <p className="text-sm text-zinc-300">{status}</p> : null}</div><div className="grid gap-2">{classes.map((item) => <article key={item.id} className="rounded-xl bg-[#2C2C2E] p-3"><strong className="text-white">{item.name}</strong><p className="text-xs text-zinc-400">{item.instructor || "Instructor por confirmar"} Â· {item.price_cents ? `$${(item.price_cents / 100).toFixed(2)} MXN` : "Incluida"} Â· {item.capacity} cupos</p><p className="mt-2 text-xs text-zinc-300">{schedules.filter((schedule) => schedule.class_id === item.id).map((schedule) => `${DAYS[schedule.day_of_week]} ${schedule.start_time.slice(0, 5)}`).join(" Â· ") || "Sin horarios"}</p></article>)}</div></section>;
+}

@@ -55,6 +55,8 @@ export interface RecentPR {
   achievedAt: string;
 }
 
+export type TopRecord = RecentPR;
+
 /** Consecutive-session streak, split by days and by weeks. */
 export interface StreakStats {
   /** Full streak weeks behind the current one. 0 when the user has none. */
@@ -403,6 +405,7 @@ export function getRecentPRs(
             achievedAt: session.startedAt,
           });
         }
+
         best.set(set.exerciseId, estimate);
       }
     }
@@ -410,6 +413,46 @@ export function getRecentPRs(
 
   return found
     .sort((a, b) => Date.parse(b.achievedAt) - Date.parse(a.achievedAt))
+    .slice(0, limit);
+}
+
+/** Best historical working set per exercise, independent of recency. */
+export function getTopRecords(
+  sessions: readonly DashboardSession[],
+  limit = 3,
+): TopRecord[] {
+  const best = new Map<string, TopRecord>();
+
+  for (const session of sessions) {
+    if (!session.completedAt) continue;
+    for (const set of session.sets) {
+      if (set.isWarmup) continue;
+      const reps = Number(set.reps);
+      const weight = Number(set.weight);
+      if (!Number.isFinite(reps) || reps <= 0 || reps > EXERCISE_METRICS.MAX_ESTIMATABLE_REPS) continue;
+      if (!Number.isFinite(weight) || weight <= 0) continue;
+      const estimated1RM = estimateOneRepMax(weight, reps);
+      if (estimated1RM === null) continue;
+      const candidate: TopRecord = {
+        exerciseName: set.exerciseName,
+        weight,
+        reps,
+        estimated1RM,
+        achievedAt: session.startedAt,
+      };
+      const previous = best.get(set.exerciseId);
+      if (
+        !previous ||
+        candidate.estimated1RM > previous.estimated1RM ||
+        (candidate.estimated1RM === previous.estimated1RM && candidate.weight > previous.weight)
+      ) {
+        best.set(set.exerciseId, candidate);
+      }
+    }
+  }
+
+  return [...best.values()]
+    .sort((a, b) => b.estimated1RM - a.estimated1RM || b.weight - a.weight)
     .slice(0, limit);
 }
 

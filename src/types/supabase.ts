@@ -89,6 +89,10 @@ export interface Database {
            * it.
            */
           authored_by_coach: string | null;
+          assigned_by?: string | null;
+          assigned_at?: string | null;
+          assignment_source?: "self" | "coach" | "template" | null;
+          coach_notes?: string | null;
           /**
            * Whether this routine is a base template the coach can clone into an
            * athlete's plan. Defaults to false, so existing routines are never
@@ -116,6 +120,10 @@ export interface Database {
            * cleanup; everyone else leaves it off and the row reads as unattributed.
            */
           authored_by_coach?: string | null;
+          assigned_by?: string | null;
+          assigned_at?: string | null;
+          assignment_source?: "self" | "coach" | "template" | null;
+          coach_notes?: string | null;
           /** Whether this routine is a base template the coach can clone into an athlete's plan. */
           is_template?: boolean;
         };
@@ -128,6 +136,10 @@ export interface Database {
           is_favorite?: boolean;
           source?: "user" | "human_coach" | "ai" | null;
           authored_by_coach?: string | null;
+          assigned_by?: string | null;
+          assigned_at?: string | null;
+          assignment_source?: "self" | "coach" | "template" | null;
+          coach_notes?: string | null;
           /** Whether this routine is a base template the coach can clone into an athlete's plan. */
           is_template?: boolean;
         };

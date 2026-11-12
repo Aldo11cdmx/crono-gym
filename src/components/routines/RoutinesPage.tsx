@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, AlertCircle, Loader2, ChevronRight } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
@@ -18,6 +18,7 @@ import type { SaveResult } from "@/lib/routines/saveRoutine";
 import { ACCENT, DANGER, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE, Z_INDEX } from "@/design/tokens";
 import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
+import { coachEcosystemService } from "@/lib/coach/coachEcosystemService";
 
 type RoutineTab = "mine" | "catalog";
 type RoutineWithMode = RoutineWithExercises & {
@@ -25,6 +26,17 @@ type RoutineWithMode = RoutineWithExercises & {
   is_favorite?: boolean;
 };
 
+type CatalogTemplate = {
+  id: string;
+  title: string;
+  description: string | null;
+  level: string;
+  goal: string | null;
+  category: string | null;
+  remote: boolean;
+  days: number;
+  exercises: number;
+};
 const TAB_OPTIONS = [
   { value: "mine", label: ROUTINES_UI_LABELS.tabMine },
   { value: "catalog", label: ROUTINES_UI_LABELS.tabCatalog },
@@ -43,6 +55,13 @@ export function RoutinesPage() {
   const [tab, setTab] = useState<RoutineTab>("mine");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<RoutineWithMode | null>(null);
+  const [catalog, setCatalog] = useState<CatalogTemplate[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [cloningTemplate, setCloningTemplate] = useState<string | null>(null);
+  const [catalogLevel, setCatalogLevel] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
+  const [vipOffer, setVipOffer] = useState<{ coachId: string; coachUserId: string; coachName: string; priceMxn: number; billingCycle: string; benefits: string[] } | null>(null);
+  const [vipRequestStatus, setVipRequestStatus] = useState<string | null>(null);
   const { isActive, start, session, discardRecoverableDraft } = useActiveSession();
   const navigate = useNavigate();
 
@@ -51,6 +70,93 @@ export function RoutinesPage() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const { data: coach } = await (supabase as any)
+        .from("coaches")
+        .select("id,user_id,display_name")
+        .eq("is_active", true)
+        .eq("is_available", true)
+        .limit(1)
+        .maybeSingle();
+      if (!coach) return;
+      const offer = await coachEcosystemService.loadOffer(coach.user_id);
+      const { data: request } = await (supabase as any)
+        .from("coach_session_requests")
+        .select("status")
+        .eq("athlete_id", userId)
+        .eq("coach_id", coach.id)
+        .in("status", ["pending", "active"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!active) return;
+      setVipOffer({
+        coachId: coach.id,
+        coachUserId: coach.user_id,
+        coachName: coach.display_name,
+        priceMxn: offer.priceMxn,
+        billingCycle: offer.billingCycle,
+        benefits: offer.benefits,
+      });
+      setVipRequestStatus(request?.status === "pending" ? "pending_cash_payment" : request?.status ?? null);
+    })();
+    return () => { active = false; };
+  }, [userId]);
+
+  const requestVip = useCallback(async () => {
+    if (!userId || !vipOffer) return;
+    try {
+      await coachEcosystemService.createCashRequest(userId, vipOffer.coachId);
+    } catch {
+      showToast("No se pudo enviar la solicitud.", "error");
+      return;
+    }
+    setVipRequestStatus("pending_cash_payment");
+    showToast("Solicitud enviada · paga en efectivo directamente con tu Coach en el gym.");
+  }, [showToast, userId, vipOffer]);
+
+  useEffect(() => {
+    if (tab !== "catalog") return;
+    let cancelled = false;
+    setCatalogLoading(true);
+    setCatalogError(null);
+    void coachEcosystemService.loadTemplates().then((templates) => {
+        if (cancelled) return;
+      setCatalog(templates.map((template) => ({ ...template, remote: true })));
+        setCatalogLoading(false);
+    }).catch(() => {
+      if (!cancelled) {
+        setCatalogError("No se pudo cargar el catálogo.");
+        setCatalogLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
+
+  const cloneTemplate = useCallback(
+    async (template: CatalogTemplate) => {
+      if (!userId || cloningTemplate) return;
+      setCloningTemplate(template.id);
+      try {
+        await coachEcosystemService.cloneTemplateForUser(template.id, userId);
+      } catch {
+        setCloningTemplate(null);
+        showToast("No se pudo añadir la plantilla a tus rutinas.", "error");
+        return;
+      }
+      setCloningTemplate(null);
+      showToast("Plantilla añadida a tus rutinas.");
+      await refresh();
+      setTab("mine");
+    },
+    [cloningTemplate, refresh, showToast, userId],
+  );
+  const visibleCatalog = catalog.filter((template) => catalogLevel === "all" || template.level === catalogLevel);
 
   const routineRows = routines as RoutineWithMode[];
 
@@ -206,6 +312,25 @@ export function RoutinesPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md, paddingBottom: SPACE.lg }}>
+      {vipOffer && (
+        <section className="rounded-2xl border border-[#FF3B30]/30 bg-[#1C1C1E] p-4">
+          <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#FF3B30]">Coach VIP</p>
+              <h2 className="mt-1 truncate text-base font-bold text-white">Entrena 1-a-1 con {vipOffer.coachName}</h2>
+              <p className="mt-1 font-mono text-sm text-zinc-300">${vipOffer.priceMxn} MXN / {vipOffer.billingCycle}</p>
+              <div className="mt-2 grid gap-1 text-xs text-zinc-400">{vipOffer.benefits.map((benefit) => <span key={benefit}>· {benefit}</span>)}</div>
+            </div>
+            {vipRequestStatus === "active" ? (
+              <span className="rounded-full border border-[#30D158]/30 bg-[#30D158]/15 px-3 py-2 text-xs font-bold text-[#30D158]">MIEMBRO VIP ACTIVO</span>
+            ) : vipRequestStatus === "pending_cash_payment" ? (
+              <span className="max-w-48 text-right text-xs text-zinc-300">Solicitud enviada · Paga en efectivo directamente con tu Coach en el gym.</span>
+            ) : (
+              <button type="button" onClick={() => void requestVip()} className="min-h-11 rounded-xl bg-[#FF3B30] px-4 text-xs font-bold text-white active:scale-[0.98]">Solicitar Rutina Personalizada</button>
+            )}
+          </div>
+        </section>
+      )}
       {toast && (
         <div
           style={{
@@ -376,17 +501,50 @@ export function RoutinesPage() {
                 {ROUTINES_UI_LABELS.retry}
               </GlassButton>
             </div>
+            <div className="flex flex-wrap gap-2">
+              {(["all", "beginner", "intermediate", "advanced"] as const).map((level) => (
+                <button key={level} type="button" onClick={() => setCatalogLevel(level)} className={`min-h-11 rounded-full px-3 text-xs font-semibold ${catalogLevel === level ? "bg-[#FF3B30] text-white" : "bg-[#2C2C2E] text-zinc-400"}`}>
+                  {level === "all" ? "Todos" : level === "beginner" ? "Principiante" : level === "intermediate" ? "Intermedio" : "Avanzado"}
+                </button>
+              ))}
+            </div>
           </div>
         </GlassCard>
       ) : tab === "catalog" ? (
         <GlassCard raised>
-          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.xs, padding: `${SPACE.sm}px 0` }}>
-            <p style={{ margin: 0, fontSize: TYPE.headline.size, fontWeight: TYPE.headline.weight, color: TEXT.primary }}>
-              {ROUTINES_UI_LABELS.catalogEmptyTitle}
-            </p>
-            <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
-              {ROUTINES_UI_LABELS.catalogEmptyBody}
-            </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: SPACE.md }}>
+            <div>
+              <p style={{ margin: 0, fontSize: TYPE.headline.size, fontWeight: TYPE.headline.weight, color: TEXT.primary }}>
+                Catálogo oficial
+              </p>
+              <p style={{ margin: `${SPACE.xs}px 0 0`, fontSize: TYPE.subhead.size, color: TEXT.secondary }}>
+                Plantillas publicadas por el equipo Cronos.
+              </p>
+            </div>
+            {catalogError && <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>{catalogError}</p>}
+            {catalogLoading ? (
+              <p style={{ margin: 0, color: TEXT.secondary }}>Cargando catálogo…</p>
+            ) : visibleCatalog.length === 0 ? (
+              <p style={{ margin: 0, color: TEXT.secondary }}>{ROUTINES_UI_LABELS.catalogEmptyBody}</p>
+            ) : (
+              visibleCatalog.map((template) => (
+                <div key={template.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: SPACE.md, padding: SPACE.md, borderRadius: RADIUS.control, background: GLASS.fillFaint }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, color: TEXT.primary, fontWeight: 700 }}>{template.title}</p>
+                    <p style={{ margin: `${SPACE.xs}px 0 0`, color: TEXT.tertiary, fontSize: TYPE.caption.size }}>
+                      {template.level} · {template.days} días · {template.exercises} ejercicios{template.goal ? ` · ${template.goal}` : ""}
+                    </p>
+                  </div>
+                  <GlassButton
+                    variant="secondary"
+                    disabled={!template.remote || cloningTemplate === template.id}
+                    onClick={() => void cloneTemplate(template)}
+                  >
+                    {cloningTemplate === template.id ? "Añadiendo…" : "Añadir a Mis Rutinas"}
+                  </GlassButton>
+                </div>
+              ))
+            )}
           </div>
         </GlassCard>
       ) : routineRows.length === 0 ? (

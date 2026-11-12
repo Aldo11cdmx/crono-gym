@@ -40,7 +40,8 @@ import { useProfile, useBodyMetrics } from "@/hooks/useProfile";
 import { useGymSettings } from "@/context/GymSettingsContext";
 import { useLocalState } from "@/hooks/useLocalState";
 import { useTextScale } from "@/hooks/useTextScale";
-import { useLocalSession } from "@/lib/localSession";
+import { useAuth } from "@/context/AuthContext";
+import { RoleSelector } from "@/components/RoleSelector";
 import {
   ACTIVITY_LABELS,
   EXPERIENCE_LABELS,
@@ -66,7 +67,7 @@ import type { WorkspaceOutletContext } from "@/App";
 import type { BodyweightEntry } from "@/types/supabase";
 import { COACH_PATH } from "@/components/shell/navItems";
 import { usePermissions } from "@/hooks/usePermissions";
-import { Shield, Code, Users } from "lucide-react";
+import { Shield, Users } from "lucide-react";
 
 const PROFILE_TABS = ["biometric", "gym", "preferences"] as const;
 type ProfileTabId = (typeof PROFILE_TABS)[number];
@@ -122,7 +123,7 @@ export function ProfilePage() {
   const gym = useGymSettings();
   const local = useLocalState();
   const { largeText, setLargeText } = useTextScale(userId);
-  const session = useLocalSession();
+  const { activeRole, setActiveRole } = useAuth();
   const permissions = usePermissions();
   const bodyMetrics = useBodyMetrics(userId);
   const navigate = useNavigate();
@@ -276,7 +277,8 @@ export function ProfilePage() {
 
       {activeTab === "preferences" && (
         <PreferencesTabContent
-          session={session}
+          activeRole={activeRole}
+          onRoleChange={setActiveRole}
           local={local}
           flags={flags}
           navigate={navigate}
@@ -580,7 +582,8 @@ function GymTabContent({
 }
 
 interface PreferencesTabContentProps {
-  session: { userId: string | null; role: string; loading: boolean };
+  activeRole: "athlete" | "coach" | "admin" | "developer";
+  onRoleChange: (role: "athlete" | "coach" | "admin" | "developer") => void;
   local: ReturnType<typeof useLocalState>;
   flags: LocalStateRow["flags"];
   navigate: ReturnType<typeof useNavigate>;
@@ -592,7 +595,8 @@ interface PreferencesTabContentProps {
 }
 
 function PreferencesTabContent({
-  session,
+  activeRole,
+  onRoleChange,
   local,
   flags,
   navigate,
@@ -624,42 +628,39 @@ function PreferencesTabContent({
       </GroupedSection>
       <GroupedSection title="Acceso a paneles">
         <div style={{ display: "flex", flexDirection: "column", gap: SPACE.sm }}>
-          {permissions.hasRole("admin") && (
-            <GlassButton
-              variant="secondary"
-              icon={<Shield size={16} aria-hidden="true" />}
-              onClick={() => void navigate("/admin")}
-            >
-              Panel de administración
-            </GlassButton>
-          )}
-          {permissions.hasRole("developer") && (
-            <GlassButton
-              variant="secondary"
-              icon={<Code size={16} aria-hidden="true" />}
-              onClick={() => void navigate("/developer")}
-            >
-              Consola de desarrollador
-            </GlassButton>
-          )}
-          {(permissions.hasRole(["coach", "admin", "developer"])) && (
-            <GlassButton
-              variant="secondary"
-              icon={<Users size={16} aria-hidden="true" />}
-              onClick={() => void navigate("/coach/portal")}
-            >
-              Portal de coach
-            </GlassButton>
-          )}
+          {permissions.canAccessCoach || permissions.canAccessAdmin ? (
+            <>
+              <button
+                type="button"
+                className="flex h-11 items-center justify-between rounded-xl px-4 font-semibold"
+                onClick={() => void navigate("/coach")}
+              >
+                <span className="flex items-center gap-2"><Users size={16} aria-hidden="true" />Ir al Portal Coach</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="flex h-11 items-center justify-between rounded-xl px-4 font-semibold"
+                onClick={() => void navigate("/admin")}
+              >
+                <span className="flex items-center gap-2"><Shield size={16} aria-hidden="true" />Ir al Panel de Administración</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </button>
+            </>
+          ) : null}
         </div>
       </GroupedSection>
 
       <GroupedSection title={PROFILE_LABELS.devLabel}>
         <p style={{ ...hintStyle, margin: `0 0 ${SPACE.md}` }}>
-          {session.loading
-            ? PROFILE_LABELS.loading
-            : `${PROFILE_LABELS.godRoleTitle}: ${BADGE_ROLE[session.role] ?? session.role}`}
+          {`${PROFILE_LABELS.godRoleTitle}: ${BADGE_ROLE[activeRole] ?? activeRole}`}
         </p>
+        <RoleSelector
+          availableRoles={["athlete", "coach", "admin", "developer"]}
+          activeRole={activeRole}
+          onSelect={onRoleChange}
+          title="Cambiar rol local"
+        />
       </GroupedSection>
 
       <DeveloperGate fallback={null}>
@@ -1022,8 +1023,10 @@ const segmentedTabStyle: CSSProperties = {
   flexShrink: 0,
   minHeight: MOTION.minTouchTarget,
   borderRadius: RADIUS.pill,
-  border: `1px solid transparent`,
-  background: "transparent",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "transparent",
+  backgroundColor: "transparent",
   color: TEXT.tertiary,
   fontSize: TYPE.caption.size,
   cursor: "pointer",
@@ -1046,7 +1049,7 @@ const crystalPillBaseStyle: CSSProperties = {
   borderRadius: RADIUS.pill,
   borderStyle: "solid",
   borderWidth: 1,
-  background: "transparent",
+  backgroundColor: "transparent",
   fontSize: TYPE.body.size,
   fontWeight: 600,
   cursor: "pointer",

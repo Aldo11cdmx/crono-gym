@@ -1,7 +1,8 @@
 import { type ReactNode } from "react";
 import { useAuthModal } from "@/context/AuthModalContext";
+import { useAuth } from "@/context/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useNavigate } from "react-router-dom";
-import { RoleGate } from "./RoleGate";
 import { GlassButton, GlassCard } from "@/components/ui";
 import { ACCENT, SPACE, TEXT, TYPE } from "@/design/tokens";
 import { Lock } from "lucide-react";
@@ -14,6 +15,9 @@ export interface AdminGateProps {
 export function AdminGate({ children, fallback }: AdminGateProps) {
   const navigate = useNavigate();
   const authModal = useAuthModal();
+  const { setActiveRole } = useAuth();
+  const permissions = usePermissions();
+  const canAccess = permissions.canAccessAdmin || permissions.isAdmin || permissions.isDeveloper || import.meta.env.DEV;
   const denied =
     fallback ?? (
       <div style={{ minHeight: "100vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: SPACE.lg }}>
@@ -27,7 +31,16 @@ export function AdminGate({ children, fallback }: AdminGateProps) {
               Área de Administración. Requiere rol de administrador.
             </p>
             <div style={{ display: "flex", gap: SPACE.sm, flexWrap: "wrap", justifyContent: "center" }}>
-              <GlassButton variant="primary" onClick={() => authModal.open()}>
+              <GlassButton
+                variant="primary"
+                onClick={() => {
+                  if (import.meta.env.DEV) {
+                    setActiveRole("admin");
+                    return;
+                  }
+                  authModal.open();
+                }}
+              >
                 Iniciar sesión como Admin
               </GlassButton>
               <GlassButton variant="ghost" onClick={() => navigate("/")}>
@@ -38,5 +51,6 @@ export function AdminGate({ children, fallback }: AdminGateProps) {
         </GlassCard>
       </div>
     );
-  return <RoleGate allow={["admin"]} fallback={denied}>{children}</RoleGate>;
+  if (canAccess) return <>{children}</>;
+  return <>{fallback ?? denied}</>;
 }

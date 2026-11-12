@@ -8,6 +8,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
 import { draftFromRoutine, displayDayLabel } from "@/lib/routines/routineDayModel";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 type RoutineCardRoutine = RoutineWithExercises & {
   routineMode: "single" | "weekly" | "legacy";
@@ -64,6 +65,10 @@ export function RoutineCard({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const incomplete = routineIsIncomplete(routine);
   const isWeekly = routine.routineMode === "weekly";
+  const coachAssigned =
+    routine.assignment_source === "coach" ||
+    Boolean(routine.assigned_by) ||
+    Boolean(routine.authored_by_coach);
 
   const metrics = useMemo(() => {
     const draft = draftFromRoutine(routine);
@@ -194,6 +199,25 @@ export function RoutineCard({
                   {ROUTINES_UI_LABELS.weeklyPlanner}
                 </span>
               )}
+              {coachAssigned && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "2px 8px",
+                    borderRadius: RADIUS.pill,
+                    border: `1px solid ${ACCENT.border}`,
+                    background: ACCENT.subtle,
+                    color: ACCENT.text,
+                    fontSize: TYPE.caption.size,
+                    fontWeight: 700,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  Asignada por tu Coach
+                </span>
+              )}
               <h3
                 style={{
                   margin: 0,
@@ -308,7 +332,7 @@ export function RoutineCard({
           >
             {routine.exercises.slice(0, 3).map((ex, i) => (
               <span key={i} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {ex.exercise.name}
+                {getExerciseDisplayName(ex.exercise)}
                 {i < routine.exercises.length - 1 && i < 2 ? ", " : ""}
               </span>
             ))}

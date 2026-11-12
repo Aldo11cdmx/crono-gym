@@ -135,7 +135,7 @@ export function useDashboardSessions(
       const { data: setData, error: setErr } = await supabase
         .from("completed_sets")
         .select(
-          "id,log_id,exercise_id,weight,reps,is_warmup,set_number,exercises!inner(name,body_part)",
+          "id,log_id,exercise_id,weight,reps,is_warmup,set_number,exercises(name,body_part)",
         )
         .in("log_id", logIds);
 
@@ -151,21 +151,25 @@ export function useDashboardSessions(
 
       const setsByLog = new Map<string, SetRow[]>();
       for (const row of (setData ?? []) as JoinedSet[]) {
-        const name = row.exercises?.name ?? row.exercise_id;
+        const name = row.exercises?.name ?? formatFallbackExerciseName(row.exercise_id);
         const bodyPart = row.exercises?.body_part ?? null;
         const setRow: SetRow = {
           id: row.id,
           exercise_id: row.exercise_id,
           exercise_name: name,
           body_part: bodyPart,
-          weight: row.weight,
-          reps: row.reps,
+          weight: Number(row.weight) || 0,
+          reps: Number(row.reps) || 0,
           is_warmup: row.is_warmup,
           set_number: (row as any).set_number,
         };
         const bucket = setsByLog.get(row.log_id) ?? [];
         bucket.push(setRow);
         setsByLog.set(row.log_id, bucket);
+      }
+
+      function formatFallbackExerciseName(exerciseId: string): string {
+        return exerciseId ? `Ejercicio registrado (${exerciseId.slice(0, 6)})` : "Ejercicio registrado";
       }
 
       const mapped: DashboardSession[] = logs.map((log) => ({
@@ -211,8 +215,8 @@ function sortBySetNumber(sets: SetRow[]): DashboardSession["sets"] {
       id: s.id,
       exerciseId: s.exercise_id,
       exerciseName: s.exercise_name ?? s.exercise_id,
-      weight: s.weight,
-      reps: s.reps,
+      weight: Number(s.weight) || 0,
+      reps: Number(s.reps) || 0,
       isWarmup: s.is_warmup,
       bodyPart: s.body_part,
     }));

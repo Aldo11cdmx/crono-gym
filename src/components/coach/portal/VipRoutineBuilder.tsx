@@ -273,7 +273,7 @@ export function VipRoutineBuilder({ athleteId, isTemplate = false, onSaved }: Vi
    * of the portal renders from.
    */
   const save = useCallback(async () => {
-    if (athleteId === null || saving) return;
+    if ((athleteId === null && !isTemplate) || saving) return;
 
     const draft: CoachRoutineDraft = { title, days };
     const coachId = getCoachId();
@@ -293,7 +293,58 @@ export function VipRoutineBuilder({ athleteId, isTemplate = false, onSaved }: Vi
     setSaving(true);
     setError(null);
 
-    const ok = await saveCoachRoutine(athleteId, coachId as string, draft);
+    if (isTemplate) {
+      const ok = await saveCoachTemplate(coachId as string, draft);
+      setSaving(false);
+      if (!ok) {
+        setTitle(savedTitle);
+        setDays(draft.days);
+        setSaved(null);
+        setError(T.builderSaveError);
+        return;
+      }
+      hapticSuccess();
+      setSaved(T.builderSaved(savedTitle));
+      setToast(T.builderSavedToast);
+      onSaved?.(savedTitle);
+      return;
+    }
+
+    const rpcExercises = draft.days.flatMap((day, dayIndex) =>
+      day.exercises.map((exercise, orderIndex) => ({
+        exercise_id: exercise.exerciseId,
+        target_sets: exercise.sets,
+        target_reps_min: exercise.repsMin,
+        target_reps_max: exercise.repsMax,
+        rest_seconds: exercise.restSeconds,
+        order_index: orderIndex,
+        day_index: dayIndex,
+        day_label: day.label,
+      })),
+    );
+    let rpcError: { message?: string } | null = null;
+    try {
+      const rpc = (supabase as any).rpc;
+      if (typeof rpc !== "function") {
+        rpcError = { message: "RPC unavailable" };
+      } else {
+        ({ error: rpcError } = await rpc.call(supabase, "assign_coach_routine", {
+          target_user_id: athleteId,
+          routine_title: draft.title,
+          routine_description: null,
+          routine_exercises: rpcExercises,
+          existing_routine_id: null,
+          notes: null,
+        }));
+      }
+    } catch (error) {
+      rpcError = { message: error instanceof Error ? error.message : "RPC unavailable" };
+    }
+    const ok = !rpcError
+      ? true
+      : athleteId
+        ? await saveCoachRoutine(athleteId, coachId as string, draft)
+        : false;
 
     setSaving(false);
 
@@ -314,7 +365,7 @@ export function VipRoutineBuilder({ athleteId, isTemplate = false, onSaved }: Vi
     setSaved(T.builderSaved(savedTitle));
     setToast(T.builderSavedToast);
     onSaved?.(savedTitle);
-  }, [athleteId, days, onSaved, saving, title]);
+  }, [athleteId, days, isTemplate, onSaved, saving, title]);
 
   /**
    * Inyecta un lote de ejercicios seleccionados en el día indicado.

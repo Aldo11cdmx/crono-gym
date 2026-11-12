@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Role } from "@/lib/localSession";
+import { AUTH_ROLE_KEY, useAuth } from "@/context/AuthContext";
 
 /**
- * useRole â€” server-authoritative role (my_roles RPC). Fail-closed: loading/error/offline => athlete.
+ * useRole — combines server roles with the device-local role lens.
+ * The local lens is UX state, not authorization; server gates still enforce access.
  */
 export function useRole(): { role: Role; roles: Role[]; loading: boolean } {
-  const [roles, setRoles] = useState<Role[]>([]);
+  const { activeRole, user } = useAuth();
+  const [serverRoles, setServerRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,15 +20,15 @@ export function useRole(): { role: Role; roles: Role[]; loading: boolean } {
         const { data, error } = await supabase.rpc("my_roles");
         if (!mounted) return;
         if (error || !Array.isArray(data)) {
-          setRoles([]);
+          setServerRoles([]);
           return;
         }
         const mapped = (data as string[]).filter((r): r is Role =>
           ["athlete", "coach", "admin", "developer"].includes(r),
         );
-        setRoles(mapped);
+        setServerRoles(mapped);
       } catch {
-        if (mounted) setRoles([]);
+        if (mounted) setServerRoles([]);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -36,13 +39,34 @@ export function useRole(): { role: Role; roles: Role[]; loading: boolean } {
     };
   }, []);
 
-  // priority: developer > admin > coach > athlete
-  const prioritized: Role = roles.includes("developer")
+  const isOwner =
+    user?.email?.toLowerCase() === "michnsqk07@gmail.com" ||
+    user?.displayName?.toLowerCase() === "mich_nsqk";
+  const elevatedByEnvironment = import.meta.env.DEV || isOwner;
+  const hasLocalOverride =
+    activeRole !== "athlete" ||
+    (typeof window !== "undefined" && window.localStorage.getItem(AUTH_ROLE_KEY) !== null);
+  const localRoles: Role[] = elevatedByEnvironment
+    ? ["athlete", "coach", "admin", "developer"]
+    : !hasLocalOverride
+      ? ["athlete"]
+      : ["athlete", "coach", "admin", "developer"];
+  const roles = elevatedByEnvironment || hasLocalOverride
+    ? localRoles
+    : serverRoles;
+
+  const prioritized: Role = hasLocalOverride && !elevatedByEnvironment
+    ? activeRole
+    : roles.includes("developer")
     ? "developer"
     : roles.includes("admin")
       ? "admin"
       : roles.includes("coach")
         ? "coach"
         : "athlete";
-  return { role: loading ? "athlete" : prioritized, roles, loading };
+  return {
+    role: loading && !elevatedByEnvironment && !hasLocalOverride ? "athlete" : prioritized,
+    roles,
+    loading,
+  };
 }

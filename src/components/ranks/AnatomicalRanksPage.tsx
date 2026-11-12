@@ -113,19 +113,6 @@ export function AnatomicalRanksPage({
   if (ranks.initialLoading) {
     return (
       <div className="space-y-8">
-        <header>
-          <h1
-            style={{
-              fontSize: TYPE.hero.size,
-              lineHeight: TYPE.hero.lineHeight,
-              fontWeight: TYPE.hero.weight,
-              letterSpacing: TYPE.hero.tracking,
-              color: TEXT.primary,
-            }}
-          >
-            {T.title}
-          </h1>
-        </header>
         <p style={{ color: TEXT.secondary, fontSize: TYPE.body.size }}>{T.loading}</p>
         <HeroSkeleton />
       </div>
@@ -135,18 +122,6 @@ export function AnatomicalRanksPage({
   if (ranks.error && !map) {
     return (
       <div className="space-y-6">
-        <header>
-          <h1
-            style={{
-              fontSize: TYPE.hero.size,
-              lineHeight: TYPE.hero.lineHeight,
-              fontWeight: TYPE.hero.weight,
-              letterSpacing: TYPE.hero.tracking,
-            }}
-          >
-            {T.title}
-          </h1>
-        </header>
         <GlassCard>
           <div className="flex items-start gap-3">
             <Flame className="mt-0.5 h-5 w-5 shrink-0" style={{ color: STATUS.error.text }} />
@@ -170,25 +145,6 @@ export function AnatomicalRanksPage({
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1
-          className="flex items-center gap-2"
-          style={{
-            fontSize: TYPE.hero.size,
-            lineHeight: TYPE.hero.lineHeight,
-            fontWeight: TYPE.hero.weight,
-            letterSpacing: TYPE.hero.tracking,
-            color: TEXT.primary,
-          }}
-        >
-          <Award style={{ width: "28px", height: "28px", color: ACCENT.text }} />
-          {T.title}
-        </h1>
-        <p style={{ color: TEXT.tertiary, marginTop: SPACE.xs, fontSize: TYPE.caption.size }}>
-          {T.subtitle}
-        </p>
-      </header>
-
       {banner.length > 0 && (
         <PromotionBanner promotions={banner} />
       )}

@@ -5,6 +5,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getRecentPRs,
+  getTopRecords,
   getStreakStats,
   getVolumeTrend,
   getWeeklyProgress,
@@ -77,6 +78,20 @@ describe("estimateOneRepMax (imported sanity check)", () => {
 describe("getRecentPRs", () => {
   it("returns empty for no sessions", () => {
     expect(getRecentPRs([], 1_760_000_000_000)).toEqual([]);
+  });
+
+  describe("getTopRecords", () => {
+    it("keeps historical records even when they are outside the recent window", () => {
+      const records = getTopRecords([
+        makeSession({
+          startedAt: "2026-09-01T10:00:00",
+          sets: [{ exerciseId: "e-1", exerciseName: "Squat", weight: "112.5" as unknown as number, reps: "1" as unknown as number }],
+        }),
+      ]);
+
+      expect(records).toHaveLength(1);
+      expect(records[0]).toMatchObject({ exerciseName: "Squat", weight: 112.5, reps: 1 });
+    });
   });
 
   it("emits a PR only when the estimate strictly increases", () => {

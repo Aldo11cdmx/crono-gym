@@ -33,6 +33,7 @@ import { PRSection } from "@/components/dashboard/sections/PRSection";
 import { HistorySection } from "@/components/dashboard/sections/HistorySection";
 import { RecoverableDraftSection } from "@/components/dashboard/sections/RecoverableDraftSection";
 import { RequestRoutineModal } from "@/components/coach/portal/RequestRoutineModal";
+import { GymClubHubSection } from "@/components/dashboard/sections/GymClubHubSection";
 import { UserAvatar } from "@/components/common/UserAvatar";
 import {
   ACCENT,
@@ -452,6 +453,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             focusLabel={hasRoutine ? data.dailyFocus.dayLabel : null}
             isCompleted={sessionState === "completed"}
             completedSummary={data.completedToday}
+            coachAssigned={Boolean(data.heroRoutineSummary?.assignedByCoach)}
             onExtra={() => navigate(TRAIN_PATH)}
             isRecoverable={!!data.recoverableDraft}
             compact={isMobile}
@@ -514,10 +516,11 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           {/* Cronos IA: primera en móvil, segunda en escritorio. */}
           <div className="order-1 sm:order-2">
             <TipSection tip={TIP_CATALOG[tipIndex]} onNext={nextTip} announcements={announcements} onPublish={publishAnnouncement} onDelete={deleteAnnouncement} />
+            <GymClubHubSection userId={userId} />
           </div>
 
           {/* Récords personales: segunda en móvil, primera en escritorio. */}
-          <PRSection recentPRs={data.recentPRs} compact={isMobile} className="order-2 sm:order-1" />
+          <PRSection topRecords={data.topRecords} recentPRs={data.recentPRs} compact={isMobile} className="order-2 sm:order-1" />
         </div>
       </div>
     </div>

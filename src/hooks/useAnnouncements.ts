@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-
-export type AnnouncementCategory = "urgent" | "event" | "info";
-
-export interface Announcement {
-  id: string;
-  title: string;
-  body: string;
-  category: AnnouncementCategory;
-  createdAt: string;
-  pinned?: boolean;
-  active: boolean;
-}
+import { normalizeAnnouncement, type Announcement, type AnnouncementCategory } from "@/types/announcements";
+import {
+  findAnnouncementMeta,
+  readLocalAnnouncements,
+  saveAnnouncementMeta,
+  saveLocalAnnouncement,
+} from "@/lib/gymClubMetadata";
+export type { Announcement, AnnouncementCategory };
 
 const STORAGE_KEY = "cronos-announcements";
 const SEEDS: Announcement[] = [
@@ -44,24 +40,12 @@ function writeLocal(items: Announcement[]) {
   }
 }
 
-function fromRow(row: Record<string, unknown>): Announcement {
-  return {
-    id: String(row.id),
-    title: String(row.title ?? ""),
-    body: String(row.body ?? row.message ?? ""),
-    category: row.category === "urgent" || row.category === "event" ? row.category : "info",
-    createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
-    pinned: Boolean(row.pinned),
-    active: row.active !== false,
-  };
-}
-
 export function useAnnouncements() {
   const [announcements, setAnnouncements] = useState<Announcement[]>(readLocal);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    const local = readLocal();
+    const local = [...readLocal(), ...readLocalAnnouncements<Announcement>()];
     setAnnouncements(local.filter((item) => item.active));
     try {
       const { data, error } = await (supabase as any)
@@ -69,9 +53,22 @@ export function useAnnouncements() {
         .select("*")
         .order("created_at", { ascending: false });
       if (!error && Array.isArray(data) && data.length > 0) {
-        const remote = data.map(fromRow).filter((item) => item.active);
-        writeLocal(remote);
-        setAnnouncements(remote);
+        const remote = data
+          .map((row) => {
+            const item = normalizeAnnouncement(row as Record<string, unknown>);
+            const meta = findAnnouncementMeta(item.id, item.title);
+            return {
+              ...item,
+              ...meta,
+              imageUrl: meta?.imageUrl,
+              pinned: meta?.pinned ?? item.pinned,
+              active: meta?.active ?? item.active,
+            };
+          })
+          .filter((item) => item.active);
+        const merged = [...remote, ...local.filter((item) => !remote.some((current) => current.id === item.id))];
+        writeLocal(merged);
+        setAnnouncements(merged.filter((item) => item.active));
       }
     } catch {
       // Local data remains available when the optional Supabase table is offline.
@@ -82,9 +79,12 @@ export function useAnnouncements() {
 
   useEffect(() => {
     void refresh();
+    const onChanged = () => void refresh();
+    window.addEventListener("cronos-announcements-changed", onChanged);
+    return () => window.removeEventListener("cronos-announcements-changed", onChanged);
   }, [refresh]);
 
-  const save = useCallback(async (input: Pick<Announcement, "title" | "body" | "category">) => {
+  const save = useCallback(async (input: Pick<Announcement, "title" | "body" | "category" | "imageUrl">) => {
     const item: Announcement = {
       id: `local-${Date.now()}`,
       title: input.title.trim(),
@@ -92,17 +92,29 @@ export function useAnnouncements() {
       category: input.category,
       createdAt: new Date().toISOString(),
       active: true,
+      imageUrl: input.imageUrl,
     };
     const next = [item, ...readLocal()];
     writeLocal(next);
+    saveLocalAnnouncement(item);
     setAnnouncements(next);
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("cronos-announcements-changed"));
     try {
-      await (supabase as any).from("announcements").insert({
+      const { data: authData } = await supabase.auth.getUser();
+      const { data, error } = await (supabase as any).from("announcements").insert({
         title: item.title,
         message: item.body,
         kind: item.category === "event" ? "event" : item.category === "urgent" ? "notice" : "notice",
-        active: true,
-      });
+        starts_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 365 * 86_400_000).toISOString(),
+        created_by: authData.user?.id,
+      }).select("id").single();
+      if (!error) {
+        saveAnnouncementMeta(
+          [String(data?.id ?? ""), item.title],
+          { imageUrl: item.imageUrl, category: item.category, pinned: false, active: true },
+        );
+      }
     } catch {
       // Local persistence keeps the feed available when Supabase is unavailable.
     }
@@ -112,6 +124,7 @@ export function useAnnouncements() {
     const next = readLocal().filter((item) => item.id !== id);
     writeLocal(next);
     setAnnouncements(next.filter((item) => item.active));
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("cronos-announcements-changed"));
     try {
       await (supabase as any).from("announcements").delete().eq("id", id);
     } catch {

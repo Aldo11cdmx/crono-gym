@@ -103,7 +103,6 @@ async function renderView() {
 describe("AnatomicalRanksPage", () => {
   it("shows the global rank and how many muscles are classified", async () => {
     await renderView();
-    expect(screen.getByRole("heading", { name: "Rangos anatómicos" })).toBeTruthy();
     expect(screen.getByText("Rango global")).toBeTruthy();
     expect(screen.getByText(/de 100/)).toBeTruthy();
     expect(screen.getByText(/\d+ \/ \d+ clasificados/)).toBeTruthy();

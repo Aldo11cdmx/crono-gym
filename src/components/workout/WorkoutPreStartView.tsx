@@ -4,13 +4,13 @@
  * Structure:
  *   - Compact iOS-style top bar (h-12) with pill-shaped back button
  *   - Consolidated Hero Card (single GlassCard, rounded-3xl, p-5) containing:
- *       1. Header Row: "SESIÃ“N LISTA" badge (Crimson, mono, uppercase), routine title, metric pills
+ *       1. Header Row: "SESIÓN LISTA" badge (Crimson, mono, uppercase), routine title, metric pills
  *       2. Dual Anatomy Map: compact capsule (bg-black/50, rounded-2xl) with simultaneous Frontal/Posterior views
  *       3. Integrated Muscle Distribution: Spanish muscle names, fine progress bars (Crimson), metrics
  *   - iOS Inset Grouped Exercise List: single GlassCard (rounded-3xl, divide-y) with rounded thumbnails, names, "N series" badges
  *   - Fixed CTA: "Iniciar Entrenamiento" button (Crimson, shadow) with safe bottom margin
  *
- * All exercise names stripped of catalog IDs via regex: .replace(/\s*[â€¢Â·-]\s*\d{3,5}$/, '')
+ * All exercise names stripped of catalog IDs via regex: .replace(/\s*[•·-]\s*\d{3,5}$/, '')
  */
 
 import { useMemo, useState } from "react";
@@ -28,7 +28,7 @@ import { translateMuscle } from "@/lib/i18n";
 
 const COLUMN_MAX_WIDTH = 520;
 
-/** Strips catalog ID suffixes like " â€¢ 0028", " - 0123", "Â· 0045" from exercise names. */
+/** Strips catalog ID suffixes like " • 0028", " - 0123", "· 0045" from exercise names. */
 function cleanExerciseName(name: string): string {
   return name.replace(/\s*[â€¢Â·-]\s*\d{3,5}$/, "");
 }
@@ -168,7 +168,7 @@ export function WorkoutPreStartView({
                     color: CRIMSON.text,
                   }}
                 >
-                  SESIÃ“N LISTA
+                  SESIÓN LISTA
                 </span>
                 <h1
                   style={{
@@ -189,15 +189,15 @@ export function WorkoutPreStartView({
               <div style={{ display: "flex", flexWrap: "wrap", gap: SPACE.xs }}>
                 <MetricPill
                   label={exerciseCount === 1 ? "1 ejercicio" : `${exerciseCount} ejercicios`}
-                  icon={<span style={{fontSize:12}}>â€¢</span>}
+                  icon={<span style={{fontSize:12}}>•</span>}
                 />
                 <MetricPill
                   label={totalSets === 1 ? "1 serie" : `${totalSets} series`}
-                  icon={<span style={{fontSize:12}}>â€¢</span>}
+                  icon={<span style={{fontSize:12}}>•</span>}
                 />
                 <MetricPill
                   label={`${minutes} min`}
-                  icon={<span style={{fontSize:12}}>â€¢</span>}
+                  icon={<span style={{fontSize:12}}>•</span>}
                 />
               </div>
             </div>

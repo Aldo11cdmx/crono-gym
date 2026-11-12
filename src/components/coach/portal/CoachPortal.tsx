@@ -1,859 +1,229 @@
-/**
- * CoachPortal.tsx — the vault's front door, and the only screen a coach works inside.
- *
- * Everything else under `portal/` is a panel this file arranges. That is not for tidiness:
- * each panel polls on its own interval, keeps its own selection and owns its own failure
- * state, so the only decisions that genuinely belong to a parent are *which athlete is
- * selected* and *whether the portal is open at all*. Everything else is left alone, because
- * a parent that also re-fetched would be a second, disagreeing copy of state each panel
- * already keeps honestly.
- *
- * **The PIN gate wraps the whole panel, and that is a UI lock, not a data one.** The RLS
- * policies discriminate on `auth.uid()` and never on the PIN token, so hiding the portal
- * stops a borrowed laptop from showing an inbox; it does not make the rows unreadable to
- * someone who has the coach's own JWT. The real boundary is the authenticated account, and
- * saying otherwise here would be a lie written into the most-read comment in the feature.
- * It is recorded as a Block 5 item rather than quietly fixed, because making the token a
- * real factor is a migration and not a component.
- *
- * **Activity is reported through capture-phase listeners on one wrapper**, rather than a
- * `touch` inside every panel's handlers. The idle timer is 30 minutes of *wall clock*, not
- * 30 minutes of coach activity: a coach reading a message is not pressing anything, and a
- * coach mid-set is pressing everything. Capture phase on the root sees the interaction
- * before any child decides to ignore it, so a scroll or a tap inside a panel that has no
- * handler of its own still counts. The alternative -- threading `touch` through five
- * components -- is how one of them ends up not calling it.
- *
- * **The selection is `{ requestId, athleteId }` and not just a request id.** The CRM and
- * the builder both need the *athlete*: their reads are filtered by `user_id` and rely on
- * the coach SELECT policies to qualify them. Carrying only the request id would mean a
- * second lookup here to turn a conversation into a person, and a lookup whose answer could
- * disagree with the queue row that produced it.
- */
-
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Dumbbell, LogOut, Pencil, Plus, Search, Sparkles } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
-import { Lock, FileText } from "lucide-react";
-
-import { CRIMSON, GLASS, MOTION, RADIUS, SPACE, STATUS, SURFACE_ROLE, TEXT, TYPE } from "@/design/tokens";
-import { GlassButton, GlassCard } from "@/components/ui";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import { COACH_PORTAL_LABELS as T } from "@/lib/i18n";
-import { supabase } from "@lib/supabase";
+import type { WorkspaceOutletContext } from "@/App";
+import { usePermissions } from "@/hooks/usePermissions";
 import { CoachPinGate } from "@/lib/coach/CoachAccessGate";
 import { useCoachAuth } from "@/lib/coach/useCoachAuth";
-import type { WorkspaceOutletContext } from "@/App";
-
+import { useCoachEcosystem } from "@/hooks/useCoachEcosystem";
+import { coachEcosystemService } from "@/lib/coach/coachEcosystemService";
+import { supabase } from "@lib/supabase";
+import { GlassButton } from "@/components/ui";
+import { CoachAthleteSearch, type CoachAthlete } from "./CoachAthleteSearch";
 import { AthleteCRM } from "./AthleteCRM";
-import { AthleteDetailView } from "./AthleteDetailView";
-import { ExerciseRow } from "@/components/exercise-selector/ExerciseRow";
-import { HumanCoachChat } from "./HumanCoachChat";
-import { LiveGymFeed } from "./LiveGymFeed";
-import { RequestQueue } from "./RequestQueue";
 import { VipRoutineBuilder } from "./VipRoutineBuilder";
-import { ShiftPanel } from "./ShiftPanel";
+import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import { translateBodyPart, translateEquipment } from "@/lib/i18n";
 
-/** The athlete the right-hand column is about. Null renders the prompt instead. */
-export interface PortalSelection {
-  requestId: string;
-  athleteId: string;
-}
+type CoachTab = "clients" | "expediente" | "templates" | "exercises";
+type ExerciseRow = {
+  id: string;
+  name: string;
+  name_es: string | null;
+  body_part: string;
+  target: string;
+  equipment: string;
+  gif_url?: string | null;
+};
 
-type CoachTab = "queue" | "chat" | "crm" | "builder" | "feed";
+const card = "rounded-2xl border border-white/10 bg-[#1C1C1E] p-4";
+const control = "rounded-xl border border-white/10 bg-[#2C2C2E]";
 
 export function CoachPortal() {
-  /*
-   * From the outlet context, exactly as `CoachView` does it. The router cannot pass it as a
-   * prop: the table is built once at module scope and the id arrives later from the
-   * Supabase session that `AuthGate` resolves.
-   */
   const { userId } = useOutletContext<WorkspaceOutletContext>();
-
-  return (
-    <CoachPinGate>
-      <PortalPanel userId={userId} />
-    </CoachPinGate>
-  );
+  const { loading, hasRole } = usePermissions();
+  const auth = useCoachAuth();
+  if (loading) return <div className="min-h-60 animate-pulse rounded-2xl bg-[#1C1C1E]" />;
+  const content = <PortalPanel userId={userId} onExit={auth.lock} />;
+  return hasRole(["coach", "admin", "developer"]) ? content : <CoachPinGate>{content}</CoachPinGate>;
 }
 
-/**
- * The unlocked panel.
- *
- * Split from `CoachPortal` so that `CoachPinGate`'s children are not re-created on every
- * render of the gate, and so a caller with a session already in hand can mount the panel
- * without one. Named-exported for that second reason: `src/components/dev/CoachPortalPreview`
- * uses it to review this layout at a phone and a desktop width without a coach account, which
- * is the only way to reach it outside production.
- */
-export function PortalPanel({ userId }: { userId: string }) {
-  const auth = useCoachAuth();
-  const [selection, setSelection] = useState<PortalSelection | null>(null);
-  const [activeTab, setActiveTab] = useState<CoachTab>("queue");
+export function PortalPanel({ userId, onExit }: { userId: string; onExit?: () => void }) {
+  const [tab, setTab] = useState<CoachTab>("clients");
+  const [selectedAthlete, setSelectedAthlete] = useState<CoachAthlete | null>(null);
+  const [expedienteTab, setExpedienteTab] = useState<"ficha" | "builder" | "chat">("ficha");
+  const [offerEditing, setOfferEditing] = useState(false);
+  const ecosystem = useCoachEcosystem(userId);
+  const [offerDraft, setOfferDraft] = useState(ecosystem.offer);
+  const [filter, setFilter] = useState<"all" | "cash" | "vip">("all");
+  const [message, setMessage] = useState<string | null>(null);
 
-  // ---- Plantillas Base ----
-  const [templates, setTemplates] = useState<Array<{
-    id: string;
-    title: string;
-    user_id: string;
-    is_template: boolean;
-    created_at: string;
-  }>>([]);
-  const [templatesLoading, setTemplatesLoading] = useState(false);
-  const [templateError, setTemplateError] = useState<string | null>(null);
-  const [creatingTemplate, setCreatingTemplate] = useState(false);
+  useEffect(() => setOfferDraft(ecosystem.offer), [ecosystem.offer]);
+  const activeCount = ecosystem.requests.filter((request) => request.status === "active").length;
+  const visibleRequests = ecosystem.requests.filter((request) =>
+    filter === "all" ? true : filter === "cash" ? request.status === "pending_cash_payment" : request.status === "active",
+  );
 
-  // ---- Ejercicios ----
-  const [exercises, setExercises] = useState<Array<{
-    id: string;
-    name: string;
-    name_es: string | null;
-    body_part: string;
-    target: string;
-    equipment: string;
-    is_active: boolean;
-    is_hidden: boolean;
-  }>>([]);
-  const [exercisesLoading, setExercisesLoading] = useState(false);
-  const [exerciseError, setExerciseError] = useState<string | null>(null);
-  const [exerciseSearch, setExerciseSearch] = useState("");
-  const [creatingExercise, setCreatingExercise] = useState(false);
-  const [exerciseForm, setExerciseForm] = useState({
-    name: "",
-    name_es: "",
-    body_part: "",
-    target: "",
-    equipment: "",
-    instructions: "" as string,
-  });
-
-  /**
-   * Detecta móvil para cambiar a vista de ficha del atleta a pantalla completa.
-   *
-   * Tailwind `lg` empieza en 1024px; por debajo, una selección abre
-   * `AthleteDetailView` en lugar de la columna dividida.
-   */
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
-  useEffect(() => {
-    if (typeof window.matchMedia !== "function") {
-      setIsMobile(false);
-      return;
+  const activate = useCallback(async (athleteId: string) => {
+    if (!ecosystem.offer) return;
+    try {
+      await ecosystem.activateAthleteVipCash(athleteId, ecosystem.offer.priceMxn);
+      setMessage("VIP activo · efectivo");
+      await ecosystem.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo activar el VIP");
     }
-    const mq = window.matchMedia("(max-width: 1023px)");
-    setIsMobile(mq.matches);
-    const handler = (event: MediaQueryListEvent) => setIsMobile(event.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+  }, [ecosystem]);
+
+  const selectAthlete = useCallback((athlete: CoachAthlete) => {
+    setSelectedAthlete(athlete);
+    setTab("expediente");
+    setExpedienteTab("ficha");
   }, []);
-
-  /*
-   * The last routine handed over, echoed at the portal level rather than inside the builder.
-   *
-   * Two reasons. A coach who saves a plan for the athlete they are mid-conversation with
-   * needs to see that it landed next to the conversation, not scrolled away inside a
-   * builder further down the column. And the builder's own message is cleared the moment the
-   * draft is reset -- which is deliberate there, so a second tap cannot save twice -- but it
-   * means the confirmation would otherwise disappear at the exact moment it is still useful.
-   */
-  const [lastSaved, setLastSaved] = useState<string | null>(null);
-
-  const mountedRef = useRef(true);
-
-  const loadTemplates = useCallback(async () => {
-    setTemplatesLoading(true);
-    setTemplateError(null);
-    try {
-      const { data, error } = await supabase
-        .from("routines")
-        .select("id, title, user_id, is_template, created_at")
-        .eq("is_template", true)
-        .order("created_at", { ascending: false });
-
-      if (!mountedRef.current) return;
-      if (error) throw error;
-      setTemplates((data ?? []).filter((r) => r.is_template === true));
-    } catch (err) {
-      if (!mountedRef.current) return;
-      setTemplateError(err instanceof Error ? err.message : T.templateLoadError);
-    } finally {
-      if (mountedRef.current) setTemplatesLoading(false);
-    }
-  }, []);
-
-  const loadExercises = useCallback(async () => {
-    setExercisesLoading(true);
-    setExerciseError(null);
-    try {
-      const { data, error } = await supabase
-        .from("exercises")
-        .select("id, name, name_es, body_part, target, equipment, is_active, is_hidden")
-        .order("name");
-
-      if (!mountedRef.current) return;
-      if (error) throw error;
-      setExercises(data ?? []);
-    } catch (err) {
-      if (!mountedRef.current) return;
-      setExerciseError(err instanceof Error ? err.message : T.exerciseLoadError);
-    } finally {
-      if (mountedRef.current) setExercisesLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    void loadTemplates();
-    void loadExercises();
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [loadTemplates, loadExercises]);
-
-  const saveExercise = useCallback(async () => {
-    const { name, name_es, body_part, target, equipment, instructions } = exerciseForm;
-    if (!name.trim()) return;
-
-    setExercisesLoading(true);
-    try {
-      const { error } = await supabase.from("exercises").insert({
-        id: crypto.randomUUID(),
-        name: name.trim(),
-        name_es: name_es.trim() || null,
-        body_part: body_part.trim() || "general",
-        target: target.trim() || "general",
-        equipment: equipment.trim() || "Peso corporal",
-        gif_url: "",
-        instructions: instructions.trim() ? [instructions.trim()] : [],
-        is_active: true,
-        is_hidden: false,
-      });
-
-      if (!mountedRef.current) return;
-      if (error) throw error;
-
-      setCreatingExercise(false);
-      setExerciseForm({ name: "", name_es: "", body_part: "", target: "", equipment: "", instructions: "" });
-      void loadExercises();
-    } catch (err) {
-      if (!mountedRef.current) return;
-      setExerciseError(err instanceof Error ? err.message : T.exerciseCreateError);
-    } finally {
-      if (mountedRef.current) setExercisesLoading(false);
-    }
-  }, [exerciseForm, loadExercises]);
-
-  const renameExercise = useCallback(async (id: string, name: string, nameEs: string | null) => {
-    setExerciseError(null);
-    try {
-      const { error } = await supabase
-        .from("exercises")
-        .update({ name, name_es: nameEs })
-        .eq("id", id);
-
-      if (!mountedRef.current) return;
-      if (error) throw error;
-      void loadExercises();
-    } catch (err) {
-      if (!mountedRef.current) return;
-      setExerciseError(err instanceof Error ? err.message : T.exerciseRenameError);
-    }
-  }, [loadExercises]);
-
-  const hideExercise = useCallback(async (id: string) => {
-    setExerciseError(null);
-    try {
-      const { error } = await supabase
-        .from("exercises")
-        .update({ is_hidden: true, is_active: false })
-        .eq("id", id);
-
-      if (!mountedRef.current) return;
-      if (error) throw error;
-      void loadExercises();
-    } catch (err) {
-      if (!mountedRef.current) return;
-      setExerciseError(err instanceof Error ? err.message : T.exerciseHideError);
-    }
-  }, [loadExercises]);
-
-  /*
-   * Opening a conversation replaces the selection rather than adding to it, so the CRM and
-   * the builder cannot end up describing two different athletes at once -- a state that is
-   * reachable only by clicking twice quickly, and that would show one athlete's records
-   * beside another athlete's conversation.
-   */
-  const openConversation = useCallback((requestId: string, athleteId: string) => {
-    setSelection({ requestId, athleteId });
-    setActiveTab("chat");
-  }, []);
-
-  /**
-   * Report activity to the idle timer.
-   *
-   * Capture phase on the root, and only for the two events that mean "a human is here". Not
-   * on every event: `onMouseMove` would fire thousands of times a minute for a coach
-   * reading with the cursor parked, and each one is a store write plus a listener pass.
-   */
-  const reportActivity = useCallback(() => {
-    auth.touch();
-  }, [auth]);
 
   return (
-    <div
-      onPointerDownCapture={reportActivity}
-      onKeyDownCapture={reportActivity}
-      className="flex flex-col gap-4"
-      style={{ backgroundColor: SURFACE_ROLE.canvas, minHeight: "100vh" }}
-    >
-      <PortalHeader userId={userId} onClose={auth.lock} />
-
-      <div className="max-w-7xl mx-auto px-4 pt-6 space-y-6" style={{ flex: 1 }}>
-        <ShiftPanel userId={userId} />
-
-        <div className="overflow-x-auto pb-2">
-          <SegmentedControl
-            value={activeTab}
-            onChange={(val) => setActiveTab(val as CoachTab)}
-            ariaLabel={T.title}
-            options={[
-              { value: "queue", label: T.queueTitle },
-              { value: "chat", label: T.chatTitle },
-              { value: "crm", label: T.crmTitle },
-              { value: "builder", label: T.builderTitle },
-              { value: "feed", label: T.liveFeedTitle },
-            ]}
-          />
-        </div>
-
-        <section className="mt-4">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {activeTab === "queue" && (
-              <section aria-label={T.queueTitle} className={`flex min-w-0 flex-col gap-3 ${selection !== null ? "hidden md:flex" : "flex"}`}>
-                <RequestQueue onOpenConversation={openConversation} />
-                <LiveGymFeed />
-              </section>
-            )}
-            {activeTab === "feed" && (
-              <section aria-label={T.liveFeedTitle} className="flex min-w-0 flex-col gap-3">
-                <LiveGymFeed />
-              </section>
-            )}
-
-            <div className="flex min-w-0 flex-col gap-4">
-              {/*
-               * En móvil, una selección abierta muestra la ficha del atleta a
-               * pantalla completa en lugar de la columna dividida. El botón
-               * "Volver" de AthleteDetailView limpia la selección.
-               */}
-              {isMobile !== null && isMobile && selection !== null ? (
-                <AthleteDetailView
-                  requestId={selection.requestId}
-                  athleteId={selection.athleteId}
-                  coachUserId={userId}
-                  onBack={() => setSelection(null)}
-                />
-              ) : selection === null ? (
-                <>
-                  {activeTab === "queue" && <PortalEmptyState />}
-                  {activeTab === "queue" && <AthleteCRM athleteId={null} />}
-                  {activeTab === "queue" && <VipRoutineBuilder athleteId={null} />}
-                  {activeTab === "crm" && <AthleteCRM athleteId={null} />}
-                  {activeTab === "builder" && <VipRoutineBuilder athleteId={null} />}
-                </>
-              ) : (
-                <>
-                  {activeTab === "chat" && (
-                    <section aria-label={T.chatTitle} className="flex min-w-0 flex-col gap-3">
-                      <HumanCoachChat requestId={selection.requestId} userId={userId} />
-                    </section>
-                  )}
-                  {activeTab === "crm" && <AthleteCRM athleteId={selection.athleteId} />}
-                  {activeTab === "builder" && (
-                    <VipRoutineBuilder
-                      athleteId={selection.athleteId}
-                      onSaved={(savedTitle) => setLastSaved(savedTitle)}
-                    />
-                  )}
-                </>
-              )}
-
-              {lastSaved !== null && (
-                <p aria-live="polite" style={savedStyle}>
-                  {lastSaved}
-                </p>
-              )}
-
-              {/* Plantillas Base — gestión de plantillas globales */}
-              <GlassCard raised style={{ padding: SPACE.card }}>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4
-                      style={{
-                        margin: 0,
-                        fontSize: TYPE.subhead.size,
-                        fontWeight: 600,
-                        color: TEXT.primary,
-                      }}
-                    >
-                      {T.templateBaseTitle}
-                    </h4>
-                    <GlassButton
-                      variant="primary"
-                      onClick={() => setCreatingTemplate(true)}
-                      style={{ minHeight: 44 }}
-                    >
-                      {creatingTemplate ? T.templateCreating : T.templateCreate}
-                    </GlassButton>
-                  </div>
-
-                  {templatesLoading && (
-                    <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                      {T.templateLoading}
-                    </p>
-                  )}
-
-                  {templateError && (
-                    <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: STATUS.error.text }}>
-                      {templateError}
-                    </p>
-                  )}
-
-                  {templates.length === 0 && !templatesLoading && !templateError && (
-                    <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-                      {T.templateEmpty}
-                    </p>
-                  )}
-
-                  {templates.map((tmpl) => (
-                    <div
-                      key={tmpl.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "10px 12px",
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: SURFACE_ROLE.well,
-                      }}
-                    >
-                      <div style={{ minWidth: 0 }}>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: TYPE.subhead.size,
-                            fontWeight: 600,
-                            color: TEXT.primary,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {tmpl.title}
-                        </p>
-                        <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                          {T.templateBy.replace("{coachId}", tmpl.user_id.slice(0, 8))}
-                        </p>
-                      </div>
-                      <div style={{ display: "flex", gap: SPACE.xs }}>
-                        <GlassButton
-                          variant="ghost"
-                          onClick={() => {
-                            setCreatingTemplate(true);
-                          }}
-                        >
-                          {T.templateEdit}
-                        </GlassButton>
-                      </div>
-                    </div>
-                  ))}
-
-                  {creatingTemplate && (
-                    <VipRoutineBuilder
-                      athleteId={null}
-                      isTemplate={true}
-                      onSaved={(savedTitle) => {
-                        setCreatingTemplate(false);
-                        setLastSaved(savedTitle);
-                        void loadTemplates();
-                      }}
-                    />
-                  )}
-                </div>
-              </GlassCard>
-
-              {/* Ejercicios — catálogo y creación de ejercicios del coach */}
-              <GlassCard raised style={{ padding: SPACE.card }}>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4
-                      style={{
-                        margin: 0,
-                        fontSize: TYPE.subhead.size,
-                        fontWeight: 600,
-                        color: TEXT.primary,
-                      }}
-                    >
-                      {T.exerciseCatalogTitle}
-                    </h4>
-                    <GlassButton
-                      variant="primary"
-                      onClick={() => setCreatingExercise(true)}
-                      style={{ minHeight: 44 }}
-                    >
-                      {creatingExercise ? T.exerciseCreating : T.exerciseCreate}
-                    </GlassButton>
-                  </div>
-
-                  {exercisesLoading && (
-                    <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.tertiary }}>
-                      {T.exerciseLoading}
-                    </p>
-                  )}
-
-                  {exerciseError && (
-                    <p role="alert" style={{ margin: 0, fontSize: TYPE.subhead.size, color: STATUS.error.text }}>
-                      {exerciseError}
-                    </p>
-                  )}
-
-                  <div style={{ display: "flex", gap: SPACE.xs, marginBottom: SPACE.xs }}>
-                    <input
-                      type="text"
-                      placeholder={T.exerciseSearchPlaceholder}
-                      value={exerciseSearch}
-                      onChange={(e) => setExerciseSearch(e.target.value)}
-                      style={{
-                        flex: 1,
-                        minHeight: MOTION.minTouchTarget,
-                        padding: `0 ${SPACE.sm}`,
-                        borderRadius: RADIUS.control,
-                        border: `1px solid ${GLASS.border}`,
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT.primary,
-                        fontSize: TYPE.subhead.size,
-                      }}
-                    />
-                  </div>
-
-                  {exercises.length === 0 && !exercisesLoading && !exerciseError && (
-                    <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }}>
-                      {T.exerciseEmpty}
-                    </p>
-                  )}
-
-                  {exercises
-                    .filter((ex) =>
-                      ex.name.toLowerCase().includes(exerciseSearch.toLowerCase()) ||
-                      (ex.name_es ?? "").toLowerCase().includes(exerciseSearch.toLowerCase()),
-                    )
-                    .map((ex) => (
-                      <ExerciseRow
-                        key={ex.id}
-                        exercise={{
-                          id: ex.id,
-                          name: ex.name,
-                          name_es: ex.name_es,
-                          body_part: ex.body_part,
-                          target: ex.target,
-                          equipment: ex.equipment,
-                          gif_url: "",
-                          instructions: [],
-                          is_active: ex.is_active,
-                          is_hidden: ex.is_hidden,
-                        }}
-                        order={null}
-                        selected={false}
-                        multiSelect={false}
-                        expanded={false}
-                        onSelect={() => {}}
-                        onTogglePreview={() => {}}
-                        onRename={(id, name, nameEs) => void renameExercise(id, name, nameEs)}
-                        onHide={(id) => void hideExercise(id)}
-                        hidden={ex.is_hidden}
-                      />
-                    ))}
-
-                  {creatingExercise && (
-                    <GlassCard raised style={{ padding: SPACE.card }}>
-                      <div className="flex flex-col gap-2">
-                        <h5
-                          style={{
-                            margin: 0,
-                            fontSize: TYPE.caption.size,
-                            fontWeight: 600,
-                            color: TEXT.secondary,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.04em",
-                          }}
-                        >
-                          {T.exerciseNewTitle}
-                        </h5>
-                        <input
-                          placeholder={T.exerciseNamePlaceholder}
-                          value={exerciseForm.name}
-                          onChange={(e) => setExerciseForm((prev) => ({ ...prev, name: e.target.value }))}
-                          style={{
-                            minHeight: MOTION.minTouchTarget,
-                            padding: `0 ${SPACE.sm}`,
-                            borderRadius: RADIUS.control,
-                            border: `1px solid ${GLASS.border}`,
-                            background: "rgba(255,255,255,0.05)",
-                            color: TEXT.primary,
-                            fontSize: TYPE.subhead.size,
-                          }}
-                        />
-                        <input
-                          placeholder={T.exerciseNameEsPlaceholder}
-                          value={exerciseForm.name_es}
-                          onChange={(e) =>
-                            setExerciseForm((prev) => ({ ...prev, name_es: e.target.value }))
-                          }
-                          style={{
-                            minHeight: MOTION.minTouchTarget,
-                            padding: `0 ${SPACE.sm}`,
-                            borderRadius: RADIUS.control,
-                            border: `1px solid ${GLASS.border}`,
-                            background: "rgba(255,255,255,0.05)",
-                            color: TEXT.primary,
-                            fontSize: TYPE.subhead.size,
-                          }}
-                        />
-                        <input
-                          placeholder={T.exerciseBodyPartPlaceholder}
-                          value={exerciseForm.body_part}
-                          onChange={(e) =>
-                            setExerciseForm((prev) => ({ ...prev, body_part: e.target.value }))
-                          }
-                          style={{
-                            minHeight: MOTION.minTouchTarget,
-                            padding: `0 ${SPACE.sm}`,
-                            borderRadius: RADIUS.control,
-                            border: `1px solid ${GLASS.border}`,
-                            background: "rgba(255,255,255,0.05)",
-                            color: TEXT.primary,
-                            fontSize: TYPE.subhead.size,
-                          }}
-                        />
-                        <input
-                          placeholder={T.exerciseTargetPlaceholder}
-                          value={exerciseForm.target}
-                          onChange={(e) =>
-                            setExerciseForm((prev) => ({ ...prev, target: e.target.value }))
-                          }
-                          style={{
-                            minHeight: MOTION.minTouchTarget,
-                            padding: `0 ${SPACE.sm}`,
-                            borderRadius: RADIUS.control,
-                            border: `1px solid ${GLASS.border}`,
-                            background: "rgba(255,255,255,0.05)",
-                            color: TEXT.primary,
-                            fontSize: TYPE.subhead.size,
-                          }}
-                        />
-                        <input
-                          placeholder={T.exerciseEquipmentPlaceholder}
-                          value={exerciseForm.equipment}
-                          onChange={(e) =>
-                            setExerciseForm((prev) => ({ ...prev, equipment: e.target.value }))
-                          }
-                          style={{
-                            minHeight: MOTION.minTouchTarget,
-                            padding: `0 ${SPACE.sm}`,
-                            borderRadius: RADIUS.control,
-                            border: `1px solid ${GLASS.border}`,
-                            background: "rgba(255,255,255,0.05)",
-                            color: TEXT.primary,
-                            fontSize: TYPE.subhead.size,
-                          }}
-                        />
-                        <textarea
-                          placeholder={T.exerciseInstructionsPlaceholder}
-                          value={exerciseForm.instructions}
-                          onChange={(e) =>
-                            setExerciseForm((prev) => ({ ...prev, instructions: e.target.value }))
-                          }
-                          rows={2}
-                          style={{
-                            minHeight: 80,
-                            padding: `${SPACE.sm} ${SPACE.sm}`,
-                            borderRadius: RADIUS.control,
-                            border: `1px solid ${GLASS.border}`,
-                            background: "rgba(255,255,255,0.05)",
-                            color: TEXT.primary,
-                            fontSize: TYPE.subhead.size,
-                            resize: "vertical",
-                          }}
-                        />
-                        <div style={{ display: "flex", gap: SPACE.xs, marginTop: SPACE.xs }}>
-                          <GlassButton
-                            variant="primary"
-                            onClick={saveExercise}
-                            disabled={exercisesLoading || !exerciseForm.name.trim()}
-                            style={{ minHeight: 44, flex: 1 }}
-                          >
-                            {T.exerciseSave}
-                          </GlassButton>
-                          <GlassButton
-                            variant="ghost"
-                            onClick={() => {
-                              setCreatingExercise(false);
-                              setExerciseForm({
-                                name: "",
-                                name_es: "",
-                                body_part: "",
-                                target: "",
-                                equipment: "",
-                                instructions: "",
-                              });
-                            }}
-                            style={{ minHeight: 44 }}
-                          >
-                            {T.exerciseCancel}
-                          </GlassButton>
-                        </div>
-                      </div>
-                    </GlassCard>
-                  )}
-                </div>
-              </GlassCard>
+    <main className="w-full max-w-full overflow-x-hidden bg-black px-4 pt-3 pb-28">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
+        <header className={`${card} flex min-w-0 flex-wrap items-center justify-between gap-3`}>
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FF3B30]/15 text-[#FF3B30]">
+              <Sparkles size={20} aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-base font-bold tracking-tight text-white">Panel Coach</p>
+              <p className="truncate text-xs text-zinc-400">Coach · COACH PRO</p>
             </div>
           </div>
-        </section>
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+            <span className="rounded-full border border-[#30D158]/30 bg-[#30D158]/15 px-3 py-2 text-xs font-semibold text-[#30D158]">
+              {activeCount} atletas activos
+            </span>
+            <span className="rounded-full bg-[#2C2C2E] px-3 py-2 text-xs text-zinc-300">14:00 a 22:00</span>
+            <button type="button" onClick={onExit} className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#2C2C2E] px-3 text-sm text-white active:scale-[0.98]">
+              <LogOut size={16} aria-hidden="true" /> Salir
+            </button>
+          </div>
+        </header>
+
+        <nav aria-label="Secciones del portal" className={`${card} grid grid-cols-4 gap-1 p-1`}>
+          {([
+            ["clients", "Clientes"],
+            ["expediente", "Expediente"],
+            ["templates", "Plantillas"],
+            ["exercises", "Ejercicios"],
+          ] as const).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTab(value)}
+              className={`min-w-0 rounded-lg px-1 py-3 text-xs font-semibold transition-colors ${tab === value ? "bg-[#FF3B30] text-white" : "text-zinc-400 hover:text-white"}`}
+            >
+              <span className="block truncate">{label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {message && <p role="status" className={`${card} text-sm text-zinc-200`}>{message}</p>}
+
+        {tab === "clients" && (
+          <ClientsPanel
+            offer={offerDraft}
+            editing={offerEditing}
+            setEditing={setOfferEditing}
+            setOffer={setOfferDraft}
+            saveOffer={async () => {
+              if (!offerDraft) return;
+              await ecosystem.saveOffer(offerDraft);
+              setOfferEditing(false);
+              setMessage("Oferta guardada");
+            }}
+            requests={visibleRequests}
+            filter={filter}
+            setFilter={setFilter}
+            activate={activate}
+            openAthlete={(request: any) => selectAthlete({ user_id: request.athleteId, display_name: request.athleteName })}
+          />
+        )}
+
+        {tab === "expediente" && (
+          <section className="flex min-w-0 flex-col gap-4">
+            <CoachAthleteSearch onSelect={selectAthlete} />
+            {selectedAthlete ? (
+              <>
+                <div className={`${card} flex min-w-0 flex-wrap items-center justify-between gap-3`}>
+                  <div className="min-w-0">
+                    <p className="truncate text-lg font-bold text-white">{selectedAthlete.display_name || "Atleta"}</p>
+                    <p className="truncate text-xs text-zinc-400">{selectedAthlete.goal || "Ficha 360°"} · {selectedAthlete.weight_kg ?? "—"} kg</p>
+                  </div>
+                  <button type="button" className="h-11 rounded-xl bg-[#2C2C2E] px-4 text-sm text-white" onClick={() => setSelectedAthlete(null)}>Cambiar atleta</button>
+                </div>
+                <div className={`${card} grid grid-cols-3 gap-1 p-1`}>
+                  {(["ficha", "builder", "chat"] as const).map((value) => (
+                    <button key={value} type="button" onClick={() => setExpedienteTab(value)} className={`min-h-11 rounded-lg text-xs font-semibold ${expedienteTab === value ? "bg-[#2C2C2E] text-white" : "text-zinc-400"}`}>
+                      {value === "ficha" ? "Ficha 360°" : value === "builder" ? "Constructor 1:1" : "Chat"}
+                    </button>
+                  ))}
+                </div>
+                {expedienteTab === "ficha" && <AthleteCRM athleteId={selectedAthlete.user_id} />}
+                {expedienteTab === "builder" && <VipRoutineBuilder athleteId={selectedAthlete.user_id} onSaved={setMessage} />}
+                {expedienteTab === "chat" && <div className={card}>Chat disponible desde la ficha del atleta.</div>}
+              </>
+            ) : <div className={`${card} text-sm text-zinc-400`}>Selecciona un atleta para abrir su ficha 360°.</div>}
+          </section>
+        )}
+
+        {tab === "templates" && <TemplatesPanel templates={ecosystem.templates} onClone={(templateId) => ecosystem.cloneTemplate(templateId, userId)} onRefresh={ecosystem.refresh} />}
+        {tab === "exercises" && <ExercisesPanel coachId={userId} requests={ecosystem.exerciseRequests} />}
       </div>
-    </div>
+    </main>
   );
 }
 
-/**
- * The header: who is signed in, and the one button that throws the session away.
- *
- * The coach's name is a second read of their own `profiles` row rather than a prop.
- * `AuthGate` already resolved a session, not a name, and threading a name down would mean
- * widening the outlet context -- a shared contract every view depends on -- for one screen.
- * A null name is a real state (the column is nullable and nobody is asked to fill it), so it
- * falls back to the portal's own title rather than rendering an empty heading.
- */
-function PortalHeader({ userId, onClose }: { userId: string; onClose: () => void }) {
-  const [name, setName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  /** The read can resolve after the coach has navigated away; it must not write then. */
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (cancelled || !mounted.current) return;
-      setName(typeof data?.display_name === "string" ? data.display_name : null);
-      setLoading(false);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  /**
-   * Confirm before locking.
-   *
-   * `window.confirm` rather than an in-app dialog, and the reason is that this button is
-   * the one action here with no undo. Everything else in the portal is a poll that repairs
-   * itself; a lock is the coach retyping a PIN, and a modal asking first costs one dialog
-   * in exchange for not throwing away a half-typed session to an accidental double tap.
-   */
-  const confirmClose = useCallback(() => {
-    if (window.confirm(T.closeSessionConfirm)) onClose();
-  }, [onClose]);
-
+function ClientsPanel({ offer, editing, setEditing, setOffer, saveOffer, requests, filter, setFilter, activate, openAthlete }: any) {
   return (
-    <GlassCard style={{ padding: `${SPACE.sm} ${SPACE.md}` }}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-col">
-          <h1
-            style={{
-              margin: 0,
-              fontSize: TYPE.title2.size,
-              fontWeight: 600,
-              color: TEXT.primary,
-            }}
-          >
-            {name ?? T.title}
-          </h1>
-          {/* Announced rather than shown: a placeholder box in the header shifts the layout
-              by its own height once the name lands, which reads as the page jumping. */}
-          {loading && <span className="sr-only">{T.loading}</span>}
+    <section className="flex min-w-0 flex-col gap-4">
+      <div className={card}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0"><h2 className="truncate text-base font-bold text-white">Mi Oferta Comercial VIP</h2><p className="text-xs text-zinc-400">Visible para tus atletas.</p></div>
+          <button type="button" className="h-11 rounded-xl bg-[#2C2C2E] px-4 text-sm text-white" onClick={() => setEditing(!editing)}>{editing ? "Cerrar" : "Editar"}</button>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span
-            className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-            style={{
-              backgroundColor: CRIMSON.subtle,
-              color: CRIMSON.text,
-              border: `1px solid ${CRIMSON.border}`,
-            }}
-          >
-            PRO
-          </span>
-          <GlassButton
-            variant="ghost"
-            icon={<Lock size={16} aria-hidden="true" />}
-            onClick={confirmClose}
-            style={{ minHeight: 44 }}
-          >
-            {T.closeSession}
-          </GlassButton>
+        {offer && (editing ? (
+          <div className="mt-4 grid gap-3">
+            <input className={`${control} h-11 px-3 text-white`} type="number" value={offer.priceMxn} onChange={(e) => setOffer({ ...offer, priceMxn: Number(e.target.value) })} aria-label="Precio MXN" />
+            <input className={`${control} h-11 px-3 text-white`} value={offer.specialty} onChange={(e) => setOffer({ ...offer, specialty: e.target.value })} aria-label="Especialidad" />
+            <input className={`${control} h-11 px-3 text-white`} value={offer.shift} onChange={(e) => setOffer({ ...offer, shift: e.target.value })} aria-label="Turno" />
+            <select className={`${control} h-11 px-3 text-white`} value={offer.billingCycle} onChange={(e) => setOffer({ ...offer, billingCycle: e.target.value as "mensual" | "por_rutina" | "trimestral" })} aria-label="Modalidad">
+              <option value="mensual">Mensual</option>
+              <option value="por_rutina">Por rutina</option>
+              <option value="trimestral">Trimestral</option>
+            </select>
+            <textarea className={`${control} min-h-24 p-3 text-sm text-white`} value={offer.benefits.join("\n")} onChange={(e) => setOffer({ ...offer, benefits: e.target.value.split("\n").filter(Boolean) })} aria-label="Beneficios" />
+            <GlassButton variant="primary" onClick={() => void saveOffer()}>Guardar oferta</GlassButton>
+          </div>
+        ) : <div className="mt-4 grid gap-2 text-sm text-zinc-300"><strong className="font-mono text-white">${offer.priceMxn} MXN / {offer.billingCycle}</strong><span>{offer.specialty} · {offer.shift}</span>{offer.benefits.map((benefit: string) => <span key={benefit}>· {benefit}</span>)}</div>)}
+      </div>
+      <div className={card}>
+        <div className="flex flex-wrap gap-2">
+          {(["all", "cash", "vip"] as const).map((value) => <button key={value} type="button" onClick={() => setFilter(value)} className={`h-11 rounded-full px-4 text-xs font-semibold ${filter === value ? "bg-[#FF3B30] text-white" : "bg-[#2C2C2E] text-zinc-400"}`}>{value === "all" ? "Todos" : value === "cash" ? "Por cobrar en efectivo" : "VIP Activos"}</button>)}
+        </div>
+        <div className="mt-4 grid gap-2">
+          {requests.length === 0 && <p className="text-sm text-zinc-400">No hay solicitudes en este filtro.</p>}
+          {requests.map((request: any) => <div key={request.id} className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl bg-[#2C2C2E] p-3"><div className="min-w-0"><strong className="block truncate text-white">{request.athleteName}</strong><span className="text-xs text-zinc-400">{request.status === "active" ? "VIP ACTIVO · EFECTIVO" : "Por cobrar en efectivo"}</span></div><div className="flex flex-wrap gap-2">{request.status !== "active" && <button type="button" onClick={() => void activate(request.athleteId)} className="min-h-11 rounded-xl bg-[#30D158] px-3 text-xs font-bold text-black">Confirmar Pago en Efectivo</button>}<button type="button" onClick={() => openAthlete(request)} className="min-h-11 rounded-xl bg-[#1C1C1E] px-3 text-xs text-white">Ir al Expediente</button></div></div>)}
         </div>
       </div>
-    </GlassCard>
+    </section>
   );
 }
 
-/** The confirmation a coach reads after handing a plan over. */
-const savedStyle = {
-  margin: 0,
-  fontSize: TYPE.subhead.size,
-  color: CRIMSON.text,
-} as const;
+function TemplatesPanel({ templates, onClone, onRefresh }: { templates: any[]; onClone: (id: string) => Promise<string>; onRefresh: () => Promise<void> }) {
+  return <section className="grid min-w-0 gap-4"><div className={card}><div className="flex items-center justify-between gap-2"><h2 className="text-base font-bold text-white">Rutinas Base Oficiales</h2><button type="button" onClick={() => void onRefresh()} className="h-11 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white">Actualizar</button></div><div className="mt-4 grid gap-2">{templates.length === 0 && <p className="text-sm text-zinc-400">No hay plantillas publicadas todavía.</p>}{templates.map((template) => <div key={template.id} className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl bg-[#2C2C2E] p-3"><div className="min-w-0"><strong className="block truncate text-white">{template.title}</strong><span className="font-mono text-xs text-zinc-400">{template.days} días · {template.exercises} ejercicios · {template.level}</span></div><button type="button" onClick={() => void onClone(template.id)} className="min-h-11 rounded-xl bg-[#FF3B30] px-3 text-xs font-bold text-white">Asignar a mi cuenta</button></div>)}</div></div></section>;
+}
 
-/**
- * Unified empty state for the right column.
- *
- * Replaces the three separate empty cards (chat, CRM, builder) that each printed
- * their own "choose a request" prompt when no athlete was selected. One container,
- * one icon, one sentence, two quick-access buttons.
- */
-function PortalEmptyState() {
-  return (
-    <GlassCard
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: SPACE.xl,
-      }}
-    >
-      <FileText size={48} strokeWidth={1.5} style={{ color: TEXT.tertiary, marginBottom: SPACE.md }} aria-hidden="true" />
-      <h3 style={{ margin: 0, fontSize: TYPE.callout.size, fontWeight: 600, color: TEXT.primary, textAlign: "center" }}>
-        {T.portalEmptyTitle}
-      </h3>
-      <p style={{ margin: `${SPACE.xs} 0 ${SPACE.lg} 0`, fontSize: TYPE.subhead.size, color: TEXT.tertiary, textAlign: "center", maxWidth: 320 }}>
-        {T.chatSelectPrompt}
-      </p>
-    </GlassCard>
-  );
+function ExercisesPanel({ coachId, requests }: { coachId: string; requests: any[] }) {
+  const [rows, setRows] = useState<ExerciseRow[]>([]);
+  const [query, setQuery] = useState("");
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [rename, setRename] = useState("");
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [request, setRequest] = useState({ name: "", bodyPart: "", equipment: "", notes: "" });
+  useEffect(() => { void (supabase as any).from("exercises").select("id,name,name_es,body_part,target,equipment,gif_url").eq("is_active", true).order("name").then(({ data }: any) => setRows(data ?? [])); }, []);
+  const filtered = useMemo(() => rows.filter((row) => `${row.name} ${row.name_es ?? ""}`.toLowerCase().includes(query.toLowerCase())), [query, rows]);
+  const renameExercise = async (id: string) => { await coachEcosystemService.renameExerciseGlobal(id, rename); setRows((current) => current.map((row) => row.id === id ? { ...row, name_es: rename } : row)); setRenameId(null); };
+  return <section className="grid min-w-0 gap-4"><div className={card}><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-base font-bold text-white">Gobernanza de ejercicios</h2><button type="button" onClick={() => setRequestOpen(!requestOpen)} className="min-h-11 rounded-xl bg-[#FF3B30] px-3 text-xs font-bold text-white"><Plus size={14} className="mr-1 inline" />Solicitar ejercicio</button></div>{requestOpen && <div className="mt-3 grid gap-2"><input className={`${control} h-11 px-3 text-white`} placeholder="Nombre del ejercicio" value={request.name} onChange={(e) => setRequest({ ...request, name: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Músculo principal" value={request.bodyPart} onChange={(e) => setRequest({ ...request, bodyPart: e.target.value })} /><input className={`${control} h-11 px-3 text-white`} placeholder="Equipo" value={request.equipment} onChange={(e) => setRequest({ ...request, equipment: e.target.value })} /><textarea className={`${control} min-h-20 p-3 text-white`} placeholder="Notas biomecánicas" value={request.notes} onChange={(e) => setRequest({ ...request, notes: e.target.value })} /><button type="button" className="h-11 rounded-xl bg-[#30D158] font-semibold text-black" onClick={async () => { await coachEcosystemService.requestExercise(coachId, request); setRequest({ name: "", bodyPart: "", equipment: "", notes: "" }); setRequestOpen(false); }}>Enviar solicitud</button></div>}<label className={`${control} mt-4 flex h-11 items-center gap-2 px-3`}><Search size={16} className="text-zinc-400" /><input className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none" placeholder="Buscar ejercicio" value={query} onChange={(e) => setQuery(e.target.value)} /></label>  <div className="mt-3 grid gap-2">{filtered.slice(0, 40).map((row) => <div key={row.id} className="flex min-w-0 items-center gap-3 rounded-xl bg-[#2C2C2E] p-2"><ExerciseThumb src={row.gif_url} /><div className="min-w-0 flex-1"><strong className="block truncate text-sm text-white">{getExerciseDisplayName({ name: row.name, name_es: row.name_es })}</strong><span className="block truncate text-xs text-zinc-400">{translateBodyPart(row.body_part)} · {translateEquipment(row.equipment)}</span></div>{renameId === row.id ? <input autoFocus className={`${control} h-11 w-32 px-2 text-sm text-white`} value={rename} onChange={(e) => setRename(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void renameExercise(row.id); }} /> : <button type="button" onClick={() => { setRenameId(row.id); setRename(row.name_es || row.name); }} className="inline-flex h-11 shrink-0 items-center gap-1 rounded-xl bg-[#1C1C1E] px-3 text-xs text-white"><Pencil size={14} /> Renombrar</button>}</div>)}</div><div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Mis solicitudes enviadas</p>{requests.map((item) => <p key={item.id} className="mt-2 text-sm text-zinc-300">{item.name} · {item.status === "approved" ? "Aprobado" : "Pendiente"}</p>)}</div></div></section>;
+}
+
+function ExerciseThumb({ src }: { src?: string | null }) {
+  const [broken, setBroken] = useState(!src);
+  if (broken) return <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#2C2C2E] text-zinc-400"><Dumbbell size={20} aria-hidden="true" /></span>;
+  return <img src={src ?? undefined} alt="" onError={() => setBroken(true)} className="h-12 w-12 shrink-0 rounded-xl object-cover" />;
 }

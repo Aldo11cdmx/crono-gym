@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/image/compressImage";
 import {
+  cleanAnnouncementMeta,
+  clearAnnouncementCaches,
+  dedupeLocalAnnouncements,
   findAnnouncementMeta,
   readLocalAnnouncements,
   saveAnnouncementMeta,
@@ -25,6 +28,43 @@ type AnnouncementRow = {
 
 const field = "h-11 rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-sm text-white";
 
+function normalizedTitle(value: unknown) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+/**
+ * Mirror rows worth listing next to the remote table.
+ *
+ * The mirror and the remote table both hold the same published rows, so a plain
+ * concatenation listed every locally-created aviso twice once Supabase had
+ * accepted it — the id changed in the hand-off (`local-announcement-…` became a
+ * uuid), so only the title still ties the two copies together. Mirror rows are
+ * collapsed by id and by normalized title, and any row the remote table already
+ * returns is dropped, with remote winning.
+ */
+function dedupeAnnouncements(
+  local: AnnouncementRow[],
+  remote: AnnouncementRow[],
+): AnnouncementRow[] {
+  const remoteIds = new Set(remote.map((item) => String(item.id ?? "").trim()).filter(Boolean));
+  const remoteTitles = new Set(remote.map((item) => normalizedTitle(item.title)).filter(Boolean));
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
+  const kept: AnnouncementRow[] = [];
+
+  for (const item of local) {
+    const id = String(item.id ?? "").trim();
+    const title = normalizedTitle(item.title);
+    if (id && (seenIds.has(id) || remoteIds.has(id))) continue;
+    if (title && (seenTitles.has(title) || remoteTitles.has(title))) continue;
+    if (id) seenIds.add(id);
+    if (title) seenTitles.add(title);
+    kept.push(item);
+  }
+
+  return kept;
+}
+
 export function AnnouncementsManager() {
   const [items, setItems] = useState<AnnouncementRow[]>([]);
   const [title, setTitle] = useState("");
@@ -35,21 +75,41 @@ export function AnnouncementsManager() {
   const [status, setStatus] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    // Cleanup runs on every load: the mirror grows between visits, and doing it
+    // silently is what let the count drift for so long.
+    const meta = cleanAnnouncementMeta();
+    const feed = dedupeLocalAnnouncements<AnnouncementRow>();
+    const cleaned: string[] = [];
+    if (feed.removed > 0) cleaned.push(`${feed.removed} aviso(s) duplicado(s) del espejo local`);
+    if (meta.removed.length > 0) cleaned.push(`${meta.removed.length} clave(s) de metadatos huerfana(s)`);
+
     const { data } = await (supabase as any).from("announcements").select("*").order("created_at", { ascending: false });
     const remoteItems = (data ?? []).map((item: AnnouncementRow) => {
-      const meta = findAnnouncementMeta(item.id, item.title);
-      const banner = item.banner_path || meta?.imageUrl || item.image_url;
+      const itemMeta = findAnnouncementMeta(item.id, item.title);
+      const banner = item.banner_path || itemMeta?.imageUrl || item.image_url;
       return {
         ...item,
-        ...meta,
+        ...itemMeta,
         imageUrl: banner,
         image_url: banner,
       };
     });
-    const localItems = readLocalAnnouncements<AnnouncementRow>();
-    setItems([...remoteItems, ...localItems.filter((item) => !remoteItems.some((remote: AnnouncementRow) => remote.id === item.id))]);
+    const localItems = dedupeAnnouncements(readLocalAnnouncements<AnnouncementRow>(), remoteItems);
+    setItems([...remoteItems, ...localItems]);
+    // Only a real cleanup replaces the status: the message of a publish or of a
+    // manual reset must survive the reload that follows it.
+    if (cleaned.length > 0) setStatus(`Limpieza automatica: ${cleaned.join(" y ")} eliminados.`);
   }, []);
   useEffect(() => { void load(); }, [load]);
+
+  const resetCache = () => {
+    // The mirror keys are dropped through the shared helper, so a rename of the
+    // storage key cannot leave a stale copy behind.
+    clearAnnouncementCaches();
+    setStatus("Cache de avisos reseteado. Los avisos de Supabase se vuelven a leer al recargar.");
+    void load();
+    window.dispatchEvent(new CustomEvent("cronos-announcements-changed"));
+  };
 
   const publish = async () => {
     const trimmedTitle = title.trim();
@@ -121,7 +181,16 @@ export function AnnouncementsManager() {
   return (
     <section className="grid gap-4">
       <div className="grid gap-3">
-        <h2 className="text-base font-bold text-white">Avisos del Gym</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-bold text-white">Avisos del Gym</h2>
+          <button
+            type="button"
+            onClick={resetCache}
+            className="h-11 rounded-xl bg-[#2C2C2E] px-3 text-xs font-semibold text-white"
+          >
+            Limpiar avisos duplicados / Resetear caché de avisos
+          </button>
+        </div>
         <input className={field} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título del aviso" />
         <div className="grid gap-2 sm:grid-cols-2">
           <select className={field} value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -136,7 +205,7 @@ export function AnnouncementsManager() {
         {imageUrl ? <img src={imageUrl} alt="Vista previa del aviso" className="aspect-[16/9] w-full rounded-xl object-cover" /> : null}
         <textarea className="min-h-24 rounded-xl border border-white/10 bg-[#2C2C2E] p-3 text-sm text-white" value={body} onChange={(e) => setBody(e.target.value)} placeholder="Mensaje del aviso" />
         <button type="button" className="h-11 rounded-xl bg-[#FF3B30] px-4 text-sm font-bold text-white" onClick={() => void publish()}>Publicar Aviso en el Gym</button>
-        {status ? <p className="text-sm text-zinc-300">{status}</p> : null}
+        {status ? <p className="text-sm text-zinc-300" role="status">{status}</p> : null}
       </div>
       <div className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-[#1C1C1E]">
         {items.map((item) => <article key={item.id} className="grid gap-2 p-4">

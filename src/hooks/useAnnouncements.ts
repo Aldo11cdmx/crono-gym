@@ -2,13 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { normalizeAnnouncement, type Announcement, type AnnouncementCategory } from "@/types/announcements";
 import {
+  cleanAnnouncementMeta,
+  dedupeLocalAnnouncements,
   findAnnouncementMeta,
-  readLocalAnnouncements,
   saveAnnouncementMeta,
   saveLocalAnnouncement,
 } from "@/lib/gymClubMetadata";
 export type { Announcement, AnnouncementCategory };
 
+/**
+ * Same key the local mirror uses in `gymClubMetadata`.
+ *
+ * The two modules used to read it under different names and concatenate both
+ * reads, so every stored row counted twice. One key, one read.
+ */
 const STORAGE_KEY = "cronos-announcements";
 const SEEDS: Announcement[] = [
   {
@@ -40,13 +47,60 @@ function writeLocal(items: Announcement[]) {
   }
 }
 
+/**
+ * One visible row per announcement.
+ *
+ * The /hoy badge is the length of this array, so it was reporting the size of
+ * the cache rather than the feed: the same key was read twice and both reads
+ * were concatenated, so every stored row counted twice, and hidden rows were
+ * filtered out downstream instead of here. Rows are collapsed by id, then by
+ * normalized title, with the first occurrence (remote before local) winning.
+ */
+function mergeAnnouncements(remote: Announcement[], local: Announcement[]): Announcement[] {
+  const merged: Announcement[] = [];
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
+
+  for (const item of [...remote, ...local]) {
+    const id = String(item.id ?? "").trim();
+    const title = String(item.title ?? "").trim().toLowerCase();
+    if (id && seenIds.has(id)) continue;
+    if (title && seenTitles.has(title)) continue;
+    if (id) seenIds.add(id);
+    if (title) seenTitles.add(title);
+    if (item.active === false) continue;
+    merged.push(item);
+  }
+
+  return merged;
+}
+
+/** One visible row per announcement: the stored feed, deduplicated. */
+function readFeed(): Announcement[] {
+  return mergeAnnouncements(readLocal(), []);
+}
+
+/**
+ * Runs both local cleanups.
+ *
+ * `cleanAnnouncementMeta` collapses the metadata mirror, whose v1 save paths
+ * wrote the same record under its id and its title. `dedupeLocalAnnouncements`
+ * collapses the stored feed itself. Both are idempotent, so the initial state
+ * and every change notification can call them without a second cleanup.
+ */
+function purgeGhostRows() {
+  cleanAnnouncementMeta();
+  dedupeLocalAnnouncements<Announcement>();
+}
+
 export function useAnnouncements() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(readLocal);
-  const [loading, setLoading] = useState(true);
+  const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
+    purgeGhostRows();
+    return readFeed();
+  });
 
   const refresh = useCallback(async () => {
-    const local = [...readLocal(), ...readLocalAnnouncements<Announcement>()];
-    setAnnouncements(local.filter((item) => item.active));
+    setAnnouncements(readFeed());
     try {
       const { data, error } = await (supabase as any)
         .from("announcements")
@@ -66,20 +120,23 @@ export function useAnnouncements() {
             };
           })
           .filter((item) => item.active);
-        const merged = [...remote, ...local.filter((item) => !remote.some((current) => current.id === item.id))];
+        // Remote rows win, local rows fill the gaps. The stored feed is rewritten
+        // so a later offline load shows the same set.
+        const merged = mergeAnnouncements(remote, readLocal());
         writeLocal(merged);
-        setAnnouncements(merged.filter((item) => item.active));
+        setAnnouncements(merged);
       }
     } catch {
       // Local data remains available when the optional Supabase table is offline.
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void refresh();
-    const onChanged = () => void refresh();
+    const onChanged = () => {
+      purgeGhostRows();
+      void refresh();
+    };
     window.addEventListener("cronos-announcements-changed", onChanged);
     return () => window.removeEventListener("cronos-announcements-changed", onChanged);
   }, [refresh]);
@@ -94,10 +151,8 @@ export function useAnnouncements() {
       active: true,
       imageUrl: input.imageUrl,
     };
-    const next = [item, ...readLocal()];
-    writeLocal(next);
     saveLocalAnnouncement(item);
-    setAnnouncements(next);
+    setAnnouncements(readFeed());
     if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("cronos-announcements-changed"));
     try {
       const { data: authData } = await supabase.auth.getUser();
@@ -124,7 +179,7 @@ export function useAnnouncements() {
   const remove = useCallback(async (id: string) => {
     const next = readLocal().filter((item) => item.id !== id);
     writeLocal(next);
-    setAnnouncements(next.filter((item) => item.active));
+    setAnnouncements(readFeed());
     if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("cronos-announcements-changed"));
     try {
       await (supabase as any).from("announcements").delete().eq("id", id);
@@ -133,5 +188,5 @@ export function useAnnouncements() {
     }
   }, []);
 
-  return { announcements, loading, save, remove, refresh };
+  return { announcements, save, remove, refresh };
 }

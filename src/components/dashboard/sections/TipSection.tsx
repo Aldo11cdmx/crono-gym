@@ -29,6 +29,22 @@ const categoryLabel: Record<AnnouncementCategory, string> = {
 
 function text(value: Tip | string) { return typeof value === "string" ? value : value.text; }
 
+/**
+ * The photo of an announcement, whatever column or mirror key it arrived on.
+ *
+ * `useAnnouncements` folds `banner_path` and the local mirror into `imageUrl`,
+ * but a row can also reach this card with only `image_url` (the admin mirror) or
+ * a legacy `imageUrl` key. Resolving every spelling in one place is what keeps
+ * the photo on the card instead of silently dropping it.
+ */
+function announcementImage(announcement: Announcement): string | undefined {
+  const row = announcement as unknown as Record<string, unknown>;
+  for (const candidate of [row.imageUrl, row.banner_path, row.image_path, row.image_url]) {
+    if (typeof candidate === "string" && candidate.trim() !== "") return candidate;
+  }
+  return undefined;
+}
+
 export function TipSection({ tip, tips, onNext, announcements = [], onPublish, onDelete }: TipSectionProps) {
   const { role } = useRole();
   const [tab, setTab] = useState<"announcements" | "tips">(announcements.length > 0 ? "announcements" : "tips");
@@ -75,7 +91,13 @@ export function TipSection({ tip, tips, onNext, announcements = [], onPublish, o
             <time className="font-mono text-[11px] text-zinc-400">{new Date(currentAnnouncement.createdAt).toLocaleDateString("es-MX")}</time>
           </div>
           <h3 className="mt-2 text-base font-bold text-white">{currentAnnouncement.title}</h3>
-          {currentAnnouncement.imageUrl ? <img src={currentAnnouncement.imageUrl} alt="" className="mt-3 aspect-[16/9] w-full rounded-xl border border-white/10 object-cover" /> : null}
+          {announcementImage(currentAnnouncement) ? (
+            <img
+              src={announcementImage(currentAnnouncement)}
+              alt={`Foto del aviso: ${currentAnnouncement.title}`}
+              className="mt-2 mb-3 h-48 w-full rounded-xl border border-white/10 object-cover"
+            />
+          ) : null}
           <p className="mt-1 text-sm text-zinc-300">{currentAnnouncement.body}</p>
           {announcements.length > 1 ? <div className="mt-4 flex gap-2">
             <button type="button" className="h-11 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white" onClick={() => setAnnouncementIndex((announcementIndex - 1 + announcements.length) % announcements.length)}><ChevronLeft size={14} /> Anterior</button>

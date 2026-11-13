@@ -1,6 +1,6 @@
 import type { CatalogExercise, StationKey } from "@/lib/catalog/types";
 
-export type SmartLoadMode = "overload" | "cross_transfer" | "biometric_day_0";
+export type SmartLoadMode = "overload" | "cross_transfer" | "biometric_day_0" | "bodyweight";
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 export type SetFeedback = "too_light" | "perfect" | "too_heavy";
 export type SmartSetType = "warmup" | "normal" | "dropset" | "failure";
@@ -77,6 +77,18 @@ export function estimateSmartLoad(params: SmartLoadParams & {
   movementPattern?: string;
 }): SmartLoadResult {
   const targetReps = Math.max(1, Math.round(finite(params.targetReps, 8)));
+
+  // An exercise with no external load has no load to estimate: a push-up is
+  // fifteen reps, not "65 kg times a station factor". Inventing a number here is
+  // how a first session ends up loaded with a weight the movement never had.
+  if (params.mode === "bodyweight") {
+    return {
+      weightKg: 0,
+      suggestedReps: Math.max(targetReps, 15),
+      reason: "Peso corporal: la carga la pone el atleta, no una barra.",
+      confidence: "high",
+    };
+  }
 
   if (params.mode === "biometric_day_0") {
     const rawBodyWeight = finite(params.weightKg, 65);

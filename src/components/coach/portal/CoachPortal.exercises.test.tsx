@@ -3,18 +3,47 @@
  *
  * The governance tab is where a coach fixes what the app shows: the GIF, the
  * full name, the machine. The catalog is supplied in memory so these assertions
- * are about the card, not about IndexedDB.
+ * are about the card, not about IndexedDB, and the Supabase client is a chain
+ * that records what the panel tried to write.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CoachPortal } from "./CoachPortal";
 import type { CatalogExercise } from "@/lib/catalog/types";
-import { EXERCISE_NAME_OVERRIDES_KEY, invalidateOverridesSnapshot } from "@/lib/catalog/customExercises";
+import {
+  CATALOG_OVERRIDES_KEY,
+  invalidateOverridesSnapshot,
+  readOverridesSnapshot,
+} from "@/lib/catalog/customExercises";
 
-const { catalogMock, serviceMock } = vi.hoisted(() => ({
-  catalogMock: { rows: [] as CatalogExercise[] },
-  serviceMock: { renameExerciseGlobal: vi.fn(async (_id: string, _name: string) => undefined) },
-}));
+const { catalogMock, dbMock } = vi.hoisted(() => {
+  const state = {
+    upserts: [] as Record<string, unknown>[],
+    updates: [] as Record<string, unknown>[],
+    uploads: [] as { path: string; size: number }[],
+    selects: 0,
+  };
+  // A chainable thenable: `select().limit()` and `update().eq()` both have to
+  // resolve, so every link returns the same builder and only the leaves await.
+  const chain: any = {
+    select: () => {
+      state.selects += 1;
+      return chain;
+    },
+    limit: () => Promise.resolve({ error: null, data: [] as Record<string, unknown>[] }),
+    upsert: (row: Record<string, unknown>) => {
+      state.upserts.push(row);
+      return Promise.resolve({ error: null });
+    },
+    update: (patch: Record<string, unknown>) => {
+      state.updates.push(patch);
+      return chain;
+    },
+    eq: () => Promise.resolve({ error: null }),
+    insert: () => Promise.resolve({ error: null }),
+  };
+  return { catalogMock: { rows: [] as CatalogExercise[] }, dbMock: { state, chain } };
+});
 
 vi.mock("react-router-dom", () => ({
   useOutletContext: () => ({ userId: "coach-1" }),
@@ -43,7 +72,7 @@ vi.mock("./AthleteCRM", () => ({ AthleteCRM: () => <div>Ficha</div> }));
 vi.mock("./VipRoutineBuilder", () => ({ VipRoutineBuilder: () => <div>Constructor 1:1</div> }));
 vi.mock("@/lib/coach/coachEcosystemService", () => ({
   coachEcosystemService: {
-    renameExerciseGlobal: (id: string, name: string) => serviceMock.renameExerciseGlobal(id, name),
+    requestExercise: vi.fn(async () => undefined),
   },
 }));
 vi.mock("@/lib/catalog/catalogLoader", () => ({
@@ -51,7 +80,20 @@ vi.mock("@/lib/catalog/catalogLoader", () => ({
   CatalogLoadError: class CatalogLoadError extends Error {},
 }));
 vi.mock("@lib/supabase", () => ({
-  supabase: { from: () => ({ insert: async () => ({ error: null }) }) },
+  supabase: {
+    from: () => dbMock.chain,
+    storage: {
+      from: () => ({
+        upload: async (path: string, _body: unknown) => {
+          dbMock.state.uploads.push({ path, size: 8 });
+          return { error: null };
+        },
+        getPublicUrl: (path: string) => ({
+          data: { publicUrl: `https://media.example/${path}` },
+        }),
+      }),
+    },
+  },
 }));
 
 function row(overrides: Partial<CatalogExercise> = {}): CatalogExercise {
@@ -89,7 +131,10 @@ beforeEach(() => {
   window.localStorage.clear();
   invalidateOverridesSnapshot();
   catalogMock.rows = [row()];
-  serviceMock.renameExerciseGlobal.mockClear();
+  dbMock.state.upserts = [];
+  dbMock.state.updates = [];
+  dbMock.state.uploads = [];
+  dbMock.state.selects = 0;
 });
 
 afterEach(() => cleanup());
@@ -98,16 +143,18 @@ describe("CoachPortal · gobernanza de ejercicios", () => {
   it("shows the real GIF, the full name and the machine the row is mapped to", async () => {
     await openExercises();
 
-    const gif = screen.getByRole("img", { name: /Demostración de Press de banca/i }) as HTMLImageElement;
+    const gif = screen.getByRole("img", {
+      name: /Demostración de Press de banca/i,
+    }) as HTMLImageElement;
     expect(gif.src).toContain("bench-medium.gif");
     expect(gif.className).toContain("object-contain");
 
-    const name = screen.getByText("Press de banca");
-    expect(name.className).toContain("break-words");
+    expect(screen.getByText("Press de banca").className).toContain("break-words");
     expect(screen.getByText("0001 · Pecho")).toBeTruthy();
 
-    const select = screen.getByLabelText("Máquina para Barbell Bench Press - Medium Grip") as HTMLSelectElement;
-    expect(select.value).toBe("CG-EQP-0003");
+    // The machine is a picture and an id, not a select with 77 options.
+    const picker = screen.getByLabelText("Máquina para Barbell Bench Press - Medium Grip");
+    expect(picker.textContent).toContain("CG-EQP-0003");
     expect(screen.getByText("Disponible")).toBeTruthy();
   });
 
@@ -126,15 +173,96 @@ describe("CoachPortal · gobernanza de ejercicios", () => {
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
 
     await waitFor(() => expect(screen.getByText("Press banca plano")).toBeTruthy());
-    expect(serviceMock.renameExerciseGlobal).toHaveBeenCalledWith("0001", "Press banca plano");
-    expect(
-      JSON.parse(window.localStorage.getItem(EXERCISE_NAME_OVERRIDES_KEY) ?? "{}")["0001"],
-    ).toBe("Press banca plano");
+    expect(readOverridesSnapshot().names["0001"]).toBe("Press banca plano");
+    // Tier 2: the rename is written to the server as the exercise's name.
+    expect(dbMock.state.upserts[0]?.name).toBe("Press banca plano");
+  });
+
+  it("assigns a machine through the picker and persists it", async () => {
+    await openExercises();
+
+    fireEvent.click(screen.getByLabelText("Máquina para Barbell Bench Press - Medium Grip"));
+    const search = screen.getByLabelText("Buscar máquina");
+    fireEvent.change(search, { target: { value: "polea" } });
+
+    fireEvent.click(await screen.findByRole("button", { name: /Jalon Pecho Polea/i }));
+
+    await waitFor(() =>
+      expect(readOverridesSnapshot().catalog["0001"]?.equipment_id).toMatch(/^CG-EQP-\d{4}$/),
+    );
+    // The write carries the machine; "Sin máquina" would have to clear it.
+    expect(dbMock.state.upserts.some((row_) => "equipment_id" in row_)).toBe(true);
+  });
+
+  it("clears the machine when the coach picks floor work", async () => {
+    await openExercises();
+
+    fireEvent.click(screen.getByLabelText("Máquina para Barbell Bench Press - Medium Grip"));
+    fireEvent.click(screen.getByRole("button", { name: /Sin máquina/ }));
+
+    await waitFor(() =>
+      expect(readOverridesSnapshot().catalog["0001"]?.equipment_id).toBeUndefined(),
+    );
+    expect(screen.getByText(/Peso libre \/ Piso/)).toBeTruthy();
+  });
+
+  it("saves the demonstration the coach pasted, and the card follows", async () => {
+    await openExercises();
+
+    fireEvent.click(screen.getByLabelText("Cambiar GIF de Barbell Bench Press - Medium Grip"));
+    fireEvent.change(screen.getByLabelText("URL de la demostración"), {
+      target: { value: "https://cdn.example/propio.gif" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar URL" }));
+
+    await waitFor(() =>
+      expect(readOverridesSnapshot().catalog["0001"]?.gif_url).toBe("https://cdn.example/propio.gif"),
+    );
+    expect(dbMock.state.upserts.concat(dbMock.state.updates).some((row_) => row_.gif_url === "https://cdn.example/propio.gif")).toBe(true);
+    const gif = await screen.findByRole("img", {
+      name: /Demostración de Press de banca/i,
+    });
+    expect((gif as HTMLImageElement).src).toContain("propio.gif");
+  });
+
+  it("refuses a URL that is not a URL", async () => {
+    await openExercises();
+
+    fireEvent.click(screen.getByLabelText("Cambiar GIF de Barbell Bench Press - Medium Grip"));
+    fireEvent.change(screen.getByLabelText("URL de la demostración"), { target: { value: "mi-gif" } });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar URL" }));
+
+    expect(await screen.findByText(/debe empezar por http/)).toBeTruthy();
+    expect(readOverridesSnapshot().catalog["0001"]?.gif_url).toBeUndefined();
+  });
+
+  it("counts the exercises the chips keep, without changing the rows", async () => {
+    catalogMock.rows = [
+      row(),
+      row({ id: "0002", name: "Pull-up", name_es: "Dominada", body_part: "back", equipment_id: "NONE" }),
+    ];
+    await openExercises();
+
+    expect(screen.getByText("2 de 2 ejercicios del catálogo local")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Peso libre" }));
+    expect(screen.getByText("Dominada")).toBeTruthy();
+    expect(screen.queryByText("Press de banca")).toBeNull();
+  });
+
+  it("says when the catalog is only local", async () => {
+    await openExercises();
+    // The mock answers the hydration read, so the panel must claim a connection
+    // only when it actually got one.
+    expect(await screen.findByText(/Conectado a Supabase|Solo local/)).toBeTruthy();
   });
 
   it("asks for more instead of mounting 1,324 cards at once", async () => {
     catalogMock.rows = Array.from({ length: 65 }, (_, index) =>
-      row({ id: String(index + 1).padStart(4, "0"), name: `Ejercicio ${index + 1}`, name_es: `Ejercicio ${index + 1}` }),
+      row({
+        id: String(index + 1).padStart(4, "0"),
+        name: `Ejercicio ${index + 1}`,
+        name_es: `Ejercicio ${index + 1}`,
+      }),
     );
     await openExercises();
 
@@ -151,5 +279,18 @@ describe("CoachPortal · gobernanza de ejercicios", () => {
     fireEvent.change(screen.getByPlaceholderText("Buscar ejercicio"), { target: { value: "0002" } });
     expect(screen.getByText("Dominada")).toBeTruthy();
     expect(screen.queryByText("Press de banca")).toBeNull();
+  });
+
+  it("keeps the store in sync between reads of the same override", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0001": { equipment_id: "CG-EQP-0011" } }),
+    );
+    invalidateOverridesSnapshot();
+    await openExercises();
+
+    const picker = screen.getByLabelText("Máquina para Barbell Bench Press - Medium Grip");
+    expect(picker.textContent).toContain("CG-EQP-0011");
+    expect(screen.getByText(/Editados por coach/)).toBeTruthy();
   });
 });

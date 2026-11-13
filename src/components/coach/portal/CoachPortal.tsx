@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Dumbbell, LogOut, Pencil, Plus, Search, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Check, Dumbbell, ImageIcon, Loader2, LogOut, Pencil, Plus, Search, Sparkles, X } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -16,14 +16,22 @@ import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { translateBodyPart } from "@/lib/i18n";
 import {
   addCustomExercise,
-  loadCatalogOverrides,
-  saveCatalogOverride,
-  saveNameOverride,
+  readOverridesSnapshot,
   subscribeCatalogOverrides,
 } from "@/lib/catalog/customExercises";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
-import { resolveCatalogExercises, type ResolvedCatalogExercise } from "@/lib/catalog/resolveExercise";
+import {
+  normaliseExerciseName,
+  resolveCatalogExercises,
+  type ResolvedCatalogExercise,
+} from "@/lib/catalog/resolveExercise";
+import {
+  hydrateOverridesFromSupabase,
+  persistCoachExerciseChange,
+  uploadOrResolveCoachGif,
+} from "@/lib/catalog/coachCatalogSync";
 import { equipmentMap } from "@/data/equipmentMap";
+import { equipmentCatalog } from "@/data/equipmentCatalog";
 
 type CoachTab = "clients" | "expediente" | "templates" | "exercises";
 type ExerciseRow = {
@@ -35,9 +43,39 @@ type ExerciseRow = {
   equipment: string;
   gif_url?: string | null;
   equipment_id?: string;
+  /** The coach's own name, when there is one. */
   customNameEs?: string;
   available?: boolean;
 };
+
+/** Which cards the chips keep. Presentation only: no query changes. */
+type ExerciseFilter = "all" | "with_machine" | "free_weight" | "coach_edited";
+
+const EXERCISE_FILTERS: { id: ExerciseFilter; label: string }[] = [
+  { id: "all", label: "Todos" },
+  { id: "with_machine", label: "Con máquina" },
+  { id: "free_weight", label: "Peso libre" },
+  { id: "coach_edited", label: "Editados por coach" },
+];
+
+/** What the last write to Supabase did, in the coach's words. */
+type SyncState =
+  | { kind: "idle" }
+  | { kind: "working" }
+  | { kind: "online"; detail?: string }
+  | { kind: "local"; detail?: string }
+  | { kind: "offline" };
+
+/** Machine categories the picker groups by, in catalog order. */
+const MACHINE_CATEGORIES = [
+  "Polea",
+  "Máquina Selectorizada",
+  "Banco",
+  "Mancuernas",
+  "Barra / Discos",
+  "Peso Corporal",
+  "Accesorio",
+] as const;
 
 const card = "rounded-2xl border border-white/10 bg-[#1C1C1E] p-4";
 const control = "rounded-xl border border-white/10 bg-[#2C2C2E]";
@@ -56,7 +94,7 @@ function toRow(row: ResolvedCatalogExercise): ExerciseRow {
     equipment: row.equipment,
     gif_url: row.effectiveGifUrl || row.effectiveImageUrl,
     equipment_id: row.effectiveEquipmentId,
-    customNameEs: row.displayName,
+    customNameEs: row.customNameEs,
     available: row.availableInCronosGym,
   };
 }
@@ -600,6 +638,311 @@ function TemplatesPanel({
   );
 }
 
+/**
+ * Whether the catalog is talking to Supabase, in the coach's words.
+ *
+ * "Conectado" means the remote read answered; "Solo local" means the device is
+ * working but the change is not on the server yet; "Sin conexión" means neither.
+ * A coach who cannot tell those apart cannot trust the panel.
+ */
+function SyncBadge({ state }: { state: SyncState }) {
+  if (state.kind === "working") {
+    return (
+      <span className="inline-flex items-center gap-1 text-zinc-400">
+        <Loader2 size={12} className="animate-spin" aria-hidden="true" /> Guardando…
+      </span>
+    );
+  }
+  if (state.kind === "online") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[#30D158]" role="status">
+        <Check size={12} aria-hidden="true" /> Conectado a Supabase
+      </span>
+    );
+  }
+  if (state.kind === "local") {
+    return (
+      <span className="inline-flex items-center gap-1 text-zinc-400" role="status">
+        Solo local{state.detail ? `: ${state.detail}` : ""}
+      </span>
+    );
+  }
+  if (state.kind === "offline") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[#FF9F45]" role="status">
+        Sin conexión · se sincronizará al volver
+      </span>
+    );
+  }
+  return null;
+}
+
+/**
+ * The machine picker: search first, because 77 machines is too many to scan.
+ *
+ * A select was the previous answer and it was the wrong one: 77 options in a
+ * native list give no picture of the machine, and the coach picks by picture.
+ * Matching ignores accents and case, so "press banca" finds "Press de Banca".
+ */
+function MachinePicker({
+  row,
+  onClose,
+  onSelect,
+}: {
+  row: ExerciseRow;
+  onClose: () => void;
+  onSelect: (equipmentId: string | null) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<string>("all");
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const machines = useMemo(() => {
+    const wanted = normaliseExerciseName(search);
+    return Object.entries(equipmentMap)
+      .map(([id, machine]) => ({
+        id,
+        name: machine.name,
+        image: machine.views?.[0]?.src ?? "",
+        category: equipmentCatalog[id]?.category ?? "Accesorio",
+      }))
+      .filter((machine) => (category === "all" ? true : machine.category === category))
+      .filter((machine) =>
+        wanted === ""
+          ? true
+          : normaliseExerciseName(`${machine.id} ${machine.name}`).includes(wanted),
+      );
+  }, [category, search]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-3 sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Máquina para ${row.name}`}
+        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1C1C1E] p-3"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">{row.name}</p>
+            <p className="text-xs text-zinc-500">Elige la máquina donde se hace</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar el selector de máquina"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2C2C2E] text-zinc-300"
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        <label className={`${control} mt-3 flex h-11 items-center gap-2 px-3`}>
+          <Search size={16} className="text-zinc-400" />
+          <input
+            autoFocus
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar máquina o código"
+            aria-label="Buscar máquina"
+            className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none"
+          />
+        </label>
+
+        <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+          {(["all", ...MACHINE_CATEGORIES] as const).map((option) => {
+            const active = category === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setCategory(option)}
+                className={`min-h-9 shrink-0 rounded-full px-3 text-xs font-semibold ${
+                  active ? "bg-[#FF3B30] text-white" : "bg-[#2C2C2E] text-zinc-300"
+                }`}
+              >
+                {option === "all" ? "Todas" : option}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-2 grid max-h-72 gap-2 overflow-y-auto">
+          <button
+            type="button"
+            onClick={() => onSelect(null)}
+            className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-[#2C2C2E] p-2 text-left"
+          >
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#1C1C1E] text-zinc-400">
+              <Dumbbell size={20} aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm text-white">Sin máquina</span>
+              <span className="block truncate text-xs text-zinc-500">Peso libre / Piso</span>
+            </span>
+          </button>
+
+          {machines.map((machine) => (
+            <button
+              key={machine.id}
+              type="button"
+              onClick={() => onSelect(machine.id)}
+              className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-[#2C2C2E] p-2 text-left"
+            >
+              <ExerciseThumb src={machine.image} alt="" className="h-14 w-14 bg-white" />
+              <span className="min-w-0">
+                <span className="block truncate text-sm text-white">{machine.name}</span>
+                <span className="block truncate font-mono text-[11px] text-zinc-500">
+                  {machine.id} · {machine.category}
+                </span>
+              </span>
+            </button>
+          ))}
+
+          {machines.length === 0 && (
+            <p className="p-2 text-sm text-zinc-400">Ninguna máquina coincide.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The GIF manager: a URL, or a file the coach has on the phone.
+ *
+ * The file is uploaded and the public URL is written as the override, so the
+ * demonstration follows the coach to every device instead of dying with one
+ * browser's cache.
+ */
+function GifManager({
+  row,
+  url,
+  status,
+  busy,
+  onUrlChange,
+  onSave,
+  onFile,
+  onClose,
+}: {
+  row: ExerciseRow;
+  url: string;
+  status: string | null;
+  busy: boolean;
+  onUrlChange: (value: string) => void;
+  onSave: () => void;
+  onFile: (file: File) => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-3 sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Cambiar GIF de ${row.name}`}
+        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1C1C1E] p-3"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">{row.name}</p>
+            <p className="text-xs text-zinc-500">GIF, WebP, PNG o JPG · hasta 4 MB</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar el gestor de GIF"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2C2C2E] text-zinc-300"
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3">
+          <ExerciseThumb src={url} alt="" className="h-20 w-20 bg-white" fit="object-contain" />
+          <div className="min-w-0 flex-1">
+            <input
+              value={url}
+              onChange={(event) => onUrlChange(event.target.value)}
+              placeholder="https://…/demostracion.gif"
+              aria-label="URL de la demostración"
+              className={`${control} h-11 w-full px-3 text-sm text-white`}
+            />
+          </div>
+        </div>
+
+        <label className={`${control} mt-3 flex h-11 cursor-pointer items-center justify-center gap-2 px-3 text-sm text-white`}>
+          <ImageIcon size={16} aria-hidden="true" />
+          Subir archivo
+          <input
+            type="file"
+            accept="image/gif,image/webp,image/png,image/jpeg"
+            className="sr-only"
+            aria-label="Subir archivo de demostración"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) onFile(file);
+              event.target.value = "";
+            }}
+          />
+        </label>
+
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={busy}
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-[#FF3B30] px-3 text-xs font-semibold text-white disabled:opacity-60"
+          >
+            Guardar URL
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2C2C2E] px-3 text-xs text-zinc-300"
+          >
+            Cancelar
+          </button>
+        </div>
+
+        {busy && (
+          <p className="mt-2 flex items-center gap-1 text-xs text-zinc-400" role="status">
+            <Loader2 size={12} className="animate-spin" aria-hidden="true" /> Guardando la demostración…
+          </p>
+        )}
+        {status && !busy && (
+          <p className="mt-2 text-xs text-zinc-300" role="status">
+            {status}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ExercisesPanel({
   coachId,
   requests,
@@ -631,6 +974,23 @@ function ExercisesPanel({
   >({});
   const [limit, setLimit] = useState(EXERCISES_PAGE_SIZE);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<ExerciseFilter>("all");
+  const [pickerFor, setPickerFor] = useState<ExerciseRow | null>(null);
+  const [gifFor, setGifFor] = useState<ExerciseRow | null>(null);
+  const [gifUrl, setGifUrl] = useState("");
+  const [gifStatus, setGifStatus] = useState<string | null>(null);
+  const [gifBusy, setGifBusy] = useState(false);
+  const [sync, setSync] = useState<SyncState>({ kind: "idle" });
+  /**
+   * The resolved catalog, kept so a write can carry the real row.
+   *
+   * `rows` is the display shape; the server needs `body_part`, `target`,
+   * `equipment` and the GIF to be able to create the row when the exercise is
+   * still only in the shipped catalog.
+   */
+  const resolvedRef = useRef<ResolvedCatalogExercise[]>([]);
+  /** Ids the coach has touched, so "Editados por coach" can filter on them. */
+  const [edited, setEdited] = useState<Set<string>>(new Set());
   const createExercise = async () => {
     const name = newExercise.name.trim();
     if (!name) {
@@ -665,13 +1025,17 @@ function ExercisesPanel({
     let alive = true;
 
     const applyOverrides = () => {
+      const snapshot = readOverridesSnapshot();
       setEquipmentOverrides(
         Object.fromEntries(
-          Object.entries(loadCatalogOverrides()).map(([id, value]) => [
-            id,
-            value.equipment_id ?? "",
-          ]),
+          Object.entries(snapshot.catalog).map(([id, value]) => [id, value.equipment_id ?? ""]),
         ),
+      );
+      setEdited(
+        new Set([
+          ...Object.keys(snapshot.catalog),
+          ...Object.keys(snapshot.names),
+        ]),
       );
     };
 
@@ -681,7 +1045,9 @@ function ExercisesPanel({
       // The shipped catalog is the list: 1,324 rows, each one already carrying
       // its Spanish name, its real GIF and the machine it is mapped to. The
       // Supabase table is a fallback for a device that cannot read the asset.
-      setRows(resolveCatalogExercises(catalog).map(toRow));
+      const resolved = resolveCatalogExercises(catalog);
+      resolvedRef.current = resolved;
+      setRows(resolved.map(toRow));
       applyOverrides();
     };
 
@@ -699,9 +1065,26 @@ function ExercisesPanel({
         });
     });
 
+    // The remote catalog is the other copy of the coach's work: a rename made on
+    // another device has to land here too, or the two would drift apart.
+    void hydrateOverridesFromSupabase()
+      .then((result) => {
+        if (!alive) return;
+        if (result.remote === "unavailable") {
+          setSync({ kind: "local", detail: result.detail });
+        } else {
+          setSync({ kind: "online" });
+        }
+        applyOverrides();
+      })
+      .catch(() => {
+        if (alive) setSync({ kind: "offline" });
+      });
+
     // A rename or a machine change made in another tab has to reach this list too.
     const unsubscribe = subscribeCatalogOverrides(() => {
       void load().catch(() => undefined);
+      applyOverrides();
     });
 
     return () => {
@@ -711,59 +1094,147 @@ function ExercisesPanel({
   }, []);
 
   const filtered = useMemo(() => {
-    const query_ = query.trim().toLowerCase();
-    if (query_ === "") return rows;
-    return rows.filter((row) =>
-      `${row.id} ${row.name} ${row.name_es ?? ""} ${translateBodyPart(row.body_part)}`
-        .toLowerCase()
-        .includes(query_),
-    );
-  }, [query, rows]);
+    const query_ = normaliseExerciseName(query);
+    return rows.filter((row) => {
+      // The chips are a lens on the list, never a second query: the same rows,
+      // seen from the angle the coach is working from.
+      if (filter === "with_machine" && !row.equipment_id) return false;
+      if (filter === "with_machine" && row.equipment_id === "NONE") return false;
+      if (filter === "free_weight" && row.equipment_id && row.equipment_id !== "NONE") {
+        return false;
+      }
+      if (filter === "coach_edited" && !edited.has(row.id)) return false;
+      if (query_ === "") return true;
+      return (
+        normaliseExerciseName(`${row.id} ${row.name} ${row.name_es ?? ""}`).includes(query_) ||
+        translateBodyPart(row.body_part).toLowerCase().includes(query_)
+      );
+    });
+  }, [edited, filter, query, rows]);
 
   // 1,324 cards with two images each is not a list to mount at once: the panel
   // opens on the first page and asks for more.
   const visible = filtered.slice(0, limit);
   useEffect(() => {
     setLimit(EXERCISES_PAGE_SIZE);
-  }, [query]);
+  }, [filter, query]);
+
+  const markEdited = (id: string) =>
+    setEdited((current) => {
+      if (current.has(id)) return current;
+      const next = new Set(current);
+      next.add(id);
+      return next;
+    });
 
   const renameExercise = async (id: string) => {
     const nextName = rename.trim();
     if (!nextName) return;
-    try {
-      await coachEcosystemService.renameExerciseGlobal(id, nextName);
-    } catch {
-      // The Supabase write may be offline; the local override still applies here.
-    }
-    saveNameOverride(id, nextName);
+    const row =
+      resolvedRef.current.find((candidate) => candidate.id === id) ?? null;
     setRows((current) =>
-      current.map((row) =>
-        row.id === id
-          ? { ...row, name_es: nextName, customNameEs: nextName }
-          : row,
+      current.map((candidate) =>
+        candidate.id === id
+          ? { ...candidate, name_es: nextName, customNameEs: nextName }
+          : candidate,
       ),
     );
     setRenameId(null);
-  };
+    markEdited(id);
 
-  const saveEquipment = (id: string, equipmentId: string) => {
-    saveCatalogOverride(id, {
-      equipment_id: equipmentId || undefined,
-      availableInCronosGym: Boolean(equipmentId),
-    });
-    setEquipmentOverrides((current) => ({ ...current, [id]: equipmentId }));
-    setRows((current) =>
-      current.map((row) =>
-        row.id === id
-          ? {
-            ...row,
-            equipment_id: equipmentId || "NONE",
-            available: Boolean(equipmentId),
-          }
-          : row,
-      ),
+    // One call, two tiers: the store first, Supabase second.
+    setSync({ kind: "working" });
+    const result = await persistCoachExerciseChange(id, { customNameEs: nextName }, row);
+    setSync(
+      result.remote === "offline"
+        ? { kind: "offline" }
+        : result.remote === "unavailable"
+          ? { kind: "local", detail: result.detail }
+          : { kind: "online" },
     );
   };
+
+  /**
+   * Assigns a machine from the spotlight picker.
+   *
+   * The choice is the whole override: a machine means the exercise can be
+   * trained here, and no machine means the athlete does it on the floor.
+   */
+  const assignMachine = async (row: ExerciseRow, equipmentId: string | null) => {
+    const id = equipmentId || "";
+    setPickerFor(null);
+    setRows((current) =>
+      current.map((candidate) =>
+        candidate.id === row.id
+          ? {
+              ...candidate,
+              equipment_id: id || "NONE",
+              available: Boolean(id),
+            }
+          : candidate,
+      ),
+    );
+    setEquipmentOverrides((current) => ({ ...current, [row.id]: id }));
+    markEdited(row.id);
+
+    setSync({ kind: "working" });
+    const result = await persistCoachExerciseChange(
+      row.id,
+      { equipment_id: id || undefined, availableInCronosGym: Boolean(id) },
+      resolvedRef.current.find((candidate) => candidate.id === row.id) ?? null,
+    );
+    setSync(
+      result.remote === "offline"
+        ? { kind: "offline" }
+        : result.remote === "unavailable"
+          ? { kind: "local", detail: result.detail }
+          : { kind: "online" },
+    );
+  };
+  /**
+   * Saves the demonstration the coach chose, from a pasted URL or an uploaded file.
+   *
+   * The uploaded file is the interesting case: it leaves the coach's phone once and
+   * then every athlete sees the same picture, instead of one browser caching a blob.
+   */
+  const saveGif = async (row: ExerciseRow, file?: File) => {
+    const input = file ?? gifUrl;
+    if (!String(input).trim()) {
+      setGifStatus("Pega una URL o elige un archivo.");
+      return;
+    }
+    setGifBusy(true);
+    setGifStatus(null);
+    setSync({ kind: "working" });
+    const result = await uploadOrResolveCoachGif(input, row.id);
+    setGifBusy(false);
+    if (!result.ok) {
+      setGifStatus(result.error);
+      setSync({ kind: "online" });
+      return;
+    }
+
+    const url = result.url;
+    setGifUrl(url);
+    setRows((current) =>
+      current.map((candidate) =>
+        candidate.id === row.id ? { ...candidate, gif_url: url } : candidate,
+      ),
+    );
+    markEdited(row.id);
+
+    // The upload path already wrote the change; only the badge is ours to set.
+    setGifStatus("Demostración guardada.");
+    setGifFor(null);
+    setSync(
+      result.remote === "offline"
+        ? { kind: "offline" }
+        : result.remote === "skipped"
+          ? { kind: "local", detail: "sin-cliente" }
+          : { kind: "online" },
+    );
+  };
+
   return (
     <section className="grid min-w-0 gap-4">
       <div className={card}>
@@ -899,8 +1370,31 @@ function ExercisesPanel({
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>{" "}
-        <p className="mt-2 text-xs text-zinc-500">
-          {filtered.length} de {rows.length} ejercicios del catálogo local
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {EXERCISE_FILTERS.map((option) => {
+            const active = filter === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setFilter(option.id)}
+                className={`min-h-9 rounded-full px-3 text-xs font-semibold ${
+                  active
+                    ? "bg-[#FF3B30] text-white"
+                    : "bg-[#2C2C2E] text-zinc-300"
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+          <span>
+            {filtered.length} de {rows.length} ejercicios del catálogo local
+          </span>
+          <SyncBadge state={sync} />
         </p>
         <div className="mt-3 grid gap-2">
           {loadError && (
@@ -941,22 +1435,32 @@ function ExercisesPanel({
                     alt={selectedEquipment ? `Máquina ${selectedEquipment.name}` : "Sin máquina"}
                     className="h-12 w-12"
                   />
-                  <select
+                  <button
+                    type="button"
                     aria-label={`Máquina para ${row.name}`}
-                    className={`${control} h-11 min-w-0 flex-1 px-2 text-xs text-white`}
-                    value={selectedEquipmentId === "NONE" ? "" : selectedEquipmentId}
-                    onChange={(event) => saveEquipment(row.id, event.target.value)}
+                    onClick={() => setPickerFor(row)}
+                    className={`${control} flex h-11 min-w-0 flex-1 items-center gap-2 px-2 text-left text-xs text-white`}
                   >
-                    <option value="">NONE · Peso libre / Piso</option>
-                    {Object.entries(equipmentMap).map(([id, equipment]) => (
-                      <option key={id} value={id}>
-                        {id} · {equipment.name}
-                      </option>
-                    ))}
-                  </select>
+                    {selectedEquipment ? (
+                      <>
+                        <img
+                          src={selectedEquipment.views?.[0]?.src}
+                          alt=""
+                          className="h-8 w-8 shrink-0 rounded-lg object-cover"
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                          {selectedEquipment.id} · {selectedEquipment.name}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="min-w-0 flex-1 truncate text-zinc-300">
+                        NONE · Peso libre / Piso
+                      </span>
+                    )}
+                  </button>
                 </div>
 
-                {/* Row 3: rename, and whether the gym can host it. */}
+                {/* Row 3: rename, the demonstration, and whether the gym can host it. */}
                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
                   {renameId === row.id ? (
                     <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -986,16 +1490,30 @@ function ExercisesPanel({
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRenameId(row.id);
-                        setRename(row.customNameEs || row.name_es || row.name);
-                      }}
-                      className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white"
-                    >
-                      <Pencil size={14} aria-hidden="true" /> Renombrar
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRenameId(row.id);
+                          setRename(row.customNameEs || row.name_es || row.name);
+                        }}
+                        className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white"
+                      >
+                        <Pencil size={14} aria-hidden="true" /> Renombrar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setGifFor(row);
+                          setGifUrl(row.gif_url ?? "");
+                          setGifStatus(null);
+                        }}
+                        aria-label={`Cambiar GIF de ${row.name}`}
+                        className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white"
+                      >
+                        <ImageIcon size={14} aria-hidden="true" /> GIF
+                      </button>
+                    </>
                   )}
                   <span
                     className={`inline-flex min-h-7 items-center rounded-full px-2 py-1 text-[11px] font-semibold ${
@@ -1035,6 +1553,30 @@ function ExercisesPanel({
           ))}
         </div>
       </div>
+
+      {pickerFor && (
+        <MachinePicker
+          row={pickerFor}
+          onClose={() => setPickerFor(null)}
+          onSelect={(equipmentId) => void assignMachine(pickerFor, equipmentId)}
+        />
+      )}
+
+      {gifFor && (
+        <GifManager
+          row={gifFor}
+          url={gifUrl}
+          status={gifStatus}
+          busy={gifBusy}
+          onUrlChange={(value) => {
+            setGifUrl(value);
+            setGifStatus(null);
+          }}
+          onSave={() => void saveGif(gifFor)}
+          onFile={(file) => void saveGif(gifFor, file)}
+          onClose={() => setGifFor(null)}
+        />
+      )}
     </section>
   );
 }

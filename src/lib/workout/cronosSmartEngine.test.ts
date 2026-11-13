@@ -40,6 +40,23 @@ describe("cronosSmartEngine", () => {
     }).weightKg).toBe(0);
   });
 
+  it("keeps a bodyweight movement at zero load and bodyweight reps", () => {
+    const pushUp = estimateSmartLoad({ mode: "bodyweight", targetReps: 8 });
+    expect(pushUp.weightKg).toBe(0);
+    expect(pushUp.suggestedReps).toBe(15);
+
+    // A bodyweight exercise must never inherit the biometric multiplier: the
+    // same 65 kg that load a bench would turn a push-up into a weighted one.
+    const biometric = estimateSmartLoad({
+      mode: "biometric_day_0",
+      weightKg: 65,
+      targetStation: "free_weight_area",
+      movementPattern: "isolation",
+      experienceLevel: "beginner",
+    });
+    expect(biometric.weightKg).toBeGreaterThan(0);
+  });
+
   it("creates progressive warmup sets", () => {
     const sets = generateSmartWarmupSets(80, false);
     expect(sets).toHaveLength(3);

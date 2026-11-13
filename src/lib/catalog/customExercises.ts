@@ -31,6 +31,8 @@ export interface CatalogOverride {
   equipment_id?: string;
   station_key?: StationKey;
   availableInCronosGym?: boolean;
+  /** The coach's own demonstration, when the shipped one is wrong. */
+  gif_url?: string;
 }
 
 export type CatalogOverrides = Record<string, CatalogOverride>;
@@ -105,11 +107,13 @@ export function invalidateOverridesSnapshot(): void {
   snapshot = null;
 }
 
-function emit(exerciseId: string, override: CatalogOverride): void {
+function announce(detail: unknown): void {
   if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent(CATALOG_UPDATED_EVENT, {
-    detail: { exerciseId, override },
-  }));
+  window.dispatchEvent(new CustomEvent(CATALOG_UPDATED_EVENT, { detail }));
+}
+
+function emit(exerciseId: string, override: CatalogOverride): void {
+  announce({ exerciseId, override });
 }
 
 /**
@@ -178,6 +182,46 @@ export function subscribeCatalogOverrides(listener: () => void): () => void {
     window.removeEventListener(CATALOG_UPDATED_EVENT, onUpdated);
     window.removeEventListener("storage", onStorage);
   };
+}
+
+/**
+ * Takes a whole page of remote rows into the local override store.
+ *
+ * A page, not a row at a time: hydrating 1,324 exercises by calling
+ * `saveCatalogOverride` would write `localStorage` 1,324 times and announce 1,324
+ * changes, and the catalog would spend the whole load re-rendering. The merge is
+ * per field -- a remote value the coach never set does not erase the one this
+ * device holds -- and the announcement happens once, at the end.
+ */
+export function mergeOverridesFromRemote(remote: CatalogOverrides): number {
+  if (typeof window === "undefined") return 0;
+  const current = loadCatalogOverrides();
+  const names = loadNameOverrides();
+  let changed = 0;
+  const nextCatalog: CatalogOverrides = { ...current };
+
+  for (const [id, override] of Object.entries(remote)) {
+    if (!override || typeof override !== "object") continue;
+    const merged: CatalogOverride = { ...(current[id] ?? {}) };
+    if (override.equipment_id) merged.equipment_id = override.equipment_id;
+    if (override.station_key) merged.station_key = override.station_key;
+    if (typeof override.availableInCronosGym === "boolean") {
+      merged.availableInCronosGym = override.availableInCronosGym;
+    }
+    if (override.gif_url) merged.gif_url = override.gif_url;
+    if (JSON.stringify(merged) === JSON.stringify(current[id] ?? {})) continue;
+    nextCatalog[id] = merged;
+    changed += 1;
+    const customNameEs = override.customNameEs?.trim();
+    if (customNameEs) names[id] = customNameEs;
+  }
+
+  if (changed === 0) return 0;
+  writeJson(CATALOG_OVERRIDES_KEY, nextCatalog);
+  writeJson(EXERCISE_NAME_OVERRIDES_KEY, names);
+  invalidateOverridesSnapshot();
+  announce({ hydrated: changed });
+  return changed;
 }
 
 /** Reads the device-local custom exercises. Never throws. */

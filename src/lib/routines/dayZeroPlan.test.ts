@@ -8,8 +8,10 @@ import {
   buildDayZeroPlan,
   dayZeroDraft,
   dayZeroRoutineRow,
+  groupOf,
   isAvailableForDayZero,
   toPlanExercise,
+  type DayZeroGroup,
 } from "./dayZeroPlan";
 
 function row(overrides: Partial<CatalogExercise> = {}): CatalogExercise {
@@ -36,11 +38,28 @@ function row(overrides: Partial<CatalogExercise> = {}): CatalogExercise {
   };
 }
 
-/** Enough distinct patterns and muscles to fill a six-exercise day. */
-const PATTERNS = ["squat", "hinge", "horizontal_push", "horizontal_pull", "extension", "curl", "isolation"] as const;
-const MUSCLES = ["quads", "hamstrings", "chest", "lats", "triceps", "biceps", "abs"];
+/** Enough distinct groups and muscles to fill a six-exercise day. */
+const PATTERNS = [
+  "squat",
+  "hinge",
+  "horizontal_push",
+  "horizontal_pull",
+  "extension",
+  "curl",
+  "isolation",
+] as const;
+const MUSCLES = [
+  "quadriceps",
+  "hamstrings",
+  "chest",
+  "lats",
+  "triceps",
+  "biceps",
+  "deltoids",
+  "abdominals",
+];
 
-function catalogOf(count = 14): CatalogExercise[] {
+function catalogOf(count = 24): CatalogExercise[] {
   return Array.from({ length: count }, (_, index) =>
     row({
       id: String(index + 1).padStart(4, "0"),
@@ -91,15 +110,70 @@ describe("buildDayZeroPlan", () => {
     expect(plan.days.flatMap((day) => day.exercises).map((exercise) => exercise.row.id)).not.toContain("9002");
   });
 
-  it("spreads one exercise per pattern before repeating one", () => {
+  it("splits the days by anatomical group, not by movement pattern", () => {
     const plan = buildDayZeroPlan({
       catalog: catalogOf(),
       frequency: 2,
       goal: "general_fitness",
       level: "beginner",
     });
-    const patterns = plan.days[0].exercises.map((exercise) => exercise.row.movement_pattern);
-    expect(new Set(patterns).size).toBe(patterns.length);
+    const groups = plan.days[0].exercises.map((exercise) =>
+      groupOf(exercise.row),
+    );
+    // Day one is "Full body A": quads, chest, back, posterior chain and core.
+    expect(new Set(groups)).toEqual(
+      new Set<DayZeroGroup>(["quads", "chest", "back", "posterior_leg", "core"]),
+    );
+    expect(plan.days.map((day) => day.label)).toEqual(["Full body A", "Full body B"]);
+  });
+
+  it("names the split of the frequency the coach asked for", () => {
+    const pushPullLegs = buildDayZeroPlan({
+      catalog: catalogOf(21),
+      frequency: 3,
+      goal: "hypertrophy",
+      level: "beginner",
+    });
+    expect(pushPullLegs.days.map((day) => day.label)).toEqual(["Empuje", "Tirón", "Pierna"]);
+
+    const upperLower = buildDayZeroPlan({
+      catalog: catalogOf(28),
+      frequency: 4,
+      goal: "hypertrophy",
+      level: "intermediate",
+    });
+    expect(upperLower.days.map((day) => day.label)).toEqual([
+      "Tren superior A",
+      "Tren inferior A",
+      "Tren superior B",
+      "Tren inferior B",
+    ]);
+
+    const vTaper = buildDayZeroPlan({
+      catalog: catalogOf(35),
+      frequency: 5,
+      goal: "hypertrophy",
+      level: "advanced",
+    });
+    expect(vTaper.days.map((day) => day.label)).toEqual([
+      "Empuje A",
+      "Tirón A",
+      "Pierna",
+      "Empuje B",
+      "Tirón B",
+    ]);
+  });
+
+  it("takes the machine before the free weight inside a group", () => {
+    const catalog = [
+      row({ id: "1001", muscle_group: "quadriceps", movement_pattern: "squat", equipment_id: "CG-EQP-0021", station_key: "leg_extension" }),
+      row({ id: "1002", muscle_group: "quadriceps", movement_pattern: "squat", equipment_id: "NONE", station_key: "free_weight_area" }),
+    ];
+    const plan = buildDayZeroPlan({ catalog, frequency: 2, goal: "hypertrophy", level: "beginner" });
+    const quads = plan.days[0].exercises
+      .map((exercise) => exercise.row)
+      .filter((row) => groupOf(row) === "quads");
+    expect(quads[0].id).toBe("1001");
   });
 
   it("never repeats an exercise across days", () => {
@@ -122,11 +196,24 @@ describe("buildDayZeroPlan", () => {
       level: "beginner",
       newId: () => `id-${++counter}`,
     });
-    expect(plan.days.map((day) => day.label)).toEqual(["Día A", "Día B", "Día C"]);
+    expect(plan.days.map((day) => day.label)).toEqual(["Empuje", "Tirón", "Pierna"]);
     expect(new Set(plan.days.map((day) => day.id)).size).toBe(3);
     const rowIds = plan.days.flatMap((day) => day.exercises.map((exercise) => exercise.rowId));
     expect(new Set(rowIds).size).toBe(rowIds.length);
     expect(plan.days.every((day) => day.exercises.length > 0)).toBe(true);
+  });
+
+  it("resizes a day without dropping its main lift", () => {
+    const plan = buildDayZeroPlan({
+      catalog: catalogOf(28),
+      frequency: 3,
+      goal: "hypertrophy",
+      level: "beginner",
+      perDay: 3,
+    });
+    expect(plan.days.every((day) => day.exercises.length <= 3)).toBe(true);
+    // A short "Empuje" keeps its chest work: the first slot is the main lift.
+    expect(groupOf(plan.days[0].exercises[0].row)).toBe("chest");
   });
 
   it("scales sets and reps with the goal", () => {
@@ -150,12 +237,18 @@ describe("buildDayZeroPlan", () => {
   });
 
   it("promises only the days it can actually write", () => {
+    const catalog = [
+      row({ id: "2001", muscle_group: "chest", movement_pattern: "horizontal_push" }),
+      row({ id: "2002", muscle_group: "chest", movement_pattern: "horizontal_push" }),
+    ];
     const plan = buildDayZeroPlan({
-      catalog: catalogOf(2),
+      catalog,
       frequency: 5,
       goal: "hypertrophy",
       level: "beginner",
     });
+    // Two chest rows fill the push day; the rest of the split has nothing to
+    // train, so it is not written and the title does not promise it.
     expect(plan.days).toHaveLength(1);
     expect(plan.title).toBe("Cronos Day 0 · 1 día");
   });

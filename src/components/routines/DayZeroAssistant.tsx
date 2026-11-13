@@ -50,7 +50,7 @@ export function DayZeroAssistant({ onCreated }: DayZeroAssistantProps) {
       })
       .catch((error: unknown) => {
         if (!alive) return;
-        console.error("[DayZeroAssistant] No se pudo cargar el catÃ¡logo", error);
+        console.error("[DayZeroAssistant] No se pudo cargar el catálogo", error);
         setStatus("error");
       });
     return () => {
@@ -117,19 +117,19 @@ export function DayZeroAssistant({ onCreated }: DayZeroAssistantProps) {
       </h2>
       {status === "loading" && (
         <p className="mt-3 text-sm" style={{ color: TEXT.tertiary }} aria-live="polite">
-          Cargando catÃ¡logoâ€¦
+          Cargando catálogo…
         </p>
       )}
       {status === "error" && (
         <p className="mt-3 text-sm" style={{ color: TEXT.secondary }} aria-live="polite">
-          No se pudo cargar el catÃ¡logo. Revisa tu conexiÃ³n y vuelve a intentarlo.
+          No se pudo cargar el catálogo. Revisa tu conexión y vuelve a intentarlo.
         </p>
       )}
       {status === "ready" && step === 0 && (
         <Choice
-          title="Â¿CuÃ¡ntos dÃ­as entrenas?"
-          options={[2, 3, 4, 5].map((value) => `${value} dÃ­as`)}
-          value={`${frequency} dÃ­as`}
+          title="¿Cuántos días entrenas?"
+          options={[2, 3, 4, 5].map((value) => `${value} días`)}
+          value={`${frequency} días`}
           onChange={(value) => {
             setFrequency(Number(value.split(" ")[0]) as DayZeroFrequency);
             setStep(1);
@@ -138,7 +138,7 @@ export function DayZeroAssistant({ onCreated }: DayZeroAssistantProps) {
       )}
       {status === "ready" && step === 1 && (
         <Choice
-          title="Â¿CuÃ¡l es tu objetivo?"
+          title="¿Cuál es tu objetivo?"
           options={["Fuerza", "Hipertrofia", "Fitness general"]}
           value={goal === "strength" ? "Fuerza" : goal === "hypertrophy" ? "Hipertrofia" : "Fitness general"}
           onChange={(value) => {
@@ -149,7 +149,7 @@ export function DayZeroAssistant({ onCreated }: DayZeroAssistantProps) {
       )}
       {status === "ready" && step === 2 && (
         <Choice
-          title="Â¿CuÃ¡l es tu nivel?"
+          title="¿Cuál es tu nivel?"
           options={["Principiante", "Intermedio", "Avanzado"]}
           value={level === "beginner" ? "Principiante" : level === "intermediate" ? "Intermedio" : "Avanzado"}
           onChange={(value) => {
@@ -159,7 +159,7 @@ export function DayZeroAssistant({ onCreated }: DayZeroAssistantProps) {
         />
       )}
       <p className="mt-3 text-xs" style={{ color: TEXT.tertiary }}>
-        {status === "ready" ? `${available.length} ejercicios disponibles en Cronos Gym` : "Preparando el catÃ¡logoâ€¦"}
+        {status === "ready" ? `${available.length} ejercicios disponibles en Cronos Gym` : "Preparando el catálogo…"}
       </p>
     </section>
   );

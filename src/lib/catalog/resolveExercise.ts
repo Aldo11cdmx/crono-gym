@@ -99,6 +99,7 @@ export function resolveCatalogExercise(
   const equipmentName =
     repairMojibake(mapped?.name ?? row.equipment_name ?? "") || translateEquipment(row.equipment);
   const equipmentImage = mapped?.views?.[0]?.src ?? row.image_urls?.[0] ?? "";
+  const gifUrl = override.gif_url?.trim() || row.gif_url;
 
   const stationKey = (override.station_key ?? row.station_key ?? "free_weight_area") as StationKey;
   const available = override.availableInCronosGym ?? row.availableInCronosGym ?? true;
@@ -111,7 +112,7 @@ export function resolveCatalogExercise(
     effectiveEquipmentId,
     effectiveEquipmentName: equipmentName,
     effectiveEquipmentImage: resolveMediaUrl(equipmentImage),
-    effectiveGifUrl: resolveMediaUrl(row.gif_url),
+    effectiveGifUrl: resolveMediaUrl(gifUrl),
     effectiveImageUrl: resolveMediaUrl(row.image),
     stationKey,
     station_key: stationKey,

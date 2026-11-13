@@ -31,6 +31,20 @@ export interface Database {
           instructions: string[];
           is_active: boolean;
           is_hidden: boolean;
+          /**
+           * Governance columns a coach edits from the portal.
+           *
+           * Added by `20261113000001_exercises_equipment_governance.sql`. Optional
+           * because the migration is additive: a deployment that has not applied it
+           * returns no such columns, and the app must not read a value it did not get.
+           */
+          equipment_id?: string | null;
+          equipment_name?: string | null;
+          station_key?: string | null;
+          movement_pattern?: string | null;
+          available_in_cronos_gym?: boolean;
+          image?: string | null;
+          updated_at?: string;
         };
         Insert: {
           id: string;
@@ -43,6 +57,12 @@ export interface Database {
           instructions?: string[];
           is_active?: boolean;
           is_hidden?: boolean;
+          equipment_id?: string | null;
+          equipment_name?: string | null;
+          station_key?: string | null;
+          movement_pattern?: string | null;
+          available_in_cronos_gym?: boolean;
+          image?: string | null;
         };
         Update: {
           id?: string;
@@ -55,6 +75,12 @@ export interface Database {
           instructions?: string[];
           is_active?: boolean;
           is_hidden?: boolean;
+          equipment_id?: string | null;
+          equipment_name?: string | null;
+          station_key?: string | null;
+          movement_pattern?: string | null;
+          available_in_cronos_gym?: boolean;
+          image?: string | null;
         };
         Relationships: ForeignKey[];
       };

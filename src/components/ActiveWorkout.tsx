@@ -412,7 +412,7 @@ function SetTrackerTable({
       aria-label={`Serie ${setNumber}`}
       style={{
         display: "grid",
-        gridTemplateColumns: "36px 54px 1fr 1fr 44px 36px 36px",
+        gridTemplateColumns: "32px 48px minmax(54px, 1fr) minmax(54px, 1fr) 40px 34px 34px",
         alignItems: "center",
         gap: 2,
         padding: "4px 0",
@@ -649,10 +649,10 @@ function SetTrackerTable({
           background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.10)",
           borderRadius: 12,
-          padding: "0 8px",
+          padding: "0 4px",
           textAlign: "center",
           color: TEXT.primary,
-          fontSize: "16px",
+          fontSize: "15px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
           fontWeight: 700,
@@ -683,10 +683,10 @@ function SetTrackerTable({
           background: "#2C2C2E",
           border: "1px solid rgba(255, 255, 255, 0.10)",
           borderRadius: 12,
-          padding: "0 8px",
+          padding: "0 4px",
           textAlign: "center",
           color: TEXT.primary,
-          fontSize: "16px",
+          fontSize: "15px",
           fontFamily: TYPE.mono.font,
           fontVariantNumeric: "tabular-nums",
           fontWeight: 700,
@@ -1827,9 +1827,28 @@ export function ActiveWorkout({
     effectiveImageUrl?: string;
   }) | undefined;
 
+  /**
+   * Whether the movement carries no external load at all.
+   *
+   * A push-up, a plank or a pull-up has no number to estimate: the smart load
+   * would otherwise turn "body weight" into 9.75 kg and the athlete would load a
+   * bar for an exercise that never had one.
+   */
+  const isBodyweightSelected = useMemo(() => {
+    if (!selected) return false;
+    const equipmentId = smartExercise?.equipment_id ?? smartExercise?.effectiveEquipmentId;
+    if (equipmentId === "NONE") return true;
+    if (equipmentId && equipmentId !== "NONE") return false;
+    const raw = (smartExercise?.equipment ?? selected.exercise.equipment ?? "").toLowerCase();
+    return raw.includes("body") || raw.includes("peso corporal");
+  }, [selected, smartExercise]);
+
   const smartLoad = useMemo(() => {
     if (!selected) return null;
     const history = performance[selected.exercise.id]?.bestSet;
+    if (isBodyweightSelected) {
+      return estimateSmartLoad({ mode: "bodyweight", targetReps: 15 });
+    }
     return estimateSmartLoad({
       mode: history ? "overload" : "biometric_day_0",
       weightKg: history?.weight ?? Number(selected.sets.find((set) => set.kind === "normal")?.weight ?? 0),
@@ -1842,7 +1861,14 @@ export function ActiveWorkout({
       movementPattern: smartExercise?.movement_pattern,
       experienceLevel: "beginner",
     });
-  }, [performance, selected, selectedCatalogExercise, smartExercise?.movement_pattern, smartExercise?.station_key]);
+  }, [
+    performance,
+    selected,
+    selectedCatalogExercise,
+    isBodyweightSelected,
+    smartExercise?.movement_pattern,
+    smartExercise?.station_key,
+  ]);
 
   const smartSubstitutes = useMemo(() => {
     if (!selected || !smartExercise || !smartLoad) return [];
@@ -2386,14 +2412,22 @@ export function ActiveWorkout({
                       <img src={smartExercise?.effectiveImageUrl || smartExercise?.effectiveGifUrl || smartExercise?.image || smartExercise?.gif_url || ""} alt="" className="h-11 w-11 rounded-xl object-cover" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">{smartExercise?.effectiveEquipmentName ?? "Equipo Cronos Gym"}</p>
-                      <p className="font-mono text-[11px] text-neutral-500">{smartExercise?.effectiveEquipmentId ?? "NONE"}</p>
+                      <p className="truncate text-sm font-semibold text-white">{isBodyweightSelected ? "Peso corporal" : smartExercise?.effectiveEquipmentName ?? "Equipo Cronos Gym"}</p>
+                      <p className="font-mono text-[11px] text-neutral-500">{isBodyweightSelected ? "BODYWEIGHT" : smartExercise?.effectiveEquipmentId ?? "NONE"}</p>
                     </div>
-                    <span className="rounded-full bg-neutral-800 px-2 py-1 text-xs font-semibold text-neutral-300" style={{ color: "#FF3B30" }}>🚀 Subir carga</span>
+                    <span className="rounded-full bg-neutral-800 px-2 py-1 text-xs font-semibold text-neutral-300" style={{ color: isBodyweightSelected ? "#30D158" : "#FF3B30" }}>
+                      {isBodyweightSelected ? "🤸 Peso corporal" : "🚀 Subir carga"}
+                    </span>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-mono text-sm text-white">{smartLoad.weightKg} kg × {smartLoad.suggestedReps}</span>
-                    <span className="font-mono text-[11px] text-neutral-400">{getLoadBreakdownHint(smartLoad.weightKg, smartExercise?.station_key ?? "free_weight_area", smartExercise?.equipment)}</span>
+                    <span className="font-mono text-sm text-white">
+                      {isBodyweightSelected ? `Peso corporal × ${smartLoad.suggestedReps}` : `${smartLoad.weightKg} kg × ${smartLoad.suggestedReps}`}
+                    </span>
+                    {isBodyweightSelected ? (
+                      <span className="font-mono text-[11px] text-neutral-400">Sin carga externa: registra solo las repeticiones</span>
+                    ) : (
+                      <span className="font-mono text-[11px] text-neutral-400">{getLoadBreakdownHint(smartLoad.weightKg, smartExercise?.station_key ?? "free_weight_area", smartExercise?.equipment)}</span>
+                    )}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button type="button" className="min-h-11 flex-1 rounded-xl bg-neutral-800 px-3 text-sm font-semibold text-white" style={{ background: "#FF3B30" }} onClick={applySmartLoad}>Aplicar carga</button>
@@ -2502,7 +2536,7 @@ export function ActiveWorkout({
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "36px 54px 1fr 1fr 44px 36px 36px",
+                        gridTemplateColumns: "32px 48px minmax(54px, 1fr) minmax(54px, 1fr) 40px 34px 34px",
                         alignItems: "center",
                         gap: 2,
                         padding: "0 0 6px 0",

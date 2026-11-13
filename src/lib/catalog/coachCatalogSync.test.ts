@@ -5,6 +5,9 @@
  * Tier 1 is the point of the module: the coach sees the change in the frame it
  * was made. Tier 2 is the reason the change survives a cache clear -- and the
  * 42703 fallback is the reason a rename still lands before the migration runs.
+ *
+ * Tier 2 is also the only thing allowed to say "saved everywhere": a write that
+ * matches no row is reported as local, because Supabase did not confirm it.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CatalogExercise } from "./types";
@@ -18,23 +21,26 @@ import { resetCatalogRegistry, setLoadedCatalog } from "./catalogRegistry";
 import {
   COACH_GIF_BUCKET,
   MAX_GIF_BYTES,
+  countPendingOverrides,
   hydrateOverridesFromSupabase,
   isUndefinedColumn,
   persistCoachExerciseChange,
+  syncPendingOverrides,
   uploadOrResolveCoachGif,
 } from "./coachCatalogSync";
 
 const state = vi.hoisted(() => ({
   rows: [] as Record<string, unknown>[],
   listError: null as null | { code?: string; message?: string },
-  upsertError: null as null | { code?: string; message?: string },
   updateError: null as null | { code?: string; message?: string },
   uploadError: null as null | { message: string },
   /** How many writes fail before the mock starts succeeding. */
-  upsertFailsLeft: 0,
+  updateFailsLeft: 0,
   selectFailsLeft: 0,
-  upserts: [] as Record<string, unknown>[],
+  /** The ids the server says it touched. Empty means "no row matched". */
+  writtenIds: ["0001"] as string[],
   updates: [] as Record<string, unknown>[],
+  updateFilters: [] as string[][],
   selects: [] as string[],
   uploads: [] as { path: string; size: number }[],
   online: true,
@@ -52,18 +58,17 @@ vi.mock("@lib/supabase", () => {
         if (state.selectFailsLeft > 0) state.selectFailsLeft -= 1;
         return Promise.resolve({ data: state.rows, error });
       },
-      upsert(payload: Record<string, unknown>) {
-        state.upserts.push(payload);
-        const error = state.upsertFailsLeft > 0 ? state.upsertError : null;
-        if (state.upsertFailsLeft > 0) state.upsertFailsLeft -= 1;
-        return Promise.resolve({ error });
-      },
       update(payload: Record<string, unknown>) {
         state.updates.push(payload);
         return builder;
       },
-      eq() {
-        return Promise.resolve({ error: state.updateError });
+      in(_column: string, values: string[]) {
+        state.updateFilters.push(values);
+        const error = state.updateFailsLeft > 0 ? state.updateError : null;
+        if (state.updateFailsLeft > 0) state.updateFailsLeft -= 1;
+        return {
+          select: () => Promise.resolve({ data: error ? null : state.writtenIds, error }),
+        };
       },
     };
     return builder;
@@ -118,13 +123,13 @@ beforeEach(() => {
   setLoadedCatalog([row()]);
   state.rows = [];
   state.listError = null;
-  state.upsertError = null;
   state.updateError = null;
   state.uploadError = null;
-  state.upsertFailsLeft = 0;
+  state.updateFailsLeft = 0;
   state.selectFailsLeft = 0;
-  state.upserts = [];
+  state.writtenIds = ["0001"];
   state.updates = [];
+  state.updateFilters = [];
   state.selects = [];
   state.uploads = [];
   state.online = true;
@@ -136,27 +141,47 @@ afterEach(() => {
 });
 
 describe("persistCoachExerciseChange", () => {
-  it("writes the override locally and upserts the whole row remotely", async () => {
+  it("writes the override locally and updates the row remotely", async () => {
     const result = await persistCoachExerciseChange("0001", {
       equipment_id: "CG-EQP-0012",
       station_key: "flat_bench",
       availableInCronosGym: false,
     });
 
-    expect(result).toEqual({ local: true, remote: "upserted" });
+    expect(result).toEqual({ local: true, remote: "updated" });
     expect(readOverridesSnapshot().catalog["0001"]).toMatchObject({
       equipment_id: "CG-EQP-0012",
       station_key: "flat_bench",
       availableInCronosGym: false,
+      syncStatus: "synced",
+      dirty: false,
     });
-    expect(state.upserts).toHaveLength(1);
-    expect(state.upserts[0]).toMatchObject({
-      id: "0001",
-      name: "Push-up",
-      equipment: "body weight",
+    expect(state.updates).toHaveLength(1);
+    expect(state.updates[0]).toMatchObject({
       equipment_id: "CG-EQP-0012",
       station_key: "flat_bench",
       available_in_cronos_gym: false,
+      // `equipment` is not nullable, so a machine is stored as "id::name".
+      equipment: expect.stringMatching(/^CG-EQP-0012::/),
+    });
+    // The change is only "synced" once the server said which rows it touched.
+    expect(state.updateFilters[0]).toEqual(["0001", "1"]);
+  });
+
+  it("targets both id forms, so a row stored as 1 is still written", async () => {
+    await persistCoachExerciseChange("1", { gif_url: "https://cdn.example/new.gif" });
+
+    expect(state.updateFilters[0]).toEqual(["0001", "1"]);
+    // And the override is readable under either key.
+    expect(readOverridesSnapshot().catalog["1"]).toBeDefined();
+  });
+
+  it("marks an exercise with no machine as body weight in the text column", async () => {
+    await persistCoachExerciseChange("0001", { equipment_id: "NONE" });
+
+    expect(state.updates[0]).toMatchObject({
+      equipment_id: "NONE",
+      equipment: "body weight",
     });
   });
 
@@ -164,13 +189,13 @@ describe("persistCoachExerciseChange", () => {
     const listener = vi.fn();
     window.addEventListener("cronos:catalog-updated", listener);
     await persistCoachExerciseChange("0001", { gif_url: "https://cdn.example/new.gif" });
-    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalled();
     window.removeEventListener("cronos:catalog-updated", listener);
   });
 
   it("falls back to the base columns when the server has not been migrated", async () => {
-    state.upsertError = { code: "42703", message: "column equipment_id does not exist" };
-    state.upsertFailsLeft = 1;
+    state.updateError = { code: "42703", message: "column equipment_id does not exist" };
+    state.updateFailsLeft = 1;
 
     const result = await persistCoachExerciseChange(
       "0001",
@@ -178,15 +203,10 @@ describe("persistCoachExerciseChange", () => {
       row(),
     );
 
-    expect(result.remote).toBe("upserted");
-    expect(state.upserts).toHaveLength(2);
-    expect(state.upserts[1]).toMatchObject({
-      id: "0001",
-      name: "Press banca",
-      equipment: "body weight",
-      gif_url: "https://cdn.example/shipped.gif",
-    });
-    expect(state.upserts[1]).not.toHaveProperty("equipment_id");
+    expect(result.remote).toBe("updated");
+    expect(state.updates).toHaveLength(2);
+    expect(state.updates[1]).toEqual({ name: "Press banca" });
+    expect(state.updates[1]).not.toHaveProperty("equipment_id");
     // The rename is still on the device, so the app shows it without the server.
     expect(readOverridesSnapshot().catalog["0001"].customNameEs).toBeUndefined();
     expect(JSON.parse(window.localStorage.getItem(EXERCISE_NAME_OVERRIDES_KEY) ?? "{}")["0001"]).toBe(
@@ -194,14 +214,20 @@ describe("persistCoachExerciseChange", () => {
     );
   });
 
-  it("updates only the governance columns when there is no row to insert", async () => {
-    resetCatalogRegistry();
+  it("keeps the change local when Supabase confirms no row", async () => {
+    state.writtenIds = [];
 
     const result = await persistCoachExerciseChange("9999", { availableInCronosGym: false });
 
-    expect(result.remote).toBe("updated");
-    expect(state.upserts).toHaveLength(0);
-    expect(state.updates[0]).toEqual({ available_in_cronos_gym: false });
+    expect(result.remote).toBe("unavailable");
+    expect(result.detail).toEqual(expect.stringContaining("Supabase"));
+    // The coach still sees it, but the row says the work is not everywhere.
+    expect(readOverridesSnapshot().catalog["9999"]).toMatchObject({
+      availableInCronosGym: false,
+      syncStatus: "local_only",
+      dirty: true,
+    });
+    expect(countPendingOverrides()).toBe(1);
   });
 
   it("keeps the change local when the device is offline, and writes nothing remote", async () => {
@@ -210,24 +236,51 @@ describe("persistCoachExerciseChange", () => {
     const result = await persistCoachExerciseChange("0001", { equipment_id: "CG-EQP-0012" });
 
     expect(result).toEqual({ local: true, remote: "offline" });
-    expect(state.upserts).toHaveLength(0);
+    expect(state.updates).toHaveLength(0);
     expect(readOverridesSnapshot().catalog["0001"].equipment_id).toBe("CG-EQP-0012");
+    expect(readOverridesSnapshot().catalog["0001"].syncStatus).toBe("pending");
   });
 
   it("reports a refusal instead of throwing", async () => {
-    state.upsertError = { code: "42501", message: "new row violates row-level security" };
-    state.upsertFailsLeft = 1;
+    state.updateError = { code: "42501", message: "new row violates row-level security" };
+    state.updateFailsLeft = 1;
 
     const result = await persistCoachExerciseChange("0001", { equipment_id: "CG-EQP-0012" });
 
-    expect(result).toEqual({ local: true, remote: "unavailable", detail: expect.any(String) });
+    expect(result.remote).toBe("unavailable");
+    expect(result.detail).toEqual(expect.any(String));
     expect(readOverridesSnapshot().catalog["0001"].equipment_id).toBe("CG-EQP-0012");
+    expect(readOverridesSnapshot().catalog["0001"].syncStatus).toBe("local_only");
   });
 
   it("recognises the undefined-column error by code or by message", () => {
     expect(isUndefinedColumn({ code: "42703" })).toBe(true);
     expect(isUndefinedColumn({ message: 'column "station_key" does not exist' })).toBe(true);
+    expect(isUndefinedColumn({ code: "PGRST204" })).toBe(true);
     expect(isUndefinedColumn({ code: "42501" })).toBe(false);
+  });
+});
+
+describe("syncPendingOverrides", () => {
+  it("sends what the device owes and reports how much is left", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({
+        "0001": { equipment_id: "CG-EQP-0012", dirty: true, syncStatus: "pending" },
+        "0002": { gif_url: "https://cdn.example/new.gif", syncStatus: "synced", dirty: false },
+      }),
+    );
+    invalidateOverridesSnapshot();
+
+    const result = await syncPendingOverrides();
+
+    expect(result.attempted).toBe(1);
+    expect(result.synced).toBe(1);
+    expect(result.stillPending).toBe(0);
+    expect(readOverridesSnapshot().catalog["0001"].syncStatus).toBe("synced");
+    // The row that was already synced is not written again.
+    expect(state.updates).toHaveLength(1);
+    expect(state.updates[0]).toMatchObject({ equipment_id: "CG-EQP-0012" });
   });
 });
 
@@ -288,6 +341,82 @@ describe("hydrateOverridesFromSupabase", () => {
     expect(readOverridesSnapshot().catalog["0001"].equipment_id).toBe("CG-EQP-0003");
   });
 
+  /**
+   * The reload regression: a change the device made but could not upload must not
+   * be replaced by the row the server still holds.
+   */
+  it("keeps a local change when the remote row still holds the shipped value", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({
+        "0001": {
+          customNameEs: "Press banca",
+          equipment_id: "NONE",
+          station_key: "floor_mat_area",
+          gif_url: "https://cdn.example/coach.gif",
+          dirty: true,
+          syncStatus: "pending",
+        },
+      }),
+    );
+    window.localStorage.setItem(
+      EXERCISE_NAME_OVERRIDES_KEY,
+      JSON.stringify({ "0001": "Press banca" }),
+    );
+    invalidateOverridesSnapshot();
+    state.rows = [
+      {
+        id: "0001",
+        name: "Push-up",
+        equipment: "body weight",
+        gif_url: "https://cdn.example/shipped.gif",
+        equipment_id: "CG-EQP-0040",
+        station_key: "decline_bench",
+      },
+    ];
+
+    const result = await hydrateOverridesFromSupabase();
+
+    expect(result.hydrated).toBe(0);
+    const snapshot = readOverridesSnapshot();
+    expect(snapshot.catalog["0001"]).toMatchObject({
+      customNameEs: "Press banca",
+      equipment_id: "NONE",
+      station_key: "floor_mat_area",
+      gif_url: "https://cdn.example/coach.gif",
+      dirty: true,
+    });
+    expect(snapshot.names["0001"]).toBe("Press banca");
+  });
+
+  it("adopts a remote field the device never touched, and keeps the rest pending", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({
+        "0001": { customNameEs: "Press banca", dirty: true, syncStatus: "pending" },
+      }),
+    );
+    invalidateOverridesSnapshot();
+    state.rows = [
+      {
+        id: "0001",
+        name: "Push-up",
+        equipment: "body weight",
+        gif_url: "https://cdn.example/shipped.gif",
+        equipment_id: "CG-EQP-0007",
+      },
+    ];
+
+    await hydrateOverridesFromSupabase();
+
+    const snapshot = readOverridesSnapshot();
+    // The machine the device never touched comes from the server...
+    expect(snapshot.catalog["0001"].equipment_id).toBe("CG-EQP-0007");
+    // ...while the rename it has not uploaded stays exactly as it was.
+    expect(snapshot.catalog["0001"].customNameEs).toBe("Press banca");
+    expect(snapshot.catalog["0001"].syncStatus).toBe("pending");
+  });
+
   it("says offline rather than reporting an empty catalog", async () => {
     state.online = false;
     const result = await hydrateOverridesFromSupabase();
@@ -299,8 +428,8 @@ describe("uploadOrResolveCoachGif", () => {
   it("keeps a pasted URL and pins it to the exercise", async () => {
     const result = await uploadOrResolveCoachGif("https://cdn.example/demo.gif", "0001");
 
-    expect(result).toEqual({ ok: true, url: "https://cdn.example/demo.gif", remote: "upserted" });
-    expect(state.upserts[0]).toMatchObject({ gif_url: "https://cdn.example/demo.gif" });
+    expect(result).toEqual({ ok: true, url: "https://cdn.example/demo.gif", remote: "updated" });
+    expect(state.updates[0]).toMatchObject({ gif_url: "https://cdn.example/demo.gif" });
     expect(state.uploads).toHaveLength(0);
   });
 
@@ -319,7 +448,7 @@ describe("uploadOrResolveCoachGif", () => {
     expect(result.url).toContain(`${COACH_GIF_BUCKET}/coach/0001-`);
     expect(result.url.endsWith(".gif")).toBe(true);
     expect(state.uploads).toHaveLength(1);
-    expect(state.upserts[0]).toMatchObject({ gif_url: result.url });
+    expect(state.updates[0]).toMatchObject({ gif_url: result.url });
   });
 
   it("refuses a file that is not an image the catalog can render", async () => {

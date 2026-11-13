@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Dumbbell, ImageIcon, Loader2, LogOut, Pencil, Plus, Search, Sparkles, X } from "lucide-react";
+import { Check, CloudUpload, Dumbbell, ImageIcon, Loader2, LogOut, Pencil, Plus, Search, Sparkles, X } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -16,18 +16,22 @@ import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { translateBodyPart } from "@/lib/i18n";
 import {
   addCustomExercise,
+  readCatalogOverride,
   readOverridesSnapshot,
   subscribeCatalogOverrides,
 } from "@/lib/catalog/customExercises";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import {
+  NO_EQUIPMENT_ID,
   normaliseExerciseName,
   resolveCatalogExercises,
   type ResolvedCatalogExercise,
 } from "@/lib/catalog/resolveExercise";
 import {
+  countPendingOverrides,
   hydrateOverridesFromSupabase,
   persistCoachExerciseChange,
+  syncPendingOverrides,
   uploadOrResolveCoachGif,
 } from "@/lib/catalog/coachCatalogSync";
 import { equipmentMap } from "@/data/equipmentMap";
@@ -801,7 +805,12 @@ function MachinePicker({
               onClick={() => onSelect(machine.id)}
               className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-[#2C2C2E] p-2 text-left"
             >
-              <ExerciseThumb src={machine.image} alt="" className="h-14 w-14 bg-white" />
+              <ExerciseThumb
+                src={machine.image}
+                alt=""
+                className="h-14 w-14 bg-white"
+                fallbackLabel={machine.id.slice(-4)}
+              />
               <span className="min-w-0">
                 <span className="block truncate text-sm text-white">{machine.name}</span>
                 <span className="block truncate font-mono text-[11px] text-zinc-500">
@@ -991,6 +1000,43 @@ function ExercisesPanel({
   const resolvedRef = useRef<ResolvedCatalogExercise[]>([]);
   /** Ids the coach has touched, so "Editados por coach" can filter on them. */
   const [edited, setEdited] = useState<Set<string>>(new Set());
+  /**
+   * Changes this device has not confirmed with Supabase.
+   *
+   * The number is the point: a coach who renames three exercises and loses the
+   * network has to be able to see that the work is not everywhere yet, and to
+   * finish the job without redoing it.
+   */
+  const [pending, setPending] = useState(() => countPendingOverrides());
+  const [syncing, setSyncing] = useState(false);
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
+
+  const syncPending = async () => {
+    setSyncing(true);
+    setSync({ kind: "working" });
+    setPendingNote(null);
+    try {
+      const result = await syncPendingOverrides();
+      setPending(result.stillPending);
+      if (result.attempted === 0) {
+        setPendingNote("No hay cambios pendientes.");
+        setSync({ kind: "online" });
+      } else if (result.stillPending === 0) {
+        setPendingNote(`${result.synced} ${result.synced === 1 ? "cambio guardado" : "cambios guardados"} globalmente.`);
+        setSync({ kind: "online" });
+      } else {
+        setPendingNote(
+          `${result.synced} de ${result.attempted} guardados; ${result.stillPending} siguen solo en este dispositivo.`,
+        );
+        setSync({ kind: "local", detail: "pendientes" });
+      }
+    } catch {
+      setPendingNote("No se pudo contactar con Supabase. Los cambios siguen en este dispositivo.");
+      setSync({ kind: "offline" });
+    } finally {
+      setSyncing(false);
+    }
+  };
   const createExercise = async () => {
     const name = newExercise.name.trim();
     if (!name) {
@@ -1037,6 +1083,7 @@ function ExercisesPanel({
           ...Object.keys(snapshot.names),
         ]),
       );
+      setPending(countPendingOverrides());
     };
 
     const load = async () => {
@@ -1152,6 +1199,7 @@ function ExercisesPanel({
           ? { kind: "local", detail: result.detail }
           : { kind: "online" },
     );
+    setPending(countPendingOverrides());
   };
 
   /**
@@ -1159,28 +1207,42 @@ function ExercisesPanel({
    *
    * The choice is the whole override: a machine means the exercise can be
    * trained here, and no machine means the athlete does it on the floor.
+   *
+   * "No machine" is written as `NONE`, never as nothing: an empty assignment is
+   * indistinguishable from "this exercise was never decided", and the resolver
+   * used to read that silence as "keep the machine the row shipped with".
    */
   const assignMachine = async (row: ExerciseRow, equipmentId: string | null) => {
     const id = equipmentId || "";
+    const machine = id ? equipmentMap[id] : undefined;
+    const isFloor = !id;
     setPickerFor(null);
     setRows((current) =>
       current.map((candidate) =>
         candidate.id === row.id
           ? {
               ...candidate,
-              equipment_id: id || "NONE",
-              available: Boolean(id),
+              equipment_id: isFloor ? NO_EQUIPMENT_ID : id,
+              available: !isFloor,
             }
           : candidate,
       ),
     );
-    setEquipmentOverrides((current) => ({ ...current, [row.id]: id }));
+    setEquipmentOverrides((current) => ({
+      ...current,
+      [row.id]: isFloor ? NO_EQUIPMENT_ID : id,
+    }));
     markEdited(row.id);
 
     setSync({ kind: "working" });
     const result = await persistCoachExerciseChange(
       row.id,
-      { equipment_id: id || undefined, availableInCronosGym: Boolean(id) },
+      {
+        equipment_id: isFloor ? NO_EQUIPMENT_ID : id,
+        equipment_name: isFloor ? undefined : machine?.name,
+        station_key: isFloor ? "floor_mat_area" : undefined,
+        availableInCronosGym: !isFloor,
+      },
       resolvedRef.current.find((candidate) => candidate.id === row.id) ?? null,
     );
     setSync(
@@ -1190,6 +1252,7 @@ function ExercisesPanel({
           ? { kind: "local", detail: result.detail }
           : { kind: "online" },
     );
+    setPending(countPendingOverrides());
   };
   /**
    * Saves the demonstration the coach chose, from a pasted URL or an uploaded file.
@@ -1233,6 +1296,7 @@ function ExercisesPanel({
           ? { kind: "local", detail: "sin-cliente" }
           : { kind: "online" },
     );
+    setPending(countPendingOverrides());
   };
 
   return (
@@ -1396,6 +1460,31 @@ function ExercisesPanel({
           </span>
           <SyncBadge state={sync} />
         </p>
+        {/*
+          The coach's own save bar: it appears only when there is something to
+          finish, it says how much, and it is the one action that settles it.
+        */}
+        {pending > 0 && (
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#FF9F0A]/40 bg-[#FF9F0A]/10 p-3">
+            <p className="text-xs font-semibold text-[#FFB340]" role="status">
+              {pending} {pending === 1 ? "cambio sin confirmar" : "cambios sin confirmar"} en Supabase
+            </p>
+            <button
+              type="button"
+              onClick={() => void syncPending()}
+              disabled={syncing}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#FF9F0A] px-3 text-xs font-bold text-black disabled:opacity-60"
+            >
+              {syncing ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <CloudUpload size={14} aria-hidden="true" />}
+              Guardar y sincronizar cambios ({pending})
+            </button>
+          </div>
+        )}
+        {pendingNote && (
+          <p className="mt-2 text-xs text-zinc-300" role="status">
+            {pendingNote}
+          </p>
+        )}
         <div className="mt-3 grid gap-2">
           {loadError && (
             <p role="status" className="text-xs text-zinc-400">
@@ -1408,6 +1497,9 @@ function ExercisesPanel({
               selectedEquipmentId && selectedEquipmentId !== "NONE"
                 ? equipmentMap[selectedEquipmentId]
                 : undefined;
+            const overrideState = readCatalogOverride(row.id);
+            const synced = overrideState?.syncStatus === "synced";
+            const pendingRow = Boolean(overrideState) && !synced;
             return (
               <div key={row.id} className="space-y-3 overflow-hidden rounded-2xl border border-white/10 bg-[#1C1C1E] p-3">
                 {/* Row 1: the real GIF, the full name, the catalog id and muscle. */}
@@ -1425,6 +1517,17 @@ function ExercisesPanel({
                     <span className="mt-1 block break-words font-mono text-[11px] leading-snug text-zinc-400">
                       {row.id} · {translateBodyPart(row.body_part)}
                     </span>
+                    {/* Where the change stands: everywhere, or only on this device. */}
+                    {synced && (
+                      <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-[#30D158]">
+                        <Check size={12} aria-hidden="true" /> Guardado globalmente
+                      </span>
+                    )}
+                    {pendingRow && (
+                      <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-[#FFB340]">
+                        <CloudUpload size={12} aria-hidden="true" /> Guardado en este dispositivo
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -1434,6 +1537,7 @@ function ExercisesPanel({
                     src={selectedEquipment?.views?.[0]?.src}
                     alt={selectedEquipment ? `Máquina ${selectedEquipment.name}` : "Sin máquina"}
                     className="h-12 w-12"
+                    fallbackLabel={selectedEquipment ? selectedEquipment.id.slice(-4) : undefined}
                   />
                   <button
                     type="button"
@@ -1586,11 +1690,14 @@ function ExerciseThumb({
   alt = "",
   className = "h-12 w-12",
   fit = "object-cover",
+  fallbackLabel,
 }: {
   src?: string | null;
   alt?: string;
   className?: string;
   fit?: string;
+  /** Shown instead of a broken picture: the tail of the machine's code. */
+  fallbackLabel?: string;
 }) {
   const [broken, setBroken] = useState(!src);
   useEffect(() => {
@@ -1598,8 +1705,13 @@ function ExerciseThumb({
   }, [src]);
   if (broken)
     return (
-      <span className={`flex shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#2C2C2E] text-zinc-400 ${className}`}>
+      <span className={`flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border border-white/10 bg-[#2C2C2E] text-zinc-400 ${className}`}>
         <Dumbbell size={20} aria-hidden="true" />
+        {fallbackLabel && (
+          <span className="font-mono text-[9px] leading-none tracking-wider text-zinc-500">
+            {fallbackLabel}
+          </span>
+        )}
       </span>
     );
   return (

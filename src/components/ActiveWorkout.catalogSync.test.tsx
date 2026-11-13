@@ -10,13 +10,17 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ActiveWorkout } from "./ActiveWorkout";
 import { ActiveSessionProvider } from "../context/ActiveSessionContext";
 import { GymSettingsProvider } from "../context/GymSettingsContext";
 import type { Exercise } from "@/types/supabase";
 import type { PlannedExercise } from "../hooks/useGymData";
-import { CATALOG_OVERRIDES_KEY, invalidateOverridesSnapshot } from "@/lib/catalog/customExercises";
+import {
+  CATALOG_OVERRIDES_KEY,
+  EXERCISE_NAME_OVERRIDES_KEY,
+  invalidateOverridesSnapshot,
+} from "@/lib/catalog/customExercises";
 import { resetCatalogRegistry, setLoadedCatalog } from "@/lib/catalog/catalogRegistry";
 import type { CatalogExercise } from "@/lib/catalog/types";
 
@@ -149,6 +153,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.restoreAllMocks();
 });
 
@@ -193,5 +198,73 @@ describe("ActiveWorkout catalog sync", () => {
       renameInPortal("Flexiones");
     });
     expect(screen.getAllByText("Flexión").length).toBeGreaterThan(0);
+  });
+
+  /**
+   * The reload regression, from the screen the athlete is looking at.
+   *
+   * A coach renames the movement, points it at "no machine" and gives it their
+   * own demonstration; the write could not reach Supabase, so the server still
+   * holds the shipped row. Reloading re-hydrates from that row, and the screen
+   * must still show what the coach decided.
+   */
+  it("survives a reload that re-hydrates the shipped row", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({
+        "0001": {
+          customNameEs: "Flexiones",
+          equipment_id: "NONE",
+          station_key: "floor_mat_area",
+          gif_url: "https://cdn.example/coach.gif",
+          dirty: true,
+          syncStatus: "pending",
+        },
+      }),
+    );
+    window.localStorage.setItem(
+      EXERCISE_NAME_OVERRIDES_KEY,
+      JSON.stringify({ "0001": "Flexiones" }),
+    );
+    invalidateOverridesSnapshot();
+
+    renderWorkout();
+    fireEvent.click(screen.getByRole("button", { name: /Iniciar Entrenamiento/ }));
+
+    expect(screen.getAllByText("Flexiones").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Flexión")).toBeNull();
+  });
+
+  it("shows the coach's name, demonstration and floor area for a reassigned exercise", async () => {
+    renderWorkout();
+    fireEvent.click(screen.getByRole("button", { name: /Iniciar Entrenamiento/ }));
+
+    act(() => {
+      window.localStorage.setItem(
+        CATALOG_OVERRIDES_KEY,
+        JSON.stringify({
+          "0001": {
+            customNameEs: "Flexiones",
+            equipment_id: "NONE",
+            station_key: "floor_mat_area",
+            gif_url: "https://cdn.example/coach.gif",
+          },
+        }),
+      );
+      window.dispatchEvent(new CustomEvent("cronos:catalog-updated"));
+    });
+
+    await waitFor(() => expect(screen.getAllByText("Flexiones").length).toBeGreaterThan(0));
+
+    const demo = document.querySelector(`img[alt="Demo de Flexiones"]`);
+    expect(demo).not.toBeNull();
+    expect(demo?.getAttribute("src")).toContain("coach.gif");
+
+    // `NONE` is a place, not a missing machine: the pill says where it happens
+    // instead of naming the station the row used to belong to.
+    const pills = screen.getAllByRole("button", { name: /Ubicación: Área de Piso \/ Tapete/ });
+    expect(pills.length).toBeGreaterThan(0);
+    expect(pills[0].textContent).toContain("Peso corporal");
+    expect(screen.queryByText(/CG-EQP/)).toBeNull();
   });
 });

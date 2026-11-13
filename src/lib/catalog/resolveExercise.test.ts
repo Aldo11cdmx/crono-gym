@@ -109,13 +109,53 @@ describe("resolveCatalogExercise", () => {
     expect(resolved.effectiveEquipmentName).not.toBe("dumbbell");
   });
 
-  it("reports no machine for a bodyweight row, with the dataset's label", () => {
+  it("reports no machine for a bodyweight row, naming the floor area", () => {
     const resolved = resolveCatalogExercise(row({ equipment: "body weight" }), {
       catalog: {},
       names: {},
     });
     expect(resolved.effectiveEquipmentId).toBe(NO_EQUIPMENT_ID);
-    expect(resolved.effectiveEquipmentName).toBe("Peso corporal");
+    expect(resolved.effectiveEquipmentName).toBe("Peso libre / Piso");
+    expect(resolved.stationKey).toBe("floor_mat_area");
+    // The text column a bodyweight row carries, so nothing reads the old machine.
+    expect(resolved.equipment).toBe("body weight");
+  });
+
+  /**
+   * The reassignment regression: a coach points an exercise at "no machine" and
+   * the screen must stop naming the station the row used to belong to.
+   */
+  it("does not inherit the machine the row shipped with when the coach chose none", () => {
+    const resolved = resolveCatalogExercise(
+      row({ equipment_id: "CG-EQP-0040", equipment_name: "Banco Declinado Abdominales", equipment: "body weight" }),
+      {
+        catalog: { "0001": { equipment_id: "NONE", station_key: "floor_mat_area" } },
+        names: {},
+      },
+    );
+    expect(resolved.effectiveEquipmentId).toBe(NO_EQUIPMENT_ID);
+    expect(resolved.effectiveEquipmentName).toBe("Peso libre / Piso");
+    expect(resolved.effectiveEquipmentName).not.toContain("Banco");
+    expect(resolved.stationKey).toBe("floor_mat_area");
+  });
+
+  it("uses the coach's demonstration for the gif and the still", () => {
+    const resolved = resolveCatalogExercise(row({ equipment_id: "CG-EQP-0003" }), {
+      catalog: { "0001": { gif_url: "https://cdn.example/coach.gif", image: "https://cdn.example/coach.jpg" } },
+      names: {},
+    });
+    expect(resolved.effectiveGifUrl).toBe("https://cdn.example/coach.gif");
+    expect(resolved.gif_url).toBe("https://cdn.example/coach.gif");
+    expect(resolved.effectiveImageUrl).toBe("https://cdn.example/coach.jpg");
+  });
+
+  it("reads an override written under the unpadded id", () => {
+    setLoadedCatalog([row({ equipment_id: "CG-EQP-0003" })]);
+    setOverride("1", { equipment_id: "CG-EQP-0007" });
+    invalidateOverridesSnapshot();
+
+    const found = resolveCatalogExerciseWithOverrides("0001");
+    expect(found?.effectiveEquipmentId).toBe("CG-EQP-0007");
   });
 
   it("names the exercise from the coach first, then the dictionary", () => {

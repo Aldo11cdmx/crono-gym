@@ -20,6 +20,8 @@ import { repairMojibake } from "@/lib/text/mojibake";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { peekLoadedCatalog } from "./catalogRegistry";
 import {
+  readCatalogOverride,
+  readNameOverride,
   readOverridesSnapshot,
   type CatalogOverride,
   type CatalogOverridesSnapshot,
@@ -28,6 +30,15 @@ import type { CatalogExercise, StationKey } from "./types";
 
 /** The id a bodyweight row carries when it has no machine. */
 export const NO_EQUIPMENT_ID = "NONE";
+
+/** What a bodyweight exercise is called when no machine owns it. */
+export const BODYWEIGHT_EQUIPMENT_NAME = "Peso libre / Piso";
+
+/** Where a bodyweight exercise happens. */
+export const BODYWEIGHT_STATION: StationKey = "floor_mat_area";
+
+/** The free-text equipment value a bodyweight row carries. */
+export const BODYWEIGHT_EQUIPMENT_TEXT = "body weight";
 
 /** A station that cannot host a session, whatever the availability flag says. */
 const UNAVAILABLE_STATION: StationKey = "unavailable_station";
@@ -87,25 +98,62 @@ export function resolveCatalogExercise(
   row: CatalogExercise,
   overrides: CatalogOverridesSnapshot = readOverridesSnapshot(),
 ): ResolvedCatalogExercise {
-  const override: CatalogOverride = overrides.catalog[row.id] ?? {};
-  const customName = overrides.names[row.id] ?? override.customNameEs ?? row.customNameEs ?? null;
+  const override: CatalogOverride = readCatalogOverride(row.id, overrides) ?? {};
+  const customName = readNameOverride(row.id, overrides) ?? override.customNameEs ?? row.customNameEs ?? null;
 
   const translated = getExerciseDisplayName({ name: row.name, name_es: row.name_es });
   const displayName = repairMojibake(customName ?? translated).trim() || row.name;
   const nameEs = repairMojibake(customName ?? row.name_es ?? (translated !== row.name ? translated : ""));
 
   const effectiveEquipmentId = override.equipment_id ?? row.equipment_id ?? NO_EQUIPMENT_ID;
-  const mapped = effectiveEquipmentId === NO_EQUIPMENT_ID ? undefined : equipmentMap[effectiveEquipmentId];
-  const equipmentName =
-    repairMojibake(mapped?.name ?? row.equipment_name ?? "") || translateEquipment(row.equipment);
-  const equipmentImage = mapped?.views?.[0]?.src ?? row.image_urls?.[0] ?? "";
   const gifUrl = override.gif_url?.trim() || row.gif_url;
+  const image = override.image?.trim() || row.image;
+
+  // `NONE` is a decision, not an absence: the exercise belongs to no machine, so
+  // it must not inherit the machine the shipped row happened to name, and it must
+  // not fall back to the row's station. Reading the old machine here is what made
+  // a reassigned exercise keep showing the machine it was moved away from.
+  if (effectiveEquipmentId === NO_EQUIPMENT_ID) {
+    // The floor is the default station, but a station the gym cannot host is a
+    // fact about the place, not a machine: it survives the reassignment.
+    const declared = row.station_key as StationKey | undefined;
+    const stationKey = (override.station_key ??
+      (declared === UNAVAILABLE_STATION ? UNAVAILABLE_STATION : BODYWEIGHT_STATION)) as StationKey;
+    const available = override.availableInCronosGym ?? row.availableInCronosGym ?? true;
+    return {
+      ...row,
+      equipment: BODYWEIGHT_EQUIPMENT_TEXT,
+      equipment_id: NO_EQUIPMENT_ID,
+      equipment_name: BODYWEIGHT_EQUIPMENT_NAME,
+      customNameEs: customName ?? undefined,
+      displayName,
+      nameEs: nameEs === "" ? null : nameEs,
+      effectiveEquipmentId: NO_EQUIPMENT_ID,
+      effectiveEquipmentName: BODYWEIGHT_EQUIPMENT_NAME,
+      effectiveEquipmentImage: "",
+      effectiveGifUrl: resolveMediaUrl(gifUrl),
+      effectiveImageUrl: resolveMediaUrl(image),
+      gif_url: gifUrl,
+      image,
+      stationKey,
+      station_key: stationKey,
+      availableInCronosGym: available && stationKey !== UNAVAILABLE_STATION,
+    };
+  }
+
+  const mapped = equipmentMap[effectiveEquipmentId];
+  const equipmentName =
+    repairMojibake(mapped?.name ?? override.equipment_name ?? row.equipment_name ?? "") ||
+    translateEquipment(row.equipment);
+  const equipmentImage = mapped?.views?.[0]?.src ?? row.image_urls?.[0] ?? "";
 
   const stationKey = (override.station_key ?? row.station_key ?? "free_weight_area") as StationKey;
   const available = override.availableInCronosGym ?? row.availableInCronosGym ?? true;
 
   return {
     ...row,
+    equipment_id: effectiveEquipmentId,
+    equipment_name: equipmentName,
     customNameEs: customName ?? undefined,
     displayName,
     nameEs: nameEs === "" ? null : nameEs,
@@ -113,7 +161,9 @@ export function resolveCatalogExercise(
     effectiveEquipmentName: equipmentName,
     effectiveEquipmentImage: resolveMediaUrl(equipmentImage),
     effectiveGifUrl: resolveMediaUrl(gifUrl),
-    effectiveImageUrl: resolveMediaUrl(row.image),
+    effectiveImageUrl: resolveMediaUrl(image),
+    gif_url: gifUrl,
+    image,
     stationKey,
     station_key: stationKey,
     availableInCronosGym: available && stationKey !== UNAVAILABLE_STATION,

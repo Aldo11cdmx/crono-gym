@@ -17,6 +17,8 @@ type RoutineCardRoutine = RoutineWithExercises & {
 
 export interface RoutineCardProps {
   routine: RoutineCardRoutine;
+  /** Bumped by the catalog store; re-reads the exercise names. */
+  catalogRevision?: number;
   onTrain: (routine: RoutineCardRoutine) => void;
   onEdit: () => void;
   onPlan?: () => void;
@@ -52,6 +54,7 @@ function uniqueMuscles(routine: RoutineWithExercises, max = 3): string[] {
 
 export function RoutineCard({
   routine,
+  catalogRevision = 0,
   onTrain,
   onEdit,
   onPlan: _onPlan,
@@ -69,6 +72,17 @@ export function RoutineCard({
     routine.assignment_source === "coach" ||
     Boolean(routine.assigned_by) ||
     Boolean(routine.authored_by_coach);
+
+  /**
+   * The exercise names the card lists.
+   *
+   * A coach's rename has to reach the list too; the revision is what says "the
+   * names may have moved", so the card does not have to guess when to re-read.
+   */
+  const exerciseNames = useMemo(
+    () => routine.exercises.slice(0, 3).map((ex) => getExerciseDisplayName(ex.exercise)),
+    [routine.exercises, catalogRevision],
+  );
 
   const metrics = useMemo(() => {
     const draft = draftFromRoutine(routine);
@@ -330,9 +344,9 @@ export function RoutineCard({
               whiteSpace: "nowrap",
             }}
           >
-            {routine.exercises.slice(0, 3).map((ex, i) => (
+            {exerciseNames.map((name, i) => (
               <span key={i} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {getExerciseDisplayName(ex.exercise)}
+                {name}
                 {i < routine.exercises.length - 1 && i < 2 ? ", " : ""}
               </span>
             ))}

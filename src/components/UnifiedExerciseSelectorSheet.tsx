@@ -19,6 +19,8 @@ import { useExerciseCatalog, normaliseExerciseName } from "@/hooks/useExerciseCa
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useFrequentExercises } from "@/hooks/useFrequentExercises";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useCatalogOverridesVersion } from "@/hooks/useCatalogOverrides";
+import { resolveCatalogExerciseWithOverrides } from "@/lib/catalog/resolveExercise";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
@@ -135,6 +137,9 @@ export function UnifiedExerciseSelectorSheet({
   const isMobile = useMediaQuery(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
   const isFinePointer = useMediaQuery("(pointer: fine)");
   const { exercises, loading: catalogLoading, error: catalogError } = useExerciseCatalog();
+  // A rename or a reassignment made in the portal has to be visible here too; the
+  // revision is the one thing that says the cards should re-resolve.
+  const catalogRevision = useCatalogOverridesVersion();
   const { frequentIds, addBatch } = useFrequentExercises();
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, DEBOUNCE_MS);
@@ -729,6 +734,7 @@ export function UnifiedExerciseSelectorSheet({
                   multiSelect={mode === "multiple"}
                   expanded={expandedId === ex.id}
                   alreadyInDay={alreadyInDay.has(ex.id)}
+                  catalogRevision={catalogRevision}
                   onSelect={handleSelect}
                   onTogglePreview={handleTogglePreview}
                   onRename={handleRenameExercise}
@@ -849,15 +855,24 @@ interface SelectorCardProps {
   onRename?: (id: string, name: string, nameEs: string | null) => void;
   onHide?: (id: string) => void;
   hidden?: boolean;
+  /** Bumped by the catalog store; the card re-resolves its name, machine and media. */
+  catalogRevision?: number;
 }
 
-function SelectorCard({ exercise, order, selected, multiSelect, expanded, alreadyInDay, onSelect, onTogglePreview }: SelectorCardProps) {
-  const media = useMemo(() => resolveMedia("exercise-gif", exercise.id, exercise.gif_url), [exercise.id, exercise.gif_url]);
+function SelectorCard({ exercise, order, selected, multiSelect, expanded, alreadyInDay, catalogRevision = 0, onSelect, onTogglePreview }: SelectorCardProps) {
+  // The card resolves through the override store, so the name, the machine and the
+  // demonstration are the ones the coach last wrote, not the ones the asset shipped.
+  const resolved = useMemo(
+    () => resolveCatalogExerciseWithOverrides(exercise.id),
+    [exercise.id, catalogRevision],
+  );
+  const gifUrl = resolved?.effectiveGifUrl || exercise.gif_url;
+  const media = useMemo(() => resolveMedia("exercise-gif", exercise.id, gifUrl), [exercise.id, gifUrl]);
   const { src, failed, onLoad, onError } = useMediaSrc(media);
   const [previewFailed, setPreviewFailed] = useState(false);
-  const displayName = useMemo(() => getExerciseDisplayName(exercise), [exercise]);
+  const displayName = resolved?.displayName ?? getExerciseDisplayName(exercise);
   const primaryMuscle = exercise.body_part || "—";
-  const equipment = exercise.equipment || "—";
+  const equipment = resolved?.effectiveEquipmentName || exercise.equipment || "—";
   const active = selected && !alreadyInDay;
   const reducedMotion = useReducedMotion();
 

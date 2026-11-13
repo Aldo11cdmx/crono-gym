@@ -20,6 +20,7 @@ import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
 import { coachEcosystemService, sanitizeCoachName } from "@/lib/coach/coachEcosystemService";
 import { DayZeroAssistant } from "./DayZeroAssistant";
+import { useCatalogOverridesVersion } from "@/hooks/useCatalogOverrides";
 import { dayZeroDraft, dayZeroRoutineRow, type DayZeroPlan } from "@/lib/routines/dayZeroPlan";
 
 const VIP_BANNER_COLLAPSED_KEY = "cronos_vip_banner_collapsed_v1";
@@ -49,6 +50,9 @@ const TAB_OPTIONS = [
 export function RoutinesPage() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
   const { routines, loading, error, refresh, upsertLocalRoutine } = useRoutines(userId);
+  // A coach's rename has to reach the list without a reload; the revision is what
+  // makes the cards read the names again.
+  const catalogRevision = useCatalogOverridesVersion();
   const [dayPickerRoutine, setDayPickerRoutine] = useState<RoutineWithMode | null>(null);
   const [sessionConflict, setSessionConflict] = useState<{
     routineId: string | null;
@@ -696,6 +700,7 @@ export function RoutinesPage() {
             <RoutineCard
               key={routine.id}
               routine={routine}
+              catalogRevision={catalogRevision}
               onTrain={handleTrain}
               onEdit={() => openEdit(routine)}
               onPlan={() => openPlan(routine)}

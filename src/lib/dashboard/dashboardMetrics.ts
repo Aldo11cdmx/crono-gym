@@ -48,6 +48,8 @@ export interface DashboardSession {
  * converts to display units.
  */
 export interface RecentPR {
+  /** The exercise id, so the record can follow a rename instead of freezing a name. */
+  exerciseId?: string;
   exerciseName: string;
   weight: number;
   reps: number;
@@ -398,6 +400,7 @@ export function getRecentPRs(
       if (current === undefined || estimate > current) {
         if (current !== undefined && inWindow) {
           found.push({
+            exerciseId: set.exerciseId,
             exerciseName: set.exerciseName,
             weight,
             reps,
@@ -434,6 +437,7 @@ export function getTopRecords(
       const estimated1RM = estimateOneRepMax(weight, reps);
       if (estimated1RM === null) continue;
       const candidate: TopRecord = {
+        exerciseId: set.exerciseId,
         exerciseName: set.exerciseName,
         weight,
         reps,

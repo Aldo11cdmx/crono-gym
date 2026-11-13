@@ -537,6 +537,18 @@ export const SET_LOGGER_LABELS = {
   bodyweightAddKg: "+kg",
   setBadgeAriaLabel: (kindLabel: string, n: number): string =>
     `Serie ${n}, tipo ${kindLabel}`,
+  /**
+   * Where an exercise without a machine happens.
+   *
+   * The pill under the demonstration used to print the machine's name, so a
+   * movement reassigned to "no machine" kept naming the station it came from.
+   * Naming the area instead is what makes the absence of a machine readable.
+   */
+  floorArea: "Área de Piso / Tapete",
+  /** The load a floor exercise uses: the athlete's own body. */
+  bodyweightLoad: "Peso corporal",
+  locationAriaLabel: (label: string): string => `Ubicación: ${label}`,
+  machineAriaLabel: (label: string): string => `Ver foto del equipo: ${label}`,
 } as const;
 
 /**

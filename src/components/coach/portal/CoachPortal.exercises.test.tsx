@@ -22,6 +22,8 @@ const { catalogMock, dbMock } = vi.hoisted(() => {
     updates: [] as Record<string, unknown>[],
     uploads: [] as { path: string; size: number }[],
     selects: 0,
+    /** The ids Supabase says it touched; empty means "no row matched". */
+    writtenIds: ["0001"] as string[],
   };
   // A chainable thenable: `select().limit()` and `update().eq()` both have to
   // resolve, so every link returns the same builder and only the leaves await.
@@ -40,6 +42,10 @@ const { catalogMock, dbMock } = vi.hoisted(() => {
       return chain;
     },
     eq: () => Promise.resolve({ error: null }),
+    // A governance write targets every id form and asks which rows it touched.
+    in: () => ({
+      select: () => Promise.resolve({ error: null, data: state.writtenIds }),
+    }),
     insert: () => Promise.resolve({ error: null }),
   };
   return { catalogMock: { rows: [] as CatalogExercise[] }, dbMock: { state, chain } };
@@ -135,6 +141,7 @@ beforeEach(() => {
   dbMock.state.updates = [];
   dbMock.state.uploads = [];
   dbMock.state.selects = 0;
+  dbMock.state.writtenIds = ["0001"];
 });
 
 afterEach(() => cleanup());
@@ -175,7 +182,9 @@ describe("CoachPortal · gobernanza de ejercicios", () => {
     await waitFor(() => expect(screen.getByText("Press banca plano")).toBeTruthy());
     expect(readOverridesSnapshot().names["0001"]).toBe("Press banca plano");
     // Tier 2: the rename is written to the server as the exercise's name.
-    expect(dbMock.state.upserts[0]?.name).toBe("Press banca plano");
+    expect(dbMock.state.updates[0]?.name).toBe("Press banca plano");
+    // And it is no longer pending: Supabase said which row it wrote.
+    expect(readOverridesSnapshot().catalog["0001"]?.syncStatus).toBe("synced");
   });
 
   it("assigns a machine through the picker and persists it", async () => {
@@ -191,7 +200,7 @@ describe("CoachPortal · gobernanza de ejercicios", () => {
       expect(readOverridesSnapshot().catalog["0001"]?.equipment_id).toMatch(/^CG-EQP-\d{4}$/),
     );
     // The write carries the machine; "Sin máquina" would have to clear it.
-    expect(dbMock.state.upserts.some((row_) => "equipment_id" in row_)).toBe(true);
+    expect(dbMock.state.updates.some((row_) => "equipment_id" in row_)).toBe(true);
   });
 
   it("clears the machine when the coach picks floor work", async () => {
@@ -200,10 +209,42 @@ describe("CoachPortal · gobernanza de ejercicios", () => {
     fireEvent.click(screen.getByLabelText("Máquina para Barbell Bench Press - Medium Grip"));
     fireEvent.click(screen.getByRole("button", { name: /Sin máquina/ }));
 
+    // "No machine" is written as NONE, never as nothing: an empty assignment is
+    // indistinguishable from "never decided", and the resolver used to read the
+    // silence as "keep the machine the row shipped with".
     await waitFor(() =>
-      expect(readOverridesSnapshot().catalog["0001"]?.equipment_id).toBeUndefined(),
+      expect(readOverridesSnapshot().catalog["0001"]?.equipment_id).toBe("NONE"),
     );
+    expect(dbMock.state.updates.some((row_) => row_.equipment === "body weight")).toBe(true);
     expect(screen.getByText(/Peso libre \/ Piso/)).toBeTruthy();
+  });
+
+  /**
+   * The coach's save bar: an unconfirmed change says so, and one action settles it.
+   */
+  it("offers to finish an unconfirmed change, and confirms it once Supabase writes", async () => {
+    dbMock.state.writtenIds = [];
+    await openExercises();
+
+    fireEvent.click(screen.getByRole("button", { name: /Renombrar/ }));
+    fireEvent.change(screen.getByLabelText("Nuevo nombre para Barbell Bench Press - Medium Grip"), {
+      target: { value: "Press banca plano" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+
+    const bar = await screen.findByRole("button", { name: /Guardar y sincronizar cambios/ });
+    expect(bar.textContent).toContain("(1)");
+    expect(screen.getByText(/1 cambio sin confirmar/)).toBeTruthy();
+    expect(screen.getByText(/Guardado en este dispositivo/)).toBeTruthy();
+
+    // The server comes back: the same button settles the debt without redoing it.
+    dbMock.state.writtenIds = ["0001"];
+    fireEvent.click(bar);
+
+    await waitFor(() =>
+      expect(screen.getByText(/1 cambio guardado globalmente/)).toBeTruthy(),
+    );
+    expect(screen.queryByRole("button", { name: /Guardar y sincronizar cambios/ })).toBeNull();
   });
 
   it("saves the demonstration the coach pasted, and the card follows", async () => {

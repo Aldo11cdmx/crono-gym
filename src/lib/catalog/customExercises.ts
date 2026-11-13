@@ -1,5 +1,5 @@
 /**
- * customExercises.ts â€” exercises a coach created ahead of the catalog deploy,
+ * customExercises.ts — exercises a coach created ahead of the catalog deploy,
  * and the overrides a coach applies on top of the shipped catalog.
  *
  * The exercise catalog the app ships is a static JSON asset (`exercisesCatalog.json`)
@@ -11,8 +11,12 @@
  *
  * Overrides are the other half: a coach renames an exercise or points it at a machine,
  * and the app has to show that immediately without a redeploy. They live in two stores
- * with separate jobs â€” the machine/availability of a row, and the name a coach gave it â€”
+ * with separate jobs — the machine/availability of a row, and the name a coach gave it —
  * so writing one never erases the other.
+ *
+ * An override also carries its own sync state (`dirty`, `syncStatus`, `updatedAt`), so a
+ * change the coach made on this device is never replaced by a remote row that still holds
+ * the shipped value. `mergeOverridesFromRemote` is where that rule lives.
  *
  * A missing or corrupt store is the same as "no custom exercises" and "no overrides",
  * so the catalog still loads.
@@ -29,10 +33,31 @@ export const CATALOG_UPDATED_EVENT = "cronos:catalog-updated";
 export interface CatalogOverride {
   customNameEs?: string;
   equipment_id?: string;
+  /** The machine's name as the coach sees it, so a machine the map does not know still renders. */
+  equipment_name?: string;
   station_key?: StationKey;
+  movement_pattern?: string;
   availableInCronosGym?: boolean;
   /** The coach's own demonstration, when the shipped one is wrong. */
   gif_url?: string;
+  /** The coach's own still, when the shipped one is wrong. */
+  image?: string;
+  /** Epoch ms of the last write on this device. */
+  updatedAt?: number;
+  /** True while Supabase has not confirmed this override. */
+  dirty?: boolean;
+  syncStatus?: OverrideSyncStatus;
+}
+
+export type OverrideSyncStatus = "synced" | "pending" | "local_only";
+
+/** The shipped values an override is compared against: the default, not a cache. */
+export interface CatalogDefault {
+  name?: string;
+  gif_url?: string;
+  equipment_id?: string | null;
+  equipment_name?: string | null;
+  station_key?: string | null;
 }
 
 export type CatalogOverrides = Record<string, CatalogOverride>;
@@ -44,6 +69,30 @@ export type ExerciseNameOverrides = Record<string, string>;
 export interface CatalogOverridesSnapshot {
   catalog: CatalogOverrides;
   names: ExerciseNameOverrides;
+}
+
+/**
+ * The canonical form of a catalog id: the padded one, as the shipped asset writes it.
+ *
+ * The asset pads to four digits (`0001`) while history rows, the coach portal and
+ * Supabase answers all carry `1`. A lookup that only tries one of them misses the
+ * override the other one wrote, which is how a rename used to vanish on reload.
+ */
+export function normaliseExerciseId(exerciseId: string): string {
+  const trimmed = exerciseId.trim();
+  if (trimmed === "") return trimmed;
+  return /^\d+$/.test(trimmed) ? trimmed.padStart(4, "0") : trimmed;
+}
+
+/** Every key an override of this exercise may live under, canonical first. */
+export function exerciseIdVariants(exerciseId: string): string[] {
+  const canonical = normaliseExerciseId(exerciseId);
+  const variants = [canonical];
+  if (/^\d+$/.test(canonical)) {
+    const unpadded = String(Number(canonical));
+    if (unpadded !== canonical) variants.push(unpadded);
+  }
+  return variants;
 }
 
 function readJson(key: string): unknown {
@@ -122,21 +171,93 @@ function emit(exerciseId: string, override: CatalogOverride): void {
  *
  * The merge is the point: assigning a machine used to replace the whole object,
  * so a rename followed by a machine change silently lost the rename.
+ *
+ * The write lands on the canonical id *and* on its unpadded twin, so a reader that
+ * asks for either key finds it.
  */
 export function saveCatalogOverride(exerciseId: string, override: CatalogOverride): void {
   if (typeof window === "undefined") return;
   const { customNameEs, ...fields } = override;
   const current = loadCatalogOverrides();
-  const merged: CatalogOverride = { ...(current[exerciseId] ?? {}), ...fields };
+  const canonical = normaliseExerciseId(exerciseId);
+  const base = current[canonical] ?? current[exerciseId] ?? {};
+  const merged: CatalogOverride = { ...base, ...fields };
+  if (merged.dirty === undefined) merged.dirty = true;
+  if (merged.syncStatus === undefined) {
+    merged.syncStatus = merged.dirty ? "pending" : "synced";
+  }
+  if (merged.updatedAt === undefined) merged.updatedAt = Date.now();
   for (const key of Object.keys(merged) as Array<keyof CatalogOverride>) {
     if (merged[key] === undefined) delete merged[key];
   }
-  writeJson(CATALOG_OVERRIDES_KEY, { ...current, [exerciseId]: merged });
+
+  const next: CatalogOverrides = { ...current, [canonical]: merged };
+  for (const variant of exerciseIdVariants(exerciseId)) {
+    if (variant !== canonical) next[variant] = merged;
+  }
+  writeJson(CATALOG_OVERRIDES_KEY, next);
+
   if (customNameEs !== undefined) {
     writeNameOverride(exerciseId, customNameEs);
   }
   invalidateOverridesSnapshot();
   emit(exerciseId, override);
+}
+
+/**
+ * Records what Supabase answered for one override.
+ *
+ * Only this may clear `dirty`: a change stays "pending" until the server says it
+ * has the row, and stays "local_only" when it does not, so a reload never presents
+ * an unconfirmed change as if it were saved everywhere.
+ */
+export function markCatalogOverrideSynced(
+  exerciseId: string,
+  status: Exclude<OverrideSyncStatus, "pending">,
+): void {
+  if (typeof window === "undefined") return;
+  const current = loadCatalogOverrides();
+  const canonical = normaliseExerciseId(exerciseId);
+  const existing = current[canonical] ?? current[exerciseId];
+  if (!existing) return;
+
+  const merged: CatalogOverride = {
+    ...existing,
+    dirty: status !== "synced",
+    syncStatus: status,
+    updatedAt: Date.now(),
+  };
+  const next: CatalogOverrides = { ...current, [canonical]: merged };
+  for (const variant of exerciseIdVariants(exerciseId)) {
+    if (variant !== canonical) next[variant] = merged;
+  }
+  writeJson(CATALOG_OVERRIDES_KEY, next);
+  invalidateOverridesSnapshot();
+  emit(exerciseId, merged);
+}
+
+/** The override of one exercise, whichever key it was written under. */
+export function readCatalogOverride(
+  exerciseId: string,
+  snapshot: CatalogOverridesSnapshot = readOverridesSnapshot(),
+): CatalogOverride | undefined {
+  for (const variant of exerciseIdVariants(exerciseId)) {
+    const found = snapshot.catalog[variant];
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** The coach's name for one exercise, whichever key it was written under. */
+export function readNameOverride(
+  exerciseId: string,
+  snapshot: CatalogOverridesSnapshot = readOverridesSnapshot(),
+): string | undefined {
+  for (const variant of exerciseIdVariants(exerciseId)) {
+    const found = snapshot.names[variant];
+    if (found) return found;
+  }
+  return undefined;
 }
 
 /** Writes the coach's name for one exercise. Empty clears it. */
@@ -150,8 +271,12 @@ export function saveNameOverride(exerciseId: string, customNameEs: string): void
 function writeNameOverride(exerciseId: string, customNameEs: string): void {
   const names = loadNameOverrides();
   const trimmed = customNameEs.trim();
-  if (trimmed === "") delete names[exerciseId];
-  else names[exerciseId] = trimmed;
+  const canonical = normaliseExerciseId(exerciseId);
+  for (const variant of exerciseIdVariants(exerciseId)) {
+    if (trimmed === "") delete names[variant];
+    else names[variant] = trimmed;
+  }
+  if (trimmed === "" && canonical !== exerciseId) delete names[exerciseId];
   writeJson(EXERCISE_NAME_OVERRIDES_KEY, names);
 }
 
@@ -192,28 +317,103 @@ export function subscribeCatalogOverrides(listener: () => void): () => void {
  * changes, and the catalog would spend the whole load re-rendering. The merge is
  * per field -- a remote value the coach never set does not erase the one this
  * device holds -- and the announcement happens once, at the end.
+ *
+ * The anti-revert rule is the reason this is not a plain merge. A device that
+ * edited a row while Supabase still holds the shipped value (a failed write, a
+ * policy that rejected the update, a row written under the other id form) used to
+ * be overwritten by that shipped value on the next load, and the coach's work
+ * disappeared on reload. Now a local override that is still `dirty` is only
+ * replaced by a remote value that actually differs from the catalog default; a
+ * remote value equal to the default is ignored, because it carries no news.
+ *
+ * `baseById` is the shipped catalog, so the comparison is against the default and
+ * not against whatever the local store happened to cache.
  */
-export function mergeOverridesFromRemote(remote: CatalogOverrides): number {
+export function mergeOverridesFromRemote(
+  remote: CatalogOverrides,
+  baseById?: ReadonlyMap<string, CatalogDefault>,
+): number {
   if (typeof window === "undefined") return 0;
   const current = loadCatalogOverrides();
   const names = loadNameOverrides();
   let changed = 0;
   const nextCatalog: CatalogOverrides = { ...current };
 
-  for (const [id, override] of Object.entries(remote)) {
-    if (!override || typeof override !== "object") continue;
-    const merged: CatalogOverride = { ...(current[id] ?? {}) };
-    if (override.equipment_id) merged.equipment_id = override.equipment_id;
-    if (override.station_key) merged.station_key = override.station_key;
-    if (typeof override.availableInCronosGym === "boolean") {
-      merged.availableInCronosGym = override.availableInCronosGym;
+  for (const [rawId, incoming] of Object.entries(remote)) {
+    if (!incoming || typeof incoming !== "object") continue;
+    const canonical = normaliseExerciseId(rawId);
+    const existing = current[canonical] ?? current[rawId] ?? {};
+    const base = baseById?.get(canonical);
+    const localDirty = existing.dirty === true;
+    const merged: CatalogOverride = { ...existing };
+
+    /**
+     * A field the device is still holding unsent.
+     *
+     * `dirty` means "Supabase does not have this yet", so the server cannot be
+     * newer for that field: whatever it returns is either the shipped default or
+     * the value this device failed to upload. Neither may replace the local one,
+     * which is exactly how a rename used to vanish on reload.
+     */
+    const held = (field: keyof CatalogOverride): boolean =>
+      localDirty && existing[field] !== undefined;
+
+    /** A remote value equal to the shipped one carries no news. */
+    const isDefault = (value: string | undefined, fallback: string | undefined): boolean =>
+      value !== undefined && fallback !== undefined && value === fallback;
+
+    if (!held("equipment_id") && incoming.equipment_id) {
+      if (!isDefault(incoming.equipment_id, base?.equipment_id ?? undefined)) {
+        merged.equipment_id = incoming.equipment_id;
+      }
     }
-    if (override.gif_url) merged.gif_url = override.gif_url;
-    if (JSON.stringify(merged) === JSON.stringify(current[id] ?? {})) continue;
-    nextCatalog[id] = merged;
-    changed += 1;
-    const customNameEs = override.customNameEs?.trim();
-    if (customNameEs) names[id] = customNameEs;
+    if (!held("equipment_name") && incoming.equipment_name) {
+      if (!isDefault(incoming.equipment_name, base?.equipment_name ?? undefined)) {
+        merged.equipment_name = incoming.equipment_name;
+      }
+    }
+    if (!held("station_key") && incoming.station_key) {
+      if (!isDefault(incoming.station_key, base?.station_key ?? undefined)) {
+        merged.station_key = incoming.station_key;
+      }
+    }
+    if (!held("movement_pattern") && incoming.movement_pattern) {
+      merged.movement_pattern = incoming.movement_pattern;
+    }
+    if (!held("availableInCronosGym") && typeof incoming.availableInCronosGym === "boolean") {
+      merged.availableInCronosGym = incoming.availableInCronosGym;
+    }
+    // A remote GIF only counts as a coach's choice when it differs from the one
+    // the device shipped; otherwise every row would carry an override and the
+    // shipped demonstrations would stop updating with the app.
+    if (!held("gif_url") && incoming.gif_url && !isDefault(incoming.gif_url, base?.gif_url)) {
+      merged.gif_url = incoming.gif_url;
+    }
+    if (!held("image") && incoming.image && !isDefault(incoming.image, undefined)) {
+      merged.image = incoming.image;
+    }
+
+    const customNameEs = incoming.customNameEs?.trim();
+    const remoteNameIsDefault =
+      Boolean(customNameEs) && Boolean(base?.name) && customNameEs === base?.name;
+    const localName = names[canonical] ?? names[rawId];
+    const nameHeld = localDirty && Boolean(localName);
+    const nameIsNews = Boolean(customNameEs) && !remoteNameIsDefault;
+
+    if (JSON.stringify(merged) !== JSON.stringify(existing)) {
+      nextCatalog[canonical] = merged;
+      for (const variant of exerciseIdVariants(rawId)) {
+        if (variant !== canonical) nextCatalog[variant] = merged;
+      }
+      changed += 1;
+    }
+
+    if (customNameEs && nameIsNews && !nameHeld) {
+      names[canonical] = customNameEs;
+      for (const variant of exerciseIdVariants(rawId)) {
+        if (variant !== canonical) names[variant] = customNameEs;
+      }
+    }
   }
 
   if (changed === 0) return 0;
@@ -222,6 +422,24 @@ export function mergeOverridesFromRemote(remote: CatalogOverrides): number {
   invalidateOverridesSnapshot();
   announce({ hydrated: changed });
   return changed;
+}
+
+/**
+ * One entry per exercise, under its canonical id.
+ *
+ * A write lands on the padded id and on its unpadded twin, so a reader that asks
+ * for either key finds it. Anything that counts or re-sends work has to see the
+ * exercise once, or a single rename would look like two.
+ */
+export function canonicalOverrides(): Array<[string, CatalogOverride]> {
+  const byId = new Map<string, CatalogOverride>();
+  for (const [id, override] of Object.entries(loadCatalogOverrides())) {
+    const canonical = normaliseExerciseId(id);
+    const known = byId.get(canonical);
+    // The canonical key wins when both exist; they carry the same object anyway.
+    if (!known || id === canonical) byId.set(canonical, override);
+  }
+  return [...byId.entries()];
 }
 
 /** Reads the device-local custom exercises. Never throws. */

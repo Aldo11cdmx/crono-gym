@@ -68,7 +68,7 @@ import { useActiveSession } from "../context/ActiveSessionContext";
 import { useGymSettings } from "../context/GymSettingsContext";
 import { useElapsedMs, formatElapsed } from "../hooks/useElapsedMs";
 import { RestTimer } from "./RestTimer";
-import { UNDO_LABELS } from "../lib/i18n";
+import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
 import { toWarmupColumn } from "../lib/workout/setKind";
 import {
   cloneRoutineToSession,
@@ -804,6 +804,8 @@ interface ExerciseStageProps {
   totalSets: number;
   lastSessionShort: string | null;
   equipment: EquipmentEntry | null;
+  /** What the location pill reads: the machine and its code, or the floor area. */
+  locationLabel: string;
   onDemo?: () => void;
   onAdvance?: () => void;
   onChangeExercise: () => void;
@@ -816,6 +818,7 @@ function ExerciseStage({
   totalSets,
   lastSessionShort,
   equipment,
+  locationLabel,
   onDemo,
   onAdvance,
   onChangeExercise,
@@ -886,12 +889,14 @@ function ExerciseStage({
             Sin demo disponible
           </div>
         )}
-        {/* Compact "Machine" pill in bottom-right corner of GIF */}
-        {equipment && (
+        {/* Compact "Machine" pill in bottom-right corner of GIF. A bodyweight
+            exercise has no machine to inspect, so the pill only says where it
+            happens instead of pretending there is a station to open. */}
+        {locationLabel && (
           <button
             type="button"
-            aria-label={`Ver foto del equipo: ${equipment.name}`}
-            onClick={onAdjustEquipment}
+            aria-label={equipment ? SET_LOGGER_LABELS.machineAriaLabel(locationLabel) : SET_LOGGER_LABELS.locationAriaLabel(locationLabel)}
+            onClick={equipment ? onAdjustEquipment : undefined}
             style={{
               position: "absolute",
               bottom: 8,
@@ -906,12 +911,12 @@ function ExerciseStage({
               color: "#D4D4D8",
               fontSize: "11px",
               fontWeight: 500,
-              cursor: "pointer",
+              cursor: equipment ? "pointer" : "default",
               backdropFilter: "blur(12px)",
             }}
           >
             <MapPin size={10} aria-hidden="true" />
-            <span>{equipment.name}</span>
+            <span>{locationLabel}</span>
           </button>
         )}
       </div>
@@ -1619,10 +1624,29 @@ export function ActiveWorkout({
   );
   const equipmentForSelected = useMemo<EquipmentEntry | null>(() => {
     const id = selectedCatalogExercise?.effectiveEquipmentId;
-    const mapped = id ? equipmentMap[id] : undefined;
+    // `NONE` is a decision: the exercise belongs to the floor, and falling back to
+    // a guessed machine would put the athlete in front of the wrong station.
+    if (!id || id === "NONE") return null;
+    const mapped = equipmentMap[id];
     if (!mapped) return equipmentSuggestion.primary;
     return { ...mapped, id: mapped.id } as EquipmentEntry;
   }, [selectedCatalogExercise, equipmentSuggestion]);
+
+  /**
+   * The location pill: which machine, or the floor.
+   *
+   * The id is part of the text on purpose: a coach who reassigns a movement wants
+   * to see the code the portal wrote, not just a friendly name that several
+   * stations share.
+   */
+  const locationLabel = useMemo(() => {
+    const resolved = selectedCatalogExercise;
+    if (!resolved) return "";
+    if (resolved.effectiveEquipmentId === "NONE") {
+      return `${SET_LOGGER_LABELS.floorArea} · ${SET_LOGGER_LABELS.bodyweightLoad}`;
+    }
+    return `${resolved.effectiveEquipmentId} · ${resolved.effectiveEquipmentName}`;
+  }, [selectedCatalogExercise]);
 
   const selectedSuperset = useMemo(() => {
     if (!selected) return null;
@@ -2470,6 +2494,7 @@ export function ActiveWorkout({
                 totalSets={selected.sets.length}
                 lastSessionShort={lastSessionShort}
                 equipment={equipmentForSelected}
+                locationLabel={locationLabel}
                 onDemo={() => setIsDemoOpen(true)}
                 onAdvance={() => setIsAvanceOpen(true)}
                 onChangeExercise={() => {

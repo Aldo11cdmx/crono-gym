@@ -1,5 +1,8 @@
 import { Trophy } from "lucide-react";
+import { useMemo } from "react";
 import type { RecentPR, TopRecord } from "@/lib/dashboard/dashboardMetrics";
+import { useCatalogOverridesVersion } from "@/hooks/useCatalogOverrides";
+import { resolveCatalogExerciseWithOverrides } from "@/lib/catalog/resolveExercise";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 
 function formatDate(iso: string): string {
@@ -12,12 +15,34 @@ function formatEstimated1RM(value: number): string {
   return (Math.round(value * 10) / 10).toLocaleString("es-MX", { maximumFractionDigits: 1 });
 }
 
+/**
+ * The name a record should show.
+ *
+ * A record stores the name the session had; a coach's rename is not that name any
+ * more. When the row carries its id the catalog is asked, so a renamed exercise
+ * reads the same in the records as it does in the session.
+ */
+function recordName(record: RecentPR): string {
+  const resolved = record.exerciseId
+    ? resolveCatalogExerciseWithOverrides(record.exerciseId)
+    : null;
+  return resolved?.displayName ?? localizedName(record.exerciseName);
+}
+
 /** Localized exercise name: the Spanish dictionary first, then the raw name as a last resort. */
 function localizedName(name: string): string {
   return getExerciseDisplayName({ name });
 }
 
 export function PRSection({ topRecords, recentPRs, className }: { topRecords: readonly TopRecord[]; recentPRs: readonly RecentPR[]; compact?: boolean; className?: string }) {
+  // A rename made while this screen is open changes the records too; the version is
+  // the reason to re-read them.
+  const catalogRevision = useCatalogOverridesVersion();
+  const names = useMemo(
+    () => new Map(topRecords.map((record) => [record, recordName(record)] as const)),
+    [topRecords, catalogRevision],
+  );
+
   return (
     <section aria-label="Récords recientes" className={className}>
       <header className="mb-3 flex items-center gap-2">
@@ -31,7 +56,7 @@ export function PRSection({ topRecords, recentPRs, className }: { topRecords: re
           {topRecords.slice(0, 3).map((pr) => (
             <div key={`${pr.exerciseName}-${pr.achievedAt}`} className="flex items-center justify-between gap-3 px-4 py-3">
               <div className="min-w-0">
-                <p className="line-clamp-2 text-[13px] leading-snug font-semibold text-white">{localizedName(pr.exerciseName)}</p>
+                <p className="line-clamp-2 text-[13px] leading-snug font-semibold text-white">{names.get(pr) ?? localizedName(pr.exerciseName)}</p>
                 <p className="text-xs text-zinc-400">{formatDate(pr.achievedAt)}</p>
               </div>
               <div className="shrink-0 text-right">

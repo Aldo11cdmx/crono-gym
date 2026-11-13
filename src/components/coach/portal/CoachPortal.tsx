@@ -13,13 +13,16 @@ import { CoachAthleteSearch, type CoachAthlete } from "./CoachAthleteSearch";
 import { AthleteCRM } from "./AthleteCRM";
 import { VipRoutineBuilder } from "./VipRoutineBuilder";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
-import { translateBodyPart, translateEquipment } from "@/lib/i18n";
-import { addCustomExercise } from "@/lib/catalog/customExercises";
-import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { translateBodyPart } from "@/lib/i18n";
 import {
+  addCustomExercise,
   loadCatalogOverrides,
   saveCatalogOverride,
+  saveNameOverride,
+  subscribeCatalogOverrides,
 } from "@/lib/catalog/customExercises";
+import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { resolveCatalogExercises, type ResolvedCatalogExercise } from "@/lib/catalog/resolveExercise";
 import { equipmentMap } from "@/data/equipmentMap";
 
 type CoachTab = "clients" | "expediente" | "templates" | "exercises";
@@ -33,10 +36,30 @@ type ExerciseRow = {
   gif_url?: string | null;
   equipment_id?: string;
   customNameEs?: string;
+  available?: boolean;
 };
 
 const card = "rounded-2xl border border-white/10 bg-[#1C1C1E] p-4";
 const control = "rounded-xl border border-white/10 bg-[#2C2C2E]";
+
+/** Cards mounted per page: enough to browse, few enough to open instantly. */
+const EXERCISES_PAGE_SIZE = 60;
+
+/** One resolved catalog row, in the shape the panel renders. */
+function toRow(row: ResolvedCatalogExercise): ExerciseRow {
+  return {
+    id: row.id,
+    name: row.name,
+    name_es: row.nameEs,
+    body_part: row.body_part,
+    target: row.target,
+    equipment: row.equipment,
+    gif_url: row.effectiveGifUrl || row.effectiveImageUrl,
+    equipment_id: row.effectiveEquipmentId,
+    customNameEs: row.displayName,
+    available: row.availableInCronosGym,
+  };
+}
 
 export function CoachPortal() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
@@ -606,6 +629,8 @@ function ExercisesPanel({
   const [equipmentOverrides, setEquipmentOverrides] = useState<
     Record<string, string>
   >({});
+  const [limit, setLimit] = useState(EXERCISES_PAGE_SIZE);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const createExercise = async () => {
     const name = newExercise.name.trim();
     if (!name) {
@@ -637,53 +662,80 @@ function ExercisesPanel({
     setCreateOpen(false);
   };
   useEffect(() => {
-    setEquipmentOverrides(
-      Object.fromEntries(
-        Object.entries(loadCatalogOverrides()).map(([id, value]) => [
-          id,
-          value.equipment_id ?? "",
-        ]),
-      ),
-    );
-    void loadCatalog()
-      .then((catalog) =>
-        setRows(
-          catalog.map((row) => ({
-      id: row.id,
-      name: row.name,
-      name_es: row.customNameEs ?? row.name_es ?? null,
-      body_part: row.body_part,
-      target: row.target,
-      equipment: row.equipment,
-      gif_url: row.image || row.gif_url,
-      equipment_id: row.equipment_id,
-      customNameEs: row.customNameEs,
-          })),
+    let alive = true;
+
+    const applyOverrides = () => {
+      setEquipmentOverrides(
+        Object.fromEntries(
+          Object.entries(loadCatalogOverrides()).map(([id, value]) => [
+            id,
+            value.equipment_id ?? "",
+          ]),
         ),
-      )
-      .catch(() => {
-        void (supabase as any)
-          .from("exercises")
-          .select("id,name,name_es,body_part,target,equipment,gif_url")
-          .eq("is_active", true)
-          .order("name")
-        .then(({ data }: any) => setRows(data ?? []));
+      );
+    };
+
+    const load = async () => {
+      const catalog = await loadCatalog();
+      if (!alive) return;
+      // The shipped catalog is the list: 1,324 rows, each one already carrying
+      // its Spanish name, its real GIF and the machine it is mapped to. The
+      // Supabase table is a fallback for a device that cannot read the asset.
+      setRows(resolveCatalogExercises(catalog).map(toRow));
+      applyOverrides();
+    };
+
+    applyOverrides();
+    void load().catch(() => {
+      if (!alive) return;
+      setLoadError("No se pudo leer el catálogo local. Mostrando los ejercicios del servidor.");
+      void (supabase as any)
+        .from("exercises")
+        .select("id,name,name_es,body_part,target,equipment,gif_url")
+        .eq("is_active", true)
+        .order("name")
+        .then(({ data }: any) => {
+          if (alive) setRows(data ?? []);
+        });
     });
+
+    // A rename or a machine change made in another tab has to reach this list too.
+    const unsubscribe = subscribeCatalogOverrides(() => {
+      void load().catch(() => undefined);
+    });
+
+    return () => {
+      alive = false;
+      unsubscribe();
+    };
   }, []);
-  const filtered = useMemo(
-    () =>
-      rows.filter((row) =>
-        `${row.name} ${row.name_es ?? ""}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
-      ),
-    [query, rows],
-  );
+
+  const filtered = useMemo(() => {
+    const query_ = query.trim().toLowerCase();
+    if (query_ === "") return rows;
+    return rows.filter((row) =>
+      `${row.id} ${row.name} ${row.name_es ?? ""} ${translateBodyPart(row.body_part)}`
+        .toLowerCase()
+        .includes(query_),
+    );
+  }, [query, rows]);
+
+  // 1,324 cards with two images each is not a list to mount at once: the panel
+  // opens on the first page and asks for more.
+  const visible = filtered.slice(0, limit);
+  useEffect(() => {
+    setLimit(EXERCISES_PAGE_SIZE);
+  }, [query]);
+
   const renameExercise = async (id: string) => {
     const nextName = rename.trim();
     if (!nextName) return;
-    await coachEcosystemService.renameExerciseGlobal(id, nextName);
-    saveCatalogOverride(id, { customNameEs: nextName });
+    try {
+      await coachEcosystemService.renameExerciseGlobal(id, nextName);
+    } catch {
+      // The Supabase write may be offline; the local override still applies here.
+    }
+    saveNameOverride(id, nextName);
     setRows((current) =>
       current.map((row) =>
         row.id === id
@@ -693,6 +745,7 @@ function ExercisesPanel({
     );
     setRenameId(null);
   };
+
   const saveEquipment = (id: string, equipmentId: string) => {
     saveCatalogOverride(id, {
       equipment_id: equipmentId || undefined,
@@ -701,7 +754,13 @@ function ExercisesPanel({
     setEquipmentOverrides((current) => ({ ...current, [id]: equipmentId }));
     setRows((current) =>
       current.map((row) =>
-        row.id === id ? { ...row, equipment_id: equipmentId } : row,
+        row.id === id
+          ? {
+            ...row,
+            equipment_id: equipmentId || "NONE",
+            available: Boolean(equipmentId),
+          }
+          : row,
       ),
     );
   };
@@ -840,36 +899,129 @@ function ExercisesPanel({
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>{" "}
+        <p className="mt-2 text-xs text-zinc-500">
+          {filtered.length} de {rows.length} ejercicios del catálogo local
+        </p>
         <div className="mt-3 grid gap-2">
-          {filtered.slice(0, 40).map((row) => (
-            <div key={row.id} className="space-y-2.5 overflow-hidden rounded-2xl border border-white/10 bg-[#1C1C1E] p-3">
-              <div className="flex min-w-0 items-start gap-3">
-                <ExerciseThumb src={row.gif_url} className="h-14 w-14" />
-                <div className="min-w-0 flex-1">
-                  <strong className="line-clamp-2 text-sm font-semibold text-white">
-                    {getExerciseDisplayName({ name: row.name, name_es: row.name_es })}
-                  </strong>
-                  <span className="mt-1 block truncate text-xs text-zinc-400">
-                    {row.id} · {translateBodyPart(row.body_part)} · {equipmentMap[equipmentOverrides[row.id] ?? row.equipment_id ?? ""]?.name ?? translateEquipment(row.equipment)}
+          {loadError && (
+            <p role="status" className="text-xs text-zinc-400">
+              {loadError}
+            </p>
+          )}
+          {visible.map((row) => {
+            const selectedEquipmentId = equipmentOverrides[row.id] ?? row.equipment_id ?? "";
+            const selectedEquipment =
+              selectedEquipmentId && selectedEquipmentId !== "NONE"
+                ? equipmentMap[selectedEquipmentId]
+                : undefined;
+            return (
+              <div key={row.id} className="space-y-3 overflow-hidden rounded-2xl border border-white/10 bg-[#1C1C1E] p-3">
+                {/* Row 1: the real GIF, the full name, the catalog id and muscle. */}
+                <div className="flex min-w-0 items-start gap-3">
+                  <ExerciseThumb
+                    src={row.gif_url}
+                    alt={`Demostración de ${getExerciseDisplayName({ name: row.name, name_es: row.name_es })}`}
+                    className="h-16 w-16 bg-white"
+                    fit="object-contain"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <strong className="block break-words text-sm font-semibold leading-snug text-white">
+                      {getExerciseDisplayName({ name: row.name, name_es: row.name_es })}
+                    </strong>
+                    <span className="mt-1 block break-words font-mono text-[11px] leading-snug text-zinc-400">
+                      {row.id} · {translateBodyPart(row.body_part)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Row 2: the machine this exercise is performed on. */}
+                <div className="flex min-w-0 items-center gap-3">
+                  <ExerciseThumb
+                    src={selectedEquipment?.views?.[0]?.src}
+                    alt={selectedEquipment ? `Máquina ${selectedEquipment.name}` : "Sin máquina"}
+                    className="h-12 w-12"
+                  />
+                  <select
+                    aria-label={`Máquina para ${row.name}`}
+                    className={`${control} h-11 min-w-0 flex-1 px-2 text-xs text-white`}
+                    value={selectedEquipmentId === "NONE" ? "" : selectedEquipmentId}
+                    onChange={(event) => saveEquipment(row.id, event.target.value)}
+                  >
+                    <option value="">NONE · Peso libre / Piso</option>
+                    {Object.entries(equipmentMap).map(([id, equipment]) => (
+                      <option key={id} value={id}>
+                        {id} · {equipment.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Row 3: rename, and whether the gym can host it. */}
+                <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                  {renameId === row.id ? (
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <input
+                        autoFocus
+                        aria-label={`Nuevo nombre para ${row.name}`}
+                        className={`${control} h-11 min-w-0 flex-1 px-2 text-sm text-white`}
+                        value={rename}
+                        onChange={(event) => setRename(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") void renameExercise(row.id);
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void renameExercise(row.id)}
+                        className="inline-flex h-11 shrink-0 items-center rounded-xl bg-[#FF3B30] px-3 text-xs font-semibold text-white"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRenameId(null)}
+                        className="inline-flex h-11 shrink-0 items-center rounded-xl bg-[#2C2C2E] px-3 text-xs text-zinc-300"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRenameId(row.id);
+                        setRename(row.customNameEs || row.name_es || row.name);
+                      }}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white"
+                    >
+                      <Pencil size={14} aria-hidden="true" /> Renombrar
+                    </button>
+                  )}
+                  <span
+                    className={`inline-flex min-h-7 items-center rounded-full px-2 py-1 text-[11px] font-semibold ${
+                      row.available === false
+                        ? "bg-[#FF3B30]/15 text-[#FF6961]"
+                        : "bg-[#30D158]/15 text-[#30D158]"
+                    }`}
+                  >
+                    {row.available === false ? "No disponible" : "Disponible"}
                   </span>
                 </div>
-                {renameId === row.id ? (
-                  <input autoFocus className={`${control} h-11 w-32 shrink-0 px-2 text-sm text-white`} value={rename} onChange={(e) => setRename(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void renameExercise(row.id); }} />
-                ) : (
-                  <button type="button" onClick={() => { setRenameId(row.id); setRename(row.name_es || row.name); }} className="inline-flex h-11 shrink-0 items-center gap-1 rounded-xl bg-[#2C2C2E] px-3 text-xs text-white">
-                    <Pencil size={14} /> Renombrar
-                  </button>
-                )}
               </div>
-              <div className="flex min-w-0 items-center gap-3">
-                <ExerciseThumb src={equipmentMap[equipmentOverrides[row.id] ?? row.equipment_id ?? ""]?.views?.[0]?.src} />
-                <select aria-label={`Máquina para ${row.name}`} className={`${control} h-11 min-w-0 flex-1 px-2 text-xs text-white`} value={equipmentOverrides[row.id] ?? row.equipment_id ?? ""} onChange={(event) => saveEquipment(row.id, event.target.value)}>
-                  <option value="">NONE · Peso libre / Piso</option>
-                  {Object.entries(equipmentMap).map(([id, equipment]) => <option key={id} value={id}>{id} · {equipment.name}</option>)}
-                </select>
-              </div>
-            </div>
-          ))}
+            );
+          })}
+          {filtered.length === 0 && (
+            <p className="text-sm text-zinc-400">No hay ejercicios que coincidan con la búsqueda.</p>
+          )}
+          {visible.length < filtered.length && (
+            <button
+              type="button"
+              onClick={() => setLimit((current) => current + EXERCISES_PAGE_SIZE)}
+              className="min-h-11 rounded-xl bg-[#2C2C2E] px-4 text-sm font-semibold text-white"
+            >
+              Mostrar más ({filtered.length - visible.length} restantes)
+            </button>
+          )}
         </div>
         <div className="mt-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
@@ -887,20 +1039,34 @@ function ExercisesPanel({
   );
 }
 
-function ExerciseThumb({ src, className = "" }: { src?: string | null; className?: string }) {
+function ExerciseThumb({
+  src,
+  alt = "",
+  className = "h-12 w-12",
+  fit = "object-cover",
+}: {
+  src?: string | null;
+  alt?: string;
+  className?: string;
+  fit?: string;
+}) {
   const [broken, setBroken] = useState(!src);
+  useEffect(() => {
+    setBroken(!src);
+  }, [src]);
   if (broken)
     return (
-      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#2C2C2E] text-zinc-400 ${className}`}>
+      <span className={`flex shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#2C2C2E] text-zinc-400 ${className}`}>
         <Dumbbell size={20} aria-hidden="true" />
       </span>
     );
   return (
     <img
       src={src ?? undefined}
-      alt=""
+      alt={alt}
+      loading="lazy"
       onError={() => setBroken(true)}
-      className={`h-12 w-12 shrink-0 rounded-xl object-cover ${className}`}
+      className={`shrink-0 rounded-xl ${fit} ${className}`}
     />
   );
 }

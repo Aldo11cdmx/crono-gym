@@ -12,8 +12,9 @@
  * the Spanish ones.
  */
 
-import { resolveMediaUrl } from "@/lib/media/mediaResolver";
 import type { Exercise } from "@/types/supabase";
+import { readOverridesSnapshot } from "./customExercises";
+import { resolveCatalogExercise } from "./resolveExercise";
 import type { CatalogExercise } from "./types";
 
 /**
@@ -89,24 +90,52 @@ function deriveNameEs(name: string): string | null {
   return null;
 }
 
-/** One catalog row as an exercise row. */
+/** One catalog row as an exercise row, with the coach's overrides applied. */
 export function toExercise(row: CatalogExercise): Exercise {
-  const nameEs = row.name_es ?? deriveNameEs(row.name);
+  const resolved = resolveCatalogExercise(withCuratedName(row));
   return {
-    id: row.id,
-    name: row.name,
-    name_es: nameEs,
-    body_part: row.body_part,
-    target: row.target,
-    equipment: row.equipment,
-    gif_url: resolveMediaUrl(row.gif_url),
-    instructions: row.instruction_steps?.es ?? [],
+    id: resolved.id,
+    name: resolved.name,
+    name_es: resolved.nameEs,
+    body_part: resolved.body_part,
+    target: resolved.target,
+    equipment: resolved.equipment,
+    gif_url: resolved.effectiveGifUrl,
+    instructions: resolved.instruction_steps?.es ?? [],
     is_active: true,
     is_hidden: false,
   };
 }
 
-/** The whole catalog as exercise rows. */
+/** The whole catalog as exercise rows, resolved with a single read of the overrides. */
 export function toExercises(rows: CatalogExercise[]): Exercise[] {
-  return rows.map(toExercise);
+  const overrides = readOverridesSnapshot();
+  return rows.map((row) => {
+    const resolved = resolveCatalogExercise(withCuratedName(row), overrides);
+    return {
+      id: resolved.id,
+      name: resolved.name,
+      name_es: resolved.nameEs,
+      body_part: resolved.body_part,
+      target: resolved.target,
+      equipment: resolved.equipment,
+      gif_url: resolved.effectiveGifUrl,
+      instructions: resolved.instruction_steps?.es ?? [],
+      is_active: true,
+      is_hidden: false,
+    };
+  });
+}
+
+/**
+ * The curated Spanish name, when the dataset has none.
+ *
+ * The resolver reads `name_es` and the shared dictionary; this map is the third
+ * fallback the adapter has always had, and it is kept in front of the resolver so
+ * a row without `name_es` keeps its curated translation.
+ */
+function withCuratedName(row: CatalogExercise): CatalogExercise {
+  if (row.name_es) return row;
+  const derived = deriveNameEs(row.name);
+  return derived ? { ...row, name_es: derived } : row;
 }

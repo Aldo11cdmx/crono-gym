@@ -25,6 +25,14 @@ export interface CatalogExercise {
   target: string;
   availableInCronosGym: boolean;
   equipment_id?: string;
+  /**
+   * Spanish name of the machine the row is mapped to, when the dataset build
+   * already resolved it. Present in the shipped JSON; optional here because a
+   * cache written by an older build does not have it.
+   */
+  equipment_name?: string | null;
+  /** Static photos of the mapped machine, in display order. */
+  image_urls?: string[];
   station_key?: StationKey;
   movement_pattern?: MovementPattern;
   customNameEs?: string;

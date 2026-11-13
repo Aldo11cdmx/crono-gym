@@ -19,7 +19,8 @@ import { ACCENT, DANGER, GLASS, MOTION, RADIUS, SCRIM, SOLID, SPACE, TEXT, TYPE,
 import { hapticLight } from "@/lib/haptics";
 import { ROUTINES_UI_LABELS, translateBodyPart, translateTarget } from "@/lib/i18n";
 import { coachEcosystemService, sanitizeCoachName } from "@/lib/coach/coachEcosystemService";
-import { DayZeroAssistant, type DayZeroRoutine } from "./DayZeroAssistant";
+import { DayZeroAssistant } from "./DayZeroAssistant";
+import { dayZeroDraft, dayZeroRoutineRow, type DayZeroPlan } from "@/lib/routines/dayZeroPlan";
 
 const VIP_BANNER_COLLAPSED_KEY = "cronos_vip_banner_collapsed_v1";
 
@@ -47,7 +48,7 @@ const TAB_OPTIONS = [
 
 export function RoutinesPage() {
   const { userId } = useOutletContext<WorkspaceOutletContext>();
-  const { routines, loading, error, refresh } = useRoutines(userId);
+  const { routines, loading, error, refresh, upsertLocalRoutine } = useRoutines(userId);
   const [dayPickerRoutine, setDayPickerRoutine] = useState<RoutineWithMode | null>(null);
   const [sessionConflict, setSessionConflict] = useState<{
     routineId: string | null;
@@ -329,6 +330,43 @@ export function RoutinesPage() {
     void refresh();
   }, [refresh]);
 
+  /**
+   * A Day 0 plan becomes a routine the moment it is accepted.
+   *
+   * The row goes into the list first — the user has just answered three
+   * questions and must see the result, not a spinner — and the save follows. If
+   * the server refuses, the routine stays on the device and says so; deleting it
+   * would lose the plan over a network that never answered.
+   */
+  const handleDayZeroCreated = useCallback(
+    async (plan: DayZeroPlan) => {
+      const exerciseCount = plan.days.reduce((total, day) => total + day.exercises.length, 0);
+      setTab("mine");
+      showToast(`${plan.title} creada con ${exerciseCount} ejercicios disponibles.`);
+      if (!userId) return;
+
+      const draft = dayZeroDraft(plan, null);
+      const localId =
+        typeof globalThis.crypto?.randomUUID === "function"
+          ? globalThis.crypto.randomUUID()
+          : `day-zero-${Date.now()}`;
+      upsertLocalRoutine(dayZeroRoutineRow(plan, localId, userId));
+
+      const result = await saveRoutine(userId, draft, "day_zero");
+      if (result.ok) {
+        await flushSave(draft.draftKey);
+        // The saved row replaces the optimistic one, with the id the server gave it.
+        void refresh();
+        return;
+      }
+      showToast(
+        "La rutina quedó guardada solo en este dispositivo. Se sincronizará al editarla.",
+        "warning",
+      );
+    },
+    [refresh, showToast, upsertLocalRoutine, userId],
+  );
+
   const showMainHeader = !editorOpen;
 
   return (
@@ -390,10 +428,7 @@ export function RoutinesPage() {
           )}
         </section>
       )}
-      {!editorOpen && <DayZeroAssistant onCreated={(routine: DayZeroRoutine) => {
-        showToast(`${routine.title} creada con ${routine.exercises.length} ejercicios disponibles.`);
-        setTab("mine");
-      }} />}
+      {!editorOpen && <DayZeroAssistant onCreated={(plan) => void handleDayZeroCreated(plan)} />}
       {toast && (
         <div
           style={{
@@ -544,7 +579,7 @@ export function RoutinesPage() {
         </GlassCard>
       ) : null}
 
-      {loading ? (
+      {loading && routines.length === 0 ? (
         <GlassCard raised>
           <p style={{ margin: 0, fontSize: TYPE.subhead.size, color: TEXT.tertiary }} aria-live="polite">
             {ROUTINES_UI_LABELS.loading}

@@ -16,10 +16,13 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, renderHook, waitFor } from "@testing-library/react";
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { useRoutines } from "./useGymData";
 
-const { calls } = vi.hoisted(() => ({ calls: [] as { table: string; select: string; filters: string[] }[] }));
+const { calls, state } = vi.hoisted(() => ({
+  calls: [] as { table: string; select: string; filters: string[] }[],
+  state: { failRoutines: false },
+}));
 
 vi.mock("@lib/supabase", () => {
   const from = (table: string) => {
@@ -43,12 +46,16 @@ vi.mock("@lib/supabase", () => {
       limit() {
         return builder;
       },
-      then(resolve: (value: unknown) => unknown) {
+      then(resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) {
         calls.push(record);
-        return Promise.resolve({
-          data: table === "routines" ? [{ id: "r-1", user_id: "u-1", title: "Rutina", created_at: "2026-01-01" }] : [],
-          error: null,
-        }).then(resolve);
+        const result =
+          table === "routines" && state.failRoutines
+            ? Promise.reject(new Error("db down"))
+            : Promise.resolve({
+              data: table === "routines" ? [{ id: "r-1", user_id: "u-1", title: "Rutina", created_at: "2026-01-01" }] : [],
+              error: null,
+            });
+        return result.then(resolve, reject);
       },
     };
     return builder;
@@ -58,6 +65,7 @@ vi.mock("@lib/supabase", () => {
 
 beforeEach(() => {
   calls.length = 0;
+  state.failRoutines = false;
 });
 
 afterEach(cleanup);
@@ -80,5 +88,38 @@ describe("useRoutines", () => {
 
     // The exercise arrives with the link, not in a read of its own table.
     expect(calls.some((call) => call.table === "exercises")).toBe(false);
+  });
+
+  it("deja de cargar cuando la lectura falla, en vez de colgarse", async () => {
+    state.failRoutines = true;
+    const { result } = renderHook(() => useRoutines("u-1"));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBeTruthy();
+    expect(result.current.routines).toEqual([]);
+  });
+
+  it("muestra la rutina recién creada sin esperar a la red", async () => {
+    const { result } = renderHook(() => useRoutines("u-1"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.upsertLocalRoutine({
+        id: "r-2",
+        user_id: "u-1",
+        title: "Día 0",
+        description: null,
+        created_at: "2026-01-02",
+        is_favorite: false,
+        source: "ai",
+        authored_by_coach: null,
+        is_template: false,
+        exercises: [],
+        routineMode: "single",
+      });
+    });
+
+    expect(result.current.routines.map((row) => row.id)).toEqual(["r-2", "r-1"]);
+    expect(result.current.loading).toBe(false);
   });
 });

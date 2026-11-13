@@ -25,8 +25,8 @@ import {
   type CatalogCache,
   type CachedCatalog,
 } from "./catalogCache";
+import { resetCatalogRegistry, setLoadedCatalog } from "./catalogRegistry";
 import { isCatalogExercise, type CatalogExercise } from "./types";
-import { loadCatalogOverrides } from "./customExercises";
 
 const DEFAULT_CATALOG_URL = import.meta.env.VITE_EXERCISES_CATALOG_URL ?? catalogAssetUrl;
 
@@ -57,11 +57,16 @@ let inFlight: Promise<CatalogExercise[]> | null = null;
  * refreshed from the network, and is used as it is if the network is not
  * there — a day-old catalog is better than no catalog.
  *
+ * What comes back is the catalog *as shipped*. A coach's rename or machine
+ * assignment is applied when a row is read (`resolveExercise.ts`), never here:
+ * baking overrides into the cached rows is what made a rename invisible until
+ * the cache expired.
+ *
  * Rejects with a `CatalogLoadError` when the file cannot be fetched and there
  * is nothing stored, so the caller can offer a retry.
  */
 export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<CatalogExercise[]> {
-  if (cache) return applyCatalogOverrides(cache);
+  if (cache) return cache;
   if (inFlight) return inFlight;
 
   const url = options.url ?? DEFAULT_CATALOG_URL;
@@ -72,20 +77,23 @@ export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<Cat
     const stored = await readStored(store);
     if (stored?.fresh) {
       cache = stored.rows;
-      return applyCatalogOverrides(stored.rows);
+      setLoadedCatalog(stored.rows);
+      return stored.rows;
     }
 
     try {
       const rows = await fetchCatalog(url, fetchImpl);
       cache = rows;
+      setLoadedCatalog(rows);
       // The write must not delay the picker: it happens in the background and
       // a failure to store is not a failure to show the catalog.
       void store.write(rows).catch(() => undefined);
-      return applyCatalogOverrides(rows);
+      return rows;
     } catch (err) {
       if (stored) {
         cache = stored.rows;
-        return applyCatalogOverrides(stored.rows);
+        setLoadedCatalog(stored.rows);
+        return stored.rows;
       }
       throw err;
     }
@@ -127,18 +135,7 @@ async function fetchCatalog(url: string, fetchImpl: typeof fetch): Promise<Catal
 /** Drops the memory cache. Used by the tests and by an explicit refresh. */
 export function resetCatalogCache(): void {
   cache = null;
-}
-
-export function applyCatalogOverrides(rows: readonly CatalogExercise[]): CatalogExercise[] {
-  const overrides = loadCatalogOverrides();
-  return rows.map((row) => {
-    const override = overrides[row.id];
-    return override ? {
-      ...row,
-      ...override,
-      station_key: override.station_key as CatalogExercise["station_key"],
-    } : row;
-  });
+  resetCatalogRegistry();
 }
 
 export { isCatalogExercise };

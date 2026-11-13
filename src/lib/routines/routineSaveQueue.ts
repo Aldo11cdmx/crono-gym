@@ -1,6 +1,6 @@
 import type { RoutineDraftV2 } from "./routineDayModel";
 
-export type SaveOrigin = "editor" | "planner" | "rename" | "duplicate" | "restore" | "retry";
+export type SaveOrigin = "editor" | "planner" | "rename" | "duplicate" | "restore" | "retry" | "day_zero";
 export type SaveState = "idle" | "saving" | "dirty" | "error";
 
 export interface SaveJob {

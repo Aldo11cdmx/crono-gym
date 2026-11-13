@@ -86,6 +86,8 @@ import { suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
 import { findExerciseReplacements } from "@/lib/engines/exerciseReplacementEngine";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
+import { useCatalogOverridesVersion } from "@/hooks/useCatalogOverrides";
+import { resolveCatalogExerciseWithOverrides } from "@/lib/catalog/resolveExercise";
 import type { EquipmentEntry, EquipmentSuggestion } from "@/data/equipmentCatalog";
 import { equipmentMap } from "@/data/equipmentMap";
 import { resolveMedia, resolveMediaUrl } from "@/lib/media/mediaResolver";
@@ -1507,6 +1509,7 @@ export function ActiveWorkout({
   const [logId] = useState(() => newSessionId());
   const { exercises: catalogExercises } = useExerciseCatalog() as any;
   const catalog = useMemo(() => catalogExercises || [], [catalogExercises]);
+  const overrideVersion = useCatalogOverridesVersion();
   const availableEquipmentList = useMemo(
     () => ["mancuernas", "polea", "barra", "maquina", "bandas", "cable"],
     [],
@@ -1576,6 +1579,31 @@ export function ActiveWorkout({
     [items, selected],
   );
 
+  /**
+   * A coach's rename or machine change reaches the session without a reload.
+   *
+   * Only what is *shown* about an exercise is re-resolved: the identity, the gif
+   * and the equipment. Sets already logged belong to the athlete, and the sync
+   * payload carries ids, weights and reps — never a name — so nothing that was
+   * written can be rewritten by a rename.
+   */
+  useEffect(() => {
+    if (catalog.length === 0) return;
+    setItems((previous) => {
+      let changed = false;
+      const next = previous.map((item) => {
+        const resolved = resolveCatalogExerciseWithOverrides(item.exercise.id, catalog);
+        if (!resolved) return item;
+        const nameEs = resolved.nameEs;
+        const gifUrl = resolved.effectiveGifUrl || item.exercise.gif_url;
+        if (item.exercise.name_es === nameEs && item.exercise.gif_url === gifUrl) return item;
+        changed = true;
+        return { ...item, exercise: { ...item.exercise, name_es: nameEs, gif_url: gifUrl } };
+      });
+      return changed ? next : previous;
+    });
+  }, [catalog, overrideVersion]);
+
   const equipmentSuggestion = useMemo<EquipmentSuggestion>(() => {
     if (!selected) return { primary: null, alternatives: [] };
     return getEquipmentSuggestionForExercise(
@@ -1585,15 +1613,16 @@ export function ActiveWorkout({
   }, [selected]);
 
   const selectedCatalogExercise = useMemo(
-    () => catalog.find((exercise: any) => exercise.id === selected?.exercise.id),
-    [catalog, selected?.exercise.id],
+    () => (selected ? resolveCatalogExerciseWithOverrides(selected.exercise.id, catalog) : null),
+    // `overrideVersion` is what makes a rename re-resolve without a new catalog.
+    [catalog, selected?.exercise.id, overrideVersion],
   );
-  const equipmentForSelected = selectedCatalogExercise?.equipment_id && equipmentMap[selectedCatalogExercise.equipment_id]
-    ? {
-      ...equipmentMap[selectedCatalogExercise.equipment_id],
-      id: equipmentMap[selectedCatalogExercise.equipment_id].id,
-    } as EquipmentEntry
-    : equipmentSuggestion.primary;
+  const equipmentForSelected = useMemo<EquipmentEntry | null>(() => {
+    const id = selectedCatalogExercise?.effectiveEquipmentId;
+    const mapped = id ? equipmentMap[id] : undefined;
+    if (!mapped) return equipmentSuggestion.primary;
+    return { ...mapped, id: mapped.id } as EquipmentEntry;
+  }, [selectedCatalogExercise, equipmentSuggestion]);
 
   const selectedSuperset = useMemo(() => {
     if (!selected) return null;
@@ -1780,11 +1809,22 @@ export function ActiveWorkout({
     return `Ant: ${displayKg(prev.weight)}×${prev.reps}`;
   }, [selected, performance, displayKg]);
 
-  const smartExercise = (selectedCatalogExercise ?? selected?.exercise) as (Exercise & {
+  const smartExercise = (
+    selectedCatalogExercise
+      ? {
+        ...selectedCatalogExercise,
+        equipment_id: selectedCatalogExercise.effectiveEquipmentId,
+      }
+      : selected?.exercise
+  ) as (Exercise & {
     equipment_id?: string;
     station_key?: Parameters<typeof getLoadBreakdownHint>[1];
     movement_pattern?: string;
     image?: string;
+    effectiveEquipmentId?: string;
+    effectiveEquipmentName?: string;
+    effectiveGifUrl?: string;
+    effectiveImageUrl?: string;
   }) | undefined;
 
   const smartLoad = useMemo(() => {
@@ -1891,14 +1931,15 @@ export function ActiveWorkout({
   function replaceWithSubstitute(substitute: (typeof smartSubstitutes)[number]) {
     if (!selected) return;
     const exercise = substitute.exercise;
+    const resolved = resolveCatalogExerciseWithOverrides(exercise.id, catalog);
     const loggerExercise: Exercise = {
       id: exercise.id,
-      name: exercise.customNameEs ?? exercise.name,
-      name_es: exercise.customNameEs ?? exercise.name_es ?? null,
+      name: exercise.name,
+      name_es: resolved?.nameEs ?? exercise.customNameEs ?? exercise.name_es ?? null,
       body_part: exercise.body_part,
       target: exercise.target,
       equipment: exercise.equipment,
-      gif_url: exercise.gif_url,
+      gif_url: resolved?.effectiveGifUrl ?? exercise.gif_url,
       instructions: [],
       is_active: true,
       is_hidden: false,
@@ -2341,12 +2382,12 @@ export function ActiveWorkout({
               ) : smartLoad && (
                 <section className="mx-auto w-full max-w-[560px] border-y border-white/10 bg-neutral-900 px-4 py-3">
                   <div className="flex items-center gap-3">
-                    {(smartExercise?.image || smartExercise?.gif_url) && (
-                      <img src={smartExercise.image || smartExercise.gif_url || ""} alt="" className="h-11 w-11 rounded-xl object-cover" />
+                    {(smartExercise?.effectiveImageUrl || smartExercise?.effectiveGifUrl || smartExercise?.image || smartExercise?.gif_url) && (
+                      <img src={smartExercise?.effectiveImageUrl || smartExercise?.effectiveGifUrl || smartExercise?.image || smartExercise?.gif_url || ""} alt="" className="h-11 w-11 rounded-xl object-cover" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">{smartExercise?.equipment_id ?? "Equipo Cronos Gym"}</p>
-                      <p className="font-mono text-[11px] text-neutral-500">{smartExercise?.equipment_id ?? "NONE"}</p>
+                      <p className="truncate text-sm font-semibold text-white">{smartExercise?.effectiveEquipmentName ?? "Equipo Cronos Gym"}</p>
+                      <p className="font-mono text-[11px] text-neutral-500">{smartExercise?.effectiveEquipmentId ?? "NONE"}</p>
                     </div>
                     <span className="rounded-full bg-neutral-800 px-2 py-1 text-xs font-semibold text-neutral-300" style={{ color: "#FF3B30" }}>🚀 Subir carga</span>
                   </div>
@@ -2367,17 +2408,25 @@ export function ActiveWorkout({
                     <h3 className="text-sm font-semibold text-white">Alternativas disponibles</h3>
                     <button type="button" className="min-h-11 px-3 text-sm text-neutral-400" onClick={() => setSubstituteOpen(false)}>Cerrar</button>
                   </div>
-                  {smartSubstitutes.map((substitute) => (
-                    <button key={substitute.exercise.id} type="button" className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-neutral-900 p-3 text-left" onClick={() => replaceWithSubstitute(substitute)}>
-                      <img src={substitute.imageUrl} alt="" className="h-11 w-11 rounded-lg object-cover" />
-                      <span className="min-w-0 flex-1">
-                        <strong className="block truncate text-sm text-white">{substitute.exercise.customNameEs ?? substitute.exercise.name}</strong>
-                        <span className="font-mono text-[11px] text-neutral-400">
-                          {substitute.exercise.equipment_id ?? "NONE"} · {substitute.exercise.equipment_id && equipmentMap[substitute.exercise.equipment_id] ? equipmentMap[substitute.exercise.equipment_id].name : "Peso libre / Piso"} · {substitute.suggestedWeightKg}kg
+                  {smartSubstitutes.map((substitute) => {
+                    const resolved = resolveCatalogExerciseWithOverrides(substitute.exercise.id, catalog);
+                    const equipmentId = resolved?.effectiveEquipmentId ?? substitute.exercise.equipment_id ?? "NONE";
+                    const equipmentName = resolved?.effectiveEquipmentName
+                      ?? (equipmentId !== "NONE" && equipmentMap[equipmentId]
+                        ? equipmentMap[equipmentId].name
+                        : "Peso libre / Piso");
+                    return (
+                      <button key={substitute.exercise.id} type="button" className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-neutral-900 p-3 text-left" onClick={() => replaceWithSubstitute(substitute)}>
+                        <img src={resolved?.effectiveGifUrl || resolved?.effectiveImageUrl || substitute.imageUrl} alt="" className="h-11 w-11 rounded-lg object-cover" />
+                        <span className="min-w-0 flex-1">
+                          <strong className="block truncate text-sm text-white">{resolved?.displayName ?? substitute.exercise.customNameEs ?? substitute.exercise.name}</strong>
+                          <span className="font-mono text-[11px] text-neutral-400">
+                            {equipmentId} · {equipmentName} · {substitute.suggestedWeightKg}kg
+                          </span>
                         </span>
-                      </span>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                   {smartSubstitutes.length === 0 && <p className="text-sm text-neutral-400">No hay sustituciones disponibles.</p>}
                 </section>
               )}
@@ -2400,7 +2449,7 @@ export function ActiveWorkout({
                 }}
                 onAdjustEquipment={() => {
                   setSelectedEquipment(
-                    equipmentSuggestion.primary ?? {
+                    equipmentForSelected ?? equipmentSuggestion.primary ?? {
                       id: "default",
                       name: "Sin equipo",
                       category: "Accesorio",

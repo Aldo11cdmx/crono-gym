@@ -16,12 +16,21 @@
  * Shared across the wizard's steps rather than refetched per step, because
  * re-reading the catalogue on every column change is what makes a wizard feel
  * broken.
+ *
+ * A coach's rename or machine change is not a new catalog: the rows stay the
+ * same, so the hook re-resolves them when the override stores change instead of
+ * downloading 16 MB again.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import { toExercises } from "@/lib/catalog/exerciseAdapter";
-import { CATALOG_UPDATED_EVENT, readCustomExercises } from "@/lib/catalog/customExercises";
+import {
+  CATALOG_UPDATED_EVENT,
+  readCustomExercises,
+  subscribeCatalogOverrides,
+} from "@/lib/catalog/customExercises";
+import { normaliseExerciseName } from "@/lib/catalog/resolveExercise";
 import { catalogCache } from "@/lib/cache";
 import type { Exercise } from "@/types/supabase";
 
@@ -41,23 +50,18 @@ export interface ExerciseCatalogState {
   find: (name: string, target?: string | null) => Exercise | null;
 }
 
-/** Case- and accent-insensitive, so "press militar" finds "Press Militar". */
-export function normaliseExerciseName(name: string): string {
-  return name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
+export { normaliseExerciseName, CATALOG_UPDATED_EVENT };
 
 export function useExerciseCatalog(): ExerciseCatalogState {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loadedRef = useRef(false);
 
   const refresh = useCallback(async () => {
-    setLoading(true);
+    // Only the first read is a wait worth showing: an override arriving mid-session
+    // must not turn the picker into a spinner.
+    if (!loadedRef.current) setLoading(true);
     setError(null);
     try {
       const cached = catalogCache.get("catalog");
@@ -68,9 +72,10 @@ export function useExerciseCatalog(): ExerciseCatalogState {
         rows = await loadCatalog();
         catalogCache.set("catalog", rows);
         // El catálogo ya vive en IndexedDB; la caché en memoria solo acelera
-        // los re-lecturas dentro de la sesión. `resetCatalogCache` invalida
-        // ambas cuando el catálogo se regénere.
+        // los re-lecturas dentro de la sesión. Guarda filas base: los overrides
+        // se aplican al convertir, así que un cambio del coach no queda preso.
       }
+      loadedRef.current = true;
       setExercises([...toExercises(rows), ...readCustomExercises()]);
     } catch (err) {
       setError(
@@ -85,11 +90,9 @@ export function useExerciseCatalog(): ExerciseCatalogState {
     void refresh();
   }, [refresh]);
 
-  useEffect(() => {
-    const handleUpdated = () => { void refresh(); };
-    window.addEventListener(CATALOG_UPDATED_EVENT, handleUpdated);
-    return () => window.removeEventListener(CATALOG_UPDATED_EVENT, handleUpdated);
-  }, [refresh]);
+  useEffect(() => subscribeCatalogOverrides(() => {
+    void refresh();
+  }), [refresh]);
 
   const find = useCallback(
     (name: string, target?: string | null): Exercise | null => {
@@ -98,7 +101,13 @@ export function useExerciseCatalog(): ExerciseCatalogState {
       // Scoped first: two exercises can share a name across regions, and the
       // muscle the user assigned in the mapping step is the disambiguator.
       const pool = target ? exercises.filter((e) => e.target === target) : exercises;
-      return pool.find((e) => normaliseExerciseName(e.name) === wanted) ?? null;
+      // Both names count: a CSV names an exercise in Spanish, and a coach's
+      // rename is a name the athlete will type.
+      return (
+        pool.find((e) => normaliseExerciseName(e.name) === wanted) ??
+        pool.find((e) => Boolean(e.name_es) && normaliseExerciseName(e.name_es ?? "") === wanted) ??
+        null
+      );
     },
     [exercises],
   );

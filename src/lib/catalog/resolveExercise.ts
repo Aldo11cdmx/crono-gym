@@ -27,18 +27,20 @@ import {
   type CatalogOverridesSnapshot,
 } from "./customExercises";
 import type { CatalogExercise, StationKey } from "./types";
+import {
+  BODYWEIGHT_EQUIPMENT_NAME,
+  BODYWEIGHT_EQUIPMENT_TEXT,
+  BODYWEIGHT_STATION,
+  NO_EQUIPMENT_ID,
+} from "./types";
 
 /** The id a bodyweight row carries when it has no machine. */
-export const NO_EQUIPMENT_ID = "NONE";
-
-/** What a bodyweight exercise is called when no machine owns it. */
-export const BODYWEIGHT_EQUIPMENT_NAME = "Peso libre / Piso";
-
-/** Where a bodyweight exercise happens. */
-export const BODYWEIGHT_STATION: StationKey = "floor_mat_area";
-
-/** The free-text equipment value a bodyweight row carries. */
-export const BODYWEIGHT_EQUIPMENT_TEXT = "body weight";
+export {
+  NO_EQUIPMENT_ID,
+  BODYWEIGHT_EQUIPMENT_NAME,
+  BODYWEIGHT_EQUIPMENT_TEXT,
+  BODYWEIGHT_STATION,
+};
 
 /** A station that cannot host a session, whatever the availability flag says. */
 const UNAVAILABLE_STATION: StationKey = "unavailable_station";

@@ -84,7 +84,10 @@ export function TrainingHeroSection({
         }}
       />
 
-      <div className="relative grid grid-cols-[1fr_auto] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-8 lg:items-end">
+      {/* On a phone the muscle map goes *below* the title, not beside it: side by
+          side the title column is ~150px wide at 390px and the routine name
+          breaks into four lines before the athlete reads the CTA. */}
+      <div className="relative grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-8 lg:items-end">
         <div className="min-w-0 p-3 px-4 md:p-4 lg:p-6">
           <div className="flex items-center gap-2 flex-wrap">
             {!isCompleted ? <span
@@ -137,7 +140,7 @@ export function TrainingHeroSection({
                   margin: `${SPACE.sm} 0 0`,
                   wordBreak: "break-word",
                   letterSpacing: "-0.025em",
-                  maxWidth: "14ch",
+                  maxWidth: "20ch",
                 }}
               >
                 {routineTitle}
@@ -242,12 +245,13 @@ export function TrainingHeroSection({
         </div>
 
         <div
-          className="flex flex-col items-start gap-2 self-start lg:self-start"
+          className="flex w-full flex-col items-start gap-2 self-stretch md:w-auto md:self-start lg:self-start"
           style={{ backgroundColor: "transparent" }}
         >
           <div
             data-testid="today-hero-muscle-map"
             aria-hidden="true"
+            className="w-full max-w-[220px] md:max-w-none"
             style={{ backgroundColor: "transparent" }}
           >
             <div
@@ -255,7 +259,7 @@ export function TrainingHeroSection({
                 width: "100%",
                 margin: "0 auto",
                 backgroundColor: "transparent",
-                height: 160,
+                height: isCompact ? 140 : 160,
               }}
             >
               <MuscleReadonlyMap

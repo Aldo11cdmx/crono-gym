@@ -13,7 +13,7 @@
  * Se preserva toda la lógica de negocio: borrador, sincronía, supersets, recuperación, timer deadline-based.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   X,
   Play,
@@ -67,6 +67,7 @@ import {
 import { queueAndSync } from "../lib/sessionSync";
 import { useActiveSession } from "../context/ActiveSessionContext";
 import { useGymSettings } from "../context/GymSettingsContext";
+import { useProfile } from "../hooks/useProfile";
 import { useElapsedMs, formatElapsed } from "../hooks/useElapsedMs";
 import { RestTimer } from "./RestTimer";
 import { SET_LOGGER_LABELS, UNDO_LABELS } from "../lib/i18n";
@@ -85,7 +86,6 @@ import { SupersetBadge } from "./workout/SupersetBadge";
 import { WorkoutPreStartView } from "./workout/WorkoutPreStartView";
 import { suggestNextTarget, type OverloadTarget } from "../lib/overload";
 import { getEquipmentSuggestionForExercise } from "@/data/equipmentCatalog";
-import { findExerciseReplacements } from "@/lib/engines/exerciseReplacementEngine";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { useCatalogOverridesVersion } from "@/hooks/useCatalogOverrides";
 import { resolveCatalogExerciseWithOverrides } from "@/lib/catalog/resolveExercise";
@@ -97,14 +97,25 @@ import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
   BODYWEIGHT_LOAD_HINT,
   calibratePendingSets,
+  cleanEquipmentLabel,
+  computeExerciseRank,
   estimateSmartLoad,
-  findSmartSubstitutes,
+  findStationAlternatives,
   generateSmartWarmupSets,
   getAdaptiveRestSeconds,
   getLoadBreakdownHint,
+  inferColdStartLoad,
   isBodyweightExercise,
+  loadStrengthModel,
+  readExerciseBest,
+  recordSetAndTrainEngine,
   SET_TYPE_GUIDES,
+  type CalibrationPresetId,
+  type ExerciseRankResult,
+  type StationAlternative,
 } from "@/lib/workout/cronosSmartEngine";
+import { ExerciseRankSheet } from "./workout/ExerciseRankSheet";
+import { SmartOverloadModal } from "./workout/SmartOverloadModal";
 
 const DEFAULT_REST = 90;
 const PERSIST_DEBOUNCE_MS = 400;
@@ -118,6 +129,14 @@ function cleanExerciseName(name: string): string {
 function toNumber(value: string): number | null {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** Seconds as the clock shows them: 90 -> "01:30". */
+function formatClock(totalSeconds: number): string {
+  const safe = Math.max(0, Math.round(Number.isFinite(totalSeconds) ? totalSeconds : 0));
+  const minutes = Math.floor(safe / 60);
+  const seconds = safe % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 /** ------------------------------------------------------------------ Session Header (Fitness+ Telemetry) */
@@ -249,20 +268,20 @@ function SessionHeader({
             variant="ghost"
             onClick={onTerminate}
             aria-label="Terminar entrenamiento"
-            style={{
-              height: 40,
-              minWidth: 40,
-              padding: "0 14px",
-              borderRadius: 9999,
-              background: "rgba(255, 59, 48, 0.12)",
-              color: ACCENT.text,
-              border: `1px solid ${ACCENT.border}`,
-              fontSize: TYPE.subhead.size,
-              fontWeight: 600,
-            }}
-          >
-            Terminar
-          </GlassButton>
+          style={{
+            height: 40,
+            minWidth: 40,
+            padding: "0 14px",
+            borderRadius: 9999,
+            background: "rgba(255, 59, 48, 0.12)",
+            color: ACCENT.text,
+            border: `1px solid ${ACCENT.border}`,
+            fontSize: TYPE.subhead.size,
+            fontWeight: 600,
+          }}
+        >
+          Terminar
+        </GlassButton>
         )}
       </div>
     </header>
@@ -817,6 +836,13 @@ interface ExerciseStageProps {
   onChangeExercise: () => void;
   /** Opens the machine: its photo, and the other machines that can host it. */
   onAdjustEquipment: () => void;
+  /** The athlete's standing on this movement, and the sheet that explains it. */
+  rank: ExerciseRankResult;
+  onOpenRank: () => void;
+  /** How long the rest between sets lasts, and how to change it. */
+  restSeconds: number;
+  onAdjustRest: () => void;
+  onAddWarmup: () => void;
 }
 
 /**
@@ -841,10 +867,17 @@ function ExerciseStage({
   onAdvance,
   onChangeExercise,
   onAdjustEquipment,
+  rank,
+  onOpenRank,
+  restSeconds,
+  onAdjustRest,
+  onAddWarmup,
 }: ExerciseStageProps) {
   const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
   const { src, failed, onLoad, onError } = useMediaSrc(media);
   const progress = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
+  const cleanLocation = cleanEquipmentLabel(locationLabel);
+  const displayName = cleanExerciseName(getExerciseDisplayName(exercise));
 
   return (
     <section
@@ -918,21 +951,18 @@ function ExerciseStage({
             onClick={onAdjustEquipment}
             aria-label={
               equipment
-                ? SET_LOGGER_LABELS.machineAriaLabel(locationLabel)
-                : SET_LOGGER_LABELS.locationAriaLabel(locationLabel)
+                ? SET_LOGGER_LABELS.machineAriaLabel(cleanLocation)
+                : SET_LOGGER_LABELS.locationAriaLabel(cleanLocation)
             }
-            className="absolute bottom-1 left-1/2 flex max-w-[94%] -translate-x-1/2 items-center gap-2 rounded-full border border-white/15 bg-neutral-900/90 px-3.5 py-1.5 text-left shadow-lg backdrop-blur-md"
+            className="absolute bottom-1 left-1/2 flex max-w-[92vw] -translate-x-1/2 items-center gap-2 rounded-full border border-white/15 bg-neutral-900/90 px-3.5 py-1.5 text-left shadow-lg backdrop-blur-md"
           >
             <span
               aria-hidden="true"
               className="h-1.5 w-1.5 shrink-0 rounded-full"
               style={{ background: equipment ? ACCENT.base : TEXT.tertiary }}
             />
-            {equipment && (
-              <span className="shrink-0 font-mono text-[11px] text-neutral-400">{equipment.id}</span>
-            )}
             <span className="min-w-0 truncate text-xs font-semibold text-white">
-              {cleanExerciseName(equipment?.name ?? locationLabel)}
+              {cleanLocation}
             </span>
             <span className="shrink-0 text-[11px] font-semibold text-neutral-200">
               {equipment ? "Ver foto ›" : "⇄ Cambiar"}
@@ -944,9 +974,9 @@ function ExerciseStage({
       {/* The name, editorial: one line that answers "what am I doing". */}
       <h2
         className="w-full px-2 text-center text-lg font-bold leading-snug tracking-tight text-white"
-        style={{ margin: 0 }}
+        style={{ margin: 0, overflowWrap: "break-word" }}
       >
-        {cleanExerciseName(getExerciseDisplayName(exercise))}
+        {displayName}
       </h2>
       {lastSessionShort && (
         <p
@@ -966,8 +996,42 @@ function ExerciseStage({
         </p>
       )}
 
-      {/* One dock: progress, and every action that belongs to this exercise. */}
-      <div className="flex w-full items-center gap-1 rounded-full border border-white/10 bg-neutral-900/90 py-1 pl-3.5 pr-1 backdrop-blur-md">
+      {/*
+        The header row: what the athlete is doing, and where they stand.
+        The name keeps the width, the rank keeps its own: a pill that wraps is a
+        pill nobody reads, and a name that truncates is a movement nobody
+        recognises.
+      */}
+      <div className="flex w-full items-center justify-between gap-2.5 px-4">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[11px] font-medium text-neutral-400">
+            {completedSets}/{totalSets} series{cleanLocation ? ` · ${cleanLocation}` : ""}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenRank}
+          aria-label={`Rango del ejercicio: ${rank.currentRank.tier}`}
+          title={`${rank.currentRank.tier} · siguiente ${rank.nextRank.tier}`}
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-semibold backdrop-blur-md"
+          style={{
+            borderColor: rank.currentRank.colorHex,
+            backgroundColor: "rgba(255, 255, 255, 0.06)",
+            color: rank.currentRank.colorHex,
+          }}
+        >
+          <span aria-hidden="true">💎</span>
+          {rank.currentRank.tier}
+        </button>
+      </div>
+
+      {/*
+        One dock: progress, and every action that belongs to this exercise.
+        The buttons carry words, not only icons: at the rack, an icon the
+        athlete has to decode is a tap they will not make. The row scrolls when
+        a narrow phone cannot fit them all, and the progress never leaves.
+      */}
+      <div className="flex w-full items-center gap-2 overflow-x-auto rounded-full border border-white/10 bg-neutral-900/90 py-1 pl-3.5 pr-1 backdrop-blur-md">
         <div className="flex shrink-0 items-baseline gap-1">
           <span
             style={{
@@ -984,12 +1048,9 @@ function ExerciseStage({
             / {totalSets} series
           </span>
         </div>
-        {/* Five targets already fill a 360px row; below that the bar is the one
-            thing the dock can spare, since the count says the same thing. */}
         <div
           aria-hidden="true"
-          className="mx-1 hidden min-w-0 flex-1 overflow-hidden rounded-full bg-white/10 min-[380px]:block"
-          style={{ height: 3 }}
+          className="mx-1 hidden h-[3px] w-10 shrink-0 overflow-hidden rounded-full bg-white/10 min-[380px]:block"
         >
           <div
             className="h-full rounded-full"
@@ -1000,17 +1061,50 @@ function ExerciseStage({
             }}
           />
         </div>
-        <DockButton label="Demo" onClick={onDemo ?? (() => {})} icon={<Play size={16} strokeWidth={2} aria-hidden="true" />} />
-        <DockButton label="Avance" onClick={onAdvance ?? (() => {})} icon={<Target size={16} strokeWidth={2} aria-hidden="true" />} />
-        <DockButton label="Cambiar" onClick={onChangeExercise} icon={<ArrowRight size={16} strokeWidth={2} aria-hidden="true" />} />
-        <DockButton label="Ajustar" onClick={onAdjustEquipment} icon={<RefreshCw size={16} strokeWidth={2} aria-hidden="true" />} />
+        <DockButton
+          label="Demo"
+          onClick={onDemo ?? (() => {})}
+          icon={<Play size={14} strokeWidth={2} aria-hidden="true" />}
+        >
+          ▶ Tutorial
+        </DockButton>
+        <DockButton
+          label="Avance"
+          onClick={onAdvance ?? (() => {})}
+          icon={<Target size={14} strokeWidth={2} aria-hidden="true" />}
+        >
+          ✎ Notas
+        </DockButton>
+        <DockButton
+          label="Cambiar"
+          onClick={onChangeExercise}
+          icon={<ArrowRight size={14} strokeWidth={2} aria-hidden="true" />}
+        >
+          ⇄ Reemplazar
+        </DockButton>
+        <DockButton
+          label="Ajustar"
+          onClick={onAdjustRest}
+          icon={<RefreshCw size={14} strokeWidth={2} aria-hidden="true" />}
+        >
+          ⏱ {formatClock(restSeconds)}
+        </DockButton>
+        <DockButton
+          label="+ Calentamiento (W)"
+          onClick={onAddWarmup}
+          icon={<Plus size={14} strokeWidth={2} aria-hidden="true" />}
+        >
+          + Calentamiento
+        </DockButton>
         {totalSets > 0 && (
           <DockButton
             label={SET_LOGGER_LABELS.guideAriaLabel}
             active={guidesOpen}
             onClick={onToggleGuides}
-            icon={<Info size={16} strokeWidth={2} aria-hidden="true" />}
-          />
+            icon={<Info size={14} strokeWidth={2} aria-hidden="true" />}
+          >
+            ⓘ Guía
+          </DockButton>
         )}
       </div>
     </section>
@@ -1018,19 +1112,25 @@ function ExerciseStage({
 }
 
 /**
- * One control of the dock: 44px of target, an icon, and a label a screen reader
- * can read. The dock is where the athlete's thumb already is.
+ * One control of the dock: 44px of target, a word, and an icon.
+ *
+ * The word is the point. Five icons in a row are five things to learn, and the
+ * athlete is standing up with a bar in their hands; the accessible name stays
+ * the short one the rest of the app (and its tests) already use, so a screen
+ * reader and a tired thumb are both served by the same control.
  */
 function DockButton({
   label,
   icon,
   onClick,
   active = false,
+  children,
 }: {
   label: string;
   icon: JSX.Element;
   onClick: () => void;
   active?: boolean;
+  children: ReactNode;
 }) {
   return (
     <button
@@ -1039,11 +1139,14 @@ function DockButton({
       aria-pressed={active || undefined}
       onClick={onClick}
       title={label}
-      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors ${
-        active ? "bg-white/15 text-white" : "text-neutral-300 active:bg-white/10"
+      className={`flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-medium transition-colors ${
+        active ? "bg-white/15 text-white" : "text-neutral-200 active:bg-white/10"
       }`}
     >
-      {icon}
+      <span aria-hidden="true" className="flex shrink-0 items-center">
+        {icon}
+      </span>
+      {children}
     </button>
   );
 }
@@ -1458,7 +1561,12 @@ interface ActiveWorkoutProps {
   routineId: string | null;
   routineTitle: string;
   planned: PlannedExercise[];
-  onFinished: () => void;
+  /**
+   * Called once the session is closed, with the rows exactly as they were
+   * finished -- including the ones that were never checked. The summary is the
+   * only screen that can still say something about them, so they travel here.
+   */
+  onFinished: (exercises: readonly DraftExercise[]) => void;
 }
 
 export function ActiveWorkout({
@@ -1522,12 +1630,24 @@ export function ActiveWorkout({
   const [isAjustarOpen, setIsAjustarOpen] = useState(false);
   const [smartGuidesOpen, setSmartGuidesOpen] = useState(false);
   const [substituteOpen, setSubstituteOpen] = useState(false);
+  /** The overload modal, and the rank sheet that explains the next goal. */
+  const [overloadOpen, setOverloadOpen] = useState(false);
+  const [rankSheetOpen, setRankSheetOpen] = useState(false);
+  /** The rest the athlete chose for this session, used until the first set ends. */
+  const [restPreset, setRestPreset] = useState(DEFAULT_REST);
+  /**
+   * Bumped whenever the engine learns something, so the rank is recomputed from
+   * the model instead of from a render that happened before the set.
+   */
+  const [strengthRevision, setStrengthRevision] = useState(0);
   const [calibrationSetIndex, setCalibrationSetIndex] = useState<number | null>(null);
   const [appliedSmartLoadByExercise, setAppliedSmartLoadByExercise] = useState<Record<string, { weightKg: number; reps: number }>>({});
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentEntry | null>(
     null,
   );
   const gym = useGymSettings();
+  /** The athlete's bodyweight, the denominator of every relative rank. */
+  const { profile } = useProfile(userId);
 
   const sync = useOfflineSync();
 
@@ -1854,10 +1974,72 @@ export function ActiveWorkout({
     smartExercise?.station_key,
   ]);
 
-  const smartSubstitutes = useMemo(() => {
+  const stationAlternatives = useMemo<StationAlternative[]>(() => {
     if (!selected || !smartExercise || !smartLoad) return [];
-    return findSmartSubstitutes(smartExercise as any, smartLoad.weightKg, catalog as any);
+    return findStationAlternatives(smartExercise, catalog, smartLoad.weightKg);
   }, [catalog, selected, smartExercise, smartLoad]);
+
+  /**
+   * Where the athlete stands on this movement.
+   *
+   * The rank is relative to their own bodyweight, so the number the sheet
+   * promises ("27.5 × 8") is one their body can actually produce. It is read
+   * from the best set they have logged here, and re-derived after every set the
+   * engine learns from.
+   */
+  const exerciseRank = useMemo<ExerciseRankResult>(() => {
+    if (!selected) {
+      return computeExerciseRank({ exerciseId: "", weightKg: 0, reps: 0, bodyWeightKg: profile?.weight_kg ?? undefined });
+    }
+    const best = performance[selected.exercise.id]?.bestSet;
+    const lastSet = [...selected.sets]
+      .reverse()
+      .find((set) => toNumber(set.weight) !== null && toNumber(set.reps) !== null);
+    const weightKg = best?.weight ?? toNumber(lastSet?.weight ?? "") ?? smartLoad?.weightKg ?? 0;
+    const reps = best?.reps ?? toNumber(lastSet?.reps ?? "") ?? smartLoad?.suggestedReps ?? 8;
+    const targetReps = Number(selected.sets.find((set) => set.kind === "normal")?.reps ?? 0) || reps;
+    return computeExerciseRank({
+      exerciseId: selected.exercise.id,
+      weightKg,
+      reps,
+      bodyWeightKg: profile?.weight_kg ?? undefined,
+      isBodyweight: isBodyweightSelected,
+      movementPattern: smartExercise?.movement_pattern ?? null,
+      targetReps,
+    });
+  }, [selected, performance, smartLoad, profile?.weight_kg, isBodyweightSelected, smartExercise?.movement_pattern, strengthRevision]);
+
+  /** The first set still waiting for a check mark, as the athlete counts them. */
+  const nextPendingSetNumber = useMemo(() => {
+    if (!selected) return 1;
+    const index = selected.sets.findIndex((set) => !set.completed);
+    return index === -1 ? selected.sets.length : index + 1;
+  }, [selected]);
+
+  /** Whether the athlete has ever logged this movement, here or on another device. */
+  const hasExerciseHistory = useMemo(() => {
+    if (!selected) return false;
+    if (performance[selected.exercise.id]?.bestSet) return true;
+    return readExerciseBest(loadStrengthModel(), selected.exercise.id) > 0;
+  }, [selected, performance, strengthRevision]);
+
+  /** What a cold exercise would be loaded with, said out loud in the modal. */
+  const coldStartPreview = useMemo(() => {
+    if (!selected || !smartExercise || hasExerciseHistory) return null;
+    const targetReps = Number(selected.sets.find((set) => set.kind === "normal")?.reps ?? 0) || 8;
+    return inferColdStartLoad({
+      exerciseId: selected.exercise.id,
+      movementPattern: smartExercise.movement_pattern ?? null,
+      bodyPart: selected.exercise.body_part,
+      equipment: smartExercise.equipment,
+      equipmentId: smartExercise.equipment_id ?? null,
+      station: smartExercise.station_key,
+      bodyWeightKg: profile?.weight_kg ?? undefined,
+      targetReps,
+      isBodyweight: isBodyweightSelected,
+      siblingExerciseIds: stationAlternatives.map((alternative) => alternative.exercise.id),
+    });
+  }, [selected, smartExercise, hasExerciseHistory, profile?.weight_kg, isBodyweightSelected, stationAlternatives]);
 
   function patchEntry(
     itemKey: string,
@@ -1882,6 +2064,37 @@ export function ActiveWorkout({
     if (typeof navigator !== "undefined" && "vibrate" in navigator) {
       navigator.vibrate([40, 60, 80]);
     }
+    /*
+     * The engine learns from the set that was just done.
+     *
+     * This is the moment the athlete tells the truth about the load: the set is
+     * finished, the number is real. Recording it here (and not when the session
+     * ends) is what lets the next set be adjusted, and what lets a movement the
+     * athlete has never logged be loaded from a sibling they have.
+     */
+    const item = items.find((candidate) => candidate.key === itemKey);
+    const weightKg = toNumber(entry.weight) ?? 0;
+    const reps = toNumber(entry.reps) ?? 0;
+    if (item && weightKg > 0 && reps > 0) {
+      const targetReps = Number(item.sets.find((set) => set.kind === "normal")?.reps ?? 0) || reps;
+      recordSetAndTrainEngine({
+        exerciseId: item.exercise.id,
+        movementPattern: smartExercise?.movement_pattern ?? null,
+        bodyPart: item.exercise.body_part,
+        weightKg,
+        reps,
+        rpe: toNumber(entry.rpe),
+        targetReps,
+        isBodyweight: isBodyweightExercise({
+          equipment_id: smartExercise?.equipment_id ?? item.exercise.equipment_id,
+          equipment: smartExercise?.equipment ?? item.exercise.equipment,
+          name: item.exercise.name,
+          name_es: item.exercise.name_es,
+          movement_pattern: smartExercise?.movement_pattern,
+        }),
+      });
+      setStrengthRevision((revision) => revision + 1);
+    }
     const configuredRest = loadRestSeconds(
       itemKey,
       items.find((i) => i.key === itemKey)?.restSeconds ?? DEFAULT_REST,
@@ -1890,22 +2103,99 @@ export function ActiveWorkout({
       entry.kind === "drop" ? "dropset" : entry.kind,
       smartExercise?.movement_pattern,
     ));
+    setRestPreset(restSeconds);
     startRest(restSeconds);
     advanceToSupersetPartner(itemKey);
   }
 
   function applySmartLoad() {
     if (!selected || !smartLoad) return;
+    applyLoad(smartLoad.weightKg, smartLoad.suggestedReps);
+  }
+
+  /** Writes a load the athlete chose into every set still waiting. */
+  function applyLoad(weightKg: number, reps: number) {
+    if (!selected) return;
     setItems((current) => current.map((item) => item.key !== selected.key ? item : {
       ...item,
       sets: item.sets.map((set) => set.kind === "normal" && !set.completed
-        ? { ...set, weight: String(smartLoad.weightKg), reps: String(smartLoad.suggestedReps) }
+        ? { ...set, weight: String(weightKg), reps: String(reps) }
         : set),
     }));
     setAppliedSmartLoadByExercise((current) => ({
       ...current,
-      [selected.exercise.id]: { weightKg: smartLoad.weightKg, reps: smartLoad.suggestedReps },
+      [selected.exercise.id]: { weightKg, reps },
     }));
+    // A load the athlete accepted is a measurement too: the model keeps it, so a
+    // cold movement stops being cold the moment it is trained.
+    recordSetAndTrainEngine({
+      exerciseId: selected.exercise.id,
+      movementPattern: smartExercise?.movement_pattern ?? null,
+      bodyPart: selected.exercise.body_part,
+      weightKg,
+      reps,
+      rpe: null,
+      targetReps: reps,
+      isBodyweight: isBodyweightSelected,
+    });
+    setStrengthRevision((revision) => revision + 1);
+  }
+
+  /**
+   * Calibrate a cold exercise from the modal: the engine turns the one tap into
+   * a load, and the athlete can still edit the number before accepting it.
+   */
+  const calibrateColdStart = useCallback(
+    (preset: CalibrationPresetId): { weightKg: number; reps: number } | null => {
+      if (!selected || !smartExercise) return null;
+      const targetReps = Number(selected.sets.find((set) => set.kind === "normal")?.reps ?? 0) || 8;
+      const cold = inferColdStartLoad({
+        exerciseId: selected.exercise.id,
+        movementPattern: smartExercise.movement_pattern ?? null,
+        bodyPart: selected.exercise.body_part,
+        equipment: smartExercise.equipment,
+        equipmentId: smartExercise.equipment_id ?? null,
+        station: smartExercise.station_key,
+        bodyWeightKg: profile?.weight_kg ?? undefined,
+        targetReps,
+        isBodyweight: isBodyweightSelected,
+        preset,
+      });
+      recordSetAndTrainEngine({
+        exerciseId: selected.exercise.id,
+        movementPattern: smartExercise.movement_pattern ?? null,
+        bodyPart: selected.exercise.body_part,
+        weightKg: cold.weightKg,
+        reps: cold.suggestedReps,
+        rpe: null,
+        targetReps,
+        isBodyweight: isBodyweightSelected,
+      });
+      setStrengthRevision((revision) => revision + 1);
+      return { weightKg: cold.weightKg, reps: cold.suggestedReps };
+    },
+    [selected, smartExercise, profile?.weight_kg, isBodyweightSelected],
+  );
+
+  /** Writes the rank's target into the next set that is still waiting. */
+  function applyRankTarget(weightKg: number, reps: number) {
+    if (!selected) return;
+    const index = selected.sets.findIndex((set) => !set.completed);
+    if (index === -1) return;
+    setItems((current) => current.map((item) => {
+      if (item.key !== selected.key) return item;
+      return {
+        ...item,
+        sets: item.sets.map((set, i) => (i === index ? { ...set, weight: String(weightKg), reps: String(reps) } : set)),
+      };
+    }));
+  }
+
+  /** Changes the rest the athlete rests between sets, running or not. */
+  function adjustRestPreset(seconds: number) {
+    const next = Math.max(15, Math.min(600, Math.round(seconds)));
+    setRestPreset(next);
+    if (rest) startRest(next);
   }
 
   function insertSmartWarmups() {
@@ -1938,9 +2228,9 @@ export function ActiveWorkout({
     setCalibrationSetIndex(null);
   }
 
-  function replaceWithSubstitute(substitute: (typeof smartSubstitutes)[number]) {
+  function replaceWithAlternative(alternative: StationAlternative) {
     if (!selected) return;
-    const exercise = substitute.exercise;
+    const exercise = alternative.exercise;
     const resolved = resolveCatalogExerciseWithOverrides(exercise.id, catalog);
     const loggerExercise: Exercise = {
       id: exercise.id,
@@ -1949,7 +2239,7 @@ export function ActiveWorkout({
       body_part: exercise.body_part,
       target: exercise.target,
       equipment: exercise.equipment,
-      gif_url: resolved?.effectiveGifUrl ?? exercise.gif_url,
+      gif_url: resolved?.effectiveGifUrl ?? exercise.gif_url ?? "",
       instructions: [],
       is_active: true,
       is_hidden: false,
@@ -1958,7 +2248,7 @@ export function ActiveWorkout({
       ...item,
       exercise: loggerExercise,
       sets: item.sets.map((set) => set.kind === "normal" && !set.completed
-        ? { ...set, weight: String(substitute.suggestedWeightKg) }
+        ? { ...set, weight: String(alternative.suggestedWeightKg) }
         : set),
     }));
     setSubstituteOpen(false);
@@ -2086,7 +2376,7 @@ export function ActiveWorkout({
     void queueAndSync(payload);
     void deleteDraft(activeLogId);
     end();
-    onFinished();
+    onFinished(currentItems);
   }
 
   const showSummary = !started && !recoverableDraft && items.length > 0;
@@ -2396,15 +2686,7 @@ export function ActiveWorkout({
                 onToggleGuides={() => setSmartGuidesOpen((open) => !open)}
                 onDemo={() => setIsDemoOpen(true)}
                 onAdvance={() => setIsAvanceOpen(true)}
-                onChangeExercise={() => {
-                  setPickerMode("replace");
-                  setPickerOpen(true);
-                  findExerciseReplacements({
-                    currentExercise: selected.exercise as any,
-                    availableEquipment: availableEquipmentList,
-                    exerciseCatalog: catalog || [],
-                  });
-                }}
+                onChangeExercise={() => setSubstituteOpen((open) => !open)}
                 onAdjustEquipment={() => {
                   setSelectedEquipment(
                     equipmentForSelected ?? equipmentSuggestion.primary ?? {
@@ -2417,34 +2699,50 @@ export function ActiveWorkout({
                   );
                   setEquipmentSheetOpen(true);
                 }}
+                rank={exerciseRank}
+                onOpenRank={() => setRankSheetOpen(true)}
+                restSeconds={restPreset}
+                onAdjustRest={() => adjustRestPreset(restPreset >= 180 ? 90 : restPreset + 30)}
+                onAddWarmup={insertSmartWarmups}
               />
 
               {substituteOpen && (
-                <section className="mx-auto w-full max-w-[560px] space-y-2 bg-black px-4 py-3" aria-label="Sustituciones inteligentes">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-white">Alternativas disponibles</h3>
+                <section
+                  className="mx-auto w-full max-w-[560px] space-y-2 bg-black px-4 py-3"
+                  aria-label="Alternativas biomecánicas"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-white">Mismo músculo, otra máquina</h3>
                     <button type="button" className="min-h-11 px-3 text-sm text-neutral-400" onClick={() => setSubstituteOpen(false)}>Cerrar</button>
                   </div>
-                  {smartSubstitutes.map((substitute) => {
-                    const resolved = resolveCatalogExerciseWithOverrides(substitute.exercise.id, catalog);
-                    const equipmentId = resolved?.effectiveEquipmentId ?? substitute.exercise.equipment_id ?? "NONE";
-                    const equipmentName = resolved?.effectiveEquipmentName
-                      ?? (equipmentId !== "NONE" && equipmentMap[equipmentId]
-                        ? equipmentMap[equipmentId].name
-                        : "Peso libre / Piso");
-                    return (
-                      <button key={substitute.exercise.id} type="button" className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-neutral-900 p-3 text-left" onClick={() => replaceWithSubstitute(substitute)}>
-                        <img src={resolved?.effectiveGifUrl || resolved?.effectiveImageUrl || substitute.imageUrl} alt="" className="h-11 w-11 rounded-lg object-cover" />
-                        <span className="min-w-0 flex-1">
-                          <strong className="block truncate text-sm text-white">{resolved?.displayName ?? substitute.exercise.customNameEs ?? substitute.exercise.name}</strong>
-                          <span className="font-mono text-[11px] text-neutral-400">
-                            {equipmentId} · {equipmentName} · {substitute.suggestedWeightKg}kg
-                          </span>
+                  {stationAlternatives.map((alternative) => (
+                    <button
+                      key={alternative.exercise.id}
+                      type="button"
+                      className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-neutral-900 p-3 text-left"
+                      onClick={() => replaceWithAlternative(alternative)}
+                    >
+                      <img
+                        src={alternative.exercise.image || alternative.exercise.gif_url || ""}
+                        alt=""
+                        className="h-11 w-11 rounded-lg object-cover"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <strong className="block truncate text-sm text-white">{alternative.displayName}</strong>
+                        <span className="block truncate text-[11px] text-neutral-400">
+                          {alternative.cleanEquipmentName || "Peso libre / Piso"}
                         </span>
-                      </button>
-                    );
-                  })}
-                  {smartSubstitutes.length === 0 && <p className="text-sm text-neutral-400">No hay sustituciones disponibles.</p>}
+                        <span className="block text-[11px] text-neutral-500">
+                          {alternative.suggestedWeightKg > 0 ? `≈ ${alternative.suggestedWeightKg} kg` : "Sin carga externa"}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                  {stationAlternatives.length === 0 && (
+                    <p className="text-sm text-neutral-400">
+                      No hay otro ejercicio que entrene lo mismo con el equipo de este gym.
+                    </p>
+                  )}
                 </section>
               )}
 
@@ -2542,6 +2840,20 @@ export function ActiveWorkout({
                     }}
                   >
                     {/* Table Header */}
+                    <div className="mb-1 flex items-center justify-between gap-2 px-1">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-neutral-500">
+                        Series
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setOverloadOpen(true)}
+                        aria-label="Sobrecarga progresiva inteligente"
+                        title="Sobrecarga progresiva inteligente"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-neutral-800 text-base text-white"
+                      >
+                        ✨
+                      </button>
+                    </div>
                     <div
                       style={{
                         display: "grid",
@@ -2631,6 +2943,34 @@ export function ActiveWorkout({
               )}
             </>
           )}
+        </>
+      )}
+
+      {selected && (
+        <>
+          <SmartOverloadModal
+            isOpen={overloadOpen}
+            onClose={() => setOverloadOpen(false)}
+            exerciseName={cleanExerciseName(getExerciseDisplayName(selected.exercise))}
+            weightKg={smartLoad?.weightKg ?? 0}
+            reps={smartLoad?.suggestedReps ?? 8}
+            isBodyweight={isBodyweightSelected}
+            hasHistory={hasExerciseHistory}
+            coldStartReason={coldStartPreview?.reason ?? null}
+            coldStartSourceLabel={coldStartPreview?.sourceLabel ?? null}
+            onCalibrate={calibrateColdStart}
+            onApply={(next) => applyLoad(next.weightKg, next.reps)}
+            pendingSetNumber={nextPendingSetNumber}
+          />
+          <ExerciseRankSheet
+            isOpen={rankSheetOpen}
+            onClose={() => setRankSheetOpen(false)}
+            exerciseName={cleanExerciseName(getExerciseDisplayName(selected.exercise))}
+            rank={exerciseRank}
+            pendingSetNumber={nextPendingSetNumber}
+            isBodyweight={isBodyweightSelected}
+            onUseTarget={applyRankTarget}
+          />
         </>
       )}
 
@@ -2728,30 +3068,28 @@ export function ActiveWorkout({
           {rest ? (
             /* State A: Rest Timer Active */
             <>
-              {/* Left: Status indicator + Timer */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div
+              {/* Left: what is running, and for how long. */}
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 shrink-0 rounded-full"
                   style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
                     background: "#30D158",
                     boxShadow: "0 0 8px #30D158",
                     animation: "cronos-rest-pulse 1.5s ease-in-out infinite",
                   }}
-                  aria-hidden="true"
                 />
-                <span
-                  style={{
-                    fontFamily: TYPE.mono.font,
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    fontVariantNumeric: "tabular-nums",
-                    color: TEXT.primary,
-                  }}
-                >
-                  {Math.max(0, Math.ceil((rest.endsAt - Date.now()) / 1000))}s
-                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+                    🌙 Descanso
+                  </p>
+                  <p
+                    className="font-mono text-2xl font-bold leading-none text-white"
+                    style={{ fontVariantNumeric: "tabular-nums" }}
+                  >
+                    {formatClock(Math.max(0, Math.ceil((rest.endsAt - Date.now()) / 1000)))}
+                  </p>
+                </div>
               </div>
 
               {/* Right: -15s, +15s, Skip */}
@@ -2833,7 +3171,7 @@ export function ActiveWorkout({
                   onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                 >
-                  Saltar
+                  ≫ Saltar
                 </button>
               </div>
             </>

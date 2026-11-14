@@ -23,7 +23,12 @@
  */
 
 import type { Exercise } from "@/types/supabase";
-import type { StationKey } from "./types";
+import {
+  BODYWEIGHT_EQUIPMENT_NAME,
+  BODYWEIGHT_STATION,
+  NO_EQUIPMENT_ID,
+  type StationKey,
+} from "./types";
 
 const STORAGE_KEY = "cronos_custom_exercises_v1";
 export const CATALOG_OVERRIDES_KEY = "cronos_catalog_overrides_v1";
@@ -418,18 +423,48 @@ export function mergeOverridesFromRemote(
     const isDefault = (value: string | undefined, fallback: string | undefined): boolean =>
       value !== undefined && fallback !== undefined && value === fallback;
 
-    if (!held("equipment_id") && incoming.equipment_id) {
-      if (!isDefault(incoming.equipment_id, base?.equipment_id ?? undefined)) {
+    /**
+     * Whether the device can actually know that a remote value is the default.
+     *
+     * `baseById` is the catalog this device has loaded. When it has not loaded
+     * yet, the row is unknown, and "different from the default" is unknowable:
+     * taking the remote on faith then is what put `CG-EQP-0040` back on an
+     * exercise a coach had already moved to "Sin máquina". An unknown default
+     * can only fill a field this device has never set.
+     */
+    const defaultIsKnown = base !== undefined;
+    const adoptable = (incomingValue: string, localValue: string | undefined, baseValue: string | null | undefined): boolean =>
+      !isDefault(incomingValue, baseValue ?? undefined) && (defaultIsKnown || localValue === undefined);
+
+    /**
+     * A coach's "Sin máquina" survives the server.
+     *
+     * The governance columns are not in every environment yet, so a write of
+     * `NONE` can land as `equipment = "body weight"` with the machine id left
+     * untouched. On the next load the server offers the old id back; taking it
+     * would undo the coach's choice with a value the server never actually
+     * changed. A remote row is only allowed to replace a local `NONE` when it
+     * says `NONE` itself, or when it agrees the movement is bodyweight.
+     */
+    const localSaysNoMachine = existing.equipment_id === NO_EQUIPMENT_ID;
+    const remoteSaysNoMachine = incoming.equipment_id === NO_EQUIPMENT_ID;
+    const remoteAgreesBodyweight =
+      incoming.station_key === BODYWEIGHT_STATION ||
+      incoming.equipment_name === BODYWEIGHT_EQUIPMENT_NAME;
+    const noMachineIsSafe = !localSaysNoMachine || remoteSaysNoMachine || remoteAgreesBodyweight;
+
+    if (!held("equipment_id") && incoming.equipment_id && noMachineIsSafe) {
+      if (adoptable(incoming.equipment_id, existing.equipment_id, base?.equipment_id)) {
         merged.equipment_id = incoming.equipment_id;
       }
     }
-    if (!held("equipment_name") && incoming.equipment_name) {
-      if (!isDefault(incoming.equipment_name, base?.equipment_name ?? undefined)) {
+    if (!held("equipment_name") && incoming.equipment_name && noMachineIsSafe) {
+      if (adoptable(incoming.equipment_name, existing.equipment_name, base?.equipment_name)) {
         merged.equipment_name = incoming.equipment_name;
       }
     }
-    if (!held("station_key") && incoming.station_key) {
-      if (!isDefault(incoming.station_key, base?.station_key ?? undefined)) {
+    if (!held("station_key") && incoming.station_key && noMachineIsSafe) {
+      if (adoptable(incoming.station_key, existing.station_key, base?.station_key)) {
         merged.station_key = incoming.station_key;
       }
     }

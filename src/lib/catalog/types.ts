@@ -60,6 +60,25 @@ export type MovementPattern =
   | "full_body";
 
 /**
+ * The vocabulary of "no machine", in one place.
+ *
+ * The catalog, the resolver, the sync and the coach portal all have to agree on
+ * what a bodyweight movement is called, and they live in different modules:
+ * `resolveExercise` cannot import `customExercises` without a cycle, so the
+ * constants live here, where everything already points.
+ */
+export const NO_EQUIPMENT_ID = "NONE";
+
+/** What a bodyweight exercise is called when no machine owns it. */
+export const BODYWEIGHT_EQUIPMENT_NAME = "Peso libre / Piso";
+
+/** The free-text equipment value a bodyweight row carries. */
+export const BODYWEIGHT_EQUIPMENT_TEXT = "body weight";
+
+/** Where a bodyweight exercise happens. */
+export const BODYWEIGHT_STATION: StationKey = "floor_mat_area";
+
+/**
  * A catalog row is only usable if it can be identified and rendered: a name to
  * show and an id to key the list on. Rows missing those are dropped instead of
  * crashing the picker.

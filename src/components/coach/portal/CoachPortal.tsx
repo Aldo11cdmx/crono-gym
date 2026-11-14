@@ -23,6 +23,7 @@ import {
   subscribeCatalogOverrides,
 } from "@/lib/catalog/customExercises";
 import { loadCatalog } from "@/lib/catalog/catalogLoader";
+import { BODYWEIGHT_EQUIPMENT_NAME } from "@/lib/catalog/types";
 import {
   NO_EQUIPMENT_ID,
   normaliseExerciseName,
@@ -1304,6 +1305,7 @@ function ExercisesPanel({
           ? {
               ...candidate,
               equipment_id: isFloor ? NO_EQUIPMENT_ID : id,
+              equipment_name: isFloor ? BODYWEIGHT_EQUIPMENT_NAME : machine?.name,
               available: !isFloor,
             }
           : candidate,
@@ -1320,7 +1322,7 @@ function ExercisesPanel({
       row.id,
       {
         equipment_id: isFloor ? NO_EQUIPMENT_ID : id,
-        equipment_name: isFloor ? undefined : machine?.name,
+        equipment_name: isFloor ? BODYWEIGHT_EQUIPMENT_NAME : machine?.name,
         station_key: isFloor ? "floor_mat_area" : undefined,
         availableInCronosGym: !isFloor,
       },

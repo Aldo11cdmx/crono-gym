@@ -7,11 +7,15 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
-import { Check, Clock, Flame, TrendingUp, X } from "lucide-react";
+import { Check, Clock, Flame, Share2, TrendingUp, X } from "lucide-react";
 import type { DraftExercise } from "../../lib/offlineStore";
 import { queueAndSync } from "../../lib/sessionSync";
 import { kgToLb } from "../../lib/profile";
 import { useGymSettings } from "../../context/GymSettingsContext";
+import {
+  buildShareCardInput,
+  pendingSets as pendingSetsOf,
+} from "../../lib/workout/shareCardModel";
 import {
   ACCENT,
   GLASS,
@@ -23,7 +27,9 @@ import {
   SCRIM,
   Z_INDEX,
 } from "../../design/tokens";
+import { SUMMARY_PENDING_LABELS } from "../../lib/i18n";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
+import { WorkoutShareStudio } from "./WorkoutShareStudio";
 
 export interface WorkoutSummaryModalProps {
   isOpen: boolean;
@@ -35,7 +41,11 @@ export interface WorkoutSummaryModalProps {
   userId: string;
   routineId: string | null;
   onSaved: () => void;
+  /** `LISTO` on the share step: the session is closed and the app returns home. */
+  onDone: () => void;
 }
+
+type SummaryTab = "resumen" | "compartir";
 
 export function WorkoutSummaryModal({
   isOpen,
@@ -47,26 +57,51 @@ export function WorkoutSummaryModal({
   userId,
   routineId,
   onSaved,
+  onDone,
 }: WorkoutSummaryModalProps) {
   const { weightUnit } = useGymSettings();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [tab, setTab] = useState<SummaryTab>("resumen");
+  /**
+   * What the athlete decided about the unchecked rows.
+   *
+   * `null` means "not asked yet"; the banner is the question. Once answered the
+   * numbers below follow that answer and never flip back on a re-render.
+   */
+  const [includePending, setIncludePending] = useState<boolean | null>(null);
+
+  const pending = useMemo(() => pendingSetsOf(exercises), [exercises]);
+  const pendingCount = pending.length;
+  // Until the athlete answers, the summary shows the session that was actually
+  // checked: promising volume for work nobody marked would be the lie.
+  const pendingIncluded = includePending === true;
+
+  const countedExercises = useMemo(() => {
+    if (!pendingIncluded) return exercises;
+    // Only the rows that were *pending* come back: a row with nothing typed in
+    // it is empty, and marking it complete would invent a set.
+    const pendingKeys = new Set(pending.map(({ exercise, setNumber }) => `${exercise.key}#${setNumber}`));
+    return exercises.map((exercise) => ({
+      ...exercise,
+      sets: exercise.sets.map((set, index) =>
+        pendingKeys.has(`${exercise.key}#${index + 1}`) ? { ...set, completed: true } : set,
+      ),
+    }));
+  }, [exercises, pendingIncluded, pending]);
 
   const totalSets = useMemo(
-    () => exercises.reduce((n, e) => n + e.sets.length, 0),
-    [exercises],
+    () => countedExercises.reduce((n, e) => n + e.sets.filter((s) => s.completed).length, 0),
+    [countedExercises],
   );
-  const completedSets = useMemo(
-    () =>
-      exercises.reduce(
-        (n, e) => n + e.sets.filter((s) => s.completed).length,
-        0,
-      ),
-    [exercises],
+  const totalRows = useMemo(
+    () => countedExercises.reduce((n, e) => n + e.sets.length, 0),
+    [countedExercises],
   );
+  const completedSets = totalSets;
   const totalVolumeKg = useMemo(
     () =>
-      exercises.reduce(
+      countedExercises.reduce(
         (n, e) =>
           n +
           e.sets.reduce(
@@ -77,7 +112,7 @@ export function WorkoutSummaryModal({
           ),
         0,
       ),
-    [exercises],
+    [countedExercises],
   );
   const started = new Date(startedAt);
   const completed = new Date(completedAt);
@@ -90,12 +125,12 @@ export function WorkoutSummaryModal({
 
   const prExercises = useMemo(
     () =>
-      exercises.filter((e) =>
+      countedExercises.filter((e) =>
         e.sets.some(
           (s) => s.completed && (s.weight && Number.parseFloat(s.weight) > 0),
         ),
       ),
-    [exercises],
+    [countedExercises],
   );
 
   const handleSave = useCallback(async () => {
@@ -108,17 +143,20 @@ export function WorkoutSummaryModal({
         startedAt,
         completedAt,
         notes: "",
-        sets: exercises.flatMap((e) =>
-          e.sets.map((s, setIndex) => ({
-            exercise_id: e.exercise.id,
-            set_number: setIndex + 1,
-            weight: Number.parseFloat(s.weight) || 0,
-            reps: Number.parseInt(s.reps, 10) || 0,
-            rpe: s.rpe ? Number.parseInt(s.rpe, 10) : null,
-            is_warmup: s.kind === "warmup",
-            notes: s.notes ?? null,
-            created_at: completedAt,
-          })),
+        sets: countedExercises.flatMap((e) =>
+          e.sets
+            .map((s, setIndex) => ({ s, setIndex }))
+            .filter(({ s }) => s.completed)
+            .map(({ s, setIndex }) => ({
+              exercise_id: e.exercise.id,
+              set_number: setIndex + 1,
+              weight: Number.parseFloat(s.weight) || 0,
+              reps: Number.parseInt(s.reps, 10) || 0,
+              rpe: s.rpe ? Number.parseInt(s.rpe, 10) : null,
+              is_warmup: s.kind === "warmup",
+              notes: s.notes ?? null,
+              created_at: completedAt,
+            })),
         ),
       };
       await queueAndSync(payload);
@@ -130,7 +168,18 @@ export function WorkoutSummaryModal({
     } finally {
       setSaving(false);
     }
-  }, [exercises, userId, routineId, startedAt, completedAt, onSaved]);
+  }, [countedExercises, userId, routineId, startedAt, completedAt, onSaved]);
+
+  const shareInput = useMemo(
+    () =>
+      buildShareCardInput(countedExercises, {
+        routineTitle,
+        startedAt,
+        completedAt,
+        includePending: pendingIncluded,
+      }),
+    [countedExercises, routineTitle, startedAt, completedAt, pendingIncluded],
+  );
 
   if (!isOpen) return null;
 
@@ -180,37 +229,74 @@ export function WorkoutSummaryModal({
           >
             Resumen
           </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar resumen"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: MOTION.minTouchTarget,
-              minHeight: MOTION.minTouchTarget,
-              borderRadius: RADIUS.control,
-              border: `1px solid ${GLASS.border}`,
-              background: "transparent",
-              color: TEXT.secondary,
-              cursor: "pointer",
-            }}
-          >
-            <X size={18} aria-hidden="true" />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: SPACE.xs }}>
+            <div role="tablist" aria-label="Secciones del resumen" style={{ display: "flex", gap: SPACE.xs }}>
+              {(["resumen", "compartir"] as const).map((value) => {
+                const selected = tab === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => setTab(value)}
+                    style={{
+                      minHeight: 36,
+                      padding: `0 ${SPACE.sm}px`,
+                      borderRadius: RADIUS.pill,
+                      border: `1px solid ${selected ? ACCENT.base : GLASS.border}`,
+                      background: selected ? ACCENT.subtle : "transparent",
+                      color: selected ? TEXT.primary : TEXT.secondary,
+                      fontSize: TYPE.caption.size,
+                      fontWeight: 600,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: SPACE.xs,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {value === "compartir" ? <Share2 size={14} aria-hidden="true" /> : null}
+                    {value === "compartir" ? "Compartir ✨" : "Resumen"}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar resumen"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: MOTION.minTouchTarget,
+                minHeight: MOTION.minTouchTarget,
+                borderRadius: RADIUS.control,
+                border: `1px solid ${GLASS.border}`,
+                background: "transparent",
+                color: TEXT.secondary,
+                cursor: "pointer",
+              }}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         <div
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: SPACE.md,
+            padding: tab === "compartir" ? 0 : SPACE.md,
             display: "flex",
             flexDirection: "column",
             gap: SPACE.md,
           }}
         >
+          {tab === "compartir" ? (
+            <WorkoutShareStudio input={shareInput} onDone={onDone} />
+          ) : (
+            <>
           <div
             style={{
               display: "grid",
@@ -230,7 +316,7 @@ export function WorkoutSummaryModal({
             />
             <StatCard
               label="Series"
-              value={`${completedSets} de ${totalSets}`}
+              value={`${completedSets} de ${totalRows}`}
               icon={<Check size={18} aria-hidden="true" />}
             />
             <StatCard
@@ -239,6 +325,73 @@ export function WorkoutSummaryModal({
               icon={<Flame size={18} aria-hidden="true" />}
             />
           </div>
+
+          {pendingCount > 0 && (
+            <div
+              role="group"
+              aria-label={SUMMARY_PENDING_LABELS.title(pendingCount)}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: SPACE.sm,
+                padding: SPACE.md,
+                borderRadius: RADIUS.card,
+                border: `1px solid ${ACCENT.border}`,
+                background: ACCENT.subtle,
+              }}
+            >
+              <p style={{ margin: 0, fontSize: TYPE.subhead.size, fontWeight: 600, color: TEXT.primary }}>
+                {SUMMARY_PENDING_LABELS.title(pendingCount)}
+              </p>
+              <p style={{ margin: 0, fontSize: TYPE.caption.size, color: TEXT.secondary }}>
+                {includePending === null
+                  ? "Decide qué pasa con ellas antes de guardar."
+                  : pendingIncluded
+                    ? SUMMARY_PENDING_LABELS.included
+                    : SUMMARY_PENDING_LABELS.omitted}
+              </p>
+              <div style={{ display: "flex", gap: SPACE.sm, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  aria-pressed={pendingIncluded}
+                  onClick={() => setIncludePending(true)}
+                  style={{
+                    flex: "1 1 auto",
+                    minHeight: MOTION.minTouchTarget,
+                    padding: `0 ${SPACE.md}px`,
+                    borderRadius: RADIUS.control,
+                    border: `1px solid ${pendingIncluded ? ACCENT.base : GLASS.border}`,
+                    background: pendingIncluded ? ACCENT.base : "transparent",
+                    color: pendingIncluded ? TEXT.onAccent : TEXT.primary,
+                    fontSize: TYPE.caption.size,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✓ {SUMMARY_PENDING_LABELS.include}
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={includePending === false}
+                  onClick={() => setIncludePending(false)}
+                  style={{
+                    flex: "1 1 auto",
+                    minHeight: MOTION.minTouchTarget,
+                    padding: `0 ${SPACE.md}px`,
+                    borderRadius: RADIUS.control,
+                    border: `1px solid ${includePending === false ? ACCENT.base : GLASS.border}`,
+                    background: includePending === false ? ACCENT.base : "transparent",
+                    color: includePending === false ? TEXT.onAccent : TEXT.primary,
+                    fontSize: TYPE.caption.size,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {SUMMARY_PENDING_LABELS.omit}
+                </button>
+              </div>
+            </div>
+          )}
 
           {prExercises.length > 0 && (
             <div
@@ -322,8 +475,11 @@ export function WorkoutSummaryModal({
           >
             {routineTitle}
           </div>
+            </>
+          )}
         </div>
 
+        {tab === "resumen" && (
         <div
           style={{
             display: "flex",
@@ -376,6 +532,7 @@ export function WorkoutSummaryModal({
             </button>
           )}
         </div>
+        )}
       </div>
     </div>
   );

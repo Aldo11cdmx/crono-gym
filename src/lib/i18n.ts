@@ -501,6 +501,38 @@ export const SET_TYPE_LABELS: Record<"normal" | "warmup" | "failure" | "drop", s
   drop: "Drop set",
 };
 
+/**
+ * The share step of the post-workout summary: four cards, four backgrounds, and
+ * the two ways of keeping one.
+ */
+export const SHARE_STUDIO_LABELS = {
+  cardsAriaLabel: "Tarjetas para compartir",
+  canvasAriaLabel: "Vista previa de la tarjeta",
+  background: "Fondo",
+  copy: "Copiar",
+  copied: "Copiada",
+  copyFailed: "No se pudo copiar",
+  savePng: "Guardar PNG",
+  saved: "Guardada",
+  hint: "La tarjeta se guarda a 1080 × 1350, lista para historias.",
+  done: "LISTO",
+};
+
+/**
+ * The banner inside the summary that owns the rows left unchecked.
+ *
+ * `finish()` only ever ships checked rows, so this is the one place where the
+ * athlete can bring them back before they are gone for good.
+ */
+export const SUMMARY_PENDING_LABELS = {
+  title: (n: number): string =>
+    n === 1 ? "Aún tenías 1 serie sin marcar" : `Aún tenías ${n} series sin marcar`,
+  include: "Incluirlas como completadas",
+  omit: "Omitirlas",
+  included: "Incluidas en el resumen",
+  omitted: "Se omitieron",
+};
+
 export const SET_LOGGER_LABELS = {
   setNumber: (n: number): string => `Serie ${n}`,
   repsLabel: "Repeticiones",

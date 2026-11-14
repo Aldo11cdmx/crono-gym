@@ -57,4 +57,30 @@ describe("TrainingHeroSection", () => {
     // MuscleReadonlyMap se monta sin error; verificamos presencia del contenedor
     expect(screen.getByText("Hola")).toBeTruthy();
   });
+
+  it("en 390px apila el mapa debajo del título en vez de partirlo en cuatro líneas", () => {
+    render(<TrainingHeroSection {...baseProps} routineTitle="Empuje de pecho con barra" />);
+
+    // Una sola columna en móvil: el título ocupa el ancho completo, así que el
+    // nombre de la rutina cabe en dos líneas y no en cuatro.
+    const grid = screen.getByTestId("training-hero-command").querySelector("div.grid");
+    expect(grid?.className).toContain("grid-cols-1");
+    expect(grid?.className).toContain("md:grid-cols-[1fr_auto]");
+
+    const title = screen.getByText("Empuje de pecho con barra");
+    expect(title.style.maxWidth).toBe("20ch");
+  });
+
+  it("deja el botón Ver progreso en una sola línea", () => {
+    render(<TrainingHeroSection {...baseProps} isCompleted completedSummary={{
+      title: "Empuje",
+      durationMin: 45,
+      exerciseCount: 4,
+      setCount: 16,
+    }} />);
+
+    const button = screen.getByRole("button", { name: /ver progreso/i });
+    expect(button.className).toContain("whitespace-nowrap");
+    expect(button.className).toContain("px-5");
+  });
 });

@@ -3,10 +3,12 @@ import {
   BODYWEIGHT_LOAD_HINT,
   calibratePendingSets,
   estimateSmartLoad,
+  findStationAlternatives,
   generateSmartWarmupSets,
   getAdaptiveRestSeconds,
   getLoadBreakdownHint,
   isBodyweightExercise,
+  type AlternativeCandidate,
 } from "./cronosSmartEngine";
 
 describe("cronosSmartEngine", () => {
@@ -121,5 +123,67 @@ describe("prescripción sin carga externa", () => {
     expect(pullUp.weightKg).toBe(0);
     expect(pullUp.suggestedReps).toBe(15);
     expect(pullUp.reason).toContain("Peso corporal");
+  });
+});
+
+function candidate(overrides: Partial<AlternativeCandidate>): AlternativeCandidate {
+  return {
+    id: "ex-1",
+    name: "Press de banca",
+    body_part: "chest",
+    target: "pectorals",
+    equipment: "barbell",
+    muscle_group: "chest",
+    movement_pattern: "horizontal_push",
+    equipment_id: "CG-EQP-0004",
+    ...overrides,
+  };
+}
+
+describe("findStationAlternatives", () => {
+  const bench = candidate({ id: "bench" });
+
+  it("nunca ofrece un abdominal para un press de pecho", () => {
+    const abs = candidate({
+      id: "crunch",
+      name: "Crunch de abdomen",
+      body_part: "abdominals",
+      target: "abs",
+      muscle_group: "abs",
+      movement_pattern: "horizontal_push",
+    });
+
+    const alternatives = findStationAlternatives(bench, [abs, candidate({ id: "incline" })], 60);
+
+    expect(alternatives.map((a) => a.exercise.id)).toEqual(["incline"]);
+    expect(alternatives.some((a) => a.exercise.body_part === "abdominals")).toBe(false);
+  });
+
+  it("exige la misma región aunque el patrón coincida", () => {
+    const row = candidate({
+      id: "row",
+      name: "Remo sentado",
+      body_part: "back",
+      target: "lats",
+      muscle_group: "upper-back",
+      movement_pattern: "horizontal_push",
+    });
+
+    expect(findStationAlternatives(bench, [row], 60)).toEqual([]);
+  });
+
+  it("no muestra el código CG-EQP en el nombre del equipo", () => {
+    const onlyId = candidate({
+      id: "pec-deck",
+      name: "Pec deck",
+      equipment: "machine",
+      equipment_id: "CG-EQP-0040",
+      equipment_name: null,
+    });
+
+    const [alternative] = findStationAlternatives(bench, [onlyId], 60);
+
+    expect(alternative.cleanEquipmentName).not.toContain("CG-EQP");
+    expect(alternative.cleanEquipmentName).toBe("machine");
   });
 });

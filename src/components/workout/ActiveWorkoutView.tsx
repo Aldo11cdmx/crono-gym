@@ -29,23 +29,32 @@ export function ActiveWorkoutView({
   routineId,
   routineTitle,
   planned,
-  onFinished,
+  onFinished: onLeftWorkout,
 }: ActiveWorkoutViewProps) {
   const { session, end } = useActiveSession();
   const [summaryOpen, setSummaryOpen] = useState(false);
+  /**
+   * The session exactly as it was finished.
+   *
+   * The logger is the only component that ever held these rows, so the summary
+   * would otherwise render a session of zero sets and zero volume. They arrive
+   * once and stay: the summary is read-only from here on.
+   */
+  const [finishedExercises, setFinishedExercises] = useState<readonly DraftExercise[]>([]);
 
   const startedAt = session?.startedAt ?? new Date().toISOString();
   const completedAt = new Date().toISOString();
 
-  const handleFinish = useCallback(() => {
+  const handleFinish = useCallback((exercises: readonly DraftExercise[]) => {
+    setFinishedExercises(exercises);
     setSummaryOpen(true);
   }, []);
 
   const handleSave = useCallback(() => {
     setSummaryOpen(false);
     end();
-    onFinished();
-  }, [end, onFinished]);
+    onLeftWorkout();
+  }, [end, onLeftWorkout]);
 
    return (
      <div
@@ -72,10 +81,11 @@ export function ActiveWorkoutView({
         routineTitle={routineTitle}
         startedAt={startedAt}
         completedAt={completedAt}
-        exercises={[] as DraftExercise[]}
+        exercises={finishedExercises}
         userId={userId}
         routineId={routineId}
         onSaved={handleSave}
+        onDone={handleSave}
       />
     </div>
   );

@@ -38,6 +38,14 @@ export interface CatalogOverride {
   station_key?: StationKey;
   movement_pattern?: string;
   availableInCronosGym?: boolean;
+  /**
+   * The coach removed this exercise from the catalog.
+   *
+   * A deletion is an override like any other, not a `DELETE` of the row: a routine
+   * that already references the exercise must keep its history, and the coach must
+   * be able to undo. The row stops being trainable everywhere while it stays here.
+   */
+  deleted?: boolean;
   /** The coach's own demonstration, when the shipped one is wrong. */
   gif_url?: string;
   /** The coach's own still, when the shipped one is wrong. */
@@ -93,6 +101,52 @@ export function exerciseIdVariants(exerciseId: string): string[] {
     if (unpadded !== canonical) variants.push(unpadded);
   }
   return variants;
+}
+
+/**
+ * The canonical ids the coach has removed from the catalog.
+ *
+ * Read from the store on every call and not from the shared snapshot: a delete is
+ * followed immediately by a re-render of the list that has to lose the row, and
+ * `invalidateOverridesSnapshot` is what makes that possible, but a caller that
+ * already holds a snapshot must not keep showing a row the coach just deleted.
+ */
+export function readDeletedExerciseIds(): Set<string> {
+  const ids = new Set<string>();
+  for (const [id, override] of Object.entries(loadCatalogOverrides())) {
+    if (override?.deleted === true) ids.add(normaliseExerciseId(id));
+  }
+  return ids;
+}
+
+/** Whether the coach removed this exercise. Unknown ids are not deleted. */
+export function isExerciseDeleted(exerciseId: string | null | undefined): boolean {
+  if (!exerciseId) return false;
+  return readDeletedExerciseIds().has(normaliseExerciseId(exerciseId));
+}
+
+/**
+ * Drops the rows the coach removed.
+ *
+ * The filter is here rather than in the loader because the catalog is also the
+ * place a restore reads from: the registry keeps every row, and only the lists a
+ * user picks a movement from lose the deleted ones.
+ */
+export function filterDeletedExercises<T extends { id: string }>(rows: readonly T[]): T[] {
+  const deleted = readDeletedExerciseIds();
+  // The untouched array is returned as it is: the loader hands the same rows to
+  // several callers, and copying 1,324 rows to delete none of them is waste.
+  if (deleted.size === 0) return rows as T[];
+  return rows.filter((row) => !deleted.has(normaliseExerciseId(row.id)));
+}
+
+/** How many exercises this device has removed. One per exercise, not per id form. */
+export function countDeletedExercises(): number {
+  let total = 0;
+  for (const [, override] of canonicalOverrides()) {
+    if (override.deleted === true) total += 1;
+  }
+  return total;
 }
 
 function readJson(key: string): unknown {
@@ -162,7 +216,9 @@ function announce(detail: unknown): void {
 }
 
 function emit(exerciseId: string, override: CatalogOverride): void {
-  announce({ exerciseId, override });
+  // `deleted` travels at the top level as well: a listener that only needs to know
+  // whether the exercise still exists should not have to read the whole override.
+  announce({ exerciseId, deleted: override.deleted === true, override });
 }
 
 /**
@@ -382,6 +438,13 @@ export function mergeOverridesFromRemote(
     }
     if (!held("availableInCronosGym") && typeof incoming.availableInCronosGym === "boolean") {
       merged.availableInCronosGym = incoming.availableInCronosGym;
+    }
+    // A deletion is news the same way a rename is: the row the server marked as
+    // removed has to disappear here too, or the exercise comes back on reload.
+    // The reverse is not true: a remote row that is *not* deleted cannot resurrect
+    // an exercise this device removed and has not managed to upload yet.
+    if (!held("deleted") && incoming.deleted === true) {
+      merged.deleted = true;
     }
     // A remote GIF only counts as a coach's choice when it differs from the one
     // the device shipped; otherwise every row would carry an override and the

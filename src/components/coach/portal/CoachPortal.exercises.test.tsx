@@ -334,4 +334,67 @@ describe("CoachPortal · gobernanza de ejercicios", () => {
     expect(picker.textContent).toContain("CG-EQP-0011");
     expect(screen.getByText(/Editados por coach/)).toBeTruthy();
   });
+
+  /**
+   * Removing an exercise is the coach's decision, and it has to reach every
+   * athlete: the card says when it did, and the row comes back if it was a mistake.
+   */
+  it("takes an exercise out of the catalog and puts it back", async () => {
+    await openExercises();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Eliminar Barbell Bench Press - Medium Grip/ }),
+    );
+    fireEvent.click(await screen.findByRole("button", { name: /Sí, eliminar/ }));
+
+    await waitFor(() =>
+      expect(readOverridesSnapshot().catalog["0001"]).toMatchObject({
+        deleted: true,
+        syncStatus: "synced",
+        dirty: false,
+      }),
+    );
+    // The removal is a mark on the row, so a routine that references the exercise
+    // keeps its history and other devices read the same column.
+    expect(
+      dbMock.state.updates.some(
+        (patch) => patch.equipment === "DELETED" && patch.available_in_cronos_gym === false,
+      ),
+    ).toBe(true);
+
+    // The exercise leaves the list the coach trains from, and the chip counts it.
+    await waitFor(() => expect(screen.queryByText("Press de banca")).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: /Eliminados \(1\)/ }));
+    expect(await screen.findByText("Press de banca")).toBeTruthy();
+    expect(screen.getByText("Eliminado")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /Restaurar/ }));
+
+    await waitFor(() =>
+      expect(readOverridesSnapshot().catalog["0001"]).toMatchObject({
+        deleted: false,
+        syncStatus: "synced",
+      }),
+    );
+    expect(
+      dbMock.state.updates.some(
+        (patch) => patch.available_in_cronos_gym === true && patch.equipment !== "DELETED",
+      ),
+    ).toBe(true);
+  }, 20000);
+
+  it("says the removal only lives on this device when the server has no such row", async () => {
+    dbMock.state.writtenIds = [];
+    await openExercises();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Eliminar Barbell Bench Press - Medium Grip/ }),
+    );
+    fireEvent.click(await screen.findByRole("button", { name: /Sí, eliminar/ }));
+
+    const notes = await screen.findAllByText(/la eliminación solo se guardó en este dispositivo/i);
+    expect(notes.length).toBeGreaterThan(0);
+    expect(readOverridesSnapshot().catalog["0001"]?.syncStatus).toBe("local_only");
+    expect(readOverridesSnapshot().catalog["0001"]?.deleted).toBe(true);
+  });
 });

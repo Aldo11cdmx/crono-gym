@@ -549,6 +549,14 @@ export const SET_LOGGER_LABELS = {
   bodyweightLoad: "Peso corporal",
   locationAriaLabel: (label: string): string => `Ubicación: ${label}`,
   machineAriaLabel: (label: string): string => `Ver foto del equipo: ${label}`,
+  /**
+   * The dock's guide toggle.
+   *
+   * The explanation of the set types used to be a full-width bar above the set
+   * table; it is now one more control of the dock, so its label has to say what
+   * it opens without a visible string next to it.
+   */
+  guideAriaLabel: "¿Para qué sirve cada serie?",
 } as const;
 
 /**

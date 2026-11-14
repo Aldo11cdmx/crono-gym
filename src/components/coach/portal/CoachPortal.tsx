@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, CloudUpload, Dumbbell, ImageIcon, Loader2, LogOut, Pencil, Plus, Search, Sparkles, X } from "lucide-react";
+import { Check, CloudUpload, Dumbbell, ImageIcon, Loader2, LogOut, Pencil, Plus, RotateCcw, Search, Sparkles, Trash2, X } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import type { WorkspaceOutletContext } from "@/App";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -16,7 +16,9 @@ import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import { translateBodyPart } from "@/lib/i18n";
 import {
   addCustomExercise,
+  normaliseExerciseId,
   readCatalogOverride,
+  readDeletedExerciseIds,
   readOverridesSnapshot,
   subscribeCatalogOverrides,
 } from "@/lib/catalog/customExercises";
@@ -29,8 +31,10 @@ import {
 } from "@/lib/catalog/resolveExercise";
 import {
   countPendingOverrides,
+  deleteCoachExercise,
   hydrateOverridesFromSupabase,
   persistCoachExerciseChange,
+  restoreCoachExercise,
   syncPendingOverrides,
   uploadOrResolveCoachGif,
 } from "@/lib/catalog/coachCatalogSync";
@@ -53,13 +57,14 @@ type ExerciseRow = {
 };
 
 /** Which cards the chips keep. Presentation only: no query changes. */
-type ExerciseFilter = "all" | "with_machine" | "free_weight" | "coach_edited";
+type ExerciseFilter = "all" | "with_machine" | "free_weight" | "coach_edited" | "deleted";
 
 const EXERCISE_FILTERS: { id: ExerciseFilter; label: string }[] = [
   { id: "all", label: "Todos" },
   { id: "with_machine", label: "Con máquina" },
   { id: "free_weight", label: "Peso libre" },
   { id: "coach_edited", label: "Editados por coach" },
+  { id: "deleted", label: "Eliminados" },
 ];
 
 /** What the last write to Supabase did, in the coach's words. */
@@ -1010,6 +1015,11 @@ function ExercisesPanel({
   const [pending, setPending] = useState(() => countPendingOverrides());
   const [syncing, setSyncing] = useState(false);
   const [pendingNote, setPendingNote] = useState<string | null>(null);
+  /** The exercises the coach removed, so the list and the chips can show them. */
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(() => readDeletedExerciseIds());
+  /** The card waiting for a "sí, eliminar": a removal is one tap away, not two. */
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const syncPending = async () => {
     setSyncing(true);
@@ -1037,6 +1047,66 @@ function ExercisesPanel({
       setSyncing(false);
     }
   };
+  /**
+   * Takes one exercise out of the catalog, for every athlete.
+   *
+   * The row disappears from this list in the same frame, because the coach is
+   * looking at it; the server is told afterwards, and the card says which of the
+   * two happened.
+   */
+  const removeExercise = async (row: ExerciseRow) => {
+    setRemovingId(row.id);
+    setConfirmDeleteId(null);
+    setPendingNote(null);
+    try {
+      const result = await deleteCoachExercise(row.id);
+      setDeletedIds(readDeletedExerciseIds());
+      setPending(countPendingOverrides());
+      setEdited((current) => new Set(current).add(row.id));
+      if (result.remote === "marked_deleted") {
+        setSync({ kind: "online" });
+        setPendingNote(`"${row.customNameEs || row.name_es || row.name}" se eliminó del catálogo. Puedes restaurarlo desde el filtro Eliminados.`);
+      } else if (result.remote === "offline" || result.remote === "skipped") {
+        setSync({ kind: "offline" });
+        setPendingNote("Sin conexión: el ejercicio se eliminó en este dispositivo y se sincronizará al reconectar.");
+      } else {
+        setSync({ kind: "local", detail: result.detail });
+        setPendingNote(result.detail ?? "La eliminación solo se guardó en este dispositivo.");
+      }
+    } catch {
+      setSync({ kind: "offline" });
+      setPendingNote("No se pudo eliminar el ejercicio. Sigue en el catálogo.");
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  /** Undoes a removal. The row, its routines and its history were never destroyed. */
+  const restoreExercise = async (row: ExerciseRow) => {
+    setRemovingId(row.id);
+    setPendingNote(null);
+    try {
+      const resolved =
+        resolvedRef.current.find((candidate) => candidate.id === row.id) ?? null;
+      const result = await restoreCoachExercise(row.id, resolved);
+      setDeletedIds(readDeletedExerciseIds());
+      setPending(countPendingOverrides());
+      setEdited((current) => new Set(current).add(row.id));
+      if (result.remote === "updated") {
+        setSync({ kind: "online" });
+        setPendingNote(`"${row.customNameEs || row.name_es || row.name}" volvió al catálogo.`);
+      } else {
+        setSync({ kind: "local", detail: result.detail });
+        setPendingNote(result.detail ?? "La restauración solo se guardó en este dispositivo.");
+      }
+    } catch {
+      setSync({ kind: "offline" });
+      setPendingNote("No se pudo restaurar el ejercicio.");
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
   const createExercise = async () => {
     const name = newExercise.name.trim();
     if (!name) {
@@ -1084,10 +1154,13 @@ function ExercisesPanel({
         ]),
       );
       setPending(countPendingOverrides());
+      setDeletedIds(readDeletedExerciseIds());
     };
 
     const load = async () => {
-      const catalog = await loadCatalog();
+      // The portal is the one screen that has to see the rows the coach removed:
+      // the filter "Eliminados" is where a removal is undone.
+      const catalog = await loadCatalog({ includeDeleted: true });
       if (!alive) return;
       // The shipped catalog is the list: 1,324 rows, each one already carrying
       // its Spanish name, its real GIF and the machine it is mapped to. The
@@ -1145,6 +1218,14 @@ function ExercisesPanel({
     return rows.filter((row) => {
       // The chips are a lens on the list, never a second query: the same rows,
       // seen from the angle the coach is working from.
+      const removed = deletedIds.has(normaliseExerciseId(row.id));
+      if (filter === "deleted") {
+        if (!removed) return false;
+      } else if (removed) {
+        // A removed exercise belongs to its own filter: it must not be offered as
+        // if it were still part of the catalog.
+        return false;
+      }
       if (filter === "with_machine" && !row.equipment_id) return false;
       if (filter === "with_machine" && row.equipment_id === "NONE") return false;
       if (filter === "free_weight" && row.equipment_id && row.equipment_id !== "NONE") {
@@ -1157,7 +1238,7 @@ function ExercisesPanel({
         translateBodyPart(row.body_part).toLowerCase().includes(query_)
       );
     });
-  }, [edited, filter, query, rows]);
+  }, [deletedIds, edited, filter, query, rows]);
 
   // 1,324 cards with two images each is not a list to mount at once: the panel
   // opens on the first page and asks for more.
@@ -1449,7 +1530,7 @@ function ExercisesPanel({
                     : "bg-[#2C2C2E] text-zinc-300"
                 }`}
               >
-                {option.label}
+                {option.id === "deleted" ? `Eliminados (${deletedIds.size})` : option.label}
               </button>
             );
           })}
@@ -1500,6 +1581,7 @@ function ExercisesPanel({
             const overrideState = readCatalogOverride(row.id);
             const synced = overrideState?.syncStatus === "synced";
             const pendingRow = Boolean(overrideState) && !synced;
+            const removed = deletedIds.has(normaliseExerciseId(row.id));
             return (
               <div key={row.id} className="space-y-3 overflow-hidden rounded-2xl border border-white/10 bg-[#1C1C1E] p-3">
                 {/* Row 1: the real GIF, the full name, the catalog id and muscle. */}
@@ -1621,19 +1703,80 @@ function ExercisesPanel({
                   )}
                   <span
                     className={`inline-flex min-h-7 items-center rounded-full px-2 py-1 text-[11px] font-semibold ${
-                      row.available === false
+                      removed || row.available === false
                         ? "bg-[#FF3B30]/15 text-[#FF6961]"
                         : "bg-[#30D158]/15 text-[#30D158]"
                     }`}
                   >
-                    {row.available === false ? "No disponible" : "Disponible"}
+                    {removed ? "Eliminado" : row.available === false ? "No disponible" : "Disponible"}
                   </span>
+                </div>
+
+                {/*
+                  Row 4: taking the exercise out of the catalog.
+                  One tap asks, the second one confirms: a removal is not a
+                  checkbox the coach can hit by accident, but it is not a modal
+                  that hides the row either.
+                */}
+                <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 border-t border-white/10 pt-2">
+                  {removed ? (
+                    <button
+                      type="button"
+                      onClick={() => void restoreExercise(row)}
+                      disabled={removingId === row.id}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#30D158]/15 px-3 text-xs font-semibold text-[#30D158] disabled:opacity-60"
+                    >
+                      {removingId === row.id ? (
+                        <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+                      ) : (
+                        <RotateCcw size={14} aria-hidden="true" />
+                      )}
+                      ↩️ Restaurar
+                    </button>
+                  ) : confirmDeleteId === row.id ? (
+                    <>
+                      <span className="text-xs text-zinc-300">¿Eliminar del catálogo?</span>
+                      <button
+                        type="button"
+                        onClick={() => void removeExercise(row)}
+                        disabled={removingId === row.id}
+                        className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#FF3B30] px-3 text-xs font-semibold text-white disabled:opacity-60"
+                      >
+                        {removingId === row.id ? (
+                          <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+                        ) : (
+                          <Trash2 size={14} aria-hidden="true" />
+                        )}
+                        Sí, eliminar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteId(null)}
+                        className="inline-flex min-h-11 items-center rounded-xl bg-[#2C2C2E] px-3 text-xs text-zinc-300"
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteId(row.id)}
+                      aria-label={`Eliminar ${row.name} del catálogo`}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#2C2C2E] px-3 text-xs text-[#FF6961]"
+                    >
+                      <Trash2 size={14} aria-hidden="true" /> Eliminar
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })}
           {filtered.length === 0 && (
-            <p className="text-sm text-zinc-400">No hay ejercicios que coincidan con la búsqueda.</p>
+            <p className="text-sm text-zinc-400">
+              {filter === "deleted"
+                ? "No has eliminado ejercicios del catálogo."
+                : "No hay ejercicios que coincidan con la búsqueda."}
+            </p>
           )}
           {visible.length < filtered.length && (
             <button

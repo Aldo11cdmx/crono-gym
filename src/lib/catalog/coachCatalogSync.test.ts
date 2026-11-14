@@ -22,12 +22,19 @@ import {
   COACH_GIF_BUCKET,
   MAX_GIF_BYTES,
   countPendingOverrides,
+  deleteCoachExercise,
   hydrateOverridesFromSupabase,
   isUndefinedColumn,
   persistCoachExerciseChange,
+  restoreCoachExercise,
   syncPendingOverrides,
   uploadOrResolveCoachGif,
 } from "./coachCatalogSync";
+import {
+  countDeletedExercises,
+  filterDeletedExercises,
+  isExerciseDeleted,
+} from "./customExercises";
 
 const state = vi.hoisted(() => ({
   rows: [] as Record<string, unknown>[],
@@ -417,10 +424,172 @@ describe("hydrateOverridesFromSupabase", () => {
     expect(snapshot.catalog["0001"].syncStatus).toBe("pending");
   });
 
+  it("adopts a row the server marks as removed, so it does not come back", async () => {
+    state.rows = [
+      { id: "0001", name: "Push-up", equipment: "DELETED", gif_url: "https://cdn.example/shipped.gif" },
+      { id: "0002", name: "Pull-up", equipment: "body weight", gif_url: "https://cdn.example/shipped-2.gif" },
+    ];
+    setLoadedCatalog([row(), row({ id: "0002", name: "Pull-up", gif_url: "https://cdn.example/shipped-2.gif" })]);
+
+    const result = await hydrateOverridesFromSupabase();
+
+    expect(result.hydrated).toBe(1);
+    const snapshot = readOverridesSnapshot();
+    expect(snapshot.catalog["0001"]).toMatchObject({ deleted: true, availableInCronosGym: false });
+    expect(snapshot.catalog["0002"]?.deleted).toBeUndefined();
+    expect(isExerciseDeleted("0001")).toBe(true);
+    expect(isExerciseDeleted("0002")).toBe(false);
+  });
+
+  it("does not resurrect a removal this device has not uploaded", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0001": { deleted: true, dirty: true, syncStatus: "pending" } }),
+    );
+    invalidateOverridesSnapshot();
+    state.rows = [
+      { id: "0001", name: "Push-up", equipment: "body weight", gif_url: "https://cdn.example/shipped.gif" },
+    ];
+
+    await hydrateOverridesFromSupabase();
+
+    expect(readOverridesSnapshot().catalog["0001"]).toMatchObject({
+      deleted: true,
+      dirty: true,
+      syncStatus: "pending",
+    });
+  });
+
   it("says offline rather than reporting an empty catalog", async () => {
     state.online = false;
     const result = await hydrateOverridesFromSupabase();
     expect(result).toEqual({ hydrated: 0, remote: "unavailable", detail: "offline" });
+  });
+});
+
+describe("deleteCoachExercise", () => {
+  it("marks the row on the server and hides it on the device in the same call", async () => {
+    const listener = vi.fn();
+    window.addEventListener("cronos:catalog-updated", listener);
+
+    const result = await deleteCoachExercise("0001");
+    window.removeEventListener("cronos:catalog-updated", listener);
+
+    expect(result).toEqual({ local: true, remote: "marked_deleted" });
+    // The coach's screen loses the exercise before the request is answered.
+    expect(readOverridesSnapshot().catalog["0001"]).toMatchObject({
+      deleted: true,
+      availableInCronosGym: false,
+      syncStatus: "synced",
+      dirty: false,
+    });
+    expect(filterDeletedExercises([row(), row({ id: "0002" })]).map((r) => r.id)).toEqual(["0002"]);
+    expect(countDeletedExercises()).toBe(1);
+    // The removal is a mark, not a purge: a routine that references the row keeps
+    // its history, and the same column is what tells other devices to hide it.
+    expect(state.updates[0]).toEqual({
+      available_in_cronos_gym: false,
+      equipment: "DELETED",
+    });
+    expect(state.updateFilters[0]).toEqual(["0001", "1"]);
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: expect.objectContaining({ exerciseId: "0001", deleted: true }) }),
+    );
+  });
+
+  it("falls back to the free-text column on a server without the migration", async () => {
+    state.updateError = { code: "42703", message: "column available_in_cronos_gym does not exist" };
+    state.updateFailsLeft = 1;
+
+    const result = await deleteCoachExercise("0001");
+
+    expect(result.remote).toBe("marked_deleted");
+    expect(state.updates).toHaveLength(2);
+    expect(state.updates[1]).toEqual({ equipment: "DELETED" });
+  });
+
+  it("stays on the device when the exercise is not in the server table", async () => {
+    state.writtenIds = [];
+
+    const result = await deleteCoachExercise("0001");
+
+    expect(result.remote).toBe("unavailable");
+    expect(result.detail).toEqual(expect.stringContaining("dispositivo"));
+    expect(readOverridesSnapshot().catalog["0001"]).toMatchObject({
+      deleted: true,
+      syncStatus: "local_only",
+      dirty: true,
+    });
+    expect(isExerciseDeleted("0001")).toBe(true);
+    expect(countPendingOverrides()).toBe(1);
+  });
+
+  it("does not write anything remote while the gym is offline", async () => {
+    state.online = false;
+
+    const result = await deleteCoachExercise("0001");
+
+    expect(result).toEqual({ local: true, remote: "offline" });
+    expect(state.updates).toHaveLength(0);
+    expect(isExerciseDeleted("1")).toBe(true);
+  });
+});
+
+describe("restoreCoachExercise", () => {
+  it("puts the exercise back and writes the real equipment text again", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0001": { deleted: true, availableInCronosGym: false, equipment_id: "NONE", syncStatus: "synced", dirty: false } }),
+    );
+    invalidateOverridesSnapshot();
+
+    const result = await restoreCoachExercise("0001", row());
+
+    expect(result.remote).toBe("updated");
+    // Leaving "DELETED" behind would make the next hydration delete it again.
+    expect(state.updates[0]).toEqual({ available_in_cronos_gym: true, equipment: "body weight" });
+    const snapshot = readOverridesSnapshot();
+    expect(snapshot.catalog["0001"]).toMatchObject({
+      deleted: false,
+      availableInCronosGym: true,
+      syncStatus: "synced",
+    });
+    expect(isExerciseDeleted("0001")).toBe(false);
+    expect(filterDeletedExercises([row()])).toHaveLength(1);
+  });
+
+  it("says the row is gone when the server cannot confirm the restore", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0001": { deleted: true, syncStatus: "synced", dirty: false } }),
+    );
+    invalidateOverridesSnapshot();
+    state.writtenIds = [];
+
+    const result = await restoreCoachExercise("0001", row());
+
+    expect(result.remote).toBe("unavailable");
+    expect(result.detail).toEqual(expect.stringContaining("Supabase"));
+    // The exercise is back for the coach, and the row says it is not everywhere.
+    expect(isExerciseDeleted("0001")).toBe(false);
+    expect(readOverridesSnapshot().catalog["0001"].syncStatus).toBe("local_only");
+  });
+
+  it("re-sends a removal this device still owes, and counts it once", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0001": { deleted: true, dirty: true, syncStatus: "pending" } }),
+    );
+    invalidateOverridesSnapshot();
+
+    const result = await syncPendingOverrides();
+
+    expect(result.attempted).toBe(1);
+    expect(result.synced).toBe(1);
+    expect(result.stillPending).toBe(0);
+    // A removal is its own write: sending it as a field update would leave the
+    // free-text column untouched.
+    expect(state.updates[0]).toEqual({ available_in_cronos_gym: false, equipment: "DELETED" });
   });
 });
 

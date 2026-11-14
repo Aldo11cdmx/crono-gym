@@ -27,6 +27,7 @@ import { loadCatalog } from "@/lib/catalog/catalogLoader";
 import { toExercises } from "@/lib/catalog/exerciseAdapter";
 import {
   CATALOG_UPDATED_EVENT,
+  filterDeletedExercises,
   readCustomExercises,
   subscribeCatalogOverrides,
 } from "@/lib/catalog/customExercises";
@@ -76,7 +77,9 @@ export function useExerciseCatalog(): ExerciseCatalogState {
         // se aplican al convertir, así que un cambio del coach no queda preso.
       }
       loadedRef.current = true;
-      setExercises([...toExercises(rows), ...readCustomExercises()]);
+      // The catalog an athlete trains from: a row the coach removed is not a
+      // movement this hook can offer, in the picker or in the import wizard.
+      setExercises(filterDeletedExercises([...toExercises(rows), ...readCustomExercises()]));
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "No se pudo cargar el catálogo de ejercicios",

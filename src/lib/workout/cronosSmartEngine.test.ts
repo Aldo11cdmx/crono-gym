@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  BODYWEIGHT_LOAD_HINT,
   calibratePendingSets,
   estimateSmartLoad,
   generateSmartWarmupSets,
   getAdaptiveRestSeconds,
+  getLoadBreakdownHint,
+  isBodyweightExercise,
 } from "./cronosSmartEngine";
 
 describe("cronosSmartEngine", () => {
@@ -73,5 +76,50 @@ describe("cronosSmartEngine", () => {
     expect(getAdaptiveRestSeconds("warmup", "squat")).toBe(45);
     expect(getAdaptiveRestSeconds("normal", "squat")).toBe(120);
     expect(getAdaptiveRestSeconds("normal", "isolation")).toBe(75);
+  });
+});
+
+/**
+ * The pull-up regression: the row is mapped to the pull-up bar, so it carries an
+ * `CG-EQP-*` id, and a mapped id used to mean "loaded machine". The athlete was
+ * told to load "Barra 7kg" for an exercise that only ever carries their body.
+ */
+describe("isBodyweightExercise", () => {
+  it("recognises the pull-up bar, the decline ab bench and the hyperextension bench", () => {
+    expect(isBodyweightExercise({ equipment_id: "CG-EQP-0051", name: "Dominadas" })).toBe(true);
+    expect(isBodyweightExercise({ equipment_id: "CG-EQP-0028", name: "Abdominales" })).toBe(true);
+    expect(isBodyweightExercise({ equipment_id: "CG-EQP-0015", name: "Hiperextensiones" })).toBe(true);
+  });
+
+  it("recognises a bodyweight row, whatever the catalog named the equipment", () => {
+    expect(isBodyweightExercise({ equipment_id: "NONE" })).toBe(true);
+    expect(isBodyweightExercise({ equipment: "body weight" })).toBe(true);
+    expect(isBodyweightExercise({ equipment: "Assisted" })).toBe(true);
+    expect(isBodyweightExercise({ name: "Push-up" })).toBe(true);
+    expect(isBodyweightExercise({ name_es: "Elevación de piernas colgado" })).toBe(true);
+    expect(isBodyweightExercise({ name: "Plancha abdominal" })).toBe(true);
+  });
+
+  it("leaves a loaded movement alone, even when it is named after a calisthenics one", () => {
+    expect(isBodyweightExercise({ equipment_id: "CG-EQP-0012", name: "Press banca" })).toBe(false);
+    expect(isBodyweightExercise({ name: "Crunch en polea" })).toBe(false);
+    expect(isBodyweightExercise({ name: "Dominadas con lastre" })).toBe(false);
+    expect(isBodyweightExercise({ name: "Fondos en máquina" })).toBe(false);
+    expect(isBodyweightExercise({ equipment: "barbell" })).toBe(false);
+    expect(isBodyweightExercise(null)).toBe(false);
+  });
+});
+
+describe("prescripción sin carga externa", () => {
+  it("never prescribes a bar breakdown for a pull-up", () => {
+    expect(getLoadBreakdownHint(7, "pullup_dip_station", "body weight")).toBe(BODYWEIGHT_LOAD_HINT);
+    expect(getLoadBreakdownHint(60, "flat_bench", "barbell")).toContain("Barra");
+  });
+
+  it("keeps a pull-up at zero load and bodyweight reps", () => {
+    const pullUp = estimateSmartLoad({ mode: "bodyweight", targetReps: 15 });
+    expect(pullUp.weightKg).toBe(0);
+    expect(pullUp.suggestedReps).toBe(15);
+    expect(pullUp.reason).toContain("Peso corporal");
   });
 });

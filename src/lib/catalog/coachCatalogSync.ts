@@ -67,6 +67,9 @@ const BASE_COLUMNS = "id,name,equipment,gif_url,image";
 /** Postgres: new row violates the not-null constraint of a column. */
 const NOT_NULL_VIOLATION = "23502";
 
+/** Postgres: another table still references the row being deleted. */
+export const FOREIGN_KEY_VIOLATION = "23503";
+
 /** Postgres and PostgREST answers when a column is missing from the schema cache. */
 const SCHEMA_CACHE_MISS = "PGRST204";
 
@@ -76,6 +79,16 @@ const SCHEMA_CACHE_MISS = "PGRST204";
  * The column is not nullable, so `NONE` has to be spelled out in words there.
  */
 export const BODYWEIGHT_EQUIPMENT = "body weight";
+
+/**
+ * The equipment text of a row the coach removed.
+ *
+ * A hard `DELETE` is the honest write when nothing references the row, but the
+ * moment a routine points at it the database refuses, and a refusal must not look
+ * like a failure: the row is marked as removed in a column the catalog already
+ * reads, and the athlete never sees the exercise again.
+ */
+export const DELETED_EQUIPMENT = "DELETED";
 
 /** What a machine assignment looks like in the free-text equipment column. */
 export function equipmentText(equipmentId: string, equipmentName: string): string {
@@ -146,6 +159,28 @@ export function isOffline(): boolean {
   return typeof navigator !== "undefined" && navigator.onLine === false;
 }
 
+/** Postgres answers this when the row cannot be deleted because it is referenced. */
+export function isForeignKeyViolation(error: unknown): boolean {
+  const { code, message } = errorOf(error);
+  if (code === FOREIGN_KEY_VIOLATION) return true;
+  return typeof message === "string" && /violates foreign key constraint/i.test(message);
+}
+
+/**
+ * The `exercises.equipment` text for one override.
+ *
+ * One rule for every write: a change of machine, a restore and a GIF upload all
+ * have to agree on what the free-text column says, or the server and the device
+ * end up describing two different exercises.
+ */
+function equipmentTextFor(override: CatalogOverride, source?: CatalogExercise | null): string {
+  if (override.equipment_id === undefined) return source?.equipment || "other";
+  if (override.equipment_id === NO_EQUIPMENT_ID) return BODYWEIGHT_EQUIPMENT;
+  const machineName =
+    override.equipment_name ?? source?.equipment_name ?? equipmentMap[override.equipment_id]?.name ?? "";
+  return equipmentText(override.equipment_id, machineName) || source?.equipment || "other";
+}
+
 function findLocalRow(exerciseId: string): CatalogExercise | undefined {
   return peekLoadedCatalog().find((row) => row.id === exerciseId);
 }
@@ -187,12 +222,7 @@ export async function persistCoachExerciseChange(
     governance.equipment_id = override.equipment_id;
     // `equipment` is not nullable: a bodyweight exercise is spelled out in words,
     // a machine is stored as "id::name" so the free-text column stays greppable.
-    const machineName =
-      override.equipment_name ?? source?.equipment_name ?? equipmentMap[override.equipment_id]?.name ?? "";
-    governance.equipment =
-      override.equipment_id === NO_EQUIPMENT_ID
-        ? BODYWEIGHT_EQUIPMENT
-        : `${override.equipment_id}::${machineName}` || source?.equipment || "other";
+    governance.equipment = equipmentTextFor(override, source);
   }
   if (override.equipment_name !== undefined) governance.equipment_name = override.equipment_name;
   if (override.station_key !== undefined) governance.station_key = override.station_key;
@@ -243,6 +273,136 @@ export async function persistCoachExerciseChange(
   return { local: true, remote: "updated" };
 }
 
+/** What the server did with a removal: gone, or hidden. */
+export type RemoteRemoval = "marked_deleted" | RemoteOutcome;
+
+export interface RemovalResult {
+  local: true;
+  remote: RemoteRemoval;
+  detail?: string;
+}
+
+/**
+ * Removes one exercise from the catalog, for every athlete and on every device.
+ *
+ * The write is a mark, not a `DELETE`, and the reason is the catalog itself: the
+ * 1,324 rows ship inside the app as a static asset, so a row removed from the
+ * `exercises` table would still be in the build every other phone is running. A
+ * mark on the row is the only change that reaches them — `hydrateOverridesFromSupabase`
+ * reads it and the row disappears there too — and it is also the only write that
+ * survives a routine still pointing at the exercise, which is what a foreign key
+ * is telling us.
+ *
+ * The local override is written first and is what the coach sees immediately; it
+ * is only reported as saved everywhere once the server confirms a row.
+ */
+export async function deleteCoachExercise(exerciseId: string): Promise<RemovalResult> {
+  saveCatalogOverride(exerciseId, { deleted: true, availableInCronosGym: false });
+
+  if (isOffline()) return { local: true, remote: "offline" };
+  if (typeof supabase?.from !== "function") return { local: true, remote: "skipped" };
+
+  const variants = exerciseIdVariants(exerciseId);
+  const write = (payload: ExerciseUpdate) =>
+    supabase.from(TABLE).update(payload).in("id", variants).select("id");
+
+  // The governance column says "not available" to every reader that has it; the
+  // free-text column is what a deployment on the old schema still has, and it is
+  // what the hydration path reads to recognise a removed row.
+  const marked = await write({
+    available_in_cronos_gym: false,
+    equipment: DELETED_EQUIPMENT,
+  });
+
+  let error = marked.error;
+  let confirmed = !error && (marked.data?.length ?? 0) > 0;
+
+  if (error && isUndefinedColumn(error)) {
+    const retry = await write({ equipment: DELETED_EQUIPMENT });
+    error = retry.error;
+    confirmed = !error && (retry.data?.length ?? 0) > 0;
+  }
+
+  if (error) {
+    markCatalogOverrideSynced(exerciseId, "local_only");
+    return { local: true, remote: "unavailable", detail: error.message };
+  }
+
+  if (!confirmed) {
+    // The exercise is not in the server table: it only exists in the shipped
+    // asset. Nothing on the server can hide it, so the removal stays here.
+    markCatalogOverrideSynced(exerciseId, "local_only");
+    return {
+      local: true,
+      remote: "unavailable",
+      detail: "Este ejercicio no está en el catálogo del servidor; la eliminación solo se guardó en este dispositivo.",
+    };
+  }
+
+  markCatalogOverrideSynced(exerciseId, "synced");
+  return { local: true, remote: "marked_deleted" };
+}
+
+/**
+ * Puts a removed exercise back, on this device and on the server.
+ *
+ * Restore is the reason a removal is a mark: the row, its history and the routines
+ * that reference it are all still there, and the coach can undo a mistake without
+ * rebuilding anything.
+ */
+export async function restoreCoachExercise(
+  exerciseId: string,
+  row?: CatalogExercise | null,
+): Promise<CoachSyncResult> {
+  saveCatalogOverride(exerciseId, { deleted: false, availableInCronosGym: true });
+
+  if (isOffline()) return { local: true, remote: "offline" };
+  if (typeof supabase?.from !== "function") return { local: true, remote: "skipped" };
+
+  const source = row ?? findLocalRow(exerciseId);
+  const override = readCatalogOverride(exerciseId) ?? {};
+  // The row currently says "DELETED", so restore has to put the real equipment
+  // back: leaving it would make the next hydration delete the exercise again.
+  const equipment =
+    override.equipment_id !== undefined
+      ? equipmentTextFor(override, source)
+      : source?.equipment && source.equipment !== DELETED_EQUIPMENT
+        ? source.equipment
+        : BODYWEIGHT_EQUIPMENT;
+
+  const variants = exerciseIdVariants(exerciseId);
+  const write = (payload: ExerciseUpdate) =>
+    supabase.from(TABLE).update(payload).in("id", variants).select("id");
+
+  const restored = await write({ available_in_cronos_gym: true, equipment });
+
+  let error = restored.error;
+  let confirmed = !error && (restored.data?.length ?? 0) > 0;
+
+  if (error && isUndefinedColumn(error)) {
+    const retry = await write({ equipment });
+    error = retry.error;
+    confirmed = !error && (retry.data?.length ?? 0) > 0;
+  }
+
+  if (error) {
+    markCatalogOverrideSynced(exerciseId, "local_only");
+    return { local: true, remote: "unavailable", detail: error.message };
+  }
+
+  if (!confirmed) {
+    markCatalogOverrideSynced(exerciseId, "local_only");
+    return {
+      local: true,
+      remote: "unavailable",
+      detail: "Supabase ya no tiene esta fila: la restauración solo se guardó en este dispositivo.",
+    };
+  }
+
+  markCatalogOverrideSynced(exerciseId, "synced");
+  return { local: true, remote: "updated" };
+}
+
 /**
  * Re-sends every change this device still owes Supabase.
  *
@@ -263,8 +423,18 @@ export async function syncPendingOverrides(): Promise<{
   let synced = 0;
   for (const [id] of pending) {
     const override = readCatalogOverride(id) ?? {};
-    const result = await persistCoachExerciseChange(id, override);
-    if (result.remote === "updated" || result.remote === "upserted") synced += 1;
+    // A removal and a restore are their own writes: neither is a field update, and
+    // sending them as one would leave the free-text equipment saying "DELETED"
+    // after a restore.
+    const result =
+      override.deleted === true
+        ? await deleteCoachExercise(id)
+        : override.deleted === false
+          ? await restoreCoachExercise(id)
+          : await persistCoachExerciseChange(id, override);
+    if (result.remote === "updated" || result.remote === "upserted" || result.remote === "marked_deleted") {
+      synced += 1;
+    }
   }
 
   const stillPending = canonicalOverrides().filter(
@@ -332,6 +502,15 @@ export async function hydrateOverridesFromSupabase(): Promise<HydrateResult> {
   for (const row of rows) {
     if (!row?.id) continue;
     const override: CatalogOverride = {};
+    // A row marked as removed on the server has to disappear here too, or a
+    // coach who deleted an exercise on one phone would watch it come back on the
+    // next one.
+    if (row.equipment === DELETED_EQUIPMENT) {
+      override.deleted = true;
+      // The old schema has no availability column, but a removed row is not
+      // available: saying so keeps every reader consistent with the mark.
+      override.availableInCronosGym = false;
+    }
     if (row.equipment_id) override.equipment_id = row.equipment_id;
     if (row.equipment_name) override.equipment_name = row.equipment_name;
     if (row.station_key) override.station_key = row.station_key as StationKey;

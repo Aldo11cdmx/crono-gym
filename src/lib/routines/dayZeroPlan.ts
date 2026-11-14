@@ -23,6 +23,7 @@
 import type { Exercise } from "@/types/supabase";
 import type { PlannedExercise, RoutineWithExercises } from "@/hooks/useGymData";
 import { resolveCatalogExercise } from "@/lib/catalog/resolveExercise";
+import { isExerciseDeleted } from "@/lib/catalog/customExercises";
 import type { CatalogExercise } from "@/lib/catalog/types";
 import { estimateSmartLoad } from "@/lib/workout/cronosSmartEngine";
 import type { RoutineDay, RoutineDraftV2 } from "./routineDayModel";
@@ -294,6 +295,7 @@ const REPS_BY_GOAL: Record<DayZeroGoal, number> = {
 
 /** A row the gym can host: available, and not pointing at an unusable station. */
 export function isAvailableForDayZero(row: CatalogExercise): boolean {
+  if (isExerciseDeleted(row.id)) return false;
   return row.availableInCronosGym !== false && row.station_key !== "unavailable_station";
 }
 

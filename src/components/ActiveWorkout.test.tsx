@@ -31,7 +31,8 @@ import type { PlannedExercise } from "../hooks/useGymData";
 import { EMPTY_PERFORMANCE } from "../hooks/usePreviousPerformance";
 import type { PreviousPerformance } from "../lib/overload";
 import { queueAndSync } from "../lib/sessionSync";
-import { SET_TYPE_LABELS, GYM_LABELS, REST_TIMER_LABELS } from "../lib/i18n";
+import { SET_TYPE_GUIDES } from "../lib/workout/cronosSmartEngine";
+import { SET_LOGGER_LABELS, SET_TYPE_LABELS, GYM_LABELS, REST_TIMER_LABELS } from "../lib/i18n";
 import { TICK_MS } from "../lib/workout/restTimer";
 import { GYM_SETTINGS_KEY } from "../context/GymSettingsContext";
 import { loadRecoverableDraft, saveDraft, type SessionDraft } from "../lib/offlineStore";
@@ -828,6 +829,71 @@ describe("ActiveWorkout gym settings entry point", () => {
     fireEvent.click(screen.getByRole("button", { name: "Libras (lb)" }));
     const stored = window.localStorage.getItem(GYM_SETTINGS_KEY);
     expect(JSON.parse(stored as string).weightUnit).toBe("lb");
+  });
+});
+
+/**
+ * The session screen as the athlete reads it.
+ *
+ * The order is the point: the demonstration and the load recommendation are what
+ * the athlete needs before touching a set, so they come before the table and the
+ * actions live in one dock instead of three stacked blocks.
+ */
+describe("ActiveWorkout layout", () => {
+  it("shows the demonstration, then the recommendation, then the set table", () => {
+    renderWorkout();
+
+    // The stage is the block that owns the dock; the demo itself may have no
+    // image in jsdom, but the dock is always there.
+    const stage = screen.getByRole("button", { name: "Demo" }).closest("section");
+    expect(stage).not.toBeNull();
+    expect(stage?.querySelector("h2")?.textContent).toMatch(/Sentadilla/i);
+
+    const recommendation = screen.getByLabelText("Recomendación de carga");
+    const firstSet = setRow(1);
+
+    expect(
+      (stage as HTMLElement).compareDocumentPosition(recommendation) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      recommendation.compareDocumentPosition(firstSet) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("keeps the exercise actions in one dock, together with the progress", () => {
+    renderWorkout();
+
+    const demo = screen.getByRole("button", { name: "Demo" });
+    const change = screen.getByRole("button", { name: "Cambiar" });
+    const dock = demo.parentElement;
+
+    expect(dock).not.toBeNull();
+    expect(dock).toBe(change.parentElement);
+    expect(dock?.textContent).toContain("/ 3 series");
+    expect(dock?.className).toContain("rounded-full");
+    // The guide is one more control of the dock, not a bar of its own.
+    expect(within(dock as HTMLElement).getByRole("button", { name: SET_LOGGER_LABELS.guideAriaLabel })).toBeTruthy();
+  });
+
+  it("opens the set-type guide from the dock", () => {
+    renderWorkout();
+
+    fireEvent.click(screen.getByRole("button", { name: SET_LOGGER_LABELS.guideAriaLabel }));
+
+    expect(screen.getByText(SET_TYPE_GUIDES.warmup)).toBeTruthy();
+  });
+
+  it("collapses the recommendation to one line once the load is applied", () => {
+    renderWorkout();
+
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+    expect(screen.getByText(/^✓ Meta activa:/)).toBeTruthy();
+    expect(screen.queryByLabelText("Recomendación de carga")).toBeNull();
+    // And the offer to add warm-ups and to swap stays, in the same line.
+    expect(screen.getByRole("button", { name: "+ W" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "⇄ Ocupada" })).toBeTruthy();
   });
 });
 

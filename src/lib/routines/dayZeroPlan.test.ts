@@ -91,6 +91,12 @@ describe("isAvailableForDayZero", () => {
   it("drops a row that claims availability but has no station", () => {
     expect(isAvailableForDayZero(row({ availableInCronosGym: true, station_key: "unavailable_station" }))).toBe(false);
   });
+
+  it("drops a row the coach removed from the catalog", () => {
+    window.localStorage.setItem(CATALOG_OVERRIDES_KEY, JSON.stringify({ "0001": { deleted: true } }));
+    invalidateOverridesSnapshot();
+    expect(isAvailableForDayZero(row())).toBe(false);
+  });
 });
 
 describe("buildDayZeroPlan", () => {

@@ -7,6 +7,8 @@
  * device that already has the catalog must still show it.
  */
 
+// @vitest-environment jsdom
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CatalogLoadError,
@@ -14,6 +16,8 @@ import {
   loadCatalog,
   resetCatalogCache,
 } from "./catalogLoader";
+import { peekLoadedCatalog } from "./catalogRegistry";
+import { CATALOG_OVERRIDES_KEY, invalidateOverridesSnapshot } from "./customExercises";
 import type { CatalogCache, CachedCatalog } from "./catalogCache";
 import type { CatalogExercise } from "./types";
 
@@ -216,6 +220,58 @@ describe("loadCatalog con el catálogo guardado en el dispositivo", () => {
     await loadCatalog({ url: "/catalog.json", fetchImpl, cache: store.cache });
 
     expect(store.read()?.rows[0].name).toBe("Sentadilla");
+  });
+});
+
+/**
+ * A removal is an override, and the loader is where the catalog a screen trains
+ * from loses it. The registry keeps the row: a restore needs it.
+ */
+describe("loadCatalog con ejercicios eliminados", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    invalidateOverridesSnapshot();
+  });
+
+  it("quita del catálogo el ejercicio que el coach eliminó", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0002": { deleted: true } }),
+    );
+    invalidateOverridesSnapshot();
+    const fetchImpl = vi.fn(async () =>
+      okResponse([row("1", "Sentadilla"), row("2", "Peso muerto")]),
+    );
+
+    const rows = await loadCatalog({ url: "/catalog.json", fetchImpl });
+
+    expect(rows.map((r) => r.id)).toEqual(["1"]);
+  });
+
+  it("lo mantiene cuando el portal pide ver los eliminados", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0002": { deleted: true } }),
+    );
+    invalidateOverridesSnapshot();
+    const fetchImpl = vi.fn(async () => okResponse([row("1", "Sentadilla"), row("2", "Peso muerto")]));
+
+    const rows = await loadCatalog({ url: "/catalog.json", fetchImpl, includeDeleted: true });
+
+    expect(rows.map((r) => r.id)).toEqual(["1", "2"]);
+  });
+
+  it("deja el registro completo, para que una restauración encuentre la fila", async () => {
+    window.localStorage.setItem(
+      CATALOG_OVERRIDES_KEY,
+      JSON.stringify({ "0002": { deleted: true } }),
+    );
+    invalidateOverridesSnapshot();
+    const fetchImpl = vi.fn(async () => okResponse([row("1", "Sentadilla"), row("2", "Peso muerto")]));
+
+    await loadCatalog({ url: "/catalog.json", fetchImpl });
+
+    expect(peekLoadedCatalog().map((r) => r.id)).toEqual(["1", "2"]);
   });
 });
 

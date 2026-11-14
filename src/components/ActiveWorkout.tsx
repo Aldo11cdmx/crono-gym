@@ -18,13 +18,13 @@ import {
   X,
   Play,
   Target,
-  MapPin,
   ArrowRight,
   RefreshCw,
   Check,
   Dumbbell,
   Settings,
   Plus,
+  Info,
 } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { loadRestSeconds } from "../lib/workout/restPreferences";
@@ -38,6 +38,7 @@ import {
   SCRIM,
   SPACE,
   SOLID,
+  STATUS,
   SURFACE,
   TEXT,
   TYPE,
@@ -94,12 +95,14 @@ import { resolveMedia, resolveMediaUrl } from "@/lib/media/mediaResolver";
 import { useMediaSrc } from "@/lib/media/useMediaSrc";
 import { getExerciseDisplayName } from "@/utils/exerciseTranslation";
 import {
+  BODYWEIGHT_LOAD_HINT,
   calibratePendingSets,
   estimateSmartLoad,
   findSmartSubstitutes,
   generateSmartWarmupSets,
   getAdaptiveRestSeconds,
   getLoadBreakdownHint,
+  isBodyweightExercise,
   SET_TYPE_GUIDES,
 } from "@/lib/workout/cronosSmartEngine";
 
@@ -804,14 +807,27 @@ interface ExerciseStageProps {
   totalSets: number;
   lastSessionShort: string | null;
   equipment: EquipmentEntry | null;
-  /** What the location pill reads: the machine and its code, or the floor area. */
+  /** Where the exercise happens, for the pill's label when there is no machine. */
   locationLabel: string;
+  /** Whether the set-type guide is open; the dock owns the toggle. */
+  guidesOpen: boolean;
+  onToggleGuides: () => void;
   onDemo?: () => void;
   onAdvance?: () => void;
   onChangeExercise: () => void;
+  /** Opens the machine: its photo, and the other machines that can host it. */
   onAdjustEquipment: () => void;
 }
 
+/**
+ * The exercise, as the athlete meets it: the demonstration, where it happens,
+ * and the four things they can do about it.
+ *
+ * One focal point (the GIF), one place to read progress, one dock for the
+ * actions: the previous version stacked a title block, a counter pill and a
+ * four-button toolbar, which pushed the set table below the fold on a phone the
+ * athlete is holding in one hand.
+ */
 function ExerciseStage({
   exercise,
   completedSets,
@@ -819,6 +835,8 @@ function ExerciseStage({
   lastSessionShort,
   equipment,
   locationLabel,
+  guidesOpen,
+  onToggleGuides,
   onDemo,
   onAdvance,
   onChangeExercise,
@@ -826,19 +844,22 @@ function ExerciseStage({
 }: ExerciseStageProps) {
   const media = resolveMedia("exercise-gif", exercise.id, exercise.gif_url);
   const { src, failed, onLoad, onError } = useMediaSrc(media);
+  const progress = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
 
   return (
     <section
       style={{
         maxWidth: "560px",
         margin: "0 auto",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: SPACE.md,
+        gap: SPACE.sm,
         alignItems: "center",
+        padding: `0 ${SPACE.md}px`,
       }}
     >
-      {/* Main GIF on Pure Black - Fixed 190px height */}
+      {/* The demonstration, on pure black, right under the carousel. */}
       <div
         style={{
           position: "relative",
@@ -846,12 +867,8 @@ function ExerciseStage({
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
-          maxWidth: 240,
-          height: 180,
-          margin: "0 auto",
-          borderRadius: 16,
-          overflow: "hidden",
-          background: SURFACE.base,
+          maxWidth: 280,
+          height: 190,
         }}
       >
         {media.url && !failed ? (
@@ -861,8 +878,8 @@ function ExerciseStage({
             onLoad={onLoad}
             onError={onError}
             style={{
-              maxWidth: "240px",
-              height: "180px",
+              maxWidth: "280px",
+              height: "190px",
               objectFit: "contain",
               background: "transparent",
               filter: "invert(1) hue-rotate(180deg) contrast(125%) brightness(110%)",
@@ -879,214 +896,154 @@ function ExerciseStage({
               alignItems: "center",
               justifyContent: "center",
               height: "100%",
+              gap: 8,
               color: TEXT.tertiary,
               fontSize: TYPE.caption.size,
-              padding: SPACE.md,
-              textAlign: "center",
             }}
           >
-            <Dumbbell size={32} strokeWidth={1.5} aria-hidden="true" style={{ marginBottom: 8 }} />
+            <Dumbbell size={32} strokeWidth={1.5} aria-hidden="true" />
             Sin demo disponible
           </div>
         )}
-        {/* Compact "Machine" pill in bottom-right corner of GIF. A bodyweight
-            exercise has no machine to inspect, so the pill only says where it
-            happens instead of pretending there is a station to open. */}
+
+        {/*
+          Where the exercise happens: an Apple-glass pill over the demo, and the
+          whole pill is the control. A bodyweight movement has no machine, so it
+          says where it happens instead of pretending there is a station to
+          inspect -- and it is still one tap away from being given one.
+        */}
         {locationLabel && (
           <button
             type="button"
-            aria-label={equipment ? SET_LOGGER_LABELS.machineAriaLabel(locationLabel) : SET_LOGGER_LABELS.locationAriaLabel(locationLabel)}
-            onClick={equipment ? onAdjustEquipment : undefined}
-            style={{
-              position: "absolute",
-              bottom: 8,
-              right: 8,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "4px 10px",
-              borderRadius: 9999,
-              background: "rgba(28, 28, 30, 0.9)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              color: "#D4D4D8",
-              fontSize: "11px",
-              fontWeight: 500,
-              cursor: equipment ? "pointer" : "default",
-              backdropFilter: "blur(12px)",
-            }}
+            onClick={onAdjustEquipment}
+            aria-label={
+              equipment
+                ? SET_LOGGER_LABELS.machineAriaLabel(locationLabel)
+                : SET_LOGGER_LABELS.locationAriaLabel(locationLabel)
+            }
+            className="absolute bottom-1 left-1/2 flex max-w-[94%] -translate-x-1/2 items-center gap-2 rounded-full border border-white/15 bg-neutral-900/90 px-3.5 py-1.5 text-left shadow-lg backdrop-blur-md"
           >
-            <MapPin size={10} aria-hidden="true" />
-            <span>{locationLabel}</span>
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ background: equipment ? ACCENT.base : TEXT.tertiary }}
+            />
+            {equipment && (
+              <span className="shrink-0 font-mono text-[11px] text-neutral-400">{equipment.id}</span>
+            )}
+            <span className="min-w-0 truncate text-xs font-semibold text-white">
+              {cleanExerciseName(equipment?.name ?? locationLabel)}
+            </span>
+            <span className="shrink-0 text-[11px] font-semibold text-neutral-200">
+              {equipment ? "Ver foto ›" : "⇄ Cambiar"}
+            </span>
           </button>
         )}
       </div>
 
-      {/* Exercise Identity: Title + Series Counter Pill */}
-      <div style={{ width: "100%", maxWidth: 360, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
-        <h2
+      {/* The name, editorial: one line that answers "what am I doing". */}
+      <h2
+        className="w-full px-2 text-center text-lg font-bold leading-snug tracking-tight text-white"
+        style={{ margin: 0 }}
+      >
+        {cleanExerciseName(getExerciseDisplayName(exercise))}
+      </h2>
+      {lastSessionShort && (
+        <p
           style={{
             margin: 0,
-            fontSize: "20px",
-            fontWeight: 700,
-            color: TEXT.primary,
-            letterSpacing: "0",
-            textAlign: "center",
-            width: "100%",
+            fontSize: TYPE.caption.size,
+            fontFamily: TYPE.mono.font,
+            fontVariantNumeric: "tabular-nums",
+            color: TEXT.tertiary,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            maxWidth: "100%",
           }}
         >
-          {cleanExerciseName(getExerciseDisplayName(exercise))}
-        </h2>
-        {lastSessionShort && (
-          <p
-            style={{
-              margin: 0,
-              fontSize: "11px",
-              fontFamily: TYPE.mono.font,
-              fontVariantNumeric: "tabular-nums",
-              color: TEXT.tertiary,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {lastSessionShort}
-          </p>
-        )}
-        {/* Series Counter Pill */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "4px 12px",
-            borderRadius: 9999,
-            background: "rgba(28, 28, 30, 0.9)",
-            border: "1px solid rgba(255, 255, 255, 0.10)",
-          }}
-        >
+          {lastSessionShort}
+        </p>
+      )}
+
+      {/* One dock: progress, and every action that belongs to this exercise. */}
+      <div className="flex w-full items-center gap-1 rounded-full border border-white/10 bg-neutral-900/90 py-1 pl-3.5 pr-1 backdrop-blur-md">
+        <div className="flex shrink-0 items-baseline gap-1">
           <span
             style={{
               fontFamily: TYPE.mono.font,
-              fontSize: "12px",
-              fontWeight: 600,
+              fontSize: "13px",
+              fontWeight: 700,
               fontVariantNumeric: "tabular-nums",
               color: ACCENT.base,
             }}
           >
             {completedSets}
           </span>
-          <span
-            style={{
-              fontFamily: TYPE.mono.font,
-              fontSize: "12px",
-              color: TEXT.tertiary,
-            }}
-          >
-            /
+          <span style={{ fontFamily: TYPE.mono.font, fontSize: "12px", color: TEXT.tertiary }}>
+            / {totalSets} series
           </span>
-          <span
-            style={{
-              fontFamily: TYPE.mono.font,
-              fontSize: "12px",
-              color: TEXT.secondary,
-            }}
-          >
-            {totalSets} series
-          </span>
-          <div
-            style={{
-              width: 48,
-              height: 4,
-              borderRadius: 9999,
-              background: "rgba(255, 255, 255, 0.1)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%`,
-                height: "100%",
-                background: ACCENT.base,
-                borderRadius: 9999,
-                transition: "width 300ms ease-out",
-              }}
-            />
-          </div>
         </div>
-      </div>
-
-      {/* Unified Toolbar: Demo | Avance | Cambiar | Ajustar — h-10, rounded-2xl, bg-[#1C1C1E], border border-white/10, text-xs font-semibold */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, width: "100%", maxWidth: 360, margin: "2px 0" }}>
-        <ToolbarButton label="Demo" icon={<Play size={13} strokeWidth={2} aria-hidden="true" />} onClick={onDemo ?? (() => {})} />
-        <ToolbarButton label="Avance" icon={<Target size={13} strokeWidth={2} aria-hidden="true" />} onClick={onAdvance ?? (() => {})} />
-        <ToolbarButton label="Cambiar" icon={<ArrowRight size={13} strokeWidth={2} aria-hidden="true" />} onClick={onChangeExercise} />
-        <ToolbarButton label="Ajustar" icon={<RefreshCw size={13} strokeWidth={2} aria-hidden="true" />} onClick={onAdjustEquipment} />
+        {/* Five targets already fill a 360px row; below that the bar is the one
+            thing the dock can spare, since the count says the same thing. */}
+        <div
+          aria-hidden="true"
+          className="mx-1 hidden min-w-0 flex-1 overflow-hidden rounded-full bg-white/10 min-[380px]:block"
+          style={{ height: 3 }}
+        >
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${progress}%`,
+              background: ACCENT.base,
+              transition: `width ${MOTION.fast} ${MOTION.easeOut}`,
+            }}
+          />
+        </div>
+        <DockButton label="Demo" onClick={onDemo ?? (() => {})} icon={<Play size={16} strokeWidth={2} aria-hidden="true" />} />
+        <DockButton label="Avance" onClick={onAdvance ?? (() => {})} icon={<Target size={16} strokeWidth={2} aria-hidden="true" />} />
+        <DockButton label="Cambiar" onClick={onChangeExercise} icon={<ArrowRight size={16} strokeWidth={2} aria-hidden="true" />} />
+        <DockButton label="Ajustar" onClick={onAdjustEquipment} icon={<RefreshCw size={16} strokeWidth={2} aria-hidden="true" />} />
+        {totalSets > 0 && (
+          <DockButton
+            label={SET_LOGGER_LABELS.guideAriaLabel}
+            active={guidesOpen}
+            onClick={onToggleGuides}
+            icon={<Info size={16} strokeWidth={2} aria-hidden="true" />}
+          />
+        )}
       </div>
     </section>
   );
 }
 
-function ToolbarButton({
+/**
+ * One control of the dock: 44px of target, an icon, and a label a screen reader
+ * can read. The dock is where the athlete's thumb already is.
+ */
+function DockButton({
   label,
   icon,
   onClick,
+  active = false,
 }: {
   label: string;
   icon: JSX.Element;
   onClick: () => void;
+  active?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
+      aria-pressed={active || undefined}
       onClick={onClick}
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        padding: "0 8px",
-        borderRadius: 24,
-        border: "1px solid rgba(255, 255, 255, 0.10)",
-        background: "#1C1C1E",
-        color: TEXT.secondary,
-        fontSize: "12px",
-        fontWeight: 600,
-        letterSpacing: "0",
-        textTransform: "none",
-        cursor: "pointer",
-        height: 40,
-        minHeight: 40,
-        transition: "background 150ms ease, color 150ms ease, transform 150ms ease",
-        whiteSpace: "nowrap",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
-        e.currentTarget.style.color = TEXT.primary;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "#1C1C1E";
-        e.currentTarget.style.color = TEXT.secondary;
-      }}
-      onMouseDown={(e) => {
-        e.currentTarget.style.transform = "scale(0.95)";
-      }}
-      onMouseUp={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
-      }}
+      title={label}
+      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors ${
+        active ? "bg-white/15 text-white" : "text-neutral-300 active:bg-white/10"
+      }`}
     >
-      <span
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: ACCENT.base,
-        }}
-      >
-        {icon}
-      </span>
-      <span>{label}</span>
+      {icon}
     </button>
   );
 }
@@ -1856,15 +1813,18 @@ export function ActiveWorkout({
    *
    * A push-up, a plank or a pull-up has no number to estimate: the smart load
    * would otherwise turn "body weight" into 9.75 kg and the athlete would load a
-   * bar for an exercise that never had one.
+   * bar for an exercise that never had one. The rule lives in the engine, so the
+   * estimate and the screen can never disagree about what is bodyweight.
    */
   const isBodyweightSelected = useMemo(() => {
     if (!selected) return false;
-    const equipmentId = smartExercise?.equipment_id ?? smartExercise?.effectiveEquipmentId;
-    if (equipmentId === "NONE") return true;
-    if (equipmentId && equipmentId !== "NONE") return false;
-    const raw = (smartExercise?.equipment ?? selected.exercise.equipment ?? "").toLowerCase();
-    return raw.includes("body") || raw.includes("peso corporal");
+    return isBodyweightExercise({
+      equipment_id: smartExercise?.equipment_id ?? smartExercise?.effectiveEquipmentId,
+      equipment: smartExercise?.equipment ?? selected.exercise.equipment,
+      name: smartExercise?.name ?? selected.exercise.name,
+      name_es: smartExercise?.name_es ?? selected.exercise.name_es,
+      movement_pattern: smartExercise?.movement_pattern,
+    });
   }, [selected, smartExercise]);
 
   const smartLoad = useMemo(() => {
@@ -2420,46 +2380,45 @@ export function ActiveWorkout({
 
           {selected && (
             <>
-              {smartLoad && appliedSmartLoadByExercise[selected.exercise.id] ? (
-                <section className="mx-auto flex w-full max-w-[560px] items-center gap-2 border-y border-white/10 bg-neutral-900 px-4 py-2">
-                  <span className="min-w-0 flex-1 truncate font-mono text-xs font-semibold text-white">
-                    ✓ Carga aplicada: {appliedSmartLoadByExercise[selected.exercise.id].weightKg} kg × {appliedSmartLoadByExercise[selected.exercise.id].reps}
-                  </span>
-                  <button type="button" className="min-h-11 shrink-0 rounded-xl bg-neutral-800 px-3 text-xs font-semibold text-white" onClick={insertSmartWarmups}>+ Calentamiento (W)</button>
-                  <button type="button" className="min-h-11 shrink-0 rounded-xl bg-neutral-800 px-3 text-xs text-white" onClick={() => setSubstituteOpen(true)}>⇄ Máquina ocupada</button>
-                  <button type="button" className="min-h-11 shrink-0 rounded-xl bg-neutral-800 px-3 text-xs text-white" onClick={() => setAppliedSmartLoadByExercise((current) => { const next = { ...current }; delete next[selected.exercise.id]; return next; })}>Editar</button>
-                </section>
-              ) : smartLoad && (
-                <section className="mx-auto w-full max-w-[560px] border-y border-white/10 bg-neutral-900 px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    {(smartExercise?.effectiveImageUrl || smartExercise?.effectiveGifUrl || smartExercise?.image || smartExercise?.gif_url) && (
-                      <img src={smartExercise?.effectiveImageUrl || smartExercise?.effectiveGifUrl || smartExercise?.image || smartExercise?.gif_url || ""} alt="" className="h-11 w-11 rounded-xl object-cover" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">{isBodyweightSelected ? "Peso corporal" : smartExercise?.effectiveEquipmentName ?? "Equipo Cronos Gym"}</p>
-                      <p className="font-mono text-[11px] text-neutral-500">{isBodyweightSelected ? "BODYWEIGHT" : smartExercise?.effectiveEquipmentId ?? "NONE"}</p>
-                    </div>
-                    <span className="rounded-full bg-neutral-800 px-2 py-1 text-xs font-semibold text-neutral-300" style={{ color: isBodyweightSelected ? "#30D158" : "#FF3B30" }}>
-                      {isBodyweightSelected ? "🤸 Peso corporal" : "🚀 Subir carga"}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-mono text-sm text-white">
-                      {isBodyweightSelected ? `Peso corporal × ${smartLoad.suggestedReps}` : `${smartLoad.weightKg} kg × ${smartLoad.suggestedReps}`}
-                    </span>
-                    {isBodyweightSelected ? (
-                      <span className="font-mono text-[11px] text-neutral-400">Sin carga externa: registra solo las repeticiones</span>
-                    ) : (
-                      <span className="font-mono text-[11px] text-neutral-400">{getLoadBreakdownHint(smartLoad.weightKg, smartExercise?.station_key ?? "free_weight_area", smartExercise?.equipment)}</span>
-                    )}
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button type="button" className="min-h-11 flex-1 rounded-xl bg-neutral-800 px-3 text-sm font-semibold text-white" style={{ background: "#FF3B30" }} onClick={applySmartLoad}>Aplicar carga</button>
-                    <button type="button" className="min-h-11 rounded-xl bg-neutral-800 px-3 text-sm text-white" onClick={insertSmartWarmups}>+ Calentamiento (W)</button>
-                    <button type="button" className="min-h-11 rounded-xl bg-neutral-800 px-3 text-sm text-white" onClick={() => setSubstituteOpen(true)}>⇄ Máquina ocupada / Cambiar</button>
-                  </div>
-                </section>
-              )}
+              {/*
+                The demonstration, where it happens and the dock come first: the
+                athlete sees the movement, then what to do, and the set table
+                follows without scrolling.
+              */}
+              <ExerciseStage
+                exercise={selected.exercise}
+                completedSets={selected.sets.filter((s) => s.completed).length}
+                totalSets={selected.sets.length}
+                lastSessionShort={lastSessionShort}
+                equipment={equipmentForSelected}
+                locationLabel={locationLabel}
+                guidesOpen={smartGuidesOpen}
+                onToggleGuides={() => setSmartGuidesOpen((open) => !open)}
+                onDemo={() => setIsDemoOpen(true)}
+                onAdvance={() => setIsAvanceOpen(true)}
+                onChangeExercise={() => {
+                  setPickerMode("replace");
+                  setPickerOpen(true);
+                  findExerciseReplacements({
+                    currentExercise: selected.exercise as any,
+                    availableEquipment: availableEquipmentList,
+                    exerciseCatalog: catalog || [],
+                  });
+                }}
+                onAdjustEquipment={() => {
+                  setSelectedEquipment(
+                    equipmentForSelected ?? equipmentSuggestion.primary ?? {
+                      id: "default",
+                      name: "Sin equipo",
+                      category: "Accesorio",
+                      views: [],
+                      exerciseTypes: [],
+                    },
+                  );
+                  setEquipmentSheetOpen(true);
+                }}
+              />
+
               {substituteOpen && (
                 <section className="mx-auto w-full max-w-[560px] space-y-2 bg-black px-4 py-3" aria-label="Sustituciones inteligentes">
                   <div className="flex items-center justify-between">
@@ -2488,37 +2447,6 @@ export function ActiveWorkout({
                   {smartSubstitutes.length === 0 && <p className="text-sm text-neutral-400">No hay sustituciones disponibles.</p>}
                 </section>
               )}
-              <ExerciseStage
-                exercise={selected.exercise}
-                completedSets={selected.sets.filter((s) => s.completed).length}
-                totalSets={selected.sets.length}
-                lastSessionShort={lastSessionShort}
-                equipment={equipmentForSelected}
-                locationLabel={locationLabel}
-                onDemo={() => setIsDemoOpen(true)}
-                onAdvance={() => setIsAvanceOpen(true)}
-                onChangeExercise={() => {
-                  setPickerMode("replace");
-                  setPickerOpen(true);
-                  findExerciseReplacements({
-                    currentExercise: selected.exercise as any,
-                    availableEquipment: availableEquipmentList,
-                    exerciseCatalog: catalog || [],
-                  });
-                }}
-                onAdjustEquipment={() => {
-                  setSelectedEquipment(
-                    equipmentForSelected ?? equipmentSuggestion.primary ?? {
-                      id: "default",
-                      name: "Sin equipo",
-                      category: "Accesorio",
-                      views: [],
-                      exerciseTypes: [],
-                    },
-                  );
-                  setEquipmentSheetOpen(true);
-                }}
-              />
 
               {equipmentSheetOpen && selectedEquipment && (
                 <EquipmentInspectionSheet
@@ -2531,11 +2459,67 @@ export function ActiveWorkout({
                 />
               )}
 
+              {/*
+                Dynamic coaching bar: the one recommendation of this exercise, as a
+                flat strip directly above the set table. It is a caption about the
+                load, not a second screen: when the coach's load is applied it
+                collapses to a single line and leaves the table the whole width.
+              */}
+              {smartLoad && appliedSmartLoadByExercise[selected.exercise.id] ? (
+                <div className="mx-auto flex w-full max-w-[560px] items-center gap-2 rounded-2xl border border-white/10 bg-neutral-900/90 px-3.5 py-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: ACCENT.base }}
+                  />
+                  <span className="min-w-0 flex-1 truncate font-mono text-xs font-semibold text-white">
+                    ✓ Meta activa: {appliedSmartLoadByExercise[selected.exercise.id].weightKg} kg × {appliedSmartLoadByExercise[selected.exercise.id].reps}
+                  </span>
+                  <button type="button" className="min-h-11 shrink-0 rounded-full px-3 text-xs font-semibold text-neutral-200" onClick={insertSmartWarmups}>+ W</button>
+                  <button type="button" className="min-h-11 shrink-0 rounded-full px-3 text-xs text-neutral-300" onClick={() => setSubstituteOpen(true)}>⇄ Ocupada</button>
+                </div>
+              ) : smartLoad && (
+                <section
+                  aria-label="Recomendación de carga"
+                  className="mx-auto w-full max-w-[560px] rounded-2xl border border-white/10 bg-neutral-900/90 px-3.5 py-2.5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-neutral-300">
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[11px]"
+                          style={
+                            isBodyweightSelected
+                              ? { background: STATUS.success.muted, color: STATUS.success.text }
+                              : { background: ACCENT.subtle, color: ACCENT.text }
+                          }
+                        >
+                          {isBodyweightSelected ? "🤸 Peso corporal" : "🚀 Subir carga"}
+                        </span>
+                        <span className="truncate">{smartExercise?.effectiveEquipmentName ?? "Equipo Cronos Gym"}</span>
+                      </p>
+                      <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
+                        <span className="font-mono text-sm font-semibold text-white">
+                          {isBodyweightSelected ? `Peso corporal × ${smartLoad.suggestedReps}` : `${smartLoad.weightKg} kg × ${smartLoad.suggestedReps}`}
+                        </span>
+                        <span className="font-mono text-[11px] text-neutral-400">
+                          {isBodyweightSelected
+                            ? BODYWEIGHT_LOAD_HINT
+                            : getLoadBreakdownHint(smartLoad.weightKg, smartExercise?.station_key ?? "free_weight_area", smartExercise?.equipment)}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button type="button" className="min-h-11 rounded-full bg-white/10 px-3 text-xs font-semibold text-white" onClick={applySmartLoad}>Aplicar</button>
+                      <button type="button" aria-label="+ Calentamiento (W)" title="+ Calentamiento (W)" className="min-h-11 rounded-full px-3 text-xs text-neutral-200" onClick={insertSmartWarmups}>+ W</button>
+                      <button type="button" aria-label="⇄ Máquina ocupada" title="⇄ Máquina ocupada" className="min-h-11 rounded-full px-3 text-xs text-neutral-200" onClick={() => setSubstituteOpen(true)}>⇄</button>
+                    </div>
+                  </div>
+                </section>
+              )}
+
           {selected.sets.length > 0 && (
                 <div style={{ padding: `0 ${SPACE.md}px ${SPACE.lg}px`, maxWidth: "560px", margin: "0 auto", width: "100%" }}>
-              <button type="button" className="mb-2 flex min-h-11 w-full items-center justify-between rounded-xl bg-neutral-900 px-3 text-left text-xs font-semibold text-neutral-300" onClick={() => setSmartGuidesOpen((open) => !open)}>
-                <span>ⓘ ¿Para qué sirve cada serie?</span><span aria-hidden="true">{smartGuidesOpen ? "−" : "+"}</span>
-              </button>
               {smartGuidesOpen && (
                 <div className="mb-3 space-y-1 rounded-xl bg-neutral-900 p-3 text-xs text-neutral-400">
                   <p>{SET_TYPE_GUIDES.warmup}</p><p>{SET_TYPE_GUIDES.normal}</p><p>{SET_TYPE_GUIDES.dropset}</p><p>{SET_TYPE_GUIDES.failure}</p>

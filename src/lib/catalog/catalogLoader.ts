@@ -26,6 +26,7 @@ import {
   type CachedCatalog,
 } from "./catalogCache";
 import { resetCatalogRegistry, setLoadedCatalog } from "./catalogRegistry";
+import { filterDeletedExercises } from "./customExercises";
 import { isCatalogExercise, type CatalogExercise } from "./types";
 
 const DEFAULT_CATALOG_URL = import.meta.env.VITE_EXERCISES_CATALOG_URL ?? catalogAssetUrl;
@@ -44,6 +45,14 @@ export interface LoadCatalogOptions {
   fetchImpl?: typeof fetch;
   /** Where the catalog is kept between starts. Defaults to IndexedDB. */
   cache?: CatalogCache;
+  /**
+   * Keeps the exercises a coach removed.
+   *
+   * Only the coach portal asks for them, because the portal is where a removal is
+   * undone. Every other screen loads the catalog to train from it, and an exercise
+   * the coach removed is not a movement it should offer.
+   */
+  includeDeleted?: boolean;
 }
 
 let cache: CatalogExercise[] | null = null;
@@ -66,12 +75,13 @@ let inFlight: Promise<CatalogExercise[]> | null = null;
  * is nothing stored, so the caller can offer a retry.
  */
 export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<CatalogExercise[]> {
-  if (cache) return cache;
-  if (inFlight) return inFlight;
+  if (cache) return visibleRows(cache, options.includeDeleted);
+  if (inFlight) return inFlight.then((rows) => visibleRows(rows, options.includeDeleted));
 
   const url = options.url ?? DEFAULT_CATALOG_URL;
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
   const store = options.cache ?? indexedDbCatalogCache;
+  const keepDeleted = options.includeDeleted === true;
 
   inFlight = (async () => {
     const stored = await readStored(store);
@@ -100,10 +110,21 @@ export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<Cat
   })();
 
   try {
-    return await inFlight;
+    return visibleRows(await inFlight, keepDeleted);
   } finally {
     inFlight = null;
   }
+}
+
+/**
+ * The catalog as a screen should see it.
+ *
+ * The registry and the memory cache keep every row, including the ones a coach
+ * removed: a restore needs the row, and the row is also what a routine already
+ * references. Only the answer handed to a screen loses the deleted ones.
+ */
+function visibleRows(rows: CatalogExercise[], keepDeleted: boolean | undefined): CatalogExercise[] {
+  return keepDeleted ? rows : filterDeletedExercises(rows);
 }
 
 /** Reads the device cache. A broken cache is an empty cache, never a failure. */

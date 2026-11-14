@@ -73,6 +73,109 @@ function dayZeroFactor(station: StationKey | undefined, movementPattern?: string
   return 0.3;
 }
 
+/**
+ * The machines that only ever host the athlete's own body.
+ *
+ * A pull-up bar, a decline bench for abdominals or a hyperextension bench are
+ * machines, so the catalog maps them to an `CG-EQP-*` id — and a mapped id is
+ * exactly what used to make the engine treat a pull-up as a loaded barbell and
+ * prescribe "Barra 7kg". The machine is a place, not a load.
+ */
+const BODYWEIGHT_EQUIPMENT_IDS = new Set(["CG-EQP-0051", "CG-EQP-0028", "CG-EQP-0015"]);
+
+/** What a calisthenics movement is called in the catalog and in a coach's rename. */
+const BODYWEIGHT_NAME_HINTS = [
+  "elevacion de piernas",
+  "elevacion de rodillas",
+  "dominada",
+  "pull-up",
+  "pull up",
+  "chin-up",
+  "chin up",
+  "fondos",
+  "flexiones",
+  "push-up",
+  "push up",
+  "dip",
+  "plancha",
+  "abdominal",
+  "crunch",
+  "hiperextension",
+  "extension lumbar",
+  "bicicleta",
+  "estiramiento",
+];
+
+/**
+ * Words that mean the movement does carry something.
+ *
+ * "Crunch en polea" and "dominadas con lastre" are loaded movements that happen to
+ * be named after a calisthenics one: the machine or the added weight decides.
+ */
+const LOADED_NAME_HINTS = [
+  "polea",
+  "cable",
+  "mancuerna",
+  "barra",
+  "disco",
+  "lastre",
+  "kettlebell",
+  "pesa rusa",
+  "smith",
+  "maquina",
+  "máquina",
+  "hack",
+  "hack squat",
+  "press",
+];
+
+/** The parts of a catalog row the load estimate needs to recognise. */
+export interface BodyweightCandidate {
+  equipment_id?: string | null;
+  equipment?: string | null;
+  name?: string | null;
+  name_es?: string | null;
+  movement_pattern?: string | null;
+}
+
+/** The load-free prescription shown instead of a bar breakdown. */
+export const BODYWEIGHT_LOAD_HINT = "Peso corporal · Controla el balanceo (lastre opcional)";
+
+/** Case- and accent-insensitive, so "Elevación" and "elevacion" are one movement. */
+function foldName(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+/**
+ * Whether a movement is done with the athlete's own body and nothing else.
+ *
+ * One rule, in one place: the training screen asks it before estimating a load,
+ * and every caller gets the same answer. A bodyweight exercise has no number to
+ * estimate, so the engine must not invent one for it.
+ */
+export function isBodyweightExercise(
+  input: BodyweightCandidate | null | undefined,
+): boolean {
+  if (!input) return false;
+
+  const equipmentId = (input.equipment_id ?? "").trim();
+  if (equipmentId === "NONE") return true;
+  if (BODYWEIGHT_EQUIPMENT_IDS.has(equipmentId.toUpperCase())) return true;
+
+  const equipment = foldName(input.equipment ?? "");
+  if (equipment === "body weight" || equipment === "bodyweight" || equipment === "assisted") {
+    return true;
+  }
+
+  const name = foldName(`${input.name ?? ""} ${input.name_es ?? ""}`);
+  if (!name.trim()) return false;
+  if (LOADED_NAME_HINTS.some((hint) => name.includes(hint))) return false;
+  return BODYWEIGHT_NAME_HINTS.some((hint) => name.includes(hint));
+}
+
 export function estimateSmartLoad(params: SmartLoadParams & {
   movementPattern?: string;
 }): SmartLoadResult {
@@ -195,6 +298,9 @@ export function getLoadBreakdownHint(
   equipment?: string,
 ): string {
   const weight = roundLoad(weightKg);
+  // A bar and a dip station carry the athlete, not a load: there is no bar
+  // breakdown to describe, and inventing one is what put "Barra 7kg" on a pull-up.
+  if (station === "pullup_dip_station") return BODYWEIGHT_LOAD_HINT;
   if (station === "free_weight_area" && equipment?.toLowerCase().includes("dumbbell")) {
     return `Mancuerna ${roundLoad(weight / 2)}kg por mano`;
   }
